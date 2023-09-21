@@ -1,0 +1,19 @@
+repos:
+- repo: local
+  hooks:
+    - id: run-unittests
+      name: Run Python unit tests
+      entry: python -m unittest discover
+      language: system
+      pass_filenames: false
+
+- repo: https://github.com/psf/black-pre-commit-mirror
+  rev: 23.9.1
+  hooks:
+    - id: black
+      language_version: python3.11
+
+- repo: https://github.com/pycqa/isort
+  rev: 5.12.0
+  hooks:
+    - id: isort
