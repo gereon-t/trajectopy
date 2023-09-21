@@ -3,7 +3,6 @@
     <a href="https://github.com/gereon-t/trajectopy/releases"><img src="https://img.shields.io/github/v/release/gereon-t/trajectopy?label=version" /></a>
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.8.2+-blue.svg" /></a>
     <a href="https://github.com/gereon-t/trajectopy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gereon-t/trajectopy" /></a>
-    <a href="https://github.com/gereon-t/trajectopy"><img src=".images/coverage.svg" /></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
     <br />
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Windows-0078D6?st&logo=windows&logoColor=white" /></a>
@@ -14,6 +13,8 @@
     <a href="https://www.gug.uni-bonn.de/en/"><img src=.images/igg.png height="50"/></a>
 
 #### Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation.
+
+This repository contains the source code of the trajectopy front end PyQt6 GUI. The back end was moved to a separate repository and package: [trajectopy-core](https://github.com/gereon-t/trajectopy-core).
     
 
   <p align="center">
