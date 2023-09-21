@@ -18,12 +18,12 @@ from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
+from trajectopy.gui.path import VERSION_FILE_PATH
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.plot_settings_window import PlotSettingsGUI
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
-from trajectopy.gui.path import VERSION_FILE_PATH
 
 VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
 YEAR = "2023"

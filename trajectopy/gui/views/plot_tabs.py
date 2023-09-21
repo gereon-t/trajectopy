@@ -12,16 +12,15 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from PyQt6 import QtCore, QtGui, QtWidgets
-
 from trajectopy_core.alignment.parameters import AlignmentParameters
 from trajectopy_core.evaluation.abs_traj_dev import AbsoluteTrajectoryDeviations, DeviationCollection
 from trajectopy_core.evaluation.rel_traj_dev import RelativeTrajectoryDeviations
 from trajectopy_core.plotting.alignment_plot import plot_correlation_heatmap, plot_covariance_heatmap
 from trajectopy_core.plotting.deviation_plot import (
-    plot_bias_heatmap,
-    plot_compact_deviations,
     plot_bars,
+    plot_bias_heatmap,
     plot_combined_devs,
+    plot_compact_deviations,
     plot_compact_hist,
     plot_dof_dev,
     plot_edf,
@@ -29,12 +28,13 @@ from trajectopy_core.plotting.deviation_plot import (
     plot_multiple_deviations,
     plot_raw_position_devs,
     plot_raw_rotation_devs,
-    plot_rpe,
     plot_rms_heatmap,
+    plot_rpe,
 )
 from trajectopy_core.plotting.trajectory_plot import plot_trajectories
 from trajectopy_core.settings.plot_settings import PlotSettings
 from trajectopy_core.trajectory import Trajectory
+
 from trajectopy.gui.path import mplstyle_file_path
 
 logger = logging.getLogger("root")

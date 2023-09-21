@@ -9,6 +9,7 @@ import os
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
+from trajectopy_core.settings.plot_settings import PlotSettings
 
 from trajectopy.gui.managers.requests import (
     PlotRequest,
@@ -18,7 +19,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy_core.settings.plot_settings import PlotSettings
 
 logger = logging.getLogger("root")
 

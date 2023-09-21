@@ -8,9 +8,11 @@ import logging
 from typing import Callable, Dict
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-
 from trajectopy_core.evaluation.abs_traj_dev import AbsoluteTrajectoryDeviations
 from trajectopy_core.evaluation.rel_traj_dev import RelativeTrajectoryDeviations
+from trajectopy_core.settings.plot_settings import PlotSettings
+from trajectopy_core.util.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
+
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -18,9 +20,7 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
 from trajectopy.gui.views.plot_tabs import PlotTabs
-from trajectopy_core.settings.plot_settings import PlotSettings
 
 logger = logging.getLogger("root")
 

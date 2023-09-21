@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from trajectopy_core.io.result_io import read_result_file
+from trajectopy_core.io.rosbag import trajectories_from_rosbag
+from trajectopy_core.util.entries import TrajectoryEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -20,11 +23,8 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.util import show_progress
-from trajectopy_core.io.result_io import read_result_file
-from trajectopy_core.io.rosbag import trajectories_from_rosbag
 
 logger = logging.getLogger("root")
 

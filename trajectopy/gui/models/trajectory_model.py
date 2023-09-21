@@ -11,6 +11,7 @@ from typing import List, Union
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QInputDialog
+from trajectopy_core.util.entries import TrajectoryEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -18,7 +19,6 @@ from trajectopy.gui.managers.requests import (
     TrajectoryModelRequest,
     TrajectoryModelRequestType,
 )
-from trajectopy_core.util.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.models.table_model import RequestTableModel
 

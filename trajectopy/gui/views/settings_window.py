@@ -10,11 +10,11 @@ import numpy as np
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QCoreApplication, QMetaObject, QPoint, QRect, QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QFont, QGuiApplication
-
-from trajectopy_core.util.entries import TrajectoryEntry
-from trajectopy.gui.util import read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy_core.settings.processing_settings import ProcessingSettings
 from trajectopy_core.util.definitions import RotApprox, Unit
+from trajectopy_core.util.entries import TrajectoryEntry
+
+from trajectopy.gui.util import read_file_dialog, save_file_dialog, show_msg_box
 
 logger = logging.getLogger("root")
 

@@ -10,6 +10,7 @@ from typing import List
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QInputDialog
+from trajectopy_core.util.entries import AlignmentEntry, ResultEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -19,7 +20,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     UIRequestType,
 )
-from trajectopy_core.util.entries import AlignmentEntry, ResultEntry
 from trajectopy.gui.models.selection import ResultSelection
 from trajectopy.gui.models.table_model import RequestTableModel
 

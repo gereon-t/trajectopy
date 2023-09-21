@@ -9,6 +9,7 @@ from typing import List, Optional, Union
 
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal
+from trajectopy_core.util.entries import TrajectoryEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -23,7 +24,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     UIRequestType,
 )
-from trajectopy_core.util.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.views.trajectory_context_menu import TrajectoryContextMenu

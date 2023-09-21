@@ -8,6 +8,8 @@ import logging
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
+from trajectopy_core.settings.matching_settings import MatchingMethod
+from trajectopy_core.trajectory import Sorting
 
 from trajectopy.gui.managers.requests import (
     PlotRequest,
@@ -22,8 +24,6 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
 )
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy_core.settings.matching_settings import MatchingMethod
-from trajectopy_core.trajectory import Sorting
 
 logger = logging.getLogger("root")
 

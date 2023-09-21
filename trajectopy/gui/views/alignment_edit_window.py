@@ -7,7 +7,6 @@ mail@gtombrink.de
 import logging
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-
 from trajectopy_core.util.entries import AlignmentEntry
 
 logger = logging.getLogger("root")

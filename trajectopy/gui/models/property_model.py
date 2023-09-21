@@ -7,6 +7,7 @@ mail@gtombrink.de
 import numpy as np
 import pandas as pd
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
+from trajectopy_core.util.entries import PropertyEntry
 
 from trajectopy.gui.managers.requests import (
     PropertyModelRequest,
@@ -14,7 +15,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import PropertyEntry
 from trajectopy.gui.models.table_model import BaseTableModel
 
 

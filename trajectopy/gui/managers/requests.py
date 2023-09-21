@@ -11,12 +11,12 @@ from enum import Enum, auto
 from typing import Any, List, Protocol
 
 from PyQt6.QtCore import pyqtSignal
-
-from trajectopy_core.util.entries import AlignmentEntry
-from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy_core.settings.matching_settings import MatchingMethod
 from trajectopy_core.settings.plot_settings import PlotSettings
+from trajectopy_core.util.entries import AlignmentEntry
 from trajectopy_core.util.spatialsorter import Sorting
+
+from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 
 logger = logging.getLogger("root")
 

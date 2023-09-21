@@ -58,5 +58,3 @@ def browse_dir_dialog(parent) -> str:
     file_dialog = QtWidgets.QFileDialog()
     file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.Directory)
     return file_dialog.getExistingDirectory(parent, caption="Select Directory", directory="")
-
-

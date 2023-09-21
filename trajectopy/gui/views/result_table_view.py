@@ -9,6 +9,7 @@ from typing import List, Optional, Union
 
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal
+from trajectopy_core.util.entries import ResultEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -19,7 +20,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     UIRequestType,
 )
-from trajectopy_core.util.entries import ResultEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.selection import ResultSelection
 from trajectopy.gui.views.result_context_menu import ResultContextMenu

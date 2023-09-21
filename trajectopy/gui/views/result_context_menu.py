@@ -7,6 +7,7 @@ mail@gtombrink.de
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QCursor
+from trajectopy_core.util.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -17,7 +18,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     UIRequestType,
 )
-from trajectopy_core.util.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
 from trajectopy.gui.models.selection import ResultSelection
 
 

@@ -8,7 +8,6 @@ from typing import List
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QGuiApplication
-
 from trajectopy_core.util.entries import AlignmentEntry
 
 

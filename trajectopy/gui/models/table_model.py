@@ -10,6 +10,7 @@ from enum import Enum
 from typing import Callable, Dict, Generic, List, TypeVar, Union
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant, pyqtSignal, pyqtSlot
+from trajectopy_core.util.entries import Entry
 
 from trajectopy.gui.managers.requests import (
     Request,
@@ -18,7 +19,6 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import Entry
 
 logger = logging.getLogger("root")
 

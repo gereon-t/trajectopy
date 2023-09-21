@@ -8,6 +8,8 @@ import logging
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from trajectopy_core.util.datahandling import merge_dicts
+from trajectopy_core.util.entries import AlignmentEntry
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -22,13 +24,11 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import AlignmentEntry
 from trajectopy.gui.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
 from trajectopy.gui.views.settings_window import SettingsGUI
-from trajectopy_core.util.datahandling import merge_dicts
 
 logger = logging.getLogger("root")
 

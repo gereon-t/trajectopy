@@ -10,7 +10,6 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-
 from trajectopy_core.alignment.util import (
     adopt_first_orientation,
     adopt_first_pose,
@@ -21,6 +20,15 @@ from trajectopy_core.approximation.mls_approximation import mls_iterative
 from trajectopy_core.approximation.trajectory_approximation import TrajectoryApproximation
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy_core.evaluation.matching import match_trajectories, rough_timestamp_matching
+from trajectopy_core.util.entries import (
+    AbsoluteDeviationEntry,
+    AlignmentEntry,
+    RelativeDeviationEntry,
+    ResultEntry,
+    TrajectoryEntry,
+)
+from trajectopy_core.util.spatialsorter import SpatialSorter
+
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
     ResultModelRequestType,
@@ -31,16 +39,8 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy_core.util.entries import (
-    AbsoluteDeviationEntry,
-    AlignmentEntry,
-    RelativeDeviationEntry,
-    ResultEntry,
-    TrajectoryEntry,
-)
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.util import show_progress
-from trajectopy_core.util.spatialsorter import SpatialSorter
 
 logger = logging.getLogger("root")
 
