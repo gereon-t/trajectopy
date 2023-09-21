@@ -14,7 +14,7 @@
 
 #### Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation.
 
-This repository contains the source code of the trajectopy front end PyQt6 GUI. The back end was moved to a separate repository and package: [trajectopy-core](https://github.com/gereon-t/trajectopy-core).
+This repository contains the source code of the trajectopy front end PyQt6 GUI. The back end is implemented in the [trajectopy-core](https://github.com/gereon-t/trajectopy-core).
     
 
   <p align="center">
