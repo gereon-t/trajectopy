@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.alignment.util import (
+from trajectopy_core.alignment.actions import (
     adopt_first_orientation,
     adopt_first_pose,
     adopt_first_position,
