@@ -67,6 +67,7 @@ class PlotTabs(QtWidgets.QMainWindow):
 
     def addPlot(self, title: str, figure: Figure):
         """Adds a new tab with a plot"""
+        figure.tight_layout()
         new_tab = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         new_tab.setLayout(layout)
