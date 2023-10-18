@@ -14,8 +14,8 @@ from PyQt6 import QtGui
 from PyQt6.QtWidgets import QApplication
 from rich.logging import RichHandler
 
-from trajectopy.gui.main_window import VERSION, TrajectopyGUI
-from trajectopy.gui.path import ICON_FILE_PATH
+from trajectopy.path import ICON_FILE_PATH
+from trajectopy.views.main_window import VERSION, TrajectopyGUI
 
 if os.name == "nt":
     myappid = f"gereont.trajectopy.main.{VERSION}"

@@ -1400,13 +1400,13 @@ files = [
 
 [[package]]
 name = "trajectopy-core"
-version = "1.2.0"
+version = "1.3.0"
 description = "Trajectory Evaluation in Python"
 optional = false
 python-versions = ">=3.8.2,<3.12"
 files = [
-    {file = "trajectopy_core-1.2.0-py3-none-any.whl", hash = "sha256:3c224f70333a460ce7591f56a396c0fc526d4969895da78116b08e1e7d9917bd"},
-    {file = "trajectopy_core-1.2.0.tar.gz", hash = "sha256:589320cb611145e058334cabe8a04a90edc3c755361b733bc3e532e0e4c4d53a"},
+    {file = "trajectopy_core-1.3.0-py3-none-any.whl", hash = "sha256:0e10263db777fa0189422d7def00fe0a172451976d31520c5923dc4b849e8abd"},
+    {file = "trajectopy_core-1.3.0.tar.gz", hash = "sha256:af19a2d8eaa5c70a4ce8dd1d858aace6c44206568715b1e8f6ed9b79df1c1328"},
 ]
 
 [package.dependencies]
@@ -1539,4 +1539,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.2,<3.12"
-content-hash = "85417d51e4df0d142c38ed717429d43040946a7c6a4856a7c7d48217d5a46431"
+content-hash = "a90f05f6018d072b0b3b8d663722a20454dfece247078b1409442de429768f1f"
