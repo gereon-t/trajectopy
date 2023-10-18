@@ -5,6 +5,6 @@ authors:
     given-names: Gereon
     orcid: https://orcid.org/0009-0005-3240-1006
 title: "Trajectopy - Trajectory Evaluation in Python"
-version: 1.1.1
-doi: 10.5281/zenodo.8366801 
+version: 1.1.4
+doi: 10.5281/zenodo.10017721 
 date-released: 2023-09-21
