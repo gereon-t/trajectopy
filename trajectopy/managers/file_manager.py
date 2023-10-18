@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.io.result_io import read_result_file
 from trajectopy_core.io.rosbag import trajectories_from_rosbag
 
 from trajectopy.managers.requests import (
@@ -22,7 +21,7 @@ from trajectopy.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy.models.entries import TrajectoryEntry
+from trajectopy.models.entries import ResultEntry, TrajectoryEntry
 from trajectopy.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.util import show_progress
 
@@ -117,7 +116,7 @@ class FileManager(QObject):
         for file in request.file_list:
             logger.info("Reading file: %s", file)
 
-            result_entry = read_result_file(filename=file)
+            result_entry = ResultEntry.from_file(filename=file)
 
             self.result_model_request.emit(
                 ResultModelRequest(

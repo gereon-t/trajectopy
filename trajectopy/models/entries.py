@@ -182,6 +182,36 @@ class ResultEntry(Entry, ABC):
     def column(self) -> Tuple[str, str, str, str]:
         return self.name, self.type, self.time, self.entry_id
 
+    @classmethod
+    def from_file(cls, filename: str) -> "ResultEntry":
+        """
+        Reads a result file and returns an object of the appropriate type based on the file's header data.
+
+        Args:
+            filename (str): The path to the result file to read.
+
+        Returns:
+            Union[AbsoluteDeviationEntry, RelativeDeviationEntry, AlignmentEntry]: An object of the appropriate type based on the file's header data.
+
+        Raises:
+            ValueError: If the result file type is not supported.
+        """
+        header_data = HeaderData.from_file(filename)
+
+        if header_data.type == AbsoluteDeviationEntry.__name__.lower():
+            logger.info("Detected Absolute Deviations file.")
+            return AbsoluteDeviationEntry.from_file(filename)
+
+        if header_data.type == RelativeDeviationEntry.__name__.lower():
+            logger.info("Detected Relative Deviations file.")
+            return RelativeDeviationEntry.from_file(filename)
+
+        if header_data.type == "alignmententry":
+            logger.info("Detected Alignment file.")
+            return AlignmentEntry.from_file(filename)
+
+        raise ValueError(f"No supported result type '{header_data.type}'")
+
 
 @dataclass
 class DeviationsEntry(ResultEntry, ABC):
