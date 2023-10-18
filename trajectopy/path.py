@@ -6,14 +6,24 @@ mail@gtombrink.de
 """
 import logging
 import os
-from pathlib import Path
+import sys
 
 logger = logging.getLogger("root")
 
-CURRENT_DIR = Path(__file__).parents[0]
-VERSION_FILE_PATH = os.path.join(CURRENT_DIR, "version")
-FULL_ICON_FILE_PATH = os.path.join(CURRENT_DIR, "resources", "full-icon-poppins.png")
-ICON_FILE_PATH = os.path.join(CURRENT_DIR, "resources", "icon.png")
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+VERSION_FILE_PATH = resource_path("trajectopy/version")
+FULL_ICON_FILE_PATH = resource_path("trajectopy/resources/full-icon-poppins.png")
+ICON_FILE_PATH = resource_path("trajectopy/resources/icon.png")
 
 
 def mplstyle_file_path() -> str:
@@ -25,4 +35,4 @@ def mplstyle_file_path() -> str:
     logger.info(
         "Using default settings for matplotlib style. You can use custom styles by creating a 'custom.mplstyle' file in the current directory."
     )
-    return os.path.join(CURRENT_DIR, "default.mplstyle")
+    return resource_path("trajectopy/default.mplstyle")
