@@ -162,6 +162,8 @@ Besides "Nearest Temporal" you can also match trajectories using interpolation o
 
 On the other hand, the "Nearest-Spatial" method finds the closest data points between the two trajectories based on a distance metric. This approach can be useful when the timestamps of the two trajectories are inaccurate or offset.
 
+Since version 1.2.0, trajectopy supports a new matching method called "Nearest Spatial Interpolation". For each position of the test trajectory, the k-nearest positions of the reference trajectory are requested. This neighborhood is then approximated using a 3D line. Finally, the matched reference position is computed by projecting the test position onto the line. This method is especially useful when both trajectories have no temporal overlap and are not synchronized. However, the estimation process is computationally expensive and distorts the reference trajectory. By definition, the determination of along-track deviations is not possible with this approach. The k-nearest neighbors and the maximum allowed distance between the test and reference positions can be set in the settings of the corresponding trajectory.
+
 To evaluate both aligned trajectories, you can select them and use the "Compare with Reference" option. In this example, we conduct an absolute comparison using timestamp-based matching.
 
 ![](.images/compare_context.png)
