@@ -3,7 +3,8 @@ from pathlib import Path
 from test.testdata import generated_trajectory
 
 from trajectopy_core.trajectory import Trajectory
-from trajectopy_core.util.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
+
+from trajectopy.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
 
 
 class TestIO(unittest.TestCase):
