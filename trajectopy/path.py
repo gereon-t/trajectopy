@@ -24,6 +24,7 @@ def resource_path(relative_path):
 VERSION_FILE_PATH = resource_path("trajectopy/version")
 FULL_ICON_FILE_PATH = resource_path("trajectopy/resources/full-icon-poppins.png")
 ICON_FILE_PATH = resource_path("trajectopy/resources/icon.png")
+ICON_BG_FILE_PATH = resource_path("trajectopy/resources/icon-bg.png")
 
 
 def mplstyle_file_path() -> str:

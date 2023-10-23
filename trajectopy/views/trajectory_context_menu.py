@@ -359,6 +359,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        align_nsi_action = QAction("Nearest Spatial Interpolated", self)
+        align_nsi_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.ALIGN,
+                    selection=self.get_selection(),
+                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
+                )
+            ),
+        )
+
         align_first_pose_interpolation_action = QAction("Match by Interpolation", self)
         align_first_pose_interpolation_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
@@ -392,14 +403,27 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        align_first_pose_nsi_action = QAction("Nearest Spatial Interpolated", self)
+        align_first_pose_nsi_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
+                    selection=self.get_selection(),
+                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
+                )
+            ),
+        )
+
         self.least_squares_menu.addAction(align_interpolate_action)
         self.least_squares_menu.addAction(align_nearest_temporal_action)
         self.least_squares_menu.addAction(align_nearest_spatial_action)
+        self.least_squares_menu.addAction(align_nsi_action)
         self.align_with_reference_sub_menu.addMenu(self.least_squares_menu)
 
         self.align_first_pose_menu.addAction(align_first_pose_interpolation_action)
         self.align_first_pose_menu.addAction(align_first_pose_nearest_temporal_action)
         self.align_first_pose_menu.addAction(align_first_pose_nearest_spatial_action)
+        self.align_first_pose_menu.addAction(align_first_pose_nsi_action)
         self.align_with_reference_sub_menu.addMenu(self.align_first_pose_menu)
 
         return self.align_with_reference_sub_menu
@@ -441,6 +465,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        abs_nsi_action = QAction("Nearest Spatial Interpolated", self)
+        abs_nsi_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.COMPARE_ABS,
+                    selection=self.get_selection(),
+                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
+                )
+            ),
+        )
+
         rel_nearest_spatial_action = QAction("Match Nearest Spatial", self)
         rel_nearest_spatial_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
@@ -474,13 +509,26 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        rel_nsi_action = QAction("Nearest Spatial Interpolated", self)
+        rel_nsi_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.COMPARE_REL,
+                    selection=self.get_selection(),
+                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
+                )
+            ),
+        )
+
         self.absolute_menu.addAction(abs_interpolation_action)
         self.absolute_menu.addAction(abs_nearest_temporal_action)
         self.absolute_menu.addAction(abs_nearest_spatial_action)
+        self.absolute_menu.addAction(abs_nsi_action)
 
         self.relative_menu.addAction(rel_interpolation_action)
         self.relative_menu.addAction(rel_nearest_temporal_action)
         self.relative_menu.addAction(rel_nearest_spatial_action)
+        self.relative_menu.addAction(rel_nsi_action)
 
         self.comparison_context_menu.addMenu(self.absolute_menu)
         self.comparison_context_menu.addMenu(self.relative_menu)
@@ -522,8 +570,20 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        match_nsi_action = QAction("Nearest Spatial Interpolated", self)
+        match_nsi_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.MATCH,
+                    selection=self.get_selection(),
+                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
+                )
+            ),
+        )
+
         self.match_context_menu.addAction(match_interpolation_action)
         self.match_context_menu.addAction(match_nearest_temporal_action)
         self.match_context_menu.addAction(match_nearest_spatial_action)
+        self.match_context_menu.addAction(match_nsi_action)
 
         return self.match_context_menu

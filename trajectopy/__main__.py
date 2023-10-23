@@ -14,7 +14,7 @@ from PyQt6 import QtGui
 from PyQt6.QtWidgets import QApplication
 from rich.logging import RichHandler
 
-from trajectopy.path import ICON_FILE_PATH
+from trajectopy.path import ICON_BG_FILE_PATH
 from trajectopy.views.main_window import VERSION, TrajectopyGUI
 
 if os.name == "nt":
@@ -45,7 +45,7 @@ def main():
 
     app = QApplication([])
     _ = TrajectopyGUI(single_thread=args.single_thread)
-    app.setWindowIcon(QtGui.QIcon(ICON_FILE_PATH))
+    app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
     app.exec()
 
 

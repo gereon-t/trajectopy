@@ -4,6 +4,7 @@ added_files = [
     ( 'trajectopy/version', 'trajectopy/' ),
     ( 'trajectopy/default.mplstyle', 'trajectopy/' ),
     ( 'trajectopy/resources/icon.png', 'trajectopy/resources/'),
+    ( 'trajectopy/resources/icon-bg.png', 'trajectopy/resources/'),
     ( 'trajectopy/resources/full-icon-poppins.png', 'trajectopy/resources/')
 ]
 
@@ -41,5 +42,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="trajectopy\\resources\\icon.png"
+    icon="trajectopy\\resources\\icon-bg.png"
 )
