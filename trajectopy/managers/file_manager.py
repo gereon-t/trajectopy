@@ -168,6 +168,7 @@ class FileManager(QObject):
         abs_dev_entry: AbsoluteDeviationEntry = get(AbsoluteDeviationEntry)
         rel_dev_entry: Union[RelativeDeviationEntry, None] = get(RelativeDeviationEntry)
 
-        write_report(
-            request.file_list[0], abs_dev_entry.deviations, rel_dev_entry.deviations if rel_dev_entry else None
-        )
+        ate_result = abs_dev_entry.deviations
+        rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
+
+        write_report(request.file_list[0], ate_result=ate_result, rpe_result=rpe_result)
