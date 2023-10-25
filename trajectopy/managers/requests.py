@@ -29,6 +29,7 @@ class FileRequestType(Enum):
     WRITE_LIST = auto()
     READ_TRAJ_ORDER = auto()
     READ_RES_ORDER = auto()
+    WRITE_REPORT = auto()
 
 
 class PlotRequestType(Enum):
@@ -127,6 +128,7 @@ class UIRequestType(Enum):
     IMPORT_SESSION = auto()
     EDIT_ALIGNMENT = auto()
     EXPORT_DEV_SUMMARY = auto()
+    EXPORT_HTML_REPORT = auto()
 
 
 @dataclass

@@ -82,6 +82,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
+            UIRequestType.EXPORT_HTML_REPORT: self.html_report_export_dialog,
         }
 
     @pyqtSlot(UIRequest)
@@ -152,6 +153,18 @@ class UIManager(QObject):
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_RES,
+                    file_list=[selected_file],
+                    result_selection=self.request.result_selection,
+                )
+            )
+        else:
+            return
+
+    def html_report_export_dialog(self, _: UIRequest) -> None:
+        if selected_file := save_file_dialog(None, file_filter="HTML Report (*.html)"):
+            self.file_request.emit(
+                FileRequest(
+                    type=FileRequestType.WRITE_REPORT,
                     file_list=[selected_file],
                     result_selection=self.request.result_selection,
                 )

@@ -53,6 +53,7 @@ class ResultContextMenu(QtWidgets.QMenu):
         self.property_context()
         self.edit_context()
         self.plot_context()
+        self.report_context()
         self.exec(QCursor.pos())
 
     def property_context(self) -> None:
@@ -66,6 +67,35 @@ class ResultContextMenu(QtWidgets.QMenu):
             )
         )
         self.addAction(property_action)
+
+    def report_context(self) -> None:
+        selection = self.get_selection().entries
+
+        def len_of_type(entry_type):
+            return len([entry for entry in selection if isinstance(entry, entry_type)])
+
+        if len(selection) > 2:
+            return
+
+        if not all(isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in selection):
+            return
+
+        if len_of_type(AbsoluteDeviationEntry) != 1:
+            return
+
+        if len_of_type(RelativeDeviationEntry) > 1:
+            return
+
+        report_action = QAction("Generate HTML Report", self)
+        report_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.EXPORT_HTML_REPORT,
+                    result_selection=self.get_selection(),
+                )
+            )
+        )
+        self.addAction(report_action)
 
     def plot_context(self):
         single_selection = len(self.get_selection().entries) == 1
