@@ -29,11 +29,13 @@ This repository contains the source code of the trajectopy front end PyQt6 GUI. 
 
 Trajectopy offers a range of features, including:
 
+- __New since 1.3.0__: HTML report generation ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy-core/blob/main/example_data/report.html))
 - Interactive GUI: A user-friendly interface that enables seamless interaction with your trajectory data, making it easy to visualize, align, and compare trajectories.
 - Alignment Algorithm: An advanced algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
 - Comparison Metrics: Absolute and relative comparison metrics that can be computed using various pose-matching methods
 - Data Import/Export: Support for importing and exporting data, ensuring compatibility with your existing workflows.
 - Customizable Visualization: A flexible visualization that allows users to customize plot styles, tailoring the output to their specific needs.
+
 
 ## Table of Contents
 - [Installation](#installation)
@@ -176,6 +178,14 @@ The program supports plotting a single trajectory comparison (left) or multiple 
 
 ![](.images/evaluation_example.png)
 
+## Report Generation
+Version 1.3.0 of Trajectopy now offers HTML report generation, featuring key ATE and RPE metrics alongside trajectory and deviation plots. To generate this report, users can select either an AbsoluteDeviationsEntry or both an AbsoluteDeviationsEntry and a RelativeDeviationsEntry. Simply right-click to access the "Generate HTML Report" option.
+
+Upon selection, an input dialog will prompt the user to specify the ATE unit (either mm or m) and the maximum number of data points after downsampling. This latter option proves particularly useful when handling large trajectories. After clicking "OK," the user can choose a directory and filename for saving the report. The report is a stand-alone html file and can be conveniently viewed in any web browser. The report is constructed using jinja2 and plotly. Thus, all plots are interactive and can be zoomed in and out, panned, and downloaded as png files.
+
+You can find a demo report [here](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy-core/blob/main/example_data/report.html).
+
+![](.images/report.png)
 
 ## Importing Trajectories
 

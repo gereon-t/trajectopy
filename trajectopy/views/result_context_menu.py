@@ -90,7 +90,7 @@ class ResultContextMenu(QtWidgets.QMenu):
         report_action.triggered.connect(
             lambda: self.ui_request.emit(
                 UIRequest(
-                    type=UIRequestType.EXPORT_HTML_REPORT,
+                    type=UIRequestType.EXPORT_REPORT,
                     result_selection=self.get_selection(),
                 )
             )

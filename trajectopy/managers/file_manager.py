@@ -171,4 +171,10 @@ class FileManager(QObject):
         ate_result = abs_dev_entry.deviations
         rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
 
-        write_report(request.file_list[0], ate_result=ate_result, rpe_result=rpe_result)
+        write_report(
+            request.file_list[0],
+            ate_result=ate_result,
+            rpe_result=rpe_result,
+            mm=request.report_settings["unit"] == "mm",
+            max_data_size=request.report_settings["max_data_size"],
+        )

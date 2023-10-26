@@ -1039,13 +1039,13 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 
 [[package]]
 name = "plotly"
-version = "5.17.0"
+version = "5.18.0"
 description = "An open-source, interactive data visualization library for Python"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "plotly-5.17.0-py2.py3-none-any.whl", hash = "sha256:7c84cdf11da162423da957bb093287134f2d6f170eb9a74f1459f825892247c3"},
-    {file = "plotly-5.17.0.tar.gz", hash = "sha256:290d796bf7bab87aad184fe24b86096234c4c95dcca6ecbca02d02bdf17d3d97"},
+    {file = "plotly-5.18.0-py3-none-any.whl", hash = "sha256:23aa8ea2f4fb364a20d34ad38235524bd9d691bf5299e800bca608c31e8db8de"},
+    {file = "plotly-5.18.0.tar.gz", hash = "sha256:360a31e6fbb49d12b007036eb6929521343d6bee2236f8459915821baefa2cbb"},
 ]
 
 [package.dependencies]
@@ -1515,13 +1515,13 @@ files = [
 
 [[package]]
 name = "trajectopy-core"
-version = "1.5.3"
+version = "1.6.0"
 description = "Trajectory Evaluation in Python"
 optional = false
 python-versions = ">=3.8.2,<3.12"
 files = [
-    {file = "trajectopy_core-1.5.3-py3-none-any.whl", hash = "sha256:bd8589963cbf29531115c173ae0c150b4646055302ee65641a4825d4a6a33417"},
-    {file = "trajectopy_core-1.5.3.tar.gz", hash = "sha256:c3454d1a3ec3797de153c4a88530b31548a6f931b6495902d20bc45b44a390a8"},
+    {file = "trajectopy_core-1.6.0-py3-none-any.whl", hash = "sha256:7f028f41e84e23597598c0c2eabd14df58004d3030ed22ce49c8c14d5ff782aa"},
+    {file = "trajectopy_core-1.6.0.tar.gz", hash = "sha256:5f4328a28d2dbf086201938356e2e3997aa0f6caad4147fde4f73eeb7c4787af"},
 ]
 
 [package.dependencies]
@@ -1656,4 +1656,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.2,<3.12"
-content-hash = "5f6b80aeb333af82693e4afbdd874bc783c126eeff80b305facfbf3f656c532a"
+content-hash = "34207b48b16584d91795c7ab6800b4fbb3a5eb380843ee3c1991d875124a33b8"

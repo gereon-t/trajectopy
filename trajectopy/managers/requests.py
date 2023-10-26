@@ -128,7 +128,7 @@ class UIRequestType(Enum):
     IMPORT_SESSION = auto()
     EDIT_ALIGNMENT = auto()
     EXPORT_DEV_SUMMARY = auto()
-    EXPORT_HTML_REPORT = auto()
+    EXPORT_REPORT = auto()
 
 
 @dataclass
@@ -144,6 +144,7 @@ class FileRequest(DeepCopyRequest):
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     id_list: List[str] = field(default_factory=list)
+    report_settings: dict = field(default_factory=dict)
 
 
 @dataclass

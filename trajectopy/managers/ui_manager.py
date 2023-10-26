@@ -27,6 +27,7 @@ from trajectopy.models.entries import AlignmentEntry
 from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.views.properties_window import PropertiesGUI
+from trajectopy.views.report_settings import ReportSettingsGUI
 from trajectopy.views.result_selection_window import AlignmentSelector
 from trajectopy.views.settings_window import SettingsGUI
 
@@ -82,7 +83,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
-            UIRequestType.EXPORT_HTML_REPORT: self.html_report_export_dialog,
+            UIRequestType.EXPORT_REPORT: self.export_report,
         }
 
     @pyqtSlot(UIRequest)
@@ -153,18 +154,6 @@ class UIManager(QObject):
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_RES,
-                    file_list=[selected_file],
-                    result_selection=self.request.result_selection,
-                )
-            )
-        else:
-            return
-
-    def html_report_export_dialog(self, _: UIRequest) -> None:
-        if selected_file := save_file_dialog(None, file_filter="HTML Report (*.html)"):
-            self.file_request.emit(
-                FileRequest(
-                    type=FileRequestType.WRITE_REPORT,
                     file_list=[selected_file],
                     result_selection=self.request.result_selection,
                 )
@@ -254,3 +243,24 @@ class UIManager(QObject):
             )
         )
         alignment_window.show()
+
+    def export_report(self, _: UIRequest) -> None:
+        settings_window = ReportSettingsGUI()
+
+        if settings_window.exec():
+            unit = settings_window.unit_combo.currentText()
+            max_data_size = settings_window.size_spinbox.value()
+
+            logger.info("Selected unit: %s and max data size: %s", unit, max_data_size)
+
+            if selected_file := save_file_dialog(None, file_filter="HTML Report (*.html)"):
+                self.file_request.emit(
+                    FileRequest(
+                        type=FileRequestType.WRITE_REPORT,
+                        file_list=[selected_file],
+                        result_selection=self.request.result_selection,
+                        report_settings={"unit": unit, "max_data_size": max_data_size},
+                    )
+                )
+            else:
+                return
