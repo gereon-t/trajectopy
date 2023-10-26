@@ -16,15 +16,15 @@ def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
     except Exception:
-        base_path = os.path.abspath(".")
+        base_path = os.path.dirname(__file__)
 
     return os.path.join(base_path, relative_path)
 
 
-VERSION_FILE_PATH = resource_path("trajectopy/version")
-FULL_ICON_FILE_PATH = resource_path("trajectopy/resources/full-icon-poppins.png")
-ICON_FILE_PATH = resource_path("trajectopy/resources/icon.png")
-ICON_BG_FILE_PATH = resource_path("trajectopy/resources/icon-bg.png")
+VERSION_FILE_PATH = resource_path("version")
+FULL_ICON_FILE_PATH = resource_path("resources/full-icon-poppins.png")
+ICON_FILE_PATH = resource_path("resources/icon.png")
+ICON_BG_FILE_PATH = resource_path("resources/icon-bg.png")
 
 
 def mplstyle_file_path() -> str:
@@ -36,4 +36,4 @@ def mplstyle_file_path() -> str:
     logger.info(
         "Using default settings for matplotlib style. You can use custom styles by creating a 'custom.mplstyle' file in the current directory."
     )
-    return resource_path("trajectopy/default.mplstyle")
+    return resource_path("default.mplstyle")
