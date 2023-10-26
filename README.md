@@ -40,6 +40,7 @@ Trajectopy offers a range of features, including:
 ## Table of Contents
 - [Installation](#installation)
 - [Exemplary Evaluation](#exemplary-evaluation)
+- [Report Generation](#report-generation)
 - [Importing Trajectories](#importing-trajectories)
 - [Aligning Trajectories](#aligning-trajectories)
 - [Comparing Trajectories](#comparing-trajectories)
