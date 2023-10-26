@@ -36,3 +36,7 @@ line_length = 119
 
 [tool.black]
 line-length = 119
+
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
