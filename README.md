@@ -79,7 +79,7 @@ source .venv/bin/activate
 .\.venv\Scripts\activate
 ```
 
-#### Installation via pip
+### Installation via pip
 Update pip:
 
 ```console
