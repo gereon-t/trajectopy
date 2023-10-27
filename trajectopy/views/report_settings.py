@@ -9,15 +9,15 @@ class ReportSettingsGUI(QtWidgets.QDialog):
 
     def initUI(self):
         self.setWindowTitle("Report Settings")
-        self.resize(200, 200)
+        self.resize(200, 220)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed,
             QtWidgets.QSizePolicy.Policy.Fixed,
         )
         sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(sizePolicy)
-        self.setMinimumSize(QtCore.QSize(200, 200))
-        self.setMaximumSize(QtCore.QSize(200, 200))
+        self.setMinimumSize(QtCore.QSize(200, 220))
+        self.setMaximumSize(QtCore.QSize(200, 220))
 
         layout = QtWidgets.QVBoxLayout()
 
