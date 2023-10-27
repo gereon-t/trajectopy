@@ -29,6 +29,7 @@ trajectopy = "trajectopy.__main__:main"
 mypy = "^1.5.1"
 black = "^23.9.1"
 pre-commit = "^3.5.0"
+tox = "^4.11.3"
 
 [tool.isort]
 profile = "black"
