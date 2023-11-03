@@ -8,7 +8,7 @@ import logging
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.util.datahandling import merge_dicts
+from trajectopy_core.utils.datahandling import merge_dicts
 
 from trajectopy.managers.requests import (
     FileRequest,

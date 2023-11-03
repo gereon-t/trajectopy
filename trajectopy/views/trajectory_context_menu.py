@@ -8,8 +8,7 @@ import logging
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
-from trajectopy_core.settings.matching_settings import MatchingMethod
-from trajectopy_core.trajectory import Sorting
+from trajectopy_core.evaluation.settings import MatchingMethod
 
 from trajectopy.managers.requests import (
     PlotRequest,
@@ -184,8 +183,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.edit_single()
 
     def edit_single(self):
-        selected_trajectory = self.get_selection().entries[0].trajectory
-
         rename_action = QAction("Rename", self)
         rename_action.triggered.connect(
             lambda: self.trajectory_model_request.emit(
@@ -207,23 +204,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.edit_context_menu.addAction(export_action)
-
-        if selected_trajectory.state.sorting_known:
-            target_sorting = Sorting.SPATIAL if selected_trajectory.sorting == Sorting.CHRONO else Sorting.CHRONO
-            sort_description = (
-                "Switch Sorting To Spatial" if target_sorting == Sorting.SPATIAL else "Switch Sorting To Chronological"
-            )
-            sort_action = QAction(sort_description, self)
-            sort_action.triggered.connect(
-                lambda: self.trajectory_manager_request.emit(
-                    TrajectoryManagerRequest(
-                        type=TrajectoryManagerRequestType.SWITCH_SORTING,
-                        selection=self.get_selection(),
-                        sorting=target_sorting,
-                    )
-                )
-            )
-            self.edit_context_menu.addAction(sort_action)
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
@@ -272,9 +252,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        plot_laps_enabled = (
-            len(self.get_selection()) == 1 and self.get_selection().entries[0].trajectory.state.sorting_known
-        )
+        plot_laps_enabled = len(self.get_selection()) == 1 and self.get_selection().entries[0].state.sorting_known
         plot_laps_action.setEnabled(plot_laps_enabled)
         if plot_laps_enabled:
             self.view_context_menu.addAction(plot_laps_action)

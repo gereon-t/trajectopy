@@ -10,7 +10,7 @@ from typing import Callable, Dict
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
-from trajectopy_core.settings.plot_settings import PlotSettings
+from trajectopy_core.plotting.settings import PlotSettings
 
 from trajectopy.managers.requests import (
     PlotRequest,

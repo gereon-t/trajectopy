@@ -31,8 +31,8 @@ from trajectopy_core.plotting.deviation_plot import (
     plot_rms_heatmap,
     plot_rpe,
 )
+from trajectopy_core.plotting.settings import PlotSettings
 from trajectopy_core.plotting.trajectory_plot import plot_trajectories
-from trajectopy_core.settings.plot_settings import PlotSettings
 from trajectopy_core.trajectory import Trajectory
 
 from trajectopy.path import mplstyle_file_path

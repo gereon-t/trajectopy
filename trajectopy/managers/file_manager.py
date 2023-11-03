@@ -10,7 +10,7 @@ from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.io.rosbag import trajectories_from_rosbag
-from trajectopy_core.report import write_report
+from trajectopy_core.report import render_report, write_report
 
 from trajectopy.managers.requests import (
     FileRequest,
@@ -171,10 +171,10 @@ class FileManager(QObject):
         ate_result = abs_dev_entry.deviations
         rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
 
-        write_report(
-            request.file_list[0],
+        report = render_report(
             ate_result=ate_result,
             rpe_result=rpe_result,
             mm=request.report_settings["unit"] == "mm",
             max_data_size=request.report_settings["max_data_size"],
         )
+        write_report(report_text=report, output_file=request.file_list[0])

@@ -9,7 +9,7 @@ import os
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from trajectopy_core.settings.plot_settings import PlotSettings
+from trajectopy_core.plotting.settings import PlotSettings
 
 from trajectopy.managers.requests import (
     PlotRequest,

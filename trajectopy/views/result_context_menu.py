@@ -150,7 +150,7 @@ class ResultContextMenu(QtWidgets.QMenu):
                     )
                 )
             )
-            if self.get_selection().entries[0].deviations.trajectory.state.sorting_known:
+            if self.get_selection().entries[0].state.sorting_known:
                 self.addAction(plot_laps_action)
 
         if isinstance(self.get_selection().entries[0], RelativeDeviationEntry):

@@ -16,15 +16,45 @@ from typing import Dict, Tuple, Union
 import numpy as np
 from trajectopy_core.alignment.parameters import AlignmentParameters, SensorRotationParameters
 from trajectopy_core.alignment.result import AlignmentResult
+from trajectopy_core.alignment.settings import AlignmentEstimationSettings
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
 from trajectopy_core.io.header import HeaderData
-from trajectopy_core.settings.alignment_settings import AlignmentEstimationSettings
-from trajectopy_core.settings.processing_settings import ProcessingSettings
 from trajectopy_core.trajectory import Trajectory
-from trajectopy_core.util.spatialsorter import Sorting
+
+from trajectopy.models.processing_settings import ProcessingSettings
 
 logger = logging.getLogger("root")
+
+
+@dataclass
+class TrajectoryProcessingState:
+    """
+    Class to store the processing state of a trajectory.
+    For example, if a trajectory is interpolated, the attribute
+    interpolated is set to True.
+    """
+
+    approximated: bool = False
+    interpolated: bool = False
+    intersected: bool = False
+    aligned: bool = False
+    matched: bool = False
+    sorting_known: bool = False
+
+    def __str__(self) -> str:
+        return ", ".join([str(key) for key, value in self.__dict__.items() if value])
+
+    @classmethod
+    def from_string(cls, input_string: str) -> "TrajectoryProcessingState":
+        return cls(
+            approximated="approximated" in input_string,
+            interpolated="interpolated" in input_string,
+            intersected="intersected" in input_string,
+            aligned="aligned" in input_string,
+            matched="matched" in input_string,
+            sorting_known="sorting_known" in input_string,
+        )
 
 
 def bool_to_str(input_bool: bool) -> str:
@@ -75,6 +105,7 @@ class TrajectoryEntry(Entry):
     set_as_reference: bool = False
     settings: ProcessingSettings = field(default_factory=ProcessingSettings)
     group_id: str = field(default_factory=generate_id)
+    state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename)
@@ -87,7 +118,7 @@ class TrajectoryEntry(Entry):
         trajectory = Trajectory.from_file(str(trajectory_filename))
         if settings_filename.is_file():
             logger.info("Using existing settings file: %s", settings_filename)
-            traj_settings = ProcessingSettings.from_file(str(settings_filename))
+            traj_settings = ProcessingSettings.from_yaml(str(settings_filename))
         else:
             logger.info(
                 "No settings file found. Settings can be provided by storing a yaml file with the same name in the same directory."
@@ -121,9 +152,9 @@ class TrajectoryEntry(Entry):
         return (
             self.name,
             bool_to_str(self.set_as_reference),
-            str(self.trajectory.sorting),
+            str(self.trajectory.sort_by),
             self.trajectory.pos.epsg,
-            str(self.trajectory.state),
+            str(self.state),
             self.full_filename,
         )
 
@@ -148,17 +179,17 @@ class TrajectoryEntry(Entry):
             else "local / unknown",
             "Orientation available": "yes" if self.trajectory.rot is not None else "no",
             "Number of Poses": str(len(self.trajectory)),
-            "Sorting": f"{'Spatial' if self.trajectory.sorting == Sorting.SPATIAL else 'Chronological'}",
-            "Length [m]": f"{self.trajectory.arc_length:.3f}",
+            "Sort By:": self.trajectory.sort_by,
+            "Length [m]": f"{self.trajectory.total_length:.3f}",
             "Data Rate [Hz]": f"{self.trajectory.data_rate:.3f}",
             "Minimum Speed [m/s]": f"{np.min(self.trajectory.speed):.3f}",
             "Maximum Speed [m/s]": f"{np.max(self.trajectory.speed):.3f}",
             "Average Speed [m/s]": f"{np.mean(self.trajectory.speed):.3f}",
-            "Sorting known": "yes" if self.trajectory.state.sorting_known else "no",
-            "Approximated": "yes" if self.trajectory.state.approximated else "no",
-            "Intersected": "yes" if self.trajectory.state.intersected else "no",
-            "Interpolated": "yes" if self.trajectory.state.interpolated else "no",
-            "Matched Timestamps": "yes" if self.trajectory.state.matched else "no",
+            "Sorting known": "yes" if self.state.sorting_known else "no",
+            "Approximated": "yes" if self.state.approximated else "no",
+            "Intersected": "yes" if self.state.intersected else "no",
+            "Interpolated": "yes" if self.state.interpolated else "no",
+            "Matched Timestamps": "yes" if self.state.matched else "no",
             "Filename": self.full_filename,
             "UUID": self.entry_id,
         }
@@ -237,6 +268,7 @@ class AbsoluteDeviationEntry(DeviationsEntry):
     """Class representing a absolute deviation entry in the result model."""
 
     deviations: ATEResult
+    state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)

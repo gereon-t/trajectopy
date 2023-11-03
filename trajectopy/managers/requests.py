@@ -11,9 +11,8 @@ from enum import Enum, auto
 from typing import Any, List, Protocol
 
 from PyQt6.QtCore import pyqtSignal
-from trajectopy_core.settings.matching_settings import MatchingMethod
-from trajectopy_core.settings.plot_settings import PlotSettings
-from trajectopy_core.util.spatialsorter import Sorting
+from trajectopy_core.evaluation.settings import MatchingMethod
+from trajectopy_core.plotting.settings import PlotSettings
 
 from trajectopy.models.entries import AlignmentEntry
 from trajectopy.models.selection import ResultSelection, TrajectorySelection
@@ -196,7 +195,6 @@ class TrajectoryModelRequest:
 class TrajectoryManagerRequest(DeepCopyRequest):
     type: TrajectoryManagerRequestType
     selection: TrajectorySelection = field(default_factory=TrajectorySelection)
-    sorting: Sorting = Sorting.CHRONO
     target_epsg: int = 0
     grid: float = 0.0
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
@@ -210,7 +208,6 @@ class UIRequest:
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     alignment_entry: AlignmentEntry = field(default_factory=AlignmentEntry)
     plot_settings: PlotSettings = field(default_factory=PlotSettings)
-    sorting: Sorting = Sorting.CHRONO
     message: str = ""
     confirm_reset: bool = False
     epsg: int = 0

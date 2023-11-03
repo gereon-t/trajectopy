@@ -10,17 +10,19 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from rotationset import RotationSet
+from spatialsorter import sort_mls
+from trajectopy_approx.cubic_approximation import piecewise_cubic
+from trajectopy_approx.rot_approximation import rot_average_window
 from trajectopy_core.alignment.actions import (
     adopt_first_orientation,
     adopt_first_pose,
     adopt_first_position,
     align_trajectories,
+    apply_alignment,
 )
-from trajectopy_core.approximation.mls_approximation import mls_iterative
-from trajectopy_core.approximation.trajectory_approximation import TrajectoryApproximation
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy_core.evaluation.matching import match_trajectories, rough_timestamp_matching
-from trajectopy_core.util.spatialsorter import SpatialSorter
 
 from trajectopy.managers.requests import (
     ResultModelRequest,
@@ -557,20 +559,18 @@ class TrajectoryManager(QObject):
         selected_trajectory = entry_pair.entry.trajectory
         settings = entry_pair.entry.settings.sorting
         logger.info("Sorting trajectory ...")
-        mls_approx = mls_iterative(
-            xyz=selected_trajectory.pos.xyz,
-            voxel_size=settings.voxel_size,
-            k_nearest=settings.k_nearest,
-            movement_threshold=settings.movement_threshold,
-        )
-        sorter = SpatialSorter(xyz=mls_approx, discard_missing=settings.discard_missing)
-        sorted_traj = selected_trajectory.apply_sorter(sorter=sorter)
+        indices, arc_lengths = sort_mls(xyz_unsorted=selected_trajectory.pos.xyz, settings=settings)
+        selected_trajectory.apply_index(indices)
+        selected_trajectory.arc_lengths = arc_lengths
+        selected_trajectory.sort_by = "arc_lengths"
+        entry_pair.entry.state.sorting_known = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=sorted_traj,
+                trajectory=selected_trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -589,23 +589,30 @@ class TrajectoryManager(QObject):
         """
         selected_trajectory = entry_pair.entry.trajectory
         settings = entry_pair.entry.settings.approximation
-        approx_traj = TrajectoryApproximation(
-            pos=selected_trajectory.pos,
-            rot=selected_trajectory.rot,
-            tstamps=selected_trajectory.tstamps,
-            name=selected_trajectory.name,
-            sorting=selected_trajectory.sorting,
-            sort_index=selected_trajectory.sort_index,
-            arc_lengths=selected_trajectory.arc_lengths,
-            settings=settings,
-            state=selected_trajectory.state,
+        selected_trajectory.pos.xyz, _ = piecewise_cubic(
+            function_of=selected_trajectory.function_of,
+            values=selected_trajectory.pos.xyz,
+            int_size=settings.fe_int_size,
+            min_obs=settings.fe_min_obs,
+            return_approx_objects=True,
         )
+
+        quat_approx = rot_average_window(
+            function_of=selected_trajectory.function_of,
+            quat=selected_trajectory.rot.as_quat(),
+            win_size=settings.rot_approx_win_size,
+        )
+
+        selected_trajectory.rot = RotationSet.from_quat(quat_approx)
+
+        entry_pair.entry.state.approximated = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=approx_traj,
+                trajectory=selected_trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -634,7 +641,7 @@ class TrajectoryManager(QObject):
 
         comparison_result = compare_trajectories_absolute(traj_test=traj_test, traj_ref=traj_ref)
 
-        return (AbsoluteDeviationEntry(deviations=comparison_result),)
+        return (AbsoluteDeviationEntry(deviations=comparison_result, state=entry_pair.entry.state),)
 
     @staticmethod
     def operation_compare_rel(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
@@ -731,7 +738,10 @@ class TrajectoryManager(QObject):
             matching_settings=entry_pair.entry.settings.matching,
         )
 
-        traj_aligned = entry_pair.entry.trajectory.apply_alignment(alignment_result=alignment_result)
+        traj_aligned = apply_alignment(
+            trajectory=entry_pair.entry.trajectory, alignment_result=alignment_result, inplace=False
+        )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -739,6 +749,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
             AlignmentEntry(alignment_result=alignment_result),
         )

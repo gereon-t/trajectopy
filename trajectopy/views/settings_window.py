@@ -10,16 +10,15 @@ import numpy as np
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QCoreApplication, QMetaObject, QPoint, QRect, QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QFont, QGuiApplication
-from trajectopy_core.settings.processing_settings import ProcessingSettings
-from trajectopy_core.util.definitions import RotApprox, Unit
+from trajectopy_core.utils.definitions import Unit
 
 from trajectopy.models.entries import TrajectoryEntry
+from trajectopy.models.processing_settings import ProcessingSettings
 from trajectopy.util import read_file_dialog, save_file_dialog, show_msg_box
 
 logger = logging.getLogger("root")
 
 
-ROT_APPROX_DICT = {0: RotApprox.WINDOW, 1: RotApprox.INTERP}
 UNIT_DICT = {0: Unit.METER, 1: Unit.SECOND}
 
 
@@ -471,16 +470,7 @@ class SettingsGUI(QtWidgets.QMainWindow):
         self.min_obs_per_int_label = QtWidgets.QLabel(self.approximationVerticalLayoutWidget)
         self.min_obs_per_int_label.setObjectName("label_27")
         self.approximationFormLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.min_obs_per_int_label)
-        self.rot_approx_technique_label = QtWidgets.QLabel(self.approximationVerticalLayoutWidget)
-        self.rot_approx_technique_label.setObjectName("label_28")
-        self.approximationFormLayout.setWidget(
-            2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.rot_approx_technique_label
-        )
-        self.rot_windows_size_label = QtWidgets.QLabel(self.approximationVerticalLayoutWidget)
-        self.rot_windows_size_label.setObjectName("label_29")
-        self.approximationFormLayout.setWidget(
-            3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.rot_windows_size_label
-        )
+
         self.approxObsInt = QtWidgets.QSpinBox(self.approximationVerticalLayoutWidget)
         self.approxObsInt.setMinimum(3)
         self.approxObsInt.setProperty("value", 25)
@@ -493,18 +483,6 @@ class SettingsGUI(QtWidgets.QMainWindow):
         self.approxPosWinSize.setProperty("value", 0.15)
         self.approxPosWinSize.setObjectName("approxPosWinSize")
         self.approximationFormLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.approxPosWinSize)
-        self.approxTechnique = QtWidgets.QComboBox(self.approximationVerticalLayoutWidget)
-        self.approxTechnique.setObjectName("approxTechnique")
-        self.approxTechnique.addItem("")
-        self.approxTechnique.addItem("")
-        self.approximationFormLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.approxTechnique)
-        self.approxRotWinSize = QtWidgets.QDoubleSpinBox(self.approximationVerticalLayoutWidget)
-        self.approxRotWinSize.setDecimals(4)
-        self.approxRotWinSize.setMinimum(0.005)
-        self.approxRotWinSize.setSingleStep(0.005)
-        self.approxRotWinSize.setProperty("value", 0.15)
-        self.approxRotWinSize.setObjectName("approxRotWinSize")
-        self.approximationFormLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.FieldRole, self.approxRotWinSize)
 
         self.approximationHorizontalLayout.addLayout(self.approximationFormLayout)
         spacerItem9 = QtWidgets.QSpacerItem(
@@ -712,10 +690,6 @@ class SettingsGUI(QtWidgets.QMainWindow):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.sortingTab), _translate("MainWindow", "Sorting"))
         self.pos_window_size_label.setText(_translate("MainWindow", "Window size (Positions) [m]:"))
         self.min_obs_per_int_label.setText(_translate("MainWindow", "Minimum observations per interval:"))
-        self.rot_approx_technique_label.setText(_translate("MainWindow", "Rotation Approximation Technique:"))
-        self.rot_windows_size_label.setText(_translate("MainWindow", "Window size (Rotations) [m]:"))
-        self.approxTechnique.setItemText(0, _translate("MainWindow", "Window"))
-        self.approxTechnique.setItemText(1, _translate("MainWindow", "Lap interpolation"))
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.approximationTab),
             _translate("MainWindow", "Approximation"),
@@ -768,15 +742,6 @@ class SettingsGUI(QtWidgets.QMainWindow):
     def update_approximation_view(self) -> None:
         self.approxPosWinSize.setValue(self.trajectory_entry.settings.approximation.fe_int_size)
         self.approxObsInt.setValue(self.trajectory_entry.settings.approximation.fe_min_obs)
-
-        if self.trajectory_entry.settings.approximation.rot_approx_technique == RotApprox.WINDOW:
-            self.approxTechnique.setCurrentIndex(0)
-        elif self.trajectory_entry.settings.approximation.rot_approx_technique == RotApprox.INTERP:
-            self.approxTechnique.setCurrentIndex(1)
-        else:
-            raise ValueError(f"Invalid technique {self.trajectory_entry.settings.approximation.rot_approx_technique}")
-
-        self.approxRotWinSize.setValue(self.trajectory_entry.settings.approximation.rot_approx_win_size)
 
     def update_sorting_view(self) -> None:
         self.sortingVoxel.setValue(self.trajectory_entry.settings.sorting.voxel_size)
@@ -847,10 +812,6 @@ class SettingsGUI(QtWidgets.QMainWindow):
     def update_approximation_model(self):
         self.trajectory_entry.settings.approximation.fe_int_size = self.approxPosWinSize.value()
         self.trajectory_entry.settings.approximation.fe_min_obs = int(self.approxObsInt.value())
-        self.trajectory_entry.settings.approximation.rot_approx_technique = ROT_APPROX_DICT.get(
-            self.approxTechnique.currentIndex(), RotApprox.WINDOW
-        )
-        self.trajectory_entry.settings.approximation.rot_approx_win_size = self.approxRotWinSize.value()
 
     def update_sorting_model(self):
         self.trajectory_entry.settings.sorting.voxel_size = self.sortingVoxel.value()
