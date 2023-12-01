@@ -10,7 +10,8 @@ from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.io.rosbag import trajectories_from_rosbag
-from trajectopy_core.report import render_report, write_report
+from trajectopy_core.report.single import render_single_report
+from trajectopy_core.report.utils import write_report
 
 from trajectopy.managers.requests import (
     FileRequest,
@@ -165,16 +166,16 @@ class FileManager(QObject):
                 if isinstance(entry, entry_type):
                     return entry
 
-        abs_dev_entry: AbsoluteDeviationEntry = get(AbsoluteDeviationEntry)
-        rel_dev_entry: Union[RelativeDeviationEntry, None] = get(RelativeDeviationEntry)
+        # abs_dev_entry: AbsoluteDeviationEntry = get(AbsoluteDeviationEntry)
+        # rel_dev_entry: Union[RelativeDeviationEntry, None] = get(RelativeDeviationEntry)
 
-        ate_result = abs_dev_entry.deviations
-        rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
+        # ate_result = abs_dev_entry.deviations
+        # rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
 
-        report = render_report(
-            ate_result=ate_result,
-            rpe_result=rpe_result,
-            mm=request.report_settings["unit"] == "mm",
-            max_data_size=request.report_settings["max_data_size"],
-        )
-        write_report(report_text=report, output_file=request.file_list[0])
+        # report = render_single_report(
+        #     ate_result=ate_result,
+        #     rpe_result=rpe_result,
+        #     mm=request.report_settings["unit"] == "mm",
+        #     max_data_size=request.report_settings["max_data_size"],
+        # )
+        # write_report(report_text=report, output_file=request.file_list[0])

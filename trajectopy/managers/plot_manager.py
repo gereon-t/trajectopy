@@ -10,7 +10,12 @@ from typing import Callable, Dict
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
-from trajectopy_core.plotting.settings import PlotSettings
+from trajectopy_core.report.alignment import render_heatmaps
+from trajectopy_core.report.multi import render_multi_report
+from trajectopy_core.report.single import render_single_report
+from trajectopy_core.report.trajectory import render_trajectories
+from trajectopy_core.report.utils import show_report
+from trajectopy_core.settings.report import ReportSettings
 
 from trajectopy.managers.requests import (
     PlotRequest,
@@ -20,7 +25,6 @@ from trajectopy.managers.requests import (
     generic_request_handler,
 )
 from trajectopy.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
-from trajectopy.views.plot_tabs import PlotTabs
 
 logger = logging.getLogger("root")
 
@@ -46,7 +50,7 @@ class PlotManager(QObject):
 
     def __init__(self, parent) -> None:
         super().__init__(parent=parent)
-        self.plot_settings = PlotSettings()
+        self.report_settings = ReportSettings()
         self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
             PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
             PlotRequestType.SINGLE_ABS_DEVIATIONS: self.plot_selected_abs_deviations,
@@ -64,12 +68,12 @@ class PlotManager(QObject):
         generic_request_handler(self, request, passthrough_request=True)
 
     def update_settings(self, request: PlotRequest) -> None:
-        self.plot_settings = request.plot_settings
+        self.report_settings = request.plot_settings
 
     def plot_selected_trajectories(self, request: PlotRequest) -> None:
         trajectory_list = [entry.trajectory for entry in request.trajectory_selection.entries]
-        plot_tabs = PlotTabs(parent=self.parent())
-        plot_tabs.show_trajectories(trajectory_list, dim=request.dimension)
+        traj_report = render_trajectories(trajectories=trajectory_list, report_settings=self.report_settings)
+        show_report(traj_report, filepath="trajectopy_report.html")
 
     def plot_selected_abs_deviations(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AbsoluteDeviationEntry):
@@ -78,8 +82,8 @@ class PlotManager(QObject):
         if not isinstance((deviations := entry.deviations), ATEResult):
             raise TypeError("Deviations must be of type ATEResult!")
 
-        plot_tabs = PlotTabs(parent=self.parent())
-        plot_tabs.show_single_abs_deviations(devs=deviations, plot_settings=self.plot_settings)
+        report = render_single_report(ate_result=deviations, report_settings=self.report_settings)
+        show_report(report_text=report, filepath="trajectopy_report.html")
 
     def plot_trajectory_laps(self, request: PlotRequest) -> None:
         """
@@ -98,28 +102,28 @@ class PlotManager(QObject):
             )
             return
 
-        plot_tabs = PlotTabs(parent=self.parent())
-        plot_tabs.show_trajectories(traj_list)
+        traj_report = render_trajectories(trajectories=traj_list, report_settings=self.report_settings)
+        show_report(traj_report, filepath="trajectopy_report.html")
 
     def plot_multi_abs_deviations(self, request: PlotRequest) -> None:
         """Plot multiple absolute deviations."""
-        plot_tabs = PlotTabs(parent=self.parent())
         deviation_list = [
             entry.deviations
             for entry in request.result_selection.entries
             if (isinstance(entry, AbsoluteDeviationEntry) and isinstance(entry.deviations, ATEResult))
         ]
-        plot_tabs.show_multi_abs_deviations(deviation_list=deviation_list, plot_settings=self.plot_settings)
+        multi_report = render_multi_report(ate_results=deviation_list)
+        show_report(report_text=multi_report, filepath="trajectopy_report.html")
 
     def plot_multi_rel_deviations(self, request: PlotRequest) -> None:
         """Plot multiple relative deviations."""
-        plot_tabs = PlotTabs(parent=self.parent())
         deviation_list = [
             entry.deviations
             for entry in request.result_selection.entries
             if (isinstance(entry, RelativeDeviationEntry) and isinstance(entry.deviations, RPEResult))
         ]
-        plot_tabs.show_multi_rel_deviations(devs=deviation_list)
+        multi_report = render_multi_report(rpe_results=deviation_list)
+        show_report(report_text=multi_report, filepath="trajectopy_report.html")
 
     def plot_deviation_laps(self, request: PlotRequest) -> None:
         """
@@ -133,21 +137,18 @@ class PlotManager(QObject):
         if not isinstance((deviations := entry.deviations), ATEResult):
             raise TypeError("Deviations must be of type ATEResult!")
 
-        plot_tabs = PlotTabs(parent=self.parent())
         deviations_list = deviations.divide_into_laps()
 
         if deviations_list is None:
             raise ValueError("Failed to divide deviations into laps!")
 
-        plot_tabs.show_multi_abs_deviations(
-            deviation_list=deviations_list,
-            plot_settings=self.plot_settings,
-        )
+        multi_report = render_multi_report(ate_results=deviations_list)
+        show_report(report_text=multi_report, filepath="trajectopy_report.html")
 
     def plot_correlation(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AlignmentEntry):
             raise TypeError("Entry must be of type AlignmentEntry!")
 
-        estimated_parameters = entry.estimated_parameters
-        plot_tabs = PlotTabs(parent=self.parent())
-        plot_tabs.show_estimation(estimated_parameters=estimated_parameters)
+        report = render_heatmaps(alignment_parameters=entry.estimated_parameters, name=entry.name)
+
+        show_report(report_text=report, filepath="trajectopy_report.html")

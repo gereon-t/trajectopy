@@ -20,7 +20,6 @@ from trajectopy.models.result_model import ResultTableModel
 from trajectopy.models.trajectory_model import TrajectoryTableModel
 from trajectopy.path import VERSION_FILE_PATH
 from trajectopy.views.about_window import AboutGUI
-from trajectopy.views.plot_settings_window import PlotSettingsGUI
 from trajectopy.views.progress_window import ProgressWindow
 from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
@@ -55,7 +54,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
-        self.plot_settings_gui = PlotSettingsGUI(parent=self)
         self.plot_manager = PlotManager(parent=self)
 
         if not single_thread:
@@ -98,10 +96,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         session_menu.addAction(save_session_action)
         menubar.addMenu(session_menu)
 
-        plot_settings_action = QAction("Plot Settings", parent=self)
-        plot_settings_action.triggered.connect(self.handle_show_plot_settings)
-        menubar.addAction(plot_settings_action)
-
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
@@ -122,14 +116,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_trajectory_manager_connections()
         self.setup_result_table_connections()
         self.setup_trajectory_table_connections()
-        self.setup_plot_settings_gui_connections()
 
     def setup_plot_manager_connections(self):
         self.plot_manager.ui_request.connect(self.ui_manager.handle_request)
-
-    def setup_plot_settings_gui_connections(self):
-        self.plot_settings_gui.ui_request.connect(self.ui_manager.handle_request)
-        self.plot_settings_gui.plot_request.connect(self.plot_manager.handle_request)
 
     def setup_trajectory_table_connections(self):
         self.trajectory_table_model.file_request.connect(self.file_manager.handle_request)
@@ -151,7 +140,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setup_session_manager_connections(self):
         self.session_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
-        self.session_manager.plot_settings_request.connect(self.plot_settings_gui.handle_request)
         self.session_manager.file_request.connect(self.file_manager.handle_request)
         self.session_manager.ui_request.connect(self.ui_manager.handle_request)
 
@@ -199,7 +187,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def handle_show_plot_settings(self) -> None:
-        self.plot_settings_gui.set_settings(self.plot_manager.plot_settings)
+        self.plot_settings_gui.set_settings(self.plot_manager.report_settings)
         self.plot_settings_gui.show()
 
     @QtCore.pyqtSlot()

@@ -10,10 +10,6 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from rotationset import RotationSet
-from spatialsorter import sort_mls
-from trajectopy_approx.cubic_approximation import piecewise_cubic
-from trajectopy_approx.rot_approximation import rot_average_window
 from trajectopy_core.alignment.actions import (
     adopt_first_orientation,
     adopt_first_pose,
@@ -21,8 +17,12 @@ from trajectopy_core.alignment.actions import (
     align_trajectories,
     apply_alignment,
 )
+from trajectopy_core.approximation.cubic_approximation import piecewise_cubic
+from trajectopy_core.approximation.rot_approximation import rot_average_window
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
-from trajectopy_core.evaluation.matching import match_trajectories, rough_timestamp_matching
+from trajectopy_core.matching import match_trajectories, rough_timestamp_matching
+from trajectopy_core.rotationset import RotationSet
+from trajectopy_core.spatialsorter import sort_mls
 
 from trajectopy.managers.requests import (
     ResultModelRequest,

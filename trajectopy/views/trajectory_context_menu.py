@@ -8,7 +8,7 @@ import logging
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
-from trajectopy_core.evaluation.settings import MatchingMethod
+from trajectopy_core.settings.matching import MatchingMethod
 
 from trajectopy.managers.requests import (
     PlotRequest,

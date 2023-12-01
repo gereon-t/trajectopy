@@ -16,13 +16,12 @@ from typing import Dict, Tuple, Union
 import numpy as np
 from trajectopy_core.alignment.parameters import AlignmentParameters, SensorRotationParameters
 from trajectopy_core.alignment.result import AlignmentResult
-from trajectopy_core.alignment.settings import AlignmentEstimationSettings
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
 from trajectopy_core.io.header import HeaderData
+from trajectopy_core.settings.alignment import AlignmentEstimationSettings
+from trajectopy_core.settings.processing import ProcessingSettings
 from trajectopy_core.trajectory import Trajectory
-
-from trajectopy.models.processing_settings import ProcessingSettings
 
 logger = logging.getLogger("root")
 
@@ -118,7 +117,7 @@ class TrajectoryEntry(Entry):
         trajectory = Trajectory.from_file(str(trajectory_filename))
         if settings_filename.is_file():
             logger.info("Using existing settings file: %s", settings_filename)
-            traj_settings = ProcessingSettings.from_yaml(str(settings_filename))
+            traj_settings = ProcessingSettings.from_file(str(settings_filename))
         else:
             logger.info(
                 "No settings file found. Settings can be provided by storing a yaml file with the same name in the same directory."

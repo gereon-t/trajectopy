@@ -5,10 +5,10 @@ Gereon Tombrink, 2023
 mail@gtombrink.de
 """
 import logging
+from typing import Any, Dict, Tuple
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.utils.datahandling import merge_dicts
 
 from trajectopy.managers.requests import (
     FileRequest,
@@ -32,6 +32,26 @@ from trajectopy.views.result_selection_window import AlignmentSelector
 from trajectopy.views.settings_window import SettingsGUI
 
 logger = logging.getLogger("root")
+
+
+def merge_dicts(dicts: Tuple[Dict[str, str], ...]):
+    """
+    Merges multiple dictionaries into a single dictionary, where each key in the merged dictionary
+    corresponds to a list of values from each input dictionary.
+
+    Args:
+        dicts (Tuple[dict]): A tuple of dictionaries to be merged.
+
+    Returns:
+        dict: A dictionary containing the merged key-value pairs.
+    """
+    merged_dict: Dict[Any, Any] = {}
+    for i, d in enumerate(dicts):
+        for k, v in d.items():
+            if k not in merged_dict:
+                merged_dict[k] = ["-"] * len(dicts)
+            merged_dict[k][i] = v
+    return merged_dict
 
 
 class UIManager(QObject):
