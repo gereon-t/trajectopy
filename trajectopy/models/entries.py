@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Dict, Tuple, Union
 
 import numpy as np
-from trajectopy_core.alignment.parameters import AlignmentParameters, SensorRotationParameters
+from trajectopy_core.alignment.parameters import AlignmentParameters
 from trajectopy_core.alignment.result import AlignmentResult
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
@@ -267,14 +267,10 @@ class AbsoluteDeviationEntry(DeviationsEntry):
     """Class representing a absolute deviation entry in the result model."""
 
     deviations: ATEResult
-    state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
-        with open(filename, "a", newline="\n", encoding="utf-8") as file:
-            file.write(f"#name {self.name}\n")
-            file.write(f"#sorting {str(self.deviations.trajectory.sorting)}\n")
-        self.deviations.to_dataframe().to_csv(filename, header=False, index=False, mode="a", float_format="%.12f")
+        self.deviations.to_file(filename)
 
     @classmethod
     def from_file(cls, filename: str) -> "AbsoluteDeviationEntry":
@@ -292,8 +288,6 @@ class RelativeDeviationEntry(DeviationsEntry):
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
-        with open(filename, "a", newline="\n", encoding="utf-8") as file:
-            file.write(f"#name {self.name}\n")
         self.deviations.to_file(filename)
 
     @classmethod
@@ -353,32 +347,14 @@ class AlignmentEntry(ResultEntry):
             raise ValueError("No estimated parameters available!")
 
         super().to_file(filename=filename)
-
-        with open(filename, "a", newline="\n", encoding="utf-8") as file:
-            file.write(f"#name {self.name}\n")
-
-        self.alignment_result.position_parameters.to_dataframe().to_csv(
-            filename, header=False, index=False, mode="a", float_format="%.15f"
-        )
-        self.alignment_result.rotation_parameters.to_file(filename=filename)
+        self.alignment_result.to_file(filename=filename)
 
     @classmethod
     def from_file(cls, filename: str) -> "AlignmentEntry":
         """Creates a new AlignmentEntry from a file."""
-        header_data = HeaderData.from_file(filename)
-        estimated_parameters = AlignmentParameters.from_file(filename)
-        sensor_rot_parameters = SensorRotationParameters.from_file(filename)
-        alignment_entry = cls(
-            alignment_result=AlignmentResult(
-                name=str(header_data.data.get("name", "Alignment")),
-                position_parameters=estimated_parameters,
-                estimation_of=AlignmentEstimationSettings.from_bool_list(
-                    estimated_parameters.enabled_bool_list + sensor_rot_parameters.enabled_bool_list
-                ),
-                rotation_parameters=sensor_rot_parameters,
-            ),
-        )
-        alignment_entry.set_id(entry_id=header_data.id)
+        alignment_result = AlignmentResult.from_file(filename)
+        alignment_entry = cls(alignment_result=alignment_result)
+        alignment_entry.set_id(entry_id=HeaderData.from_file(filename).id)
         return alignment_entry
 
 

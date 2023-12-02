@@ -43,6 +43,9 @@ class SessionManager(QObject):
     ui_request = pyqtSignal(UIRequest)
     file_request = pyqtSignal(FileRequest)
     operation_finished = pyqtSignal()
+    report_settings_export_request = pyqtSignal(str)
+    report_settings_import_request = pyqtSignal(str)
+    report_settings_reset_request = pyqtSignal()
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -59,6 +62,7 @@ class SessionManager(QObject):
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
         self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.RESET))
+        self.report_settings_reset_request.emit()
         logger.info("Cleared application and started a new session.")
 
     def import_session(self, request: SessionManagerRequest) -> None:
@@ -81,6 +85,7 @@ class SessionManager(QObject):
                 file_list=[os.path.join(request.file_path, "result_order.txt")],
             )
         )
+        self.report_settings_import_request.emit(request.file_path)
 
     def export_session(self, request: SessionManagerRequest) -> None:
         os.makedirs(request.file_path, exist_ok=True)
@@ -90,3 +95,4 @@ class SessionManager(QObject):
         self.result_model_request.emit(
             ResultModelRequest(type=ResultModelRequestType.EXPORT_ALL, file_path=request.file_path)
         )
+        self.report_settings_export_request.emit(request.file_path)

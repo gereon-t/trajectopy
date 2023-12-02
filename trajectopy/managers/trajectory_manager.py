@@ -643,7 +643,7 @@ class TrajectoryManager(QObject):
 
         comparison_result = compare_trajectories_absolute(traj_test=traj_test, traj_ref=traj_ref)
 
-        return (AbsoluteDeviationEntry(deviations=comparison_result, state=entry_pair.entry.state),)
+        return (AbsoluteDeviationEntry(deviations=comparison_result),)
 
     @staticmethod
     def operation_compare_rel(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:

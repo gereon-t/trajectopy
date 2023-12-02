@@ -5,6 +5,7 @@ Gereon Tombrink, 2023
 mail@gtombrink.de
 """
 import logging
+import os
 from typing import Union
 
 from PyQt6 import QtCore, QtWidgets
@@ -151,6 +152,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
         self.session_manager.file_request.connect(self.file_manager.handle_request)
         self.session_manager.ui_request.connect(self.ui_manager.handle_request)
+        self.session_manager.report_settings_export_request.connect(self.handle_report_settings_export)
+        self.session_manager.report_settings_import_request.connect(self.handle_report_settings_import)
+        self.session_manager.report_settings_reset_request.connect(self.handle_report_settings_reset)
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
@@ -214,6 +218,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def handle_export_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.EXPORT_SESSION))
+
+    @QtCore.pyqtSlot(str)
+    def handle_report_settings_export(self, file_path: str) -> None:
+        self.report_settings.to_file(os.path.join(file_path, "report_settings.json"))
+
+    @QtCore.pyqtSlot(str)
+    def handle_report_settings_import(self, file_path: str) -> None:
+        self.report_settings = ReportSettings.from_file(os.path.join(file_path, "report_settings.json"))
+
+    @QtCore.pyqtSlot()
+    def handle_report_settings_reset(self) -> None:
+        self.report_settings = ReportSettings()
 
     @QtCore.pyqtSlot()
     def handle_new_session(self) -> None:

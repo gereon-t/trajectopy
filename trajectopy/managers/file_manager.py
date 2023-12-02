@@ -106,7 +106,7 @@ class FileManager(QObject):
         file_path = Path(file)
         file_name = file_path.stem
         file_directory = file_path.parent
-        settings_file = file_directory / f"{file_name}.yaml"
+        settings_file = file_directory / f"{file_name}.json"
         return Path(file), Path(settings_file)
 
     def write_trajectory(self, request: FileRequest) -> None:

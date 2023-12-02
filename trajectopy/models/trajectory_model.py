@@ -66,7 +66,7 @@ class TrajectoryTableModel(RequestTableModel):
     def export_all(self) -> None:
         for item in self.items:
             trajectory_filename = os.path.join(self.request.file_path, f"{item.entry_id}.traj")
-            settings_filename = os.path.join(self.request.file_path, f"{item.entry_id}.yaml")
+            settings_filename = os.path.join(self.request.file_path, f"{item.entry_id}.json")
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_TRAJ,
