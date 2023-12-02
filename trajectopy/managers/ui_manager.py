@@ -27,9 +27,8 @@ from trajectopy.models.entries import AlignmentEntry
 from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.views.properties_window import PropertiesGUI
-from trajectopy.views.report_settings import ReportSettingsGUI
 from trajectopy.views.result_selection_window import AlignmentSelector
-from trajectopy.views.settings_window import SettingsGUI
+from trajectopy.views.json_settings_view import JSONViewer
 
 logger = logging.getLogger("root")
 
@@ -129,7 +128,7 @@ class UIManager(QObject):
         property_window.show()
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
-        settings_window = SettingsGUI(
+        settings_window = JSONViewer(
             parent=self.parent(),
             trajectory_entry=request.trajectory_selection.entries[0],
         )
