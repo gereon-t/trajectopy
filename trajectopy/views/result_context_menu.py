@@ -53,7 +53,6 @@ class ResultContextMenu(QtWidgets.QMenu):
         self.property_context()
         self.edit_context()
         self.plot_context()
-        self.report_context()
         self.exec(QCursor.pos())
 
     def property_context(self) -> None:
@@ -68,35 +67,6 @@ class ResultContextMenu(QtWidgets.QMenu):
         )
         self.addAction(property_action)
 
-    def report_context(self) -> None:
-        selection = self.get_selection().entries
-
-        def len_of_type(entry_type):
-            return len([entry for entry in selection if isinstance(entry, entry_type)])
-
-        if len(selection) > 2:
-            return
-
-        if not all(isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in selection):
-            return
-
-        if len_of_type(AbsoluteDeviationEntry) != 1:
-            return
-
-        if len_of_type(RelativeDeviationEntry) > 1:
-            return
-
-        report_action = QAction("Generate HTML Report", self)
-        report_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EXPORT_REPORT,
-                    result_selection=self.get_selection(),
-                )
-            )
-        )
-        self.addAction(report_action)
-
     def plot_context(self):
         single_selection = len(self.get_selection().entries) == 1
 
@@ -104,24 +74,15 @@ class ResultContextMenu(QtWidgets.QMenu):
             return self.plot_single()
 
         # only useful case to plot multiple results is when they are all deviations
-        if all(isinstance(entry, AbsoluteDeviationEntry) for entry in self.get_selection().entries):
+        if all(
+            isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry))
+            for entry in self.get_selection().entries
+        ):
             plot_action = QAction("Plot", self)
             plot_action.triggered.connect(
                 lambda: self.plot_request.emit(
                     PlotRequest(
-                        type=PlotRequestType.MULTI_ABS_DEVIATIONS,
-                        result_selection=self.get_selection(),
-                    )
-                )
-            )
-            self.addAction(plot_action)
-
-        if all(isinstance(entry, RelativeDeviationEntry) for entry in self.get_selection().entries):
-            plot_action = QAction("Plot", self)
-            plot_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.REL_DEVIATIONS,
+                        type=PlotRequestType.MULTI_DEVIATIONS,
                         result_selection=self.get_selection(),
                     )
                 )
@@ -130,34 +91,11 @@ class ResultContextMenu(QtWidgets.QMenu):
 
     def plot_single(self):
         plot_action = QAction("Plot", self)
-        if isinstance(self.get_selection().entries[0], AbsoluteDeviationEntry):
+        if isinstance(self.get_selection().entries[0], (AbsoluteDeviationEntry, RelativeDeviationEntry)):
             plot_action.triggered.connect(
                 lambda: self.plot_request.emit(
                     PlotRequest(
-                        type=PlotRequestType.SINGLE_ABS_DEVIATIONS,
-                        result_selection=self.get_selection(),
-                    )
-                )
-            )
-            self.addAction(plot_action)
-
-            plot_laps_action = QAction("Plot Laps", self)
-            plot_laps_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.DEVIATION_LAPS,
-                        result_selection=self.get_selection(),
-                    )
-                )
-            )
-            if self.get_selection().entries[0].state.sorting_known:
-                self.addAction(plot_laps_action)
-
-        if isinstance(self.get_selection().entries[0], RelativeDeviationEntry):
-            plot_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.REL_DEVIATIONS,
+                        type=PlotRequestType.SINGLE_DEVIATIONS,
                         result_selection=self.get_selection(),
                     )
                 )
@@ -168,7 +106,7 @@ class ResultContextMenu(QtWidgets.QMenu):
             plot_action.triggered.connect(
                 lambda: self.plot_request.emit(
                     PlotRequest(
-                        type=PlotRequestType.CORRELATION,
+                        type=PlotRequestType.ALIGNMENT,
                         result_selection=self.get_selection(),
                     )
                 )

@@ -6,9 +6,7 @@ import logging
 from PyQt6.QtGui import QFont
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt, QCoreApplication
-
-from trajectopy.models.entries import TrajectoryEntry
-from trajectopy_core.settings.processing import ProcessingSettings
+from trajectopy_core.settings.base import Settings
 
 from trajectopy.util import save_file_dialog, show_msg_box
 
@@ -19,12 +17,11 @@ PLOT_MODES = ["lines+markers", "lines", "markers"]
 
 
 class JSONViewer(QtWidgets.QMainWindow):
-    def __init__(self, parent, trajectory_entry: TrajectoryEntry):
+    def __init__(self, parent, settings: Settings, name: str = "Settings Viewer"):
         super().__init__(parent=parent)
         self.form_item_cnt = 0
-
-        self.trajectory_entry = trajectory_entry
-        self.setWindowTitle(f"Processing Settings for: {self.trajectory_entry.name}")
+        self.settings = settings
+        self.setWindowTitle(name)
         self.setup_ui()
         self.update_view()
 
@@ -78,8 +75,12 @@ class JSONViewer(QtWidgets.QMainWindow):
         )
         self.hlayout.addItem(hspacer)
         self.apply_button = QtWidgets.QPushButton("Apply", self)
-        self.apply_button.clicked.connect(self.apply_changes)
+        self.apply_button.clicked.connect(lambda: self.apply_changes(close_after=False))
+        self.apply_and_close_button = QtWidgets.QPushButton("Apply and Close", self)
+        self.apply_and_close_button.clicked.connect(lambda: self.apply_changes(close_after=True))
+
         self.hlayout.addWidget(self.apply_button)
+        self.hlayout.addWidget(self.apply_and_close_button)
 
     def open_file_dialog(self):
         file_dialog = QtWidgets.QFileDialog(self)
@@ -87,7 +88,7 @@ class JSONViewer(QtWidgets.QMainWindow):
         filename, _ = file_dialog.getOpenFileName()
         if filename:
             self.load_json_file(filename)
-            logger.info("Loaded processing settings file %s for trajectory: %s", filename, self.trajectory_entry.name)
+            logger.info("Loaded processing settings file %s", filename)
 
     def remove_items(self):
         for item in self.central_widget.children():
@@ -122,23 +123,26 @@ class JSONViewer(QtWidgets.QMainWindow):
             with open(file, "w", encoding="utf-8") as file:
                 file.write(json_content)
 
-            logger.info("Saved processing settings file %s for trajectory: %s", file.name, self.trajectory_entry.name)
+            logger.info("Saved processing settings file %s", file.name)
         except Exception as e:
             show_msg_box(f"Error saving JSON file: {e}")
 
-    def apply_changes(self):
+    def apply_changes(self, close_after: bool = False):
         try:
             json_content = self.populate_json()
             parsed_json = json.loads(json_content)
 
-            self.trajectory_entry.settings = ProcessingSettings.from_dict(parsed_json)
-            logger.info("Updated processing settings for trajectory: %s", self.trajectory_entry.name)
+            self.settings.update_from_dict(parsed_json)
+
+            logger.info("Updated settings")
+            if close_after:
+                self.close()
         except json.JSONDecodeError as e:
             show_msg_box(f"Error decoding JSON: {e}")
 
     def update_view(self):
         self.remove_items()
-        self.populate_form("root", self.trajectory_entry.settings.to_dict())
+        self.populate_form("root", self.settings.to_dict())
 
     def populate_json(self) -> str:
         """Populate the JSON with the values from the form."""

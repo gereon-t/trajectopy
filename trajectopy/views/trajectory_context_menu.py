@@ -207,7 +207,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
-        self.addMenu(self.view_context_menu)
         property_action = QAction("Properties", self)
         property_action.triggered.connect(
             lambda: self.ui_request.emit(
@@ -217,9 +216,9 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.view_context_menu.addAction(property_action)
+        self.addAction(property_action)
 
-        plot_2d_action = QAction("Trajectory 2D", self)
+        plot_2d_action = QAction("Plot", self)
         plot_2d_action.triggered.connect(
             lambda: self.plot_request.emit(
                 PlotRequest(
@@ -229,33 +228,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.view_context_menu.addAction(plot_2d_action)
-
-        plot_3d_action = QAction("Trajectory 3D", self)
-        plot_3d_action.triggered.connect(
-            lambda: self.plot_request.emit(
-                PlotRequest(
-                    type=PlotRequestType.TRAJECTORIES,
-                    trajectory_selection=self.get_selection(),
-                    dimension=3,
-                )
-            )
-        )
-        self.view_context_menu.addAction(plot_3d_action)
-
-        plot_laps_action = QAction("Trajectory Laps", self)
-        plot_laps_action.triggered.connect(
-            lambda: self.plot_request.emit(
-                PlotRequest(
-                    type=PlotRequestType.TRAJECTORY_LAPS,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        plot_laps_enabled = len(self.get_selection()) == 1 and self.get_selection().entries[0].state.sorting_known
-        plot_laps_action.setEnabled(plot_laps_enabled)
-        if plot_laps_enabled:
-            self.view_context_menu.addAction(plot_laps_action)
+        self.addAction(plot_2d_action)
 
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)

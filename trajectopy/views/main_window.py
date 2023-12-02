@@ -12,7 +12,7 @@ from PyQt6.QtGui import QAction, QCloseEvent
 
 from trajectopy.managers.file_manager import FileManager
 from trajectopy.managers.plot_manager import PlotManager
-from trajectopy.managers.requests import UIRequest, UIRequestType
+from trajectopy.managers.requests import PlotRequest, UIRequest, UIRequestType
 from trajectopy.managers.session_manager import SessionManager
 from trajectopy.managers.trajectory_manager import TrajectoryManager
 from trajectopy.managers.ui_manager import UIManager
@@ -20,9 +20,11 @@ from trajectopy.models.result_model import ResultTableModel
 from trajectopy.models.trajectory_model import TrajectoryTableModel
 from trajectopy.path import VERSION_FILE_PATH
 from trajectopy.views.about_window import AboutGUI
+from trajectopy.views.json_settings_view import JSONViewer
 from trajectopy.views.progress_window import ProgressWindow
 from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
+from trajectopy_core.settings.report import ReportSettings
 
 VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
 YEAR = "2023"
@@ -66,6 +68,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
 
+        self.report_settings = ReportSettings()
+
         self.setup_io_connections()
         self.setup_worker_connections()
         self.setup_progress_connections()
@@ -96,6 +100,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         session_menu.addAction(save_session_action)
         menubar.addMenu(session_menu)
 
+        report_settings_action = QAction("Report Settings", parent=self)
+        report_settings_action.triggered.connect(self.handle_show_report_settings)
+        menubar.addAction(report_settings_action)
+
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
@@ -116,6 +124,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_trajectory_manager_connections()
         self.setup_result_table_connections()
         self.setup_trajectory_table_connections()
+        self.setup_plottings_connections()
 
     def setup_plot_manager_connections(self):
         self.plot_manager.ui_request.connect(self.ui_manager.handle_request)
@@ -154,14 +163,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.resultTableView.result_model_request.connect(self.result_table_model.handle_request)
         self.resultTableView.ui_request.connect(self.ui_manager.handle_request)
         self.resultTableView.file_request.connect(self.file_manager.handle_request)
-        self.resultTableView.plot_request.connect(self.plot_manager.handle_request)
 
     def setup_trajectory_table_view_connections(self):
         self.trajectoryTableView.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.trajectoryTableView.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
         self.trajectoryTableView.ui_request.connect(self.ui_manager.handle_request)
         self.trajectoryTableView.file_request.connect(self.file_manager.handle_request)
-        self.trajectoryTableView.plot_request.connect(self.plot_manager.handle_request)
         self.trajectoryTableView.result_model_request.connect(self.result_table_model.handle_request)
 
     def setup_progress_connections(self):
@@ -170,6 +177,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
+
+    def setup_plottings_connections(self):
+        self.resultTableView.plot_request.connect(self.inject_report_settings)
+        self.trajectoryTableView.plot_request.connect(self.inject_report_settings)
 
     def setup_io_connections(self):
         self.trajectory_manager.update_view.connect(self.refresh)
@@ -186,9 +197,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.result_table_model.layoutChanged.emit()
 
     @QtCore.pyqtSlot()
-    def handle_show_plot_settings(self) -> None:
-        self.plot_settings_gui.set_settings(self.plot_manager.report_settings)
-        self.plot_settings_gui.show()
+    def handle_show_report_settings(self) -> None:
+        viewer = JSONViewer(settings=self.report_settings, parent=self)
+        viewer.show()
+
+    @QtCore.pyqtSlot(PlotRequest)
+    def inject_report_settings(self, plot_request: PlotRequest) -> None:
+        logger.info("Injecting report settings into plot request of type %s", plot_request.type)
+        plot_request.report_settings = self.report_settings
+        self.plot_manager.handle_request(plot_request)
 
     @QtCore.pyqtSlot()
     def handle_import_session(self) -> None:

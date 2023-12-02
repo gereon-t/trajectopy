@@ -32,20 +32,10 @@ class FileRequestType(Enum):
 
 
 class PlotRequestType(Enum):
-    SINGLE_ABS_DEVIATIONS = auto()
-    MULTI_ABS_DEVIATIONS = auto()
-    REL_DEVIATIONS = auto()
+    SINGLE_DEVIATIONS = auto()
+    MULTI_DEVIATIONS = auto()
     TRAJECTORIES = auto()
-    TRAJECTORY_LAPS = auto()
-    DEVIATION_LAPS = auto()
-    UPDATE_SETTINGS = auto()
-    CORRELATION = auto()
-
-
-class PlotSettingsRequestType(Enum):
-    IMPORT_FROM_SESSION = auto()
-    EXPORT_TO_SESSION = auto()
-    RESET = auto()
+    ALIGNMENT = auto()
 
 
 class PropertyModelRequestType(Enum):
@@ -156,12 +146,6 @@ class PlotRequest(DeepCopyRequest):
 
 
 @dataclass
-class PlotSettingsRequest:
-    type: PlotSettingsRequestType
-    file_path: str = ""
-
-
-@dataclass
 class PropertyModelRequest:
     type: PropertyModelRequestType
     file_path: str = ""
@@ -250,4 +234,4 @@ def generic_request_handler(manager: RequestHandler, request: Request, passthrou
         )
     finally:
         manager.operation_finished.emit()
-        logger.debug("%s: Handled request of type %s", manager.__class__.__name__, request.type)
+        logger.info("%s: Handled request of type %s", manager.__class__.__name__, request.type)

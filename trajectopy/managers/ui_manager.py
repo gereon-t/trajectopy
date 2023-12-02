@@ -102,7 +102,6 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
-            UIRequestType.EXPORT_REPORT: self.export_report,
         }
 
     @pyqtSlot(UIRequest)
@@ -130,7 +129,7 @@ class UIManager(QObject):
     def show_trajectory_settings(self, request: UIRequest) -> None:
         settings_window = JSONViewer(
             parent=self.parent(),
-            trajectory_entry=request.trajectory_selection.entries[0],
+            settings=request.trajectory_selection.entries[0].settings,
         )
         settings_window.show()
 
@@ -262,24 +261,3 @@ class UIManager(QObject):
             )
         )
         alignment_window.show()
-
-    def export_report(self, _: UIRequest) -> None:
-        settings_window = ReportSettingsGUI()
-
-        if settings_window.exec():
-            unit = settings_window.unit_combo.currentText()
-            max_data_size = settings_window.size_spinbox.value()
-
-            logger.info("Selected unit: %s and max data size: %s", unit, max_data_size)
-
-            if selected_file := save_file_dialog(None, file_filter="HTML Report (*.html)"):
-                self.file_request.emit(
-                    FileRequest(
-                        type=FileRequestType.WRITE_REPORT,
-                        file_list=[selected_file],
-                        result_selection=self.request.result_selection,
-                        report_settings={"unit": unit, "max_data_size": max_data_size},
-                    )
-                )
-            else:
-                return

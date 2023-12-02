@@ -14,8 +14,6 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy.managers.requests import (
     FileRequest,
     FileRequestType,
-    PlotSettingsRequest,
-    PlotSettingsRequestType,
     ResultModelRequest,
     ResultModelRequestType,
     SessionManagerRequest,
@@ -42,7 +40,6 @@ class SessionManager(QObject):
 
     trajectory_model_request = pyqtSignal(TrajectoryModelRequest)
     result_model_request = pyqtSignal(ResultModelRequest)
-    plot_settings_request = pyqtSignal(PlotSettingsRequest)
     ui_request = pyqtSignal(UIRequest)
     file_request = pyqtSignal(FileRequest)
     operation_finished = pyqtSignal()
@@ -62,7 +59,6 @@ class SessionManager(QObject):
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
         self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.RESET))
-        self.plot_settings_request.emit(PlotSettingsRequest(type=PlotSettingsRequestType.RESET))
         logger.info("Cleared application and started a new session.")
 
     def import_session(self, request: SessionManagerRequest) -> None:
@@ -86,13 +82,6 @@ class SessionManager(QObject):
             )
         )
 
-        self.plot_settings_request.emit(
-            PlotSettingsRequest(
-                type=PlotSettingsRequestType.IMPORT_FROM_SESSION,
-                file_path=request.file_path,
-            )
-        )
-
     def export_session(self, request: SessionManagerRequest) -> None:
         os.makedirs(request.file_path, exist_ok=True)
         self.trajectory_model_request.emit(
@@ -100,10 +89,4 @@ class SessionManager(QObject):
         )
         self.result_model_request.emit(
             ResultModelRequest(type=ResultModelRequestType.EXPORT_ALL, file_path=request.file_path)
-        )
-        self.plot_settings_request.emit(
-            PlotSettingsRequest(
-                type=PlotSettingsRequestType.EXPORT_TO_SESSION,
-                file_path=request.file_path,
-            )
         )

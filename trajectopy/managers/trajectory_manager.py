@@ -392,7 +392,9 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        entry_pair.entry.trajectory.set_sorting(sorting=entry_pair.request.sorting)
+        entry_pair.entry.trajectory.sort_by = (
+            "time" if entry_pair.entry.trajectory.sort_by == "arc_lengths" else "arc_lengths"
+        )
         return (entry_pair.entry,)
 
     @staticmethod
@@ -669,7 +671,7 @@ class TrajectoryManager(QObject):
         comparison_result = compare_trajectories_relative(
             traj_test=traj_test,
             traj_ref=traj_ref,
-            settings=entry_pair.entry.settings.rel_comparison,
+            settings=entry_pair.entry.settings.relative_comparison,
         )
 
         return (RelativeDeviationEntry(deviations=comparison_result),)
@@ -768,12 +770,16 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: A new trajectory entry with the aligned trajectory.
         """
-        entry_pair.entry.trajectory.apply_alignment(entry_pair.request.alignment.alignment_result)
+        apply_alignment(
+            trajectory=entry_pair.entry.trajectory, alignment_result=entry_pair.request.alignment.alignment_result
+        )
+        entry_pair.entry.state.aligned = True
         new_entry = TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=entry_pair.entry.trajectory,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         )
         logger.info("Applied alignment to trajectory %s", entry_pair.entry.name)
         return (new_entry,)
@@ -802,12 +808,14 @@ class TrajectoryManager(QObject):
         )
 
         traj_aligned = adopt_first_pose(traj_from=traj_test, traj_to=traj_ref)
+        entry_pair.entry.state.aligned = True
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=traj_aligned,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         ), TrajectoryEntry(
             full_filename=reference_entry.full_filename,
             trajectory=traj_ref,
@@ -836,6 +844,7 @@ class TrajectoryManager(QObject):
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
         )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -843,6 +852,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -867,6 +877,7 @@ class TrajectoryManager(QObject):
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
         )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -874,6 +885,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -932,6 +944,7 @@ class TrajectoryManager(QObject):
             traj_test=entry_pair.entry.trajectory, traj_ref=reference_entry.trajectory
         )
         entry_pair.entry.trajectory.tstamps += time_delay
+        entry_pair.entry.state.matched = True
 
         return (
             TrajectoryEntry(
@@ -939,6 +952,7 @@ class TrajectoryManager(QObject):
                 trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -963,15 +977,19 @@ class TrajectoryManager(QObject):
             traj_ref=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
         )
+        reference_entry.state.matched = True
+        entry_pair.entry.state.matched = True
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=traj_test,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         ), TrajectoryEntry(
             full_filename=reference_entry.full_filename,
             trajectory=traj_ref,
             settings=reference_entry.settings,
             group_id=reference_entry.group_id,
+            state=reference_entry.state,
         )
