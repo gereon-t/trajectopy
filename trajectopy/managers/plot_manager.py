@@ -87,8 +87,11 @@ class PlotManager(QObject):
             logger.error("Too many deviations selected for single report!")
             return
 
+        ate_result = ate_results[0] if ate_results else None
+        rpe_result = rpe_results[0] if rpe_results else None
+
         report = render_single_report(
-            ate_result=ate_results[0], rpe_result=rpe_results[0], report_settings=request.report_settings
+            ate_result=ate_result, rpe_result=rpe_result, report_settings=request.report_settings
         )
         show_report(report_text=report, filepath=self.report_path)
 
@@ -102,7 +105,9 @@ class PlotManager(QObject):
             return
 
         multi_report = render_multi_report(
-            ate_results=ate_results, rpe_results=rpe_results, report_settings=request.report_settings
+            ate_results=ate_results if ate_results else None,
+            rpe_results=rpe_results if rpe_results else None,
+            report_settings=request.report_settings,
         )
         show_report(report_text=multi_report, filepath=self.report_path)
 
