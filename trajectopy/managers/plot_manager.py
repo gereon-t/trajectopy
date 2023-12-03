@@ -34,13 +34,10 @@ class PlotManager(QObject):
     Manager for handling plot requests.
 
     Possible requests:
-    - Plot selected trajectories
-    - Plot selected deviations
-    - Plot trajectory laps
+    - Plot trajectories
+    - Plot single deviations
     - Plot multi deviations
-    - Plot deviation laps
-    - Update settings
-    - Plot correlation
+    - Plot alignment
 
     """
 
@@ -55,7 +52,7 @@ class PlotManager(QObject):
             PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
             PlotRequestType.SINGLE_DEVIATIONS: self.plot_single_deviations,
             PlotRequestType.MULTI_DEVIATIONS: self.plot_multi_deviations,
-            PlotRequestType.ALIGNMENT: self.plot_correlation,
+            PlotRequestType.ALIGNMENT: self.plot_alignment,
         }
 
     @pyqtSlot(PlotRequest)
@@ -111,7 +108,7 @@ class PlotManager(QObject):
         )
         show_report(report_text=multi_report, filepath=self.report_path)
 
-    def plot_correlation(self, request: PlotRequest) -> None:
+    def plot_alignment(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AlignmentEntry):
             raise TypeError("Entry must be of type AlignmentEntry!")
 

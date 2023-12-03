@@ -205,6 +205,20 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.edit_context_menu.addAction(export_action)
 
+        if not self.get_selection().entries[0].state.sorting_known:
+            return
+
+        switch_sorting_action = QAction("Switch Sorting", self)
+        switch_sorting_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.SWITCH_SORTING,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.edit_context_menu.addAction(switch_sorting_action)
+
     def view_context(self) -> None:
         """View Sub-Context Menu"""
         property_action = QAction("Properties", self)
@@ -273,6 +287,23 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.action_context_menu.addAction(apply_alignment_action)
+
+        if not self.get_selection().reference_is_set:
+            return
+
+        if self.get_selection().reference_entry.trajectory.pos.local_transformer is None:
+            return
+
+        epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
+        epsg_to_ref_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.EPSG_TO_REF,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(epsg_to_ref_action)
 
     def align_context(self) -> QtWidgets.QMenu:
         self.align_with_reference_sub_menu.setEnabled(self.get_selection().reference_is_set)

@@ -8,7 +8,6 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.alignment.actions import (
     adopt_first_orientation,
@@ -77,15 +76,12 @@ class TrajectoryManager(QObject):
         TrajectoryManagerRequestType.APPROXIMATE: Approximates the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.COMPARE: Compares the selected trajectory to the reference trajectory.
         TrajectoryManagerRequestType.INTERPOLATE: Interpolates the trajectory to match the timestamps of the reference trajectory.
-        TrajectoryManagerRequestType.INTERPOLATE_GRID: Interpolates the trajectory to a grid with a specified time step.
         TrajectoryManagerRequestType.MERGE: Merges all selected trajectories into one trajectory.
         TrajectoryManagerRequestType.INTERSECT: Intersects the trajectory with the reference trajectory, keeping only the poses that have a corresponding pose in the reference trajectory.
         TrajectoryManagerRequestType.ADAPT_SAMPLING: Combination of intersection and interpolation. After this, the trajectory will be present in the same time intervals as the reference and will have the same sampling. However, this does not mean that they will have exactely the same number of poses.
         TrajectoryManagerRequestType.MATCH_TIMESTAMPS: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair`. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
         TrajectoryManagerRequestType.SORT: Sorts the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.SWITCH_SORTING: Changes the sorting of the trajectory.
-        TrajectoryManagerRequestType.ADAPT_ORIENTATIONS: Adopts the orientation of the current trajectory to the reference trajectory.
-        TrajectoryManagerRequestType.ROUGH_TIMESTAMPS_MATCHING: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair` roughly. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
 
 
     Methods:
@@ -159,11 +155,6 @@ class TrajectoryManager(QObject):
                 inplace=False,
                 apply_to_reference=False,
             ),
-            TrajectoryManagerRequestType.INTERPOLATE_GRID: lambda: self.handle_trajectory_operation(
-                operation=self.operation_interpolate_to_grid,
-                inplace=False,
-                apply_to_reference=True,
-            ),
             TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
             TrajectoryManagerRequestType.INTERSECT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_intersect,
@@ -187,16 +178,6 @@ class TrajectoryManager(QObject):
                 operation=self.operation_switch_sorting,
                 inplace=True,
                 apply_to_reference=True,
-            ),
-            TrajectoryManagerRequestType.ADAPT_ORIENTATIONS: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adopt_orientations,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.ROUGH_TIMESTAMPS_MATCHING: lambda: self.handle_trajectory_operation(
-                operation=self.operation_match_timestamps_roughly,
-                inplace=False,
-                apply_to_reference=False,
             ),
             TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
                 operation=self.operation_match, inplace=False, apply_to_reference=False
@@ -445,34 +426,6 @@ class TrajectoryManager(QObject):
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
                 trajectory=entry_pair.entry.trajectory.interpolate(reference_entry.trajectory.tstamps),
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_interpolate_to_grid(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Interpolates the trajectory to a grid with a specified time step.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The trajectory entry pair containing the trajectory to be interpolated.
-
-        Returns:
-            TrajectoryEntry: The interpolated trajectory entry.
-        """
-        grid = np.arange(
-            start=entry_pair.entry.trajectory.tstamps[0],
-            stop=entry_pair.entry.trajectory.tstamps[-1],
-            step=entry_pair.request.grid,
-        )
-        entry_pair.entry.trajectory.interpolate(tstamps=grid)
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
             ),
@@ -886,41 +839,6 @@ class TrajectoryManager(QObject):
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
                 state=entry_pair.entry.state,
-            ),
-        )
-
-    @staticmethod
-    def operation_adopt_orientations(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Adopts the orientations of the reference trajectory to the current trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The entry pair containing the current trajectory and the reference
-                trajectory.
-
-        Returns:
-            TrajectoryEntry: A new trajectory entry with the adopted orientations.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        reference_trajectory = reference_entry.trajectory
-        current_trajectory = entry_pair.entry.trajectory
-
-        current_trajectory.same_sampling(reference_trajectory)
-        current_trajectory.match_timestamps(reference_trajectory.tstamps)
-        reference_trajectory.match_timestamps(current_trajectory.tstamps)
-
-        current_trajectory.rot = reference_entry.trajectory.rot
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=current_trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
             ),
         )
 

@@ -59,7 +59,6 @@ class UIManager(QObject):
 
     Possible requests:
     - EPSG selection
-    - Grid selection
     - Alignment selection
     - Import trajectory
     - Import result
@@ -88,7 +87,6 @@ class UIManager(QObject):
         super().__init__(parent)
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_SELECTION: self.epsg_input,
-            UIRequestType.GRID_SELECTION: self.grid_input,
             UIRequestType.ALIGNMENT_SELECTION: self.alignment_selection,
             UIRequestType.IMPORT_TRAJ: self.trajectory_import_dialog,
             UIRequestType.IMPORT_RES: self.result_import_dialog,
@@ -226,27 +224,6 @@ class UIManager(QObject):
                 type=TrajectoryManagerRequestType.CHANGE_ESPG,
                 selection=request.trajectory_selection,
                 target_epsg=epsg,
-            )
-        )
-
-    def grid_input(self, request: UIRequest) -> None:
-        grid, ok = QtWidgets.QInputDialog.getDouble(
-            None,
-            "Please enter a grid size in seconds",
-            "Grid size [s]:",
-            min=0.0001,
-            value=0.01,
-            decimals=4,
-        )
-
-        if not ok or grid is None:
-            return
-
-        self.trajectory_manager_request.emit(
-            TrajectoryManagerRequest(
-                type=TrajectoryManagerRequestType.INTERPOLATE_GRID,
-                selection=request.trajectory_selection,
-                grid=grid,
             )
         )
 

@@ -28,7 +28,6 @@ class FileRequestType(Enum):
     WRITE_LIST = auto()
     READ_TRAJ_ORDER = auto()
     READ_RES_ORDER = auto()
-    WRITE_REPORT = auto()
 
 
 class PlotRequestType(Enum):
@@ -133,7 +132,6 @@ class FileRequest(DeepCopyRequest):
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     id_list: List[str] = field(default_factory=list)
-    report_settings: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -234,4 +232,4 @@ def generic_request_handler(manager: RequestHandler, request: Request, passthrou
         )
     finally:
         manager.operation_finished.emit()
-        logger.info("%s: Handled request of type %s", manager.__class__.__name__, request.type)
+        logger.debug("%s: Handled request of type %s", manager.__class__.__name__, request.type)

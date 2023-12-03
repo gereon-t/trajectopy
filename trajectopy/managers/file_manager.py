@@ -40,7 +40,6 @@ class FileManager(QObject):
     - Read result order
     - Read trajectory order
     - Write list
-    - Write HTML report
 
     """
 
