@@ -16,12 +16,10 @@ from trajectopy_core.alignment.actions import (
     align_trajectories,
     apply_alignment,
 )
-from trajectopy_core.approximation.cubic_approximation import piecewise_cubic
-from trajectopy_core.approximation.rot_approximation import rot_average_window
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy_core.matching import match_trajectories, rough_timestamp_matching
-from trajectopy_core.rotationset import RotationSet
-from trajectopy_core.spatialsorter import sort_mls
+from trajectopy_core.pipelines import approximate, ate, rpe, sort_spatially
+from trajectopy_core.spatialsorter import Sorting
 
 from trajectopy.managers.requests import (
     ResultModelRequest,
@@ -82,6 +80,8 @@ class TrajectoryManager(QObject):
         TrajectoryManagerRequestType.MATCH_TIMESTAMPS: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair`. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
         TrajectoryManagerRequestType.SORT: Sorts the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.SWITCH_SORTING: Changes the sorting of the trajectory.
+        TrajectoryManagerRequestType.ATE: Computes the absolute trajectory error between the selected trajectory and the reference trajectory.
+        TrajectoryManagerRequestType.RPE: Computes the relative pose error between the selected trajectory and the reference trajectory.
 
 
     Methods:
@@ -181,6 +181,12 @@ class TrajectoryManager(QObject):
             ),
             TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
                 operation=self.operation_match, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.ATE: lambda: self.handle_trajectory_operation(
+                operation=self.operation_ate, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.RPE: lambda: self.handle_trajectory_operation(
+                operation=self.operation_rpe, inplace=False, apply_to_reference=False
             ),
         }
 
@@ -373,8 +379,8 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        entry_pair.entry.trajectory.sort_by = (
-            "time" if entry_pair.entry.trajectory.sort_by == "arc_lengths" else "arc_lengths"
+        entry_pair.entry.trajectory.sorting = (
+            Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.ARC_LENGTH else Sorting.ARC_LENGTH
         )
         return (entry_pair.entry,)
 
@@ -511,18 +517,13 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The sorted trajectory.
         """
-        selected_trajectory = entry_pair.entry.trajectory
-        settings = entry_pair.entry.settings.sorting
         logger.info("Sorting trajectory ...")
-        indices, arc_lengths = sort_mls(xyz_unsorted=selected_trajectory.pos.xyz, settings=settings)
-        selected_trajectory.apply_index(indices)
-        selected_trajectory.arc_lengths = arc_lengths
-        selected_trajectory.sort_by = "arc_lengths"
+        sort_spatially(trajectory=entry_pair.entry.trajectory, sorting_settings=entry_pair.entry.settings.sorting)
         entry_pair.entry.state.sorting_known = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=selected_trajectory,
+                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
                 state=entry_pair.entry.state,
@@ -542,29 +543,14 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The approximated trajectory.
         """
-        selected_trajectory = entry_pair.entry.trajectory
-        settings = entry_pair.entry.settings.approximation
-        selected_trajectory.pos.xyz, _ = piecewise_cubic(
-            function_of=selected_trajectory.function_of,
-            values=selected_trajectory.pos.xyz,
-            int_size=settings.fe_int_size,
-            min_obs=settings.fe_min_obs,
-            return_approx_objects=True,
+        approximate(
+            trajectory=entry_pair.entry.trajectory, approximation_settings=entry_pair.entry.settings.approximation
         )
-
-        quat_approx = rot_average_window(
-            function_of=selected_trajectory.function_of,
-            quat=selected_trajectory.rot.as_quat(),
-            win_size=settings.rot_approx_win_size,
-        )
-
-        selected_trajectory.rot = RotationSet.from_quat(quat_approx)
-
         entry_pair.entry.state.approximated = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=selected_trajectory,
+                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
                 state=entry_pair.entry.state,
@@ -911,3 +897,49 @@ class TrajectoryManager(QObject):
             group_id=reference_entry.group_id,
             state=reference_entry.state,
         )
+
+    @staticmethod
+    def operation_ate(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+        """
+        Computes the absolute trajectory error (ATE) by aligning the selected
+        trajectory to the reference trajectory and computing the pose differences.
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
+
+        Returns:
+            ResultEntry: The result of the comparison.
+        """
+        if (reference_entry := entry_pair.reference_entry) is None:
+            raise ValueError("No reference trajectory selected.")
+
+        ate_result, alignment_result = ate(
+            trajectory_est=entry_pair.entry.trajectory,
+            trajectory_gt=reference_entry.trajectory,
+            settings=entry_pair.entry.settings,
+            return_alignment=True,
+        )
+
+        return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
+
+    @staticmethod
+    def operation_rpe(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+        """
+        Computes the relative pose error (RPE)
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
+
+        Returns:
+            ResultEntry: The result of the comparison.
+        """
+        if (reference_entry := entry_pair.reference_entry) is None:
+            raise ValueError("No reference trajectory selected.")
+
+        rpe_result = rpe(
+            trajectory_est=entry_pair.entry.trajectory,
+            trajectory_gt=reference_entry.trajectory,
+            settings=entry_pair.entry.settings,
+        )
+
+        return (RelativeDeviationEntry(deviations=rpe_result),)

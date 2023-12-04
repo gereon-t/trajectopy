@@ -10,6 +10,7 @@ from typing import Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCloseEvent
+from trajectopy_core.settings.report import ReportSettings
 
 from trajectopy.managers.file_manager import FileManager
 from trajectopy.managers.plot_manager import PlotManager
@@ -25,7 +26,6 @@ from trajectopy.views.json_settings_view import JSONViewer
 from trajectopy.views.progress_window import ProgressWindow
 from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
-from trajectopy_core.settings.report import ReportSettings
 
 VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
 YEAR = "2023"
@@ -57,11 +57,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
-        self.plot_manager = PlotManager(parent=self)
+        self.plot_manager = PlotManager()
 
         if not single_thread:
             self.trajectory_manager.moveToThread(self.computation_thread)
             self.file_manager.moveToThread(self.computation_thread)
+            self.plot_manager.moveToThread(self.computation_thread)
             logger.info("Multithreading enabled")
         else:
             logger.info("Multithreading disabled")
@@ -181,6 +182,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
+
+        self.plot_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
 
     def setup_plottings_connections(self):
         self.resultTableView.plot_request.connect(self.inject_report_settings)

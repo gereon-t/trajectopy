@@ -1,11 +1,10 @@
 import json
-import sys
-from typing import Any
 import logging
+from typing import Any, Dict, List
 
-from PyQt6.QtGui import QFont
 from PyQt6 import QtWidgets
-from PyQt6.QtCore import Qt, QCoreApplication
+from PyQt6.QtCore import QCoreApplication, Qt
+from PyQt6.QtGui import QFont
 from trajectopy_core.settings.base import Settings
 
 from trajectopy.util import save_file_dialog, show_msg_box
@@ -105,6 +104,8 @@ class JSONViewer(QtWidgets.QMainWindow):
                 continue
             item.deleteLater()
 
+        self.form_item_cnt = 0
+
     def load_json_file(self, filename):
         self.remove_items()
         try:
@@ -147,12 +148,12 @@ class JSONViewer(QtWidgets.QMainWindow):
     def populate_json(self) -> str:
         """Populate the JSON with the values from the form."""
 
-        def init_dict(json_dict: dict[str, Any], keys: list[str]) -> None:
+        def init_dict(json_dict: Dict[str, Any], keys: List[str]) -> None:
             local_reference = json_dict
             for key in keys:
                 local_reference = local_reference.setdefault(key, {})
 
-        def setval(json_dict: dict[str, Any], keys: list[str], val: Any) -> None:
+        def setval(json_dict: Dict[str, Any], keys: List[str], val: Any) -> None:
             local_reference = json_dict
 
             lastkey = keys[-1]
@@ -189,7 +190,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
         return json.dumps(json_content, indent=4)
 
-    def populate_form(self, parent_name: str, json_content: dict[str, Any]):
+    def populate_form(self, parent_name: str, json_content: Dict[str, Any]):
         def pretty_type(type_string: str) -> str:
             return type_string.split("'")[1]
 
@@ -258,16 +259,3 @@ def construct_settings_field(central_widget: QtWidgets.QWidget, value: Any) -> Q
     settings_field = QtWidgets.QLineEdit(central_widget)
     settings_field.setText(str(value))
     return settings_field
-
-
-if __name__ == "__main__":
-
-    class DummyEntry:
-        name = "Test Entry"
-
-    app = QtWidgets.QApplication(sys.argv)
-    entry = DummyEntry()
-    viewer = JSONViewer(None, trajectory_entry=entry)
-
-    viewer.show()
-    sys.exit(app.exec())

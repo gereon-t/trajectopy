@@ -36,6 +36,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.pipelines_context_menu = QtWidgets.QMenu("Pipelines")
         self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
         self.match_context_menu = QtWidgets.QMenu("Match With Reference")
         self.view_context_menu = QtWidgets.QMenu("View")
@@ -70,6 +71,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def clear(self) -> None:
         super().clear()
+        self.pipelines_context_menu.clear()
         self.comparison_context_menu.clear()
         self.match_context_menu.clear()
         self.view_context_menu.clear()
@@ -119,6 +121,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.view_context()
         self.edit_context()
         self.action_context()
+        self.pipelines_context()
 
     def edit_context(self) -> None:
         """Actions sub-context menu"""
@@ -569,3 +572,30 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.match_context_menu.addAction(match_nsi_action)
 
         return self.match_context_menu
+
+    def pipelines_context(self) -> None:
+        self.addMenu(self.pipelines_context_menu)
+        self.pipelines_context_menu.setEnabled(self.get_selection().reference_is_set)
+
+        ate_action = QAction("Compute ATE", self)
+        ate_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.ATE,
+                    selection=self.get_selection(),
+                )
+            ),
+        )
+
+        rpe_action = QAction("Compute RPE", self)
+        rpe_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.RPE,
+                    selection=self.get_selection(),
+                )
+            ),
+        )
+
+        self.pipelines_context_menu.addAction(ate_action)
+        self.pipelines_context_menu.addAction(rpe_action)

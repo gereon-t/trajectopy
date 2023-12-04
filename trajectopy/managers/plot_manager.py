@@ -6,7 +6,7 @@ mail@gtombrink.de
 """
 import logging
 import os
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.evaluation.ate_result import ATEResult
@@ -17,14 +17,10 @@ from trajectopy_core.report.single import render_single_report
 from trajectopy_core.report.trajectory import render_trajectories
 from trajectopy_core.report.utils import show_report
 
-from trajectopy.managers.requests import (
-    PlotRequest,
-    PlotRequestType,
-    UIRequest,
-    generic_request_handler,
-)
+from trajectopy.managers.requests import PlotRequest, PlotRequestType, UIRequest, generic_request_handler
 from trajectopy.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry, ResultEntry
 from trajectopy.path import REPORT_PATH
+from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
 
@@ -45,9 +41,9 @@ class PlotManager(QObject):
     operation_started = pyqtSignal()
     operation_finished = pyqtSignal()
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent=None) -> None:
         self.cnt = 0
-        super().__init__(parent=parent)
+        super().__init__(parent)
         self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
             PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
             PlotRequestType.SINGLE_DEVIATIONS: self.plot_single_deviations,
@@ -55,6 +51,7 @@ class PlotManager(QObject):
             PlotRequestType.ALIGNMENT: self.plot_alignment,
         }
 
+    @show_progress
     @pyqtSlot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
@@ -119,11 +116,11 @@ class PlotManager(QObject):
         show_report(report_text=report, filepath=self.report_path)
 
 
-def get_ate_results(entries: list[ResultEntry]) -> list[ATEResult]:
+def get_ate_results(entries: List[ResultEntry]) -> List[ATEResult]:
     """Return a list of ate results."""
     return [entry.deviations for entry in entries if isinstance(entry, AbsoluteDeviationEntry)]
 
 
-def get_rpe_results(entries: list[ResultEntry]) -> list[RPEResult]:
+def get_rpe_results(entries: List[ResultEntry]) -> List[RPEResult]:
     """Return a list of rpe results."""
     return [entry.deviations for entry in entries if isinstance(entry, RelativeDeviationEntry)]

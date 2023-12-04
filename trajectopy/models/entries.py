@@ -151,7 +151,7 @@ class TrajectoryEntry(Entry):
         return (
             self.name,
             bool_to_str(self.set_as_reference),
-            str(self.trajectory.sort_by),
+            self.trajectory.sorting.value,
             self.trajectory.pos.epsg,
             str(self.state),
             self.full_filename,
@@ -178,7 +178,7 @@ class TrajectoryEntry(Entry):
             else "local / unknown",
             "Orientation available": "yes" if self.trajectory.rot is not None else "no",
             "Number of Poses": str(len(self.trajectory)),
-            "Sort By:": self.trajectory.sort_by,
+            "Sort By:": self.trajectory.sorting.value,
             "Length [m]": f"{self.trajectory.total_length:.3f}",
             "Data Rate [Hz]": f"{self.trajectory.data_rate:.3f}",
             "Minimum Speed [m/s]": f"{np.min(self.trajectory.speed):.3f}",

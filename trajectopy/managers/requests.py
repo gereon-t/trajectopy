@@ -82,6 +82,8 @@ class TrajectoryManagerRequestType(Enum):
     ADAPT_ORIENTATIONS = auto()
     ROUGH_TIMESTAMPS_MATCHING = auto()
     MATCH = auto()
+    ATE = auto()
+    RPE = auto()
 
 
 class TrajectoryModelRequestType(Enum):
