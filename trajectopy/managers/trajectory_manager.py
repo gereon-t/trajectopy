@@ -8,19 +8,18 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
-import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.alignment.actions import (
     adopt_first_orientation,
     adopt_first_pose,
     adopt_first_position,
     align_trajectories,
+    apply_alignment,
 )
-from trajectopy_core.approximation.mls_approximation import mls_iterative
-from trajectopy_core.approximation.trajectory_approximation import TrajectoryApproximation
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
-from trajectopy_core.evaluation.matching import match_trajectories, rough_timestamp_matching
-from trajectopy_core.util.spatialsorter import SpatialSorter
+from trajectopy_core.matching import match_trajectories, rough_timestamp_matching
+from trajectopy_core.pipelines import approximate, ate, rpe, sort_spatially
+from trajectopy_core.spatialsorter import Sorting
 
 from trajectopy.managers.requests import (
     ResultModelRequest,
@@ -75,15 +74,14 @@ class TrajectoryManager(QObject):
         TrajectoryManagerRequestType.APPROXIMATE: Approximates the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.COMPARE: Compares the selected trajectory to the reference trajectory.
         TrajectoryManagerRequestType.INTERPOLATE: Interpolates the trajectory to match the timestamps of the reference trajectory.
-        TrajectoryManagerRequestType.INTERPOLATE_GRID: Interpolates the trajectory to a grid with a specified time step.
         TrajectoryManagerRequestType.MERGE: Merges all selected trajectories into one trajectory.
         TrajectoryManagerRequestType.INTERSECT: Intersects the trajectory with the reference trajectory, keeping only the poses that have a corresponding pose in the reference trajectory.
         TrajectoryManagerRequestType.ADAPT_SAMPLING: Combination of intersection and interpolation. After this, the trajectory will be present in the same time intervals as the reference and will have the same sampling. However, this does not mean that they will have exactely the same number of poses.
         TrajectoryManagerRequestType.MATCH_TIMESTAMPS: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair`. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
         TrajectoryManagerRequestType.SORT: Sorts the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.SWITCH_SORTING: Changes the sorting of the trajectory.
-        TrajectoryManagerRequestType.ADAPT_ORIENTATIONS: Adopts the orientation of the current trajectory to the reference trajectory.
-        TrajectoryManagerRequestType.ROUGH_TIMESTAMPS_MATCHING: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair` roughly. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
+        TrajectoryManagerRequestType.ATE: Computes the absolute trajectory error between the selected trajectory and the reference trajectory.
+        TrajectoryManagerRequestType.RPE: Computes the relative pose error between the selected trajectory and the reference trajectory.
 
 
     Methods:
@@ -157,11 +155,6 @@ class TrajectoryManager(QObject):
                 inplace=False,
                 apply_to_reference=False,
             ),
-            TrajectoryManagerRequestType.INTERPOLATE_GRID: lambda: self.handle_trajectory_operation(
-                operation=self.operation_interpolate_to_grid,
-                inplace=False,
-                apply_to_reference=True,
-            ),
             TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
             TrajectoryManagerRequestType.INTERSECT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_intersect,
@@ -186,18 +179,14 @@ class TrajectoryManager(QObject):
                 inplace=True,
                 apply_to_reference=True,
             ),
-            TrajectoryManagerRequestType.ADAPT_ORIENTATIONS: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adopt_orientations,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.ROUGH_TIMESTAMPS_MATCHING: lambda: self.handle_trajectory_operation(
-                operation=self.operation_match_timestamps_roughly,
-                inplace=False,
-                apply_to_reference=False,
-            ),
             TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
                 operation=self.operation_match, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.ATE: lambda: self.handle_trajectory_operation(
+                operation=self.operation_ate, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.RPE: lambda: self.handle_trajectory_operation(
+                operation=self.operation_rpe, inplace=False, apply_to_reference=False
             ),
         }
 
@@ -390,7 +379,9 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        entry_pair.entry.trajectory.set_sorting(sorting=entry_pair.request.sorting)
+        entry_pair.entry.trajectory.sorting = (
+            Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.ARC_LENGTH else Sorting.ARC_LENGTH
+        )
         return (entry_pair.entry,)
 
     @staticmethod
@@ -441,34 +432,6 @@ class TrajectoryManager(QObject):
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
                 trajectory=entry_pair.entry.trajectory.interpolate(reference_entry.trajectory.tstamps),
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_interpolate_to_grid(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Interpolates the trajectory to a grid with a specified time step.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The trajectory entry pair containing the trajectory to be interpolated.
-
-        Returns:
-            TrajectoryEntry: The interpolated trajectory entry.
-        """
-        grid = np.arange(
-            start=entry_pair.entry.trajectory.tstamps[0],
-            stop=entry_pair.entry.trajectory.tstamps[-1],
-            step=entry_pair.request.grid,
-        )
-        entry_pair.entry.trajectory.interpolate(tstamps=grid)
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
             ),
@@ -554,23 +517,16 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The sorted trajectory.
         """
-        selected_trajectory = entry_pair.entry.trajectory
-        settings = entry_pair.entry.settings.sorting
         logger.info("Sorting trajectory ...")
-        mls_approx = mls_iterative(
-            xyz=selected_trajectory.pos.xyz,
-            voxel_size=settings.voxel_size,
-            k_nearest=settings.k_nearest,
-            movement_threshold=settings.movement_threshold,
-        )
-        sorter = SpatialSorter(xyz=mls_approx, discard_missing=settings.discard_missing)
-        sorted_traj = selected_trajectory.apply_sorter(sorter=sorter)
+        sort_spatially(trajectory=entry_pair.entry.trajectory, sorting_settings=entry_pair.entry.settings.sorting)
+        entry_pair.entry.state.sorting_known = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=sorted_traj,
+                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -587,25 +543,17 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The approximated trajectory.
         """
-        selected_trajectory = entry_pair.entry.trajectory
-        settings = entry_pair.entry.settings.approximation
-        approx_traj = TrajectoryApproximation(
-            pos=selected_trajectory.pos,
-            rot=selected_trajectory.rot,
-            tstamps=selected_trajectory.tstamps,
-            name=selected_trajectory.name,
-            sorting=selected_trajectory.sorting,
-            sort_index=selected_trajectory.sort_index,
-            arc_lengths=selected_trajectory.arc_lengths,
-            settings=settings,
-            state=selected_trajectory.state,
+        approximate(
+            trajectory=entry_pair.entry.trajectory, approximation_settings=entry_pair.entry.settings.approximation
         )
+        entry_pair.entry.state.approximated = True
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
-                trajectory=approx_traj,
+                trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -662,7 +610,7 @@ class TrajectoryManager(QObject):
         comparison_result = compare_trajectories_relative(
             traj_test=traj_test,
             traj_ref=traj_ref,
-            settings=entry_pair.entry.settings.rel_comparison,
+            settings=entry_pair.entry.settings.relative_comparison,
         )
 
         return (RelativeDeviationEntry(deviations=comparison_result),)
@@ -731,7 +679,10 @@ class TrajectoryManager(QObject):
             matching_settings=entry_pair.entry.settings.matching,
         )
 
-        traj_aligned = entry_pair.entry.trajectory.apply_alignment(alignment_result=alignment_result)
+        traj_aligned = apply_alignment(
+            trajectory=entry_pair.entry.trajectory, alignment_result=alignment_result, inplace=False
+        )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -739,6 +690,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
             AlignmentEntry(alignment_result=alignment_result),
         )
@@ -757,12 +709,16 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: A new trajectory entry with the aligned trajectory.
         """
-        entry_pair.entry.trajectory.apply_alignment(entry_pair.request.alignment.alignment_result)
+        apply_alignment(
+            trajectory=entry_pair.entry.trajectory, alignment_result=entry_pair.request.alignment.alignment_result
+        )
+        entry_pair.entry.state.aligned = True
         new_entry = TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=entry_pair.entry.trajectory,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         )
         logger.info("Applied alignment to trajectory %s", entry_pair.entry.name)
         return (new_entry,)
@@ -791,12 +747,14 @@ class TrajectoryManager(QObject):
         )
 
         traj_aligned = adopt_first_pose(traj_from=traj_test, traj_to=traj_ref)
+        entry_pair.entry.state.aligned = True
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=traj_aligned,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         ), TrajectoryEntry(
             full_filename=reference_entry.full_filename,
             trajectory=traj_ref,
@@ -825,6 +783,7 @@ class TrajectoryManager(QObject):
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
         )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -832,6 +791,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -856,6 +816,7 @@ class TrajectoryManager(QObject):
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
         )
+        entry_pair.entry.state.aligned = True
 
         return (
             TrajectoryEntry(
@@ -863,41 +824,7 @@ class TrajectoryManager(QObject):
                 trajectory=traj_aligned,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_adopt_orientations(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Adopts the orientations of the reference trajectory to the current trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The entry pair containing the current trajectory and the reference
-                trajectory.
-
-        Returns:
-            TrajectoryEntry: A new trajectory entry with the adopted orientations.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        reference_trajectory = reference_entry.trajectory
-        current_trajectory = entry_pair.entry.trajectory
-
-        current_trajectory.same_sampling(reference_trajectory)
-        current_trajectory.match_timestamps(reference_trajectory.tstamps)
-        reference_trajectory.match_timestamps(current_trajectory.tstamps)
-
-        current_trajectory.rot = reference_entry.trajectory.rot
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=current_trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -921,6 +848,7 @@ class TrajectoryManager(QObject):
             traj_test=entry_pair.entry.trajectory, traj_ref=reference_entry.trajectory
         )
         entry_pair.entry.trajectory.tstamps += time_delay
+        entry_pair.entry.state.matched = True
 
         return (
             TrajectoryEntry(
@@ -928,6 +856,7 @@ class TrajectoryManager(QObject):
                 trajectory=entry_pair.entry.trajectory,
                 settings=entry_pair.entry.settings,
                 group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
             ),
         )
 
@@ -952,15 +881,65 @@ class TrajectoryManager(QObject):
             traj_ref=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
         )
+        reference_entry.state.matched = True
+        entry_pair.entry.state.matched = True
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=traj_test,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
+            state=entry_pair.entry.state,
         ), TrajectoryEntry(
             full_filename=reference_entry.full_filename,
             trajectory=traj_ref,
             settings=reference_entry.settings,
             group_id=reference_entry.group_id,
+            state=reference_entry.state,
         )
+
+    @staticmethod
+    def operation_ate(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+        """
+        Computes the absolute trajectory error (ATE) by aligning the selected
+        trajectory to the reference trajectory and computing the pose differences.
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
+
+        Returns:
+            ResultEntry: The result of the comparison.
+        """
+        if (reference_entry := entry_pair.reference_entry) is None:
+            raise ValueError("No reference trajectory selected.")
+
+        ate_result, alignment_result = ate(
+            trajectory_est=entry_pair.entry.trajectory,
+            trajectory_gt=reference_entry.trajectory,
+            settings=entry_pair.entry.settings,
+            return_alignment=True,
+        )
+
+        return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
+
+    @staticmethod
+    def operation_rpe(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+        """
+        Computes the relative pose error (RPE)
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
+
+        Returns:
+            ResultEntry: The result of the comparison.
+        """
+        if (reference_entry := entry_pair.reference_entry) is None:
+            raise ValueError("No reference trajectory selected.")
+
+        rpe_result = rpe(
+            trajectory_est=entry_pair.entry.trajectory,
+            trajectory_gt=reference_entry.trajectory,
+            settings=entry_pair.entry.settings,
+        )
+
+        return (RelativeDeviationEntry(deviations=rpe_result),)

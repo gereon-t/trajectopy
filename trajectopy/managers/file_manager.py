@@ -10,7 +10,6 @@ from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy_core.io.rosbag import trajectories_from_rosbag
-from trajectopy_core.report import write_report
 
 from trajectopy.managers.requests import (
     FileRequest,
@@ -22,7 +21,7 @@ from trajectopy.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy.models.entries import AbsoluteDeviationEntry, RelativeDeviationEntry, ResultEntry, TrajectoryEntry
+from trajectopy.models.entries import ResultEntry, TrajectoryEntry
 from trajectopy.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.util import show_progress
 
@@ -41,7 +40,6 @@ class FileManager(QObject):
     - Read result order
     - Read trajectory order
     - Write list
-    - Write HTML report
 
     """
 
@@ -61,7 +59,6 @@ class FileManager(QObject):
             FileRequestType.READ_RES_ORDER: self.read_res_order,
             FileRequestType.READ_TRAJ_ORDER: self.read_traj_order,
             FileRequestType.WRITE_LIST: self.write_list,
-            FileRequestType.WRITE_REPORT: self.write_report,
         }
 
     @show_progress
@@ -108,7 +105,7 @@ class FileManager(QObject):
         file_path = Path(file)
         file_name = file_path.stem
         file_directory = file_path.parent
-        settings_file = file_directory / f"{file_name}.yaml"
+        settings_file = file_directory / f"{file_name}.json"
         return Path(file), Path(settings_file)
 
     def write_trajectory(self, request: FileRequest) -> None:
@@ -158,23 +155,3 @@ class FileManager(QObject):
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(type=TrajectoryModelRequestType.SORT, index_list=id_list)
             )
-
-    def write_report(self, request: FileRequest) -> None:
-        def get(entry_type):
-            for entry in request.result_selection.entries:
-                if isinstance(entry, entry_type):
-                    return entry
-
-        abs_dev_entry: AbsoluteDeviationEntry = get(AbsoluteDeviationEntry)
-        rel_dev_entry: Union[RelativeDeviationEntry, None] = get(RelativeDeviationEntry)
-
-        ate_result = abs_dev_entry.deviations
-        rpe_result = rel_dev_entry.deviations if rel_dev_entry else None
-
-        write_report(
-            request.file_list[0],
-            ate_result=ate_result,
-            rpe_result=rpe_result,
-            mm=request.report_settings["unit"] == "mm",
-            max_data_size=request.report_settings["max_data_size"],
-        )

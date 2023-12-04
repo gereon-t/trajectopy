@@ -5,14 +5,16 @@ Gereon Tombrink, 2023
 mail@gtombrink.de
 """
 import logging
+import os
 from typing import Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCloseEvent
+from trajectopy_core.settings.report import ReportSettings
 
 from trajectopy.managers.file_manager import FileManager
 from trajectopy.managers.plot_manager import PlotManager
-from trajectopy.managers.requests import UIRequest, UIRequestType
+from trajectopy.managers.requests import PlotRequest, UIRequest, UIRequestType
 from trajectopy.managers.session_manager import SessionManager
 from trajectopy.managers.trajectory_manager import TrajectoryManager
 from trajectopy.managers.ui_manager import UIManager
@@ -20,7 +22,7 @@ from trajectopy.models.result_model import ResultTableModel
 from trajectopy.models.trajectory_model import TrajectoryTableModel
 from trajectopy.path import VERSION_FILE_PATH
 from trajectopy.views.about_window import AboutGUI
-from trajectopy.views.plot_settings_window import PlotSettingsGUI
+from trajectopy.views.json_settings_view import JSONViewer
 from trajectopy.views.progress_window import ProgressWindow
 from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
@@ -55,18 +57,20 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
-        self.plot_settings_gui = PlotSettingsGUI(parent=self)
-        self.plot_manager = PlotManager(parent=self)
+        self.plot_manager = PlotManager()
 
         if not single_thread:
             self.trajectory_manager.moveToThread(self.computation_thread)
             self.file_manager.moveToThread(self.computation_thread)
+            self.plot_manager.moveToThread(self.computation_thread)
             logger.info("Multithreading enabled")
         else:
             logger.info("Multithreading disabled")
 
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
+
+        self.report_settings = ReportSettings()
 
         self.setup_io_connections()
         self.setup_worker_connections()
@@ -98,9 +102,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         session_menu.addAction(save_session_action)
         menubar.addMenu(session_menu)
 
-        plot_settings_action = QAction("Plot Settings", parent=self)
-        plot_settings_action.triggered.connect(self.handle_show_plot_settings)
-        menubar.addAction(plot_settings_action)
+        report_settings_action = QAction("Report Settings", parent=self)
+        report_settings_action.triggered.connect(self.handle_show_report_settings)
+        menubar.addAction(report_settings_action)
 
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
@@ -122,14 +126,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_trajectory_manager_connections()
         self.setup_result_table_connections()
         self.setup_trajectory_table_connections()
-        self.setup_plot_settings_gui_connections()
+        self.setup_plottings_connections()
 
     def setup_plot_manager_connections(self):
         self.plot_manager.ui_request.connect(self.ui_manager.handle_request)
-
-    def setup_plot_settings_gui_connections(self):
-        self.plot_settings_gui.ui_request.connect(self.ui_manager.handle_request)
-        self.plot_settings_gui.plot_request.connect(self.plot_manager.handle_request)
 
     def setup_trajectory_table_connections(self):
         self.trajectory_table_model.file_request.connect(self.file_manager.handle_request)
@@ -151,9 +151,11 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setup_session_manager_connections(self):
         self.session_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
-        self.session_manager.plot_settings_request.connect(self.plot_settings_gui.handle_request)
         self.session_manager.file_request.connect(self.file_manager.handle_request)
         self.session_manager.ui_request.connect(self.ui_manager.handle_request)
+        self.session_manager.report_settings_export_request.connect(self.handle_report_settings_export)
+        self.session_manager.report_settings_import_request.connect(self.handle_report_settings_import)
+        self.session_manager.report_settings_reset_request.connect(self.handle_report_settings_reset)
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
@@ -166,14 +168,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.resultTableView.result_model_request.connect(self.result_table_model.handle_request)
         self.resultTableView.ui_request.connect(self.ui_manager.handle_request)
         self.resultTableView.file_request.connect(self.file_manager.handle_request)
-        self.resultTableView.plot_request.connect(self.plot_manager.handle_request)
 
     def setup_trajectory_table_view_connections(self):
         self.trajectoryTableView.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.trajectoryTableView.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
         self.trajectoryTableView.ui_request.connect(self.ui_manager.handle_request)
         self.trajectoryTableView.file_request.connect(self.file_manager.handle_request)
-        self.trajectoryTableView.plot_request.connect(self.plot_manager.handle_request)
         self.trajectoryTableView.result_model_request.connect(self.result_table_model.handle_request)
 
     def setup_progress_connections(self):
@@ -182,6 +182,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
+
+        self.plot_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
+
+    def setup_plottings_connections(self):
+        self.resultTableView.plot_request.connect(self.inject_report_settings)
+        self.trajectoryTableView.plot_request.connect(self.inject_report_settings)
 
     def setup_io_connections(self):
         self.trajectory_manager.update_view.connect(self.refresh)
@@ -198,9 +205,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.result_table_model.layoutChanged.emit()
 
     @QtCore.pyqtSlot()
-    def handle_show_plot_settings(self) -> None:
-        self.plot_settings_gui.set_settings(self.plot_manager.plot_settings)
-        self.plot_settings_gui.show()
+    def handle_show_report_settings(self) -> None:
+        viewer = JSONViewer(settings=self.report_settings, parent=self)
+        viewer.show()
+
+    @QtCore.pyqtSlot(PlotRequest)
+    def inject_report_settings(self, plot_request: PlotRequest) -> None:
+        logger.info("Injecting report settings into plot request of type %s", plot_request.type)
+        plot_request.report_settings = self.report_settings
+        self.plot_manager.handle_request(plot_request)
 
     @QtCore.pyqtSlot()
     def handle_import_session(self) -> None:
@@ -209,6 +222,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def handle_export_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.EXPORT_SESSION))
+
+    @QtCore.pyqtSlot(str)
+    def handle_report_settings_export(self, file_path: str) -> None:
+        self.report_settings.to_file(os.path.join(file_path, "report_settings.json"))
+
+    @QtCore.pyqtSlot(str)
+    def handle_report_settings_import(self, file_path: str) -> None:
+        self.report_settings = ReportSettings.from_file(os.path.join(file_path, "report_settings.json"))
+
+    @QtCore.pyqtSlot()
+    def handle_report_settings_reset(self) -> None:
+        self.report_settings = ReportSettings()
 
     @QtCore.pyqtSlot()
     def handle_new_session(self) -> None:

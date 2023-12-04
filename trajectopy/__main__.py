@@ -23,7 +23,7 @@ if os.name == "nt":
 
 logging.basicConfig(
     format="%(message)s",
-    level=logging.INFO,
+    level=logging.DEBUG,
     handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
 )
 

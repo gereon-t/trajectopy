@@ -14,8 +14,6 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy.managers.requests import (
     FileRequest,
     FileRequestType,
-    PlotSettingsRequest,
-    PlotSettingsRequestType,
     ResultModelRequest,
     ResultModelRequestType,
     SessionManagerRequest,
@@ -42,10 +40,12 @@ class SessionManager(QObject):
 
     trajectory_model_request = pyqtSignal(TrajectoryModelRequest)
     result_model_request = pyqtSignal(ResultModelRequest)
-    plot_settings_request = pyqtSignal(PlotSettingsRequest)
     ui_request = pyqtSignal(UIRequest)
     file_request = pyqtSignal(FileRequest)
     operation_finished = pyqtSignal()
+    report_settings_export_request = pyqtSignal(str)
+    report_settings_import_request = pyqtSignal(str)
+    report_settings_reset_request = pyqtSignal()
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -62,7 +62,7 @@ class SessionManager(QObject):
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
         self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.RESET))
-        self.plot_settings_request.emit(PlotSettingsRequest(type=PlotSettingsRequestType.RESET))
+        self.report_settings_reset_request.emit()
         logger.info("Cleared application and started a new session.")
 
     def import_session(self, request: SessionManagerRequest) -> None:
@@ -85,13 +85,7 @@ class SessionManager(QObject):
                 file_list=[os.path.join(request.file_path, "result_order.txt")],
             )
         )
-
-        self.plot_settings_request.emit(
-            PlotSettingsRequest(
-                type=PlotSettingsRequestType.IMPORT_FROM_SESSION,
-                file_path=request.file_path,
-            )
-        )
+        self.report_settings_import_request.emit(request.file_path)
 
     def export_session(self, request: SessionManagerRequest) -> None:
         os.makedirs(request.file_path, exist_ok=True)
@@ -101,9 +95,4 @@ class SessionManager(QObject):
         self.result_model_request.emit(
             ResultModelRequest(type=ResultModelRequestType.EXPORT_ALL, file_path=request.file_path)
         )
-        self.plot_settings_request.emit(
-            PlotSettingsRequest(
-                type=PlotSettingsRequestType.EXPORT_TO_SESSION,
-                file_path=request.file_path,
-            )
-        )
+        self.report_settings_export_request.emit(request.file_path)

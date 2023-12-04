@@ -11,9 +11,8 @@ from enum import Enum, auto
 from typing import Any, List, Protocol
 
 from PyQt6.QtCore import pyqtSignal
-from trajectopy_core.settings.matching_settings import MatchingMethod
-from trajectopy_core.settings.plot_settings import PlotSettings
-from trajectopy_core.util.spatialsorter import Sorting
+from trajectopy_core.settings.matching import MatchingMethod
+from trajectopy_core.settings.report import ReportSettings
 
 from trajectopy.models.entries import AlignmentEntry
 from trajectopy.models.selection import ResultSelection, TrajectorySelection
@@ -29,24 +28,13 @@ class FileRequestType(Enum):
     WRITE_LIST = auto()
     READ_TRAJ_ORDER = auto()
     READ_RES_ORDER = auto()
-    WRITE_REPORT = auto()
 
 
 class PlotRequestType(Enum):
-    SINGLE_ABS_DEVIATIONS = auto()
-    MULTI_ABS_DEVIATIONS = auto()
-    REL_DEVIATIONS = auto()
+    SINGLE_DEVIATIONS = auto()
+    MULTI_DEVIATIONS = auto()
     TRAJECTORIES = auto()
-    TRAJECTORY_LAPS = auto()
-    DEVIATION_LAPS = auto()
-    UPDATE_SETTINGS = auto()
-    CORRELATION = auto()
-
-
-class PlotSettingsRequestType(Enum):
-    IMPORT_FROM_SESSION = auto()
-    EXPORT_TO_SESSION = auto()
-    RESET = auto()
+    ALIGNMENT = auto()
 
 
 class PropertyModelRequestType(Enum):
@@ -94,6 +82,8 @@ class TrajectoryManagerRequestType(Enum):
     ADAPT_ORIENTATIONS = auto()
     ROUGH_TIMESTAMPS_MATCHING = auto()
     MATCH = auto()
+    ATE = auto()
+    RPE = auto()
 
 
 class TrajectoryModelRequestType(Enum):
@@ -144,22 +134,15 @@ class FileRequest(DeepCopyRequest):
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     id_list: List[str] = field(default_factory=list)
-    report_settings: dict = field(default_factory=dict)
 
 
 @dataclass
 class PlotRequest(DeepCopyRequest):
     type: PlotRequestType
-    plot_settings: PlotSettings = field(default_factory=PlotSettings)
+    report_settings: ReportSettings = field(default_factory=ReportSettings)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     dimension: int = 2
-
-
-@dataclass
-class PlotSettingsRequest:
-    type: PlotSettingsRequestType
-    file_path: str = ""
 
 
 @dataclass
@@ -196,7 +179,6 @@ class TrajectoryModelRequest:
 class TrajectoryManagerRequest(DeepCopyRequest):
     type: TrajectoryManagerRequestType
     selection: TrajectorySelection = field(default_factory=TrajectorySelection)
-    sorting: Sorting = Sorting.CHRONO
     target_epsg: int = 0
     grid: float = 0.0
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
@@ -209,8 +191,7 @@ class UIRequest:
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     alignment_entry: AlignmentEntry = field(default_factory=AlignmentEntry)
-    plot_settings: PlotSettings = field(default_factory=PlotSettings)
-    sorting: Sorting = Sorting.CHRONO
+    report_settings: ReportSettings = field(default_factory=ReportSettings)
     message: str = ""
     confirm_reset: bool = False
     epsg: int = 0

@@ -7,7 +7,9 @@ mail@gtombrink.de
 import logging
 import os
 import sys
+import dotenv
 
+dotenv.load_dotenv()
 logger = logging.getLogger("root")
 
 
@@ -25,15 +27,4 @@ VERSION_FILE_PATH = resource_path("version")
 FULL_ICON_FILE_PATH = resource_path("resources/full-icon-poppins.png")
 ICON_FILE_PATH = resource_path("resources/icon.png")
 ICON_BG_FILE_PATH = resource_path("resources/icon-bg.png")
-
-
-def mplstyle_file_path() -> str:
-    custom_path = os.path.join("./custom.mplstyle")
-    if os.path.isfile(custom_path):
-        logger.info("Using custom matplotlib style from %s", custom_path)
-        return custom_path
-
-    logger.info(
-        "Using default settings for matplotlib style. You can use custom styles by creating a 'custom.mplstyle' file in the current directory."
-    )
-    return resource_path("default.mplstyle")
+REPORT_PATH = os.path.abspath(os.getenv("TRAJECTOPY_REPORT_PATH", "reports"))

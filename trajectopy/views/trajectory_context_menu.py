@@ -8,8 +8,7 @@ import logging
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
-from trajectopy_core.settings.matching_settings import MatchingMethod
-from trajectopy_core.trajectory import Sorting
+from trajectopy_core.settings.matching import MatchingMethod
 
 from trajectopy.managers.requests import (
     PlotRequest,
@@ -37,6 +36,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self.pipelines_context_menu = QtWidgets.QMenu("Pipelines")
         self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
         self.match_context_menu = QtWidgets.QMenu("Match With Reference")
         self.view_context_menu = QtWidgets.QMenu("View")
@@ -71,6 +71,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def clear(self) -> None:
         super().clear()
+        self.pipelines_context_menu.clear()
         self.comparison_context_menu.clear()
         self.match_context_menu.clear()
         self.view_context_menu.clear()
@@ -120,6 +121,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.view_context()
         self.edit_context()
         self.action_context()
+        self.pipelines_context()
 
     def edit_context(self) -> None:
         """Actions sub-context menu"""
@@ -184,8 +186,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.edit_single()
 
     def edit_single(self):
-        selected_trajectory = self.get_selection().entries[0].trajectory
-
         rename_action = QAction("Rename", self)
         rename_action.triggered.connect(
             lambda: self.trajectory_model_request.emit(
@@ -208,26 +208,22 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.edit_context_menu.addAction(export_action)
 
-        if selected_trajectory.state.sorting_known:
-            target_sorting = Sorting.SPATIAL if selected_trajectory.sorting == Sorting.CHRONO else Sorting.CHRONO
-            sort_description = (
-                "Switch Sorting To Spatial" if target_sorting == Sorting.SPATIAL else "Switch Sorting To Chronological"
-            )
-            sort_action = QAction(sort_description, self)
-            sort_action.triggered.connect(
-                lambda: self.trajectory_manager_request.emit(
-                    TrajectoryManagerRequest(
-                        type=TrajectoryManagerRequestType.SWITCH_SORTING,
-                        selection=self.get_selection(),
-                        sorting=target_sorting,
-                    )
+        if not self.get_selection().entries[0].state.sorting_known:
+            return
+
+        switch_sorting_action = QAction("Switch Sorting", self)
+        switch_sorting_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.SWITCH_SORTING,
+                    selection=self.get_selection(),
                 )
             )
-            self.edit_context_menu.addAction(sort_action)
+        )
+        self.edit_context_menu.addAction(switch_sorting_action)
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
-        self.addMenu(self.view_context_menu)
         property_action = QAction("Properties", self)
         property_action.triggered.connect(
             lambda: self.ui_request.emit(
@@ -237,9 +233,9 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.view_context_menu.addAction(property_action)
+        self.addAction(property_action)
 
-        plot_2d_action = QAction("Trajectory 2D", self)
+        plot_2d_action = QAction("Plot", self)
         plot_2d_action.triggered.connect(
             lambda: self.plot_request.emit(
                 PlotRequest(
@@ -249,35 +245,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.view_context_menu.addAction(plot_2d_action)
-
-        plot_3d_action = QAction("Trajectory 3D", self)
-        plot_3d_action.triggered.connect(
-            lambda: self.plot_request.emit(
-                PlotRequest(
-                    type=PlotRequestType.TRAJECTORIES,
-                    trajectory_selection=self.get_selection(),
-                    dimension=3,
-                )
-            )
-        )
-        self.view_context_menu.addAction(plot_3d_action)
-
-        plot_laps_action = QAction("Trajectory Laps", self)
-        plot_laps_action.triggered.connect(
-            lambda: self.plot_request.emit(
-                PlotRequest(
-                    type=PlotRequestType.TRAJECTORY_LAPS,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        plot_laps_enabled = (
-            len(self.get_selection()) == 1 and self.get_selection().entries[0].trajectory.state.sorting_known
-        )
-        plot_laps_action.setEnabled(plot_laps_enabled)
-        if plot_laps_enabled:
-            self.view_context_menu.addAction(plot_laps_action)
+        self.addAction(plot_2d_action)
 
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)
@@ -322,6 +290,23 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.action_context_menu.addAction(apply_alignment_action)
+
+        if not self.get_selection().reference_is_set:
+            return
+
+        if self.get_selection().reference_entry.trajectory.pos.local_transformer is None:
+            return
+
+        epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
+        epsg_to_ref_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.EPSG_TO_REF,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(epsg_to_ref_action)
 
     def align_context(self) -> QtWidgets.QMenu:
         self.align_with_reference_sub_menu.setEnabled(self.get_selection().reference_is_set)
@@ -587,3 +572,30 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.match_context_menu.addAction(match_nsi_action)
 
         return self.match_context_menu
+
+    def pipelines_context(self) -> None:
+        self.addMenu(self.pipelines_context_menu)
+        self.pipelines_context_menu.setEnabled(self.get_selection().reference_is_set)
+
+        ate_action = QAction("Compute ATE", self)
+        ate_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.ATE,
+                    selection=self.get_selection(),
+                )
+            ),
+        )
+
+        rpe_action = QAction("Compute RPE", self)
+        rpe_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.RPE,
+                    selection=self.get_selection(),
+                )
+            ),
+        )
+
+        self.pipelines_context_menu.addAction(ate_action)
+        self.pipelines_context_menu.addAction(rpe_action)

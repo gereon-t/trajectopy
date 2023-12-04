@@ -5,10 +5,10 @@ Gereon Tombrink, 2023
 mail@gtombrink.de
 """
 import logging
+from typing import Any, Dict, Tuple
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.util.datahandling import merge_dicts
 
 from trajectopy.managers.requests import (
     FileRequest,
@@ -27,11 +27,30 @@ from trajectopy.models.entries import AlignmentEntry
 from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.views.properties_window import PropertiesGUI
-from trajectopy.views.report_settings import ReportSettingsGUI
 from trajectopy.views.result_selection_window import AlignmentSelector
-from trajectopy.views.settings_window import SettingsGUI
+from trajectopy.views.json_settings_view import JSONViewer
 
 logger = logging.getLogger("root")
+
+
+def merge_dicts(dicts: Tuple[Dict[str, str], ...]):
+    """
+    Merges multiple dictionaries into a single dictionary, where each key in the merged dictionary
+    corresponds to a list of values from each input dictionary.
+
+    Args:
+        dicts (Tuple[dict]): A tuple of dictionaries to be merged.
+
+    Returns:
+        dict: A dictionary containing the merged key-value pairs.
+    """
+    merged_dict: Dict[Any, Any] = {}
+    for i, d in enumerate(dicts):
+        for k, v in d.items():
+            if k not in merged_dict:
+                merged_dict[k] = ["-"] * len(dicts)
+            merged_dict[k][i] = v
+    return merged_dict
 
 
 class UIManager(QObject):
@@ -40,7 +59,6 @@ class UIManager(QObject):
 
     Possible requests:
     - EPSG selection
-    - Grid selection
     - Alignment selection
     - Import trajectory
     - Import result
@@ -69,7 +87,6 @@ class UIManager(QObject):
         super().__init__(parent)
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_SELECTION: self.epsg_input,
-            UIRequestType.GRID_SELECTION: self.grid_input,
             UIRequestType.ALIGNMENT_SELECTION: self.alignment_selection,
             UIRequestType.IMPORT_TRAJ: self.trajectory_import_dialog,
             UIRequestType.IMPORT_RES: self.result_import_dialog,
@@ -83,7 +100,6 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
-            UIRequestType.EXPORT_REPORT: self.export_report,
         }
 
     @pyqtSlot(UIRequest)
@@ -109,9 +125,9 @@ class UIManager(QObject):
         property_window.show()
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
-        settings_window = SettingsGUI(
+        settings_window = JSONViewer(
             parent=self.parent(),
-            trajectory_entry=request.trajectory_selection.entries[0],
+            settings=request.trajectory_selection.entries[0].settings,
         )
         settings_window.show()
 
@@ -211,27 +227,6 @@ class UIManager(QObject):
             )
         )
 
-    def grid_input(self, request: UIRequest) -> None:
-        grid, ok = QtWidgets.QInputDialog.getDouble(
-            None,
-            "Please enter a grid size in seconds",
-            "Grid size [s]:",
-            min=0.0001,
-            value=0.01,
-            decimals=4,
-        )
-
-        if not ok or grid is None:
-            return
-
-        self.trajectory_manager_request.emit(
-            TrajectoryManagerRequest(
-                type=TrajectoryManagerRequestType.INTERPOLATE_GRID,
-                selection=request.trajectory_selection,
-                grid=grid,
-            )
-        )
-
     def edit_alignment(self, request: UIRequest) -> None:
         alignment_window = AlignmentEditWindow(parent=self.parent(), alignment_entry=request.alignment_entry)
         alignment_window.update_signal.connect(
@@ -243,24 +238,3 @@ class UIManager(QObject):
             )
         )
         alignment_window.show()
-
-    def export_report(self, _: UIRequest) -> None:
-        settings_window = ReportSettingsGUI()
-
-        if settings_window.exec():
-            unit = settings_window.unit_combo.currentText()
-            max_data_size = settings_window.size_spinbox.value()
-
-            logger.info("Selected unit: %s and max data size: %s", unit, max_data_size)
-
-            if selected_file := save_file_dialog(None, file_filter="HTML Report (*.html)"):
-                self.file_request.emit(
-                    FileRequest(
-                        type=FileRequestType.WRITE_REPORT,
-                        file_list=[selected_file],
-                        result_selection=self.request.result_selection,
-                        report_settings={"unit": unit, "max_data_size": max_data_size},
-                    )
-                )
-            else:
-                return
