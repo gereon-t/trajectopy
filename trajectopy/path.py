@@ -7,9 +7,7 @@ mail@gtombrink.de
 import logging
 import os
 import sys
-import dotenv
 
-dotenv.load_dotenv()
 logger = logging.getLogger("root")
 
 
@@ -27,4 +25,3 @@ VERSION_FILE_PATH = resource_path("version")
 FULL_ICON_FILE_PATH = resource_path("resources/full-icon-poppins.png")
 ICON_FILE_PATH = resource_path("resources/icon.png")
 ICON_BG_FILE_PATH = resource_path("resources/icon-bg.png")
-REPORT_PATH = os.path.abspath(os.getenv("TRAJECTOPY_REPORT_PATH", "reports"))

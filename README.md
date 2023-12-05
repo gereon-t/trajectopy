@@ -34,50 +34,14 @@ Trajectopy offers a range of features, including:
 - __Customizable HTML-based Visualization__: Powered by [Plotly](https://plotly.com/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy-core/blob/main/example_data/report.html))
 
 
-
-
-
-
 ## Table of Contents
 - [Installation](#installation)
+- [Command Line Options](#command-line-options)
 - [Importing Trajectories](#importing-trajectories)
 - [Processing Settings](#processing-settings)
 
 
 ## Installation
-
-#### Create virtual environment (Optional but recommended)
-Unix
-
-```console
-python3 -m venv .venv
-```
-
-Windows
-
-```console
-python -m venv .venv
-```
-
-Activate (Unix)
-
-```console
-source .venv/bin/activate
-```
-
-**or** (Windows)
-```console
-.\.venv\Scripts\activate
-```
-
-### Installation via pip
-Update pip:
-
-```console
-pip install --upgrade pip
-```
-
-Install trajectopy:
 
 ```console
 pip install trajectopy
@@ -89,38 +53,30 @@ Run
 trajectopy
 ```
 
-or
+## Command Line Options
+```console	
+usage: trajectopy [-h] [--version] [--single_thread] [--report_settings REPORT_SETTINGS] [--report_path REPORT_PATH]
+```
+  
+```console
+options:
+    -h, --help            show this help message and exit
+    --version, -v
+    --single_thread       Disable multithreading
+    --report_settings REPORT_SETTINGS, -s REPORT_SETTINGS
+                            Path to JSON report settings file
+                            that will override the default settings.
+    --report_path REPORT_PATH, -o REPORT_PATH
+                            Output directory for all reports of one session.
+```
+Since version 2.0.1, trajectopy allows users to customize the report output path and settings. By default, reports are saved in the "reports" folder of the current working directory.
 
-```console
-python -m trajectopy
-```
+The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json).
 
-### Or using the repository:
-
+Example:
 ```console
-git clone https://github.com/gereon-t/trajectopy.git
+trajectopy -s custom.json -o ./custom_report_location
 ```
-```console
-cd trajectopy
-```
-
-```console
-poetry install
-```
-
-Run
-```console
-poetry run trajectopy
-```
-or 
-```console
-poetry shell
-```
-and then
-```console
-trajectopy
-```
-
 
 
 ## Importing Trajectories

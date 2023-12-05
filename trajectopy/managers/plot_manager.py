@@ -19,7 +19,6 @@ from trajectopy_core.report.utils import show_report
 
 from trajectopy.managers.requests import PlotRequest, PlotRequestType, UIRequest, generic_request_handler
 from trajectopy.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry, ResultEntry
-from trajectopy.path import REPORT_PATH
 from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
@@ -41,7 +40,7 @@ class PlotManager(QObject):
     operation_started = pyqtSignal()
     operation_finished = pyqtSignal()
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent=None, report_dir: str = "") -> None:
         self.cnt = 0
         super().__init__(parent)
         self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
@@ -50,6 +49,7 @@ class PlotManager(QObject):
             PlotRequestType.MULTI_DEVIATIONS: self.plot_multi_deviations,
             PlotRequestType.ALIGNMENT: self.plot_alignment,
         }
+        self.report_dir = os.path.abspath(report_dir or "reports")
 
     @show_progress
     @pyqtSlot(PlotRequest)
@@ -57,17 +57,17 @@ class PlotManager(QObject):
         """Logic for handling a request."""
         generic_request_handler(self, request, passthrough_request=True)
 
-    @property
-    def report_path(self) -> str:
+    def report_path(self, prefix: str = "report") -> str:
         """Return the path to the report file."""
-        path = os.path.join(REPORT_PATH, f"report_{self.cnt:03}.html")
+        prefix = prefix.replace(" ", "_").replace(".", "")
+        path = os.path.join(self.report_dir, f"{prefix}_{self.cnt:03}.html")
         self.cnt += 1
         return path
 
     def plot_selected_trajectories(self, request: PlotRequest) -> None:
         trajectory_list = [entry.trajectory for entry in request.trajectory_selection.entries]
         traj_report = render_trajectories(trajectories=trajectory_list, report_settings=request.report_settings)
-        show_report(traj_report, filepath=self.report_path)
+        show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
 
     def plot_single_deviations(self, request: PlotRequest) -> None:
         ate_results = get_ate_results(request.result_selection.entries)
@@ -87,7 +87,9 @@ class PlotManager(QObject):
         report = render_single_report(
             ate_result=ate_result, rpe_result=rpe_result, report_settings=request.report_settings
         )
-        show_report(report_text=report, filepath=self.report_path)
+        show_report(
+            report_text=report, filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name)
+        )
 
     def plot_multi_deviations(self, request: PlotRequest) -> None:
         """Plot multiple absolute deviations."""
@@ -103,7 +105,7 @@ class PlotManager(QObject):
             rpe_results=rpe_results if rpe_results else None,
             report_settings=request.report_settings,
         )
-        show_report(report_text=multi_report, filepath=self.report_path)
+        show_report(report_text=multi_report, filepath=self.report_path(prefix="multi_deviations"))
 
     def plot_alignment(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AlignmentEntry):
@@ -113,7 +115,7 @@ class PlotManager(QObject):
             alignment_parameters=entry.estimated_parameters, name=entry.name, report_settings=request.report_settings
         )
 
-        show_report(report_text=report, filepath=self.report_path)
+        show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
 
 
 def get_ate_results(entries: List[ResultEntry]) -> List[ATEResult]:

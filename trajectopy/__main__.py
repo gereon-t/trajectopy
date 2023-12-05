@@ -37,6 +37,22 @@ def main():
         help="Disable multithreading",
         default=getattr(sys, "gettrace", None)(),
     )
+    parser.add_argument(
+        "--report_settings",
+        "-s",
+        type=str,
+        help="Path to JSON report settings file that will override the default settings.",
+        required=False,
+        default="",
+    )
+    parser.add_argument(
+        "--report_path",
+        "-o",
+        type=str,
+        help="Output directory for all reports of one session.",
+        required=False,
+        default="",
+    )
     args = parser.parse_args()
 
     if args.version:
@@ -44,7 +60,11 @@ def main():
         return
 
     app = QApplication([])
-    _ = TrajectopyGUI(single_thread=args.single_thread)
+    _ = TrajectopyGUI(
+        single_thread=args.single_thread,
+        report_output_path=args.report_path,
+        report_settings_path=args.report_settings,
+    )
     app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
     app.exec()
 

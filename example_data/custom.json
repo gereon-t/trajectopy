@@ -1,0 +1,46 @@
+{
+    "scatter_max_std": 4.0,
+    "ate_unit_is_mm": true,
+    "directed_ate": false,
+    "histogram_opacity": 0.7,
+    "histogram_bargap": 0.1,
+    "histogram_barmode": "overlay",
+    "histogram_yaxis_title": "Count",
+    "plot_mode": "lines+markers",
+    "scatter_mode": "lines+markers",
+    "scatter_colorscale": "RdYlBu_r",
+    "scatter_axis_order": "xy",
+    "scatter_marker_size": 5,
+    "scatter_detailed": false,
+    "pos_x_name": "x",
+    "pos_y_name": "y",
+    "pos_z_name": "z",
+    "pos_x_unit": "m",
+    "pos_y_unit": "m",
+    "pos_z_unit": "m",
+    "rot_x_name": "roll",
+    "rot_y_name": "pitch",
+    "rot_z_name": "yaw",
+    "rot_unit": "\u00b0",
+    "single_plot_export": {
+        "format": "png",
+        "height": 450,
+        "width": 800,
+        "scale": 8
+    },
+    "two_subplots_export": {
+        "format": "png",
+        "height": 540,
+        "width": 800,
+        "scale": 8
+    },
+    "three_subplots_export": {
+        "format": "png",
+        "height": 750,
+        "width": 800,
+        "scale": 8
+    },
+    "single_plot_height": 450,
+    "two_subplots_height": 540,
+    "three_subplots_height": 750
+}

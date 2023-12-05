@@ -43,7 +43,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     and results as well as the menu bar.
     """
 
-    def __init__(self, single_thread: bool = False) -> None:
+    def __init__(
+        self, single_thread: bool = False, report_settings_path: str = "", report_output_path: str = ""
+    ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
         self.trajectory_table_model = TrajectoryTableModel()
@@ -57,7 +59,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
-        self.plot_manager = PlotManager()
+        self.plot_manager = PlotManager(report_dir=report_output_path)
 
         if not single_thread:
             self.trajectory_manager.moveToThread(self.computation_thread)
@@ -70,7 +72,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
 
-        self.report_settings = ReportSettings()
+        if report_settings_path:
+            try:
+                self.report_settings = ReportSettings.from_file(report_settings_path)
+                logger.info("Loaded report settings from %s", report_settings_path)
+            except Exception as e:
+                logger.error("Could not load report settings file: %s", e)
+                self.report_settings = ReportSettings()
+        else:
+            self.report_settings = ReportSettings()
 
         self.setup_io_connections()
         self.setup_worker_connections()
@@ -211,7 +221,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot(PlotRequest)
     def inject_report_settings(self, plot_request: PlotRequest) -> None:
-        logger.info("Injecting report settings into plot request of type %s", plot_request.type)
+        logger.debug("Injecting report settings into plot request of type %s", plot_request.type)
         plot_request.report_settings = self.report_settings
         self.plot_manager.handle_request(plot_request)
 
