@@ -39,6 +39,7 @@ Trajectopy offers a range of features, including:
 - [Command Line Options](#command-line-options)
 - [Importing Trajectories](#importing-trajectories)
 - [Processing Settings](#processing-settings)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
 
 
 ## Installation
@@ -288,3 +289,19 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `height` (integer): The export height in pixels. Default: 500.
 - `width` (integer): The export width in pixels. Default: 800.
 - `scale` (integer): The export scale. Default: 6.
+
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|---|---|
+| Ctrl + C | Copy selected entry |
+| E | Export selected entry |
+| M | Merge selected trajectories |
+| P | View properties of selected entry / entries |
+| R | Set selected trajectory as reference |
+| Shift + R | Unset selected trajectory as reference |
+| S | Open trajectory settings |
+| T | Transform selected trajectories to a different coordinate system. |
+| U | Rename selected entry |
+| V | Plot all selected trajectories |
