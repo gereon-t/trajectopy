@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trajectopy"
-version = "2.0.3"
+version = "2.0.4"
 description = "Trajectory Evaluation in Python"
 authors = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
 maintainers = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
@@ -17,7 +17,7 @@ packages = [
 python = ">=3.8.2,<3.12"
 pyqt6 = "^6.6.1"
 rich = "^13.7.0"
-trajectopy-core = "^2.4.5"
+trajectopy-core = "^2.4.6"
 
 [tool.poetry.scripts]
 trajectopy = "trajectopy.__main__:main"
