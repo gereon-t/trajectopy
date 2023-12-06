@@ -49,7 +49,7 @@ def main():
         "--report_path",
         "-o",
         type=str,
-        help="Output directory for all reports of one session.",
+        help="Output directory for all reports of one session. If not specified, a temporary directory will be used.",
         required=False,
         default="",
     )

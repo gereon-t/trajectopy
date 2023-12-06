@@ -6,6 +6,8 @@ mail@gtombrink.de
 """
 import logging
 import os
+import shutil
+from tempfile import mkdtemp
 from typing import Union
 
 from PyQt6 import QtCore, QtWidgets
@@ -59,7 +61,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
-        self.plot_manager = PlotManager(report_dir=report_output_path)
+
+        if not report_output_path:
+            self.temp_dir = True
+            self.report_output_path = mkdtemp(prefix="trajectopy_reports_")
+        else:
+            self.temp_dir = False
+            self.report_output_path = report_output_path
+
+        self.plot_manager = PlotManager(report_dir=self.report_output_path)
 
         if not single_thread:
             self.trajectory_manager.moveToThread(self.computation_thread)
@@ -123,6 +133,11 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def closeEvent(self, a0: Union[QCloseEvent, None]) -> None:
         self.computation_thread.quit()
         self.computation_thread.wait()
+
+        if self.temp_dir:
+            shutil.rmtree(self.report_output_path)
+            logger.info("Removed temporary report directory %s", self.report_output_path)
+
         return super().closeEvent(a0)
 
     def setup_worker_connections(self):

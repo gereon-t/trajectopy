@@ -40,7 +40,7 @@ class PlotManager(QObject):
     operation_started = pyqtSignal()
     operation_finished = pyqtSignal()
 
-    def __init__(self, parent=None, report_dir: str = "") -> None:
+    def __init__(self, report_dir: str, parent=None) -> None:
         self.cnt = 0
         super().__init__(parent)
         self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
@@ -49,7 +49,7 @@ class PlotManager(QObject):
             PlotRequestType.MULTI_DEVIATIONS: self.plot_multi_deviations,
             PlotRequestType.ALIGNMENT: self.plot_alignment,
         }
-        self.report_dir = os.path.abspath(report_dir or "reports")
+        self.report_dir = os.path.abspath(report_dir)
 
     @show_progress
     @pyqtSlot(PlotRequest)

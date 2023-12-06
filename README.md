@@ -68,15 +68,14 @@ options:
                             Path to JSON report settings file
                             that will override the default settings.
     --report_path REPORT_PATH, -o REPORT_PATH
-                            Output directory for all reports of one session.
+                            Output directory for all reports of one session. If not specified, a temporary directory will be used.
 ```
-Since version 2.0.1, trajectopy allows users to customize the report output path and settings. By default, reports are saved in the "reports" folder of the current working directory.
-
+Since version 2.0.1, trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report_path` option. The report settings can be customized using a JSON file.
 The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json).
 
 Example:
 ```console
-trajectopy -s custom.json -o ./custom_report_location
+trajectopy -s custom.json -o ./persistent_report_directory
 ```
 
 
