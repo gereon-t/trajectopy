@@ -14,7 +14,7 @@ logger = logging.getLogger("root")
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
-        base_path = sys._MEIPASS
+        base_path = os.path.join(sys._MEIPASS, "trajectopy")
     except Exception:
         base_path = os.path.dirname(__file__)
 

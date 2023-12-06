@@ -2,10 +2,15 @@
 
 added_files = [
     ( 'trajectopy/version', 'trajectopy/' ),
-    ( 'trajectopy/default.mplstyle', 'trajectopy/' ),
     ( 'trajectopy/resources/icon.png', 'trajectopy/resources/'),
     ( 'trajectopy/resources/icon-bg.png', 'trajectopy/resources/'),
-    ( 'trajectopy/resources/full-icon-poppins.png', 'trajectopy/resources/')
+    ( 'trajectopy/resources/full-icon-poppins.png', 'trajectopy/resources/'),
+    ( 'reportdata/generic.html', 'trajectopy/templates/'),
+    ( 'reportdata/multi_template.html', 'trajectopy/templates/'),
+    ( 'reportdata/single_template.html', 'trajectopy/templates/'),
+    ( 'reportdata/icon.png', 'trajectopy/assets/'),
+    ( 'reportdata/igg.png', 'trajectopy/assets/'),
+    ( 'reportdata/uni_bonn.png', 'trajectopy/assets/'),
 ]
 
 a = Analysis(
