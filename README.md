@@ -69,6 +69,8 @@ options:
                             that will override the default settings.
     --report_path REPORT_PATH, -o REPORT_PATH
                             Output directory for all reports of one session. If not specified, a temporary directory will be used.
+    --mapbox_token MAPBOX_TOKEN, -t MAPBOX_TOKEN
+                            Mapbox token to use Mapbox map styles in trajectory plots.
 ```
 Since version 2.0.1, trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report_path` option. The report settings can be customized using a JSON file.
 The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json).
@@ -255,6 +257,23 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
 - `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
 - `scatter_detailed` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
+
+#### Mapbox Settings
+
+These settings currently only apply to trajectory only plots without deviations.
+
+- `scatter_mapbox` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
+- `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".
+- `scatter_mapbox_zoom` (int): The zoom level of the map. Default value is 15.
+- `scatter_mapbox_token` (str): The Mapbox token. Default value is "".
+
+The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapbox.com/) after creating a free account. The token can be set in multiple ways:
+
+- As a command line argument `--mapbox_token`.
+- As an environment variable `MAPBOX_TOKEN`.
+- Directly in the settings file.
+- In the GUI settings dialog.
+- By placing a file named `.mapbox_token` in the current working directory.
 
 #### Position Units and Names
 

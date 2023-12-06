@@ -55,3 +55,4 @@ analysis/
 test/tmp
 %Code*/
 reports/
+.mapbox_token

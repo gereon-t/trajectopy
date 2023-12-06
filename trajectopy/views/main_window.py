@@ -46,7 +46,11 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     """
 
     def __init__(
-        self, single_thread: bool = False, report_settings_path: str = "", report_output_path: str = ""
+        self,
+        single_thread: bool = False,
+        report_settings_path: str = "",
+        report_output_path: str = "",
+        mapbox_token: str = "",
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
@@ -57,18 +61,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.computation_thread = QtCore.QThread(parent=self)
 
         self.trajectory_manager = TrajectoryManager()
-
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager()
         self.session_manager = SessionManager()
 
-        if not report_output_path:
-            self.temp_dir = True
-            self.report_output_path = mkdtemp(prefix="trajectopy_reports_")
-        else:
-            self.temp_dir = False
-            self.report_output_path = report_output_path
-
+        self.report_settings = self.get_report_settings(report_settings_path)
+        self.report_settings.scatter_mapbox_token = mapbox_token or self.get_mapbox_token()
+        self.report_output_path = self.get_report_directory(report_output_path)
         self.plot_manager = PlotManager(report_dir=self.report_output_path)
 
         if not single_thread:
@@ -82,16 +81,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
 
-        if report_settings_path:
-            try:
-                self.report_settings = ReportSettings.from_file(report_settings_path)
-                logger.info("Loaded report settings from %s", report_settings_path)
-            except Exception as e:
-                logger.error("Could not load report settings file: %s", e)
-                self.report_settings = ReportSettings()
-        else:
-            self.report_settings = ReportSettings()
-
         self.setup_io_connections()
         self.setup_worker_connections()
         self.setup_progress_connections()
@@ -99,6 +88,41 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self.computation_thread.start()
         self.show()
+
+    def get_report_directory(self, report_output_path) -> str:
+        if not report_output_path:
+            self.temp_dir = True
+            return mkdtemp(prefix="trajectopy_reports_")
+        else:
+            self.temp_dir = False
+            return report_output_path
+
+    def get_report_settings(self, report_settings_path: str = "") -> ReportSettings:
+        if report_settings_path:
+            try:
+                logger.info("Loaded report settings from %s", report_settings_path)
+                return ReportSettings.from_file(report_settings_path)
+            except Exception as e:
+                logger.error("Could not load report settings file: %s", e)
+                return ReportSettings()
+        else:
+            return ReportSettings()
+
+    def get_mapbox_token(self) -> str:
+        mapbox_token = os.environ.get("MAPBOX_TOKEN")
+
+        if mapbox_token:
+            logger.info("Using mapbox token from environment variable")
+            return mapbox_token
+
+        mapbox_token_file = os.path.join(os.getcwd(), ".mapbox_token")
+        if os.path.isfile(mapbox_token_file):
+            with open(mapbox_token_file, "r", encoding="utf-8") as f:
+                mapbox_token = f.read()
+                logger.info("Using mapbox token from file")
+                return mapbox_token
+
+        return ""
 
     def setup_menu_bar(self):
         """

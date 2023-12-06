@@ -53,6 +53,14 @@ def main():
         required=False,
         default="",
     )
+    parser.add_argument(
+        "--mapbox_token",
+        "-t",
+        type=str,
+        help="Mapbox token to use Mapbox map styles in trajectory plots.",
+        required=False,
+        default="",
+    )
     args = parser.parse_args()
 
     if args.version:
@@ -64,6 +72,7 @@ def main():
         single_thread=args.single_thread,
         report_output_path=args.report_path,
         report_settings_path=args.report_settings,
+        mapbox_token=args.mapbox_token,
     )
     app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
     app.exec()
