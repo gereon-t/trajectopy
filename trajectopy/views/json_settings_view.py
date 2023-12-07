@@ -208,7 +208,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
                 group_label.setFont(font)
                 group_label.setObjectName(f"label-{parent_name}-{key}")
-                group_label.setText(_translate("MainWindow", key.upper()))
+                group_label.setText(_translate("MainWindow", key.replace("_", " ").title()))
                 self.form_layout.setWidget(self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, group_label)
                 self.form_item_cnt += 1
                 self.populate_form(f"{parent_name}-{key}", value)
@@ -218,7 +218,9 @@ class JSONViewer(QtWidgets.QMainWindow):
                 self.form_layout.setWidget(
                     self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, settings_label
                 )
-                settings_label.setText(_translate("MainWindow", f"{key} ({pretty_type(str(type(value)))})"))
+                settings_label.setText(
+                    _translate("MainWindow", f"{key.replace('_', ' ').title()} ({pretty_type(str(type(value)))})")
+                )
 
                 add_settings_field(key, value)
                 self.form_item_cnt += 1
