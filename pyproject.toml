@@ -17,7 +17,7 @@ packages = [
 python = ">=3.8.2,<3.12"
 pyqt6 = "^6.6.1"
 rich = "^13.7.0"
-trajectopy-core = "^2.4.6"
+trajectopy-core = "^2.4.7,<2.5.0"
 
 [tool.poetry.scripts]
 trajectopy = "trajectopy.__main__:main"
