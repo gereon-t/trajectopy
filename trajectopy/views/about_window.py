@@ -18,10 +18,18 @@ class AboutGUI(QtWidgets.QMainWindow):
 
         self.year: QtWidgets.QLabel
         self.year.setText(year_str)
+    
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def setupUi(self):
         self.setObjectName("MainWindow")
         self.resize(320, 270)
+        self.center()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

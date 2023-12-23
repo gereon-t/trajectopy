@@ -31,9 +31,17 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
         self.update_view()
         super().show()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def setupUi(self):
         self.setObjectName("Form")
         self.resize(250, 400)
+        self.center()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

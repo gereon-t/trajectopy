@@ -288,10 +288,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def handle_new_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.CONFIRM_RESET))
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def setupUi(self):
         """This method sets up the GUI"""
         self.setObjectName("MainWindow")
         self.resize(640, 480)
+        self.center()
 
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
