@@ -18,7 +18,7 @@ from trajectopy_core.alignment.actions import (
 )
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy_core.matching import match_trajectories, rough_timestamp_matching
-from trajectopy_core.pipelines import approximate, ate, rpe, sort_spatially
+from trajectopy_core.pipelines import approximate, ate, merge, rpe, sort_spatially
 from trajectopy_core.spatialsorter import Sorting
 
 from trajectopy.managers.requests import (
@@ -336,33 +336,12 @@ class TrajectoryManager(QObject):
         if (selected_entries := self.selected_trajectory_entries()) is None:
             return
 
-        first_entry = selected_entries[0]
-
-        for counter, selected_entry in enumerate(selected_entries):
-            if counter == 0:
-                merged_trajectory = selected_entry.trajectory
-                merged_trajectory.name = "Merged"
-                reference_local_transformer = merged_trajectory.pos.local_transformer
-                reference_epsg = merged_trajectory.pos.epsg
-                continue
-
-            current_trajectory = selected_entry.trajectory
-
-            if reference_local_transformer is None:
-                logger.warning("Merging possibly unrelated reference systems.")
-            else:
-                current_trajectory.pos.local_transformer = reference_local_transformer
-
-            current_trajectory.pos.to_epsg(reference_epsg)
-            current_trajectory = selected_entry.trajectory
-
-            merged_trajectory.append(current_trajectory)
+        merged_trajectory = merge([entry.trajectory for entry in selected_entries])
 
         new_trajectory_entry = TrajectoryEntry(
             full_filename="",
             trajectory=merged_trajectory,
-            settings=first_entry.settings,
-            group_id=first_entry.group_id,
+            group_id=selected_entries[0].group_id,
         )
         self.emit_add_trajectory_signal(new_trajectory_entry)
 
