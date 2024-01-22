@@ -9,8 +9,6 @@ added_files = [
     ( 'reportdata/multi_template.html', 'trajectopy/templates/'),
     ( 'reportdata/single_template.html', 'trajectopy/templates/'),
     ( 'reportdata/icon.png', 'trajectopy/assets/'),
-    ( 'reportdata/igg.png', 'trajectopy/assets/'),
-    ( 'reportdata/uni_bonn.png', 'trajectopy/assets/'),
 ]
 
 a = Analysis(
