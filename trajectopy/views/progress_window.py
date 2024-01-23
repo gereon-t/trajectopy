@@ -12,9 +12,17 @@ class ProgressWindow(QtWidgets.QMainWindow):
         super().__init__(parent=parent)
         self.setupUi()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def setupUi(self):
         self.setObjectName("Form")
         self.resize(410, 70)
+        self.center()
         self.setMinimumSize(QtCore.QSize(410, 70))
         self.setMaximumSize(QtCore.QSize(410, 70))
         self.verticalLayoutWidget = QtWidgets.QWidget(self)

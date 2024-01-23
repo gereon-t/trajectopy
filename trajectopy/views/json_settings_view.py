@@ -21,11 +21,20 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.form_item_cnt = 0
         self.settings = settings
         self.setWindowTitle(name)
+        
         self.setup_ui()
         self.update_view()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def setup_ui(self):
         self.resize(400, 400)
+        self.center()
 
         self.scroll_area = QtWidgets.QScrollArea()
         self.central_widget = QtWidgets.QWidget(self)

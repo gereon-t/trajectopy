@@ -8,9 +8,6 @@
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Windows-0078D6?st&logo=windows&logoColor=white" /></a>
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black" /></a>
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/mac%20os-000000?&logo=apple&logoColor=white" /></a>
-    <br />
-    <a href="https://www.gug.uni-bonn.de/en/"><img src=.images/uni-bonn.svg height="50"/></a>
-    <a href="https://www.gug.uni-bonn.de/en/"><img src=.images/igg.png height="50"/></a>
 
 #### Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation.
 
