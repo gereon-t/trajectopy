@@ -19,9 +19,18 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.year: QtWidgets.QLabel
         self.year.setText(year_str)
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def setupUi(self):
         self.setObjectName("MainWindow")
         self.resize(320, 270)
+        self.center()
+        self.setStyleSheet("background-color: white;")
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -78,4 +87,4 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.version.setText(_translate("MainWindow", "Version Number"))
         self.author.setText(_translate("MainWindow", "Gereon Tombrink"))
         self.uni.setText(_translate("MainWindow", "University of Bonn"))
-        self.year.setText(_translate("MainWindow", "2023"))
+        self.year.setText(_translate("MainWindow", "2024"))

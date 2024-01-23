@@ -30,7 +30,7 @@ from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
 
 VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
-YEAR = "2023"
+YEAR = "2024"
 
 
 logger = logging.getLogger("root")
