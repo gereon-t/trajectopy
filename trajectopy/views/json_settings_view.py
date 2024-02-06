@@ -21,7 +21,6 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.form_item_cnt = 0
         self.settings = settings
         self.setWindowTitle(name)
-        
         self.setup_ui()
         self.update_view()
 
