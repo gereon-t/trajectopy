@@ -13,8 +13,6 @@
 
 This repository contains the source code of the trajectopy front end PyQt6 GUI. The back-end is part of the trajectopy-core package, see  [https://github.com/gereon-t/trajectopy-core](https://github.com/gereon-t/trajectopy-core).
 
-**New**: Web application for basic trajectory evaluation. [Try it out](https://trajectopy.xyz)
-
 <p align="center">
   <img style="border-radius: 10px;" src=.images/trajectopy_gif_low_quality.gif>
 </p>
