@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import logging
 
 from PyQt6 import QtCore, QtWidgets

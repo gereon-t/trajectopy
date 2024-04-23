@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import logging
 import os
 import uuid
@@ -18,7 +19,7 @@ from trajectopy_core.alignment.parameters import AlignmentParameters
 from trajectopy_core.alignment.result import AlignmentResult
 from trajectopy_core.evaluation.ate_result import ATEResult
 from trajectopy_core.evaluation.rpe_result import RPEResult
-from trajectopy_core.io.header import HeaderData
+from trajectopy_core.input_output.header import HeaderData
 from trajectopy_core.settings.alignment import AlignmentEstimationSettings
 from trajectopy_core.settings.processing import ProcessingSettings
 from trajectopy_core.trajectory import Trajectory
@@ -173,9 +174,11 @@ class TrajectoryEntry(Entry):
             "Date": f"{datetime.fromtimestamp(self.trajectory.tstamps[0]).strftime('%Y-%m-%d %H:%M:%S')} UTC - "
             f"{datetime.fromtimestamp(self.trajectory.tstamps[-1]).strftime('%Y-%m-%d %H:%M:%S')} UTC",
             "Duration": f"{timedelta(seconds=float(self.trajectory.tstamps[-1] - self.trajectory.tstamps[0]))}",
-            "EPSG": f"{self.trajectory.pos.crs}, {self.trajectory.pos.crs.name}"
-            if self.trajectory.pos.crs is not None
-            else "local / unknown",
+            "EPSG": (
+                f"{self.trajectory.pos.crs}, {self.trajectory.pos.crs.name}"
+                if self.trajectory.pos.crs is not None
+                else "local / unknown"
+            ),
             "Orientation available": "yes" if self.trajectory.rot is not None else "no",
             "Number of Poses": str(len(self.trajectory)),
             "Sort By:": self.trajectory.sorting.value,
