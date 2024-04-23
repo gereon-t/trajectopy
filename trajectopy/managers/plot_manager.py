@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import logging
 import os
 from typing import Callable, Dict, List
@@ -101,8 +102,8 @@ class PlotManager(QObject):
             return
 
         multi_report = render_multi_report(
-            ate_results=ate_results if ate_results else None,
-            rpe_results=rpe_results if rpe_results else None,
+            ate_results=ate_results or None,
+            rpe_results=rpe_results or None,
             report_settings=request.report_settings,
         )
         show_report(report_text=multi_report, filepath=self.report_path(prefix="multi_deviations"))

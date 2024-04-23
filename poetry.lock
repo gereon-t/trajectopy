@@ -377,13 +377,13 @@ files = [
 
 [[package]]
 name = "identify"
-version = "2.5.35"
+version = "2.5.36"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.35-py2.py3-none-any.whl", hash = "sha256:c4de0081837b211594f8e877a6b4fad7ca32bbfc1a9307fdd61c28bfe923f13e"},
-    {file = "identify-2.5.35.tar.gz", hash = "sha256:10a7ca245cfcd756a554a7288159f72ff105ad233c7c4b9c6f0f4d108f5f6791"},
+    {file = "identify-2.5.36-py2.py3-none-any.whl", hash = "sha256:37d93f380f4de590500d9dba7db359d0d3da95ffe7f9de1753faa159e71e7dfa"},
+    {file = "identify-2.5.36.tar.gz", hash = "sha256:e5e00f54165f9047fbebeb4a560f9acfb8af4c88232be60a488e9b68d122745d"},
 ]
 
 [package.extras]
@@ -1088,13 +1088,13 @@ tenacity = ">=6.2.0"
 
 [[package]]
 name = "pluggy"
-version = "1.4.0"
+version = "1.5.0"
 description = "plugin and hook calling mechanisms for python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pluggy-1.4.0-py3-none-any.whl", hash = "sha256:7db9f7b503d67d1c5b95f59773ebb58a8c1c288129a88665838012cfb07b8981"},
-    {file = "pluggy-1.4.0.tar.gz", hash = "sha256:8c85c2876142a764e5b7548e7d9a0e0ddb46f5185161049a79b7e974454223be"},
+    {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
+    {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
 ]
 
 [package.extras]
@@ -1586,13 +1586,13 @@ testing = ["build[virtualenv] (>=1.0.3)", "covdefaults (>=2.3)", "detect-test-po
 
 [[package]]
 name = "trajectopy-core"
-version = "2.7.0"
+version = "3.0.0"
 description = "Trajectory Evaluation in Python"
 optional = false
 python-versions = "<3.13,>=3.9"
 files = [
-    {file = "trajectopy_core-2.7.0-py3-none-any.whl", hash = "sha256:1c45e4076cce7fdbbe347cbbf348bcd482b95353f6b3de5b88d7df8e7479019e"},
-    {file = "trajectopy_core-2.7.0.tar.gz", hash = "sha256:e9baea43f3e3dd7598a8a961a733a7182931eecc9928147976cad052e8fd79cc"},
+    {file = "trajectopy_core-3.0.0-py3-none-any.whl", hash = "sha256:48046568807a1ddfe61520d23715a516a054201221a195a359a4daf422d37ab9"},
+    {file = "trajectopy_core-3.0.0.tar.gz", hash = "sha256:41a4f0b817d91930d5e424540c903892ed2455886c277687aa36d7d4af0b228f"},
 ]
 
 [package.dependencies]
@@ -1729,4 +1729,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "26c32a855bf54ce5c8a8205e622c2166cb757f4843c77356a83b5b9baebf0092"
+content-hash = "83bbeabee54b1b99021f7b338f1e438a49b89bd9f12e28904f9bfb43ca982cca"
