@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trajectopy"
-version = "2.0.9"
+version = "2.0.10"
 description = "Trajectory Evaluation in Python"
 authors = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
 maintainers = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
@@ -17,7 +17,7 @@ packages = [
 python = ">=3.9,<3.13"
 pyqt6 = "^6.6.1"
 rich = "^13.7.0"
-trajectopy-core = "^2.6.0,<2.7.0"
+trajectopy-core = "^3.0.0,<3.1.0"
 
 [tool.poetry.scripts]
 trajectopy = "trajectopy.__main__:main"
@@ -27,6 +27,9 @@ mypy = "^1.5.1"
 black = "^23.9.1"
 pre-commit = "^3.5.0"
 tox = "^4.11.3"
+pillow = "^10.3.0"
+numpy = "^1.26.4"
+pointset = "^0.1.7"
 
 [tool.isort]
 profile = "black"
