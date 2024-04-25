@@ -1388,13 +1388,13 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "rosbags"
-version = "0.9.23"
+version = "0.9.19"
 description = "Pure Python library to read, modify, convert, and write rosbag files."
 optional = false
 python-versions = ">=3.8.2"
 files = [
-    {file = "rosbags-0.9.23-py3-none-any.whl", hash = "sha256:0fd14b10ee5b2422a08b3a09d2171dc347925307716779ad6f21e398b280c56a"},
-    {file = "rosbags-0.9.23.tar.gz", hash = "sha256:89229ca8fbb6d5e1cc452045229e6e47028dc10a8724fbe86c93eda477296dc2"},
+    {file = "rosbags-0.9.19-py3-none-any.whl", hash = "sha256:6657187bd0c897fcccf2b5e3520e870a831ba34ad90d908adef626ca32ca63f0"},
+    {file = "rosbags-0.9.19.tar.gz", hash = "sha256:f40bd403b22a2b365fb197c5a6aa590f13dfe848f479ba70bf74dccdcd7849fd"},
 ]
 
 [package.dependencies]
@@ -1404,7 +1404,7 @@ numpy = "*"
 zstandard = "*"
 
 [package.extras]
-dev = ["mypy", "pytest", "pytest-cov", "reuse", "ruff", "sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+dev = ["darglint", "flake8", "flake8-annotations", "flake8-bugbear", "flake8-commas", "flake8-comprehensions", "flake8-docstrings", "flake8-fixme", "flake8-isort", "flake8-mutable", "flake8-print", "flake8-pyprojecttoml", "flake8-pytest-style", "flake8-quotes", "flake8-return", "flake8-simplify", "flake8-type-checking", "flake8-use-fstring", "mypy", "pep8-naming", "pylint", "pytest", "pytest-cov", "sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme", "toml", "yapf"]
 
 [[package]]
 name = "ruamel-yaml"
@@ -1729,4 +1729,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "83bbeabee54b1b99021f7b338f1e438a49b89bd9f12e28904f9bfb43ca982cca"
+content-hash = "09242f12e233bc1b968622cfedc1cdac633852cae4448bfc18364980052a7745"
