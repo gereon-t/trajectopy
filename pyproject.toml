@@ -18,6 +18,7 @@ python = ">=3.9,<3.13"
 pyqt6 = "^6.6.1"
 rich = "^13.7.0"
 trajectopy-core = "^3.0.0,<3.1.0"
+rosbags = "<0.9.20"
 
 [tool.poetry.scripts]
 trajectopy = "trajectopy.__main__:main"
