@@ -261,7 +261,8 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 ##### ATE Frame Definition
 
 By default, the ATE is split into along-, horizontal-cross- and vertical-cross-track directions. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
-<img src=".images/along_cross_devs.png" alt="ate_frames" width="400"/>
+
+<img src=".images/along_cross_frames.png" alt="ate_frames" width="400"/>
 
 #### Mapbox Settings
 
