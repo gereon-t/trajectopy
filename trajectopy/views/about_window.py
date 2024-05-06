@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from trajectopy.path import FULL_ICON_FILE_PATH
@@ -30,7 +31,6 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.setObjectName("MainWindow")
         self.resize(320, 270)
         self.center()
-        self.setStyleSheet("background-color: white;")
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
