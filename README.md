@@ -36,6 +36,7 @@ Trajectopy offers a range of features, including:
 - [Command Line Options](#command-line-options)
 - [Importing Trajectories](#importing-trajectories)
 - [Processing Settings](#processing-settings)
+- [Report Settings](#report-settings)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 
 
