@@ -241,6 +241,9 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 
 #### Visualization Settings
 
+- `single_plot_height` (int): The height of a single plot. Default value is 450.
+- `two_subplots_height` (int): The height of two subplots. Default value is 540.
+- `three_subplots_height` (int): The height of three subplots. Default value is 750.
 - `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.
@@ -254,6 +257,11 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
 - `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
 - `scatter_detailed` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
+
+##### ATE Frame Definition
+
+By default, the ATE is split into along-, horizontal-cross- and vertical-cross-track directions. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
+<img src=".images/along_cross_devs.png" alt="ate_frames" width="400"/>
 
 #### Mapbox Settings
 
@@ -280,6 +288,9 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `pos_x_unit` (string): Unit for the X-axis position, Default: "m".
 - `pos_y_unit` (string): Unit for the Y-axis position, Default: "m".
 - `pos_z_unit` (string): Unit for the Z-axis position, Default: "m".
+- `pos_dir_dev_x_name` (string): Name for the directed position deviation in along-track direction. Default: "along".
+- `pos_dir_dev_y_name` (string): Name for the directed position deviation in horizontal cross-track direction. Default: "cross-h".
+- `pos_dir_dev_z_name` (string): Name for the directed position deviation in vertical cross-track direction. Default: "cross-v".
 
 #### Rotation Units and Names
 
@@ -293,9 +304,6 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `single_plot_export` (ExportSettings): The export settings for single plots. Default value is an instance of ExportSettings with width=800 and height=450.
 - `two_subplots_export` (ExportSettings): The export settings for two subplots. Default value is an instance of ExportSettings with width=800 and height=540.
 - `three_subplots_export` (ExportSettings): The export settings for three subplots. Default value is an instance of ExportSettings with width=800 and height=750.
-- `single_plot_height` (int): The height of a single plot. Default value is 450.
-- `two_subplots_height` (int): The height of two subplots. Default value is 540.
-- `three_subplots_height` (int): The height of three subplots. Default value is 750.
 
 
 #### Export Settings
