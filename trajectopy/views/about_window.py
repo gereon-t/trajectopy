@@ -15,10 +15,16 @@ class AboutGUI(QtWidgets.QMainWindow):
         super().__init__(parent=parent)
         self.setupUi()
         self.version: QtWidgets.QLabel
-        self.version.setText(version_str)
+        self.version.setText(f"Version {version_str}")
 
         self.year: QtWidgets.QLabel
         self.year.setText(year_str)
+
+        self.link_label.linkActivated.connect(self.link)
+        self.link_label.setText('<a href="https://github.com/gereon-t/trajectopy">GitHub</a>')
+
+    def link(self, linkStr):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
     def center(self):
         qr = self.frameGeometry()
@@ -68,10 +74,10 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.author.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.author.setObjectName("author")
         self.verticalLayout.addWidget(self.author)
-        self.uni = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.uni.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.uni.setObjectName("uni")
-        self.verticalLayout.addWidget(self.uni)
+        self.link_label = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.link_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.link_label.setObjectName("uni")
+        self.verticalLayout.addWidget(self.link_label)
         self.year = QtWidgets.QLabel(self.verticalLayoutWidget)
         self.year.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.year.setObjectName("year")
@@ -86,5 +92,4 @@ class AboutGUI(QtWidgets.QMainWindow):
         # self.name.setText(_translate("MainWindow", "Trajectopy"))
         self.version.setText(_translate("MainWindow", "Version Number"))
         self.author.setText(_translate("MainWindow", "Gereon Tombrink"))
-        self.uni.setText(_translate("MainWindow", "University of Bonn"))
         self.year.setText(_translate("MainWindow", "2024"))
