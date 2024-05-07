@@ -14,7 +14,7 @@
 This repository contains the source code of the trajectopy front end PyQt6 GUI. The back-end is part of the trajectopy-core package, see  [https://github.com/gereon-t/trajectopy-core](https://github.com/gereon-t/trajectopy-core).
 
 <p align="center">
-  <img style="border-radius: 10px;" src=.images/trajectopy_gif_low_quality.gif>
+  <img style="border-radius: 10px;" src=https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/trajectopy_gif_low_quality.gif>
 </p>
 
 </div>
@@ -263,7 +263,7 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 
 By default, the ATE is split into along-, horizontal-cross- and vertical-cross-track directions. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
 
-<img src=".images/along_cross_frames.png" alt="ate_frames" width="400"/>
+<img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/>
 
 #### Mapbox Settings
 
