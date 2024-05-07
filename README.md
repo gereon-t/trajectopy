@@ -9,7 +9,7 @@
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black" /></a>
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/mac%20os-000000?&logo=apple&logoColor=white" /></a>
 
-<p style="font-weight: bold">Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation. </p>
+<h4>Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation. </h4>
 
 This repository contains the source code of the trajectopy front end PyQt6 GUI. The back-end is part of the trajectopy-core package, see  [https://github.com/gereon-t/trajectopy-core](https://github.com/gereon-t/trajectopy-core).
 
