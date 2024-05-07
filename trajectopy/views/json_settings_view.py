@@ -35,36 +35,28 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.resize(400, 400)
         self.center()
 
-        self.scroll_area = QtWidgets.QScrollArea()
         self.central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
 
         self.vlayout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.vlayout.setContentsMargins(10, 10, 10, 10)
+        self.scroll_area = QtWidgets.QScrollArea(self.central_widget)
         self.hlayout = QtWidgets.QHBoxLayout()
 
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setWidget(self.central_widget)
+        self.scroll_area_widget_contents = QtWidgets.QWidget()
 
-        self.setCentralWidget(self.scroll_area)
-
-        self.form_layout = QtWidgets.QFormLayout()
-        self.form_layout.setContentsMargins(0, 0, 0, 0)
+        self.form_layout = QtWidgets.QFormLayout(parent=self.scroll_area_widget_contents)
+        self.form_layout.setContentsMargins(5, 5, 5, 5)
+        self.form_layout.setSpacing(10)
         self.form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         self.form_layout.setFormAlignment(Qt.AlignmentFlag.AlignRight)
         self.form_layout.setObjectName("formLayout")
+        self.scroll_area.setWidget(self.scroll_area_widget_contents)
 
-        self.vlayout.addLayout(self.form_layout)
-
-        vspacer = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.vlayout.addItem(vspacer)
-        self.vlayout.addLayout(self.hlayout)
+        self.vlayout.addWidget(self.scroll_area)
 
         self.import_button = QtWidgets.QPushButton("Import", self)
         self.import_button.clicked.connect(self.open_file_dialog)
@@ -88,6 +80,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
         self.hlayout.addWidget(self.apply_button)
         self.hlayout.addWidget(self.apply_and_close_button)
+        self.vlayout.addLayout(self.hlayout)
 
     def open_file_dialog(self):
         file_dialog = QtWidgets.QFileDialog(self)
@@ -98,20 +91,8 @@ class JSONViewer(QtWidgets.QMainWindow):
             logger.info("Loaded processing settings file %s", filename)
 
     def remove_items(self):
-        for item in self.central_widget.children():
-            if isinstance(
-                item,
-                (
-                    QtWidgets.QPushButton,
-                    QtWidgets.QSpacerItem,
-                    QtWidgets.QScrollArea,
-                    QtWidgets.QVBoxLayout,
-                    QtWidgets.QHBoxLayout,
-                ),
-            ):
-                continue
-            item.deleteLater()
-
+        for i in reversed(range(self.form_layout.count())):
+            self.form_layout.itemAt(i).widget().setParent(None)
         self.form_item_cnt = 0
 
     def load_json_file(self, filename):
@@ -171,7 +152,7 @@ class JSONViewer(QtWidgets.QMainWindow):
             local_reference[lastkey] = val
 
         json_content: dict = {}
-        for item in self.central_widget.children():
+        for item in self.scroll_area_widget_contents.children():
             if isinstance(item, QtWidgets.QLabel):
                 continue
             keys = item.objectName().split("-")[2:]
@@ -203,14 +184,14 @@ class JSONViewer(QtWidgets.QMainWindow):
             return type_string.split("'")[1]
 
         def add_settings_field(key: str, value: Any) -> None:
-            settings_field = construct_settings_field(self.central_widget, value)
+            settings_field = construct_settings_field(self.scroll_area_widget_contents, value)
             settings_field.setObjectName(f"field-{parent_name}-{key}")
             self.form_layout.setWidget(self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.FieldRole, settings_field)
 
         _translate = QCoreApplication.translate
         for key, value in json_content.items():
             if isinstance(value, dict):
-                group_label = QtWidgets.QLabel(self.central_widget)
+                group_label = QtWidgets.QLabel(self.scroll_area_widget_contents)
                 font = QFont()
                 font.setBold(True)
 
@@ -221,7 +202,7 @@ class JSONViewer(QtWidgets.QMainWindow):
                 self.form_item_cnt += 1
                 self.populate_form(f"{parent_name}-{key}", value)
             else:
-                settings_label = QtWidgets.QLabel(self.central_widget)
+                settings_label = QtWidgets.QLabel(self.scroll_area_widget_contents)
                 settings_label.setObjectName(f"label-{parent_name}-{key}")
                 self.form_layout.setWidget(
                     self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, settings_label
@@ -234,20 +215,20 @@ class JSONViewer(QtWidgets.QMainWindow):
                 self.form_item_cnt += 1
 
 
-def construct_settings_field(central_widget: QtWidgets.QWidget, value: Any) -> QtWidgets.QWidget:
+def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> QtWidgets.QWidget:
     if isinstance(value, bool):
-        settings_field = QtWidgets.QCheckBox(central_widget)
+        settings_field = QtWidgets.QCheckBox(parent_widget)
         settings_field.setChecked(value)
         return settings_field
 
     if isinstance(value, int):
-        settings_field = QtWidgets.QSpinBox(central_widget)
+        settings_field = QtWidgets.QSpinBox(parent_widget)
         settings_field.setMaximum(10000)
         settings_field.setValue(value)
         return settings_field
 
     if isinstance(value, float):
-        settings_field = QtWidgets.QDoubleSpinBox(central_widget)
+        settings_field = QtWidgets.QDoubleSpinBox(parent_widget)
         settings_field.setDecimals(4)
         settings_field.setSingleStep(0.0001)
         settings_field.setMaximum(10000)
@@ -255,17 +236,17 @@ def construct_settings_field(central_widget: QtWidgets.QWidget, value: Any) -> Q
         return settings_field
 
     if value in EXPORT_FORMATS:
-        settings_field = QtWidgets.QComboBox(central_widget)
+        settings_field = QtWidgets.QComboBox(parent_widget)
         settings_field.addItems(EXPORT_FORMATS)
         settings_field.setCurrentIndex(EXPORT_FORMATS.index(value))
         return settings_field
 
     if value in PLOT_MODES:
-        settings_field = QtWidgets.QComboBox(central_widget)
+        settings_field = QtWidgets.QComboBox(parent_widget)
         settings_field.addItems(PLOT_MODES)
         settings_field.setCurrentIndex(PLOT_MODES.index(value))
         return settings_field
 
-    settings_field = QtWidgets.QLineEdit(central_widget)
+    settings_field = QtWidgets.QLineEdit(parent_widget)
     settings_field.setText(str(value))
     return settings_field
