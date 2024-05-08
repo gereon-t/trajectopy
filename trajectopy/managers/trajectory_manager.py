@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy_core.alignment.estimation import compute_alignment
+from trajectopy_core.alignment.estimation import estimate_alignment
 from trajectopy_core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy_core.evaluation.metrics import ate, rpe
 from trajectopy_core.matching import match_trajectories, rough_timestamp_matching
@@ -645,7 +645,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        alignment_result = compute_alignment(
+        alignment_result = estimate_alignment(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             alignment_settings=entry_pair.entry.settings.alignment,
