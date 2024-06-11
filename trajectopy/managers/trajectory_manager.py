@@ -680,11 +680,13 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: A new trajectory entry with the aligned trajectory.
         """
-        entry_pair.entry.trajectory.apply_alignment(alignment_result=entry_pair.request.alignment.alignment_result)
+        aligned_trajectory = entry_pair.entry.trajectory.apply_alignment(
+            alignment_result=entry_pair.request.alignment.alignment_result, inplace=False
+        )
         entry_pair.entry.state.aligned = True
         new_entry = TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
-            trajectory=entry_pair.entry.trajectory,
+            trajectory=aligned_trajectory,
             settings=entry_pair.entry.settings,
             group_id=entry_pair.entry.group_id,
             state=entry_pair.entry.state,
