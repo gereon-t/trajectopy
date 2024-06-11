@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import copy
 import logging
 from dataclasses import dataclass, field
@@ -121,6 +122,13 @@ class UIRequestType(Enum):
     EXPORT_REPORT = auto()
 
 
+class ReportSettingsRequestType(Enum):
+    SHOW = auto()
+    IMPORT = auto()
+    EXPORT = auto()
+    RESET = auto()
+
+
 @dataclass
 class DeepCopyRequest:
     def __post_init__(self):
@@ -164,6 +172,12 @@ class ResultModelRequest:
 @dataclass
 class SessionManagerRequest:
     type: SessionManagerRequestType
+    file_path: str = ""
+
+
+@dataclass
+class ReportSettingsRequest:
+    type: ReportSettingsRequestType
     file_path: str = ""
 
 

@@ -4,19 +4,29 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import logging
 import os
 import shutil
 from tempfile import mkdtemp
-from typing import Union
+from typing import Callable, Dict, Union
 
 from PyQt6 import QtCore, QtWidgets
+from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent
 from trajectopy_core.settings.report import ReportSettings
 
 from trajectopy.managers.file_manager import FileManager
 from trajectopy.managers.plot_manager import PlotManager
-from trajectopy.managers.requests import PlotRequest, UIRequest, UIRequestType
+from trajectopy.managers.requests import (
+    PlotRequest,
+    ReportSettingsRequest,
+    ReportSettingsRequestType,
+    Request,
+    UIRequest,
+    UIRequestType,
+    generic_request_handler,
+)
 from trajectopy.managers.session_manager import SessionManager
 from trajectopy.managers.trajectory_manager import TrajectoryManager
 from trajectopy.managers.ui_manager import UIManager
@@ -45,6 +55,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     and results as well as the menu bar.
     """
 
+    operation_started = pyqtSignal()
+    operation_finished = pyqtSignal()
+    ui_request = pyqtSignal(UIRequest)
+
     def __init__(
         self,
         single_thread: bool = False,
@@ -53,6 +67,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         mapbox_token: str = "",
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
+
+        self.REQUEST_MAPPING: Dict[ReportSettingsRequestType, Callable[[Request], None]] = {
+            ReportSettingsRequestType.EXPORT: self.handle_report_settings_export,
+            ReportSettingsRequestType.IMPORT: self.handle_report_settings_import,
+            ReportSettingsRequestType.RESET: self.handle_report_settings_reset,
+            ReportSettingsRequestType.SHOW: self.handle_show_report_settings,
+        }
 
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
@@ -202,9 +223,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
         self.session_manager.file_request.connect(self.file_manager.handle_request)
         self.session_manager.ui_request.connect(self.ui_manager.handle_request)
-        self.session_manager.report_settings_export_request.connect(self.handle_report_settings_export)
-        self.session_manager.report_settings_import_request.connect(self.handle_report_settings_import)
-        self.session_manager.report_settings_reset_request.connect(self.handle_report_settings_reset)
+        self.session_manager.report_settings_request.connect(self.handle_report_settings_request)
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
@@ -253,10 +272,23 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_table_model.layoutChanged.emit()
         self.result_table_model.layoutChanged.emit()
 
-    @QtCore.pyqtSlot()
+    @pyqtSlot(ReportSettingsRequest)
+    def handle_report_settings_request(self, request: ReportSettingsRequest) -> None:
+        """Logic for handling a request."""
+        generic_request_handler(self, request, passthrough_request=True)
+
     def handle_show_report_settings(self) -> None:
         viewer = JSONViewer(settings=self.report_settings, parent=self)
         viewer.show()
+
+    def handle_report_settings_export(self, file_path: str) -> None:
+        self.report_settings.to_file(os.path.join(file_path, "report_settings.json"))
+
+    def handle_report_settings_import(self, file_path: str) -> None:
+        self.report_settings = ReportSettings.from_file(os.path.join(file_path, "report_settings.json"))
+
+    def handle_report_settings_reset(self) -> None:
+        self.report_settings = ReportSettings()
 
     @QtCore.pyqtSlot(PlotRequest)
     def inject_report_settings(self, plot_request: PlotRequest) -> None:
@@ -271,18 +303,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def handle_export_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.EXPORT_SESSION))
-
-    @QtCore.pyqtSlot(str)
-    def handle_report_settings_export(self, file_path: str) -> None:
-        self.report_settings.to_file(os.path.join(file_path, "report_settings.json"))
-
-    @QtCore.pyqtSlot(str)
-    def handle_report_settings_import(self, file_path: str) -> None:
-        self.report_settings = ReportSettings.from_file(os.path.join(file_path, "report_settings.json"))
-
-    @QtCore.pyqtSlot()
-    def handle_report_settings_reset(self) -> None:
-        self.report_settings = ReportSettings()
 
     @QtCore.pyqtSlot()
     def handle_new_session(self) -> None:
