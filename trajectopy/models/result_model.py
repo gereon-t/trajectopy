@@ -4,6 +4,7 @@ Trajectopy - Trajectory Evaluation in Python
 Gereon Tombrink, 2023
 mail@gtombrink.de
 """
+
 import logging
 import os
 from typing import List
@@ -47,7 +48,7 @@ class ResultTableModel(RequestTableModel):
             ResultModelRequestType.SORT: self.sort_items,
         }
         super().__init__(
-            headers=["Name", "Type", "Process Time", "ID"],
+            headers=["Name", "Type", "# Values", "ID"],
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
 

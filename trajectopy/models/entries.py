@@ -107,6 +107,9 @@ class TrajectoryEntry(Entry):
     group_id: str = field(default_factory=generate_id)
     state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
 
+    def __len__(self) -> int:
+        return len(self.trajectory)
+
     def to_file(self, filename: str) -> None:
         super().to_file(filename)
         self.trajectory.to_file(filename=filename, mode="a")
@@ -201,6 +204,10 @@ class TrajectoryEntry(Entry):
 class ResultEntry(Entry, ABC):
     """Abstract base class for result entries in the result model."""
 
+    @abstractmethod
+    def __len__(self) -> int:
+        return 0
+
     @property
     @abstractmethod
     def name(self) -> str:
@@ -212,8 +219,8 @@ class ResultEntry(Entry, ABC):
         pass
 
     @property
-    def column(self) -> Tuple[str, str, str, str]:
-        return self.name, self.type, self.time, self.entry_id
+    def column(self) -> Tuple[str, str, int, str]:
+        return self.name, self.type, len(self), self.entry_id
 
     @classmethod
     def from_file(cls, filename: str) -> "ResultEntry":
@@ -271,6 +278,9 @@ class AbsoluteDeviationEntry(DeviationsEntry):
 
     deviations: ATEResult
 
+    def __len__(self) -> int:
+        return len(self.deviations.abs_dev.pos_dev)
+
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
         self.deviations.to_file(filename)
@@ -289,6 +299,9 @@ class RelativeDeviationEntry(DeviationsEntry):
 
     deviations: RPEResult
 
+    def __len__(self) -> int:
+        return self.deviations.rpe_dev.num_pairs
+
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
         self.deviations.to_file(filename)
@@ -306,6 +319,12 @@ class AlignmentEntry(ResultEntry):
     """Entry storing alignment results."""
 
     alignment_result: AlignmentResult = field(default_factory=AlignmentResult)
+
+    def __len__(self) -> int:
+        return (
+            self.alignment_result.position_parameters.num_enabled
+            + self.alignment_result.rotation_parameters.num_enabled
+        )
 
     @property
     def estimated_parameters(self) -> AlignmentParameters:
