@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trajectopy"
-version = "2.0.14"
+version = "2.0.15"
 description = "Trajectory Evaluation in Python"
 authors = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
 maintainers = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]

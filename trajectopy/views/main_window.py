@@ -5,6 +5,7 @@ Gereon Tombrink, 2023
 mail@gtombrink.de
 """
 
+import datetime
 import logging
 import os
 import shutil
@@ -22,7 +23,6 @@ from trajectopy.managers.requests import (
     PlotRequest,
     ReportSettingsRequest,
     ReportSettingsRequestType,
-    Request,
     UIRequest,
     UIRequestType,
     generic_request_handler,
@@ -40,7 +40,7 @@ from trajectopy.views.result_table_view import ResultTableView
 from trajectopy.views.trajectory_table_view import TrajectoryTableView
 
 VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
-YEAR = "2024"
+YEAR = str(datetime.datetime.now().year)
 
 
 logger = logging.getLogger("root")
@@ -68,11 +68,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
-        self.REQUEST_MAPPING: Dict[ReportSettingsRequestType, Callable[[Request], None]] = {
+        self.REQUEST_MAPPING: Dict[ReportSettingsRequestType, Callable[[ReportSettingsRequest], None]] = {
             ReportSettingsRequestType.EXPORT: self.handle_report_settings_export,
             ReportSettingsRequestType.IMPORT: self.handle_report_settings_import,
             ReportSettingsRequestType.RESET: self.handle_report_settings_reset,
-            ReportSettingsRequestType.SHOW: self.handle_show_report_settings,
         }
 
         self.trajectory_table_model = TrajectoryTableModel()
@@ -102,6 +101,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
 
+        self.ui_request.connect(self.ui_manager.handle_request)
         self.setup_io_connections()
         self.setup_worker_connections()
         self.setup_progress_connections()
@@ -281,13 +281,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         viewer = JSONViewer(settings=self.report_settings, parent=self)
         viewer.show()
 
-    def handle_report_settings_export(self, file_path: str) -> None:
-        self.report_settings.to_file(os.path.join(file_path, "report_settings.json"))
+    def handle_report_settings_export(self, request: ReportSettingsRequest) -> None:
+        self.report_settings.to_file(os.path.join(request.file_path, "report_settings.json"))
 
-    def handle_report_settings_import(self, file_path: str) -> None:
-        self.report_settings = ReportSettings.from_file(os.path.join(file_path, "report_settings.json"))
+    def handle_report_settings_import(self, request: ReportSettingsRequest) -> None:
+        self.report_settings = ReportSettings.from_file(os.path.join(request.file_path, "report_settings.json"))
 
-    def handle_report_settings_reset(self) -> None:
+    def handle_report_settings_reset(self, _: ReportSettingsRequest) -> None:
         self.report_settings = ReportSettings()
 
     @QtCore.pyqtSlot(PlotRequest)
