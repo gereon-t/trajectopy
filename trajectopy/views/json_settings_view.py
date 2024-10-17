@@ -46,13 +46,14 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area_widget_contents = QtWidgets.QWidget()
+        self.scroll_area_widget_contents = QtWidgets.QWidget(self.central_widget)
 
         self.form_layout = QtWidgets.QFormLayout(parent=self.scroll_area_widget_contents)
         self.form_layout.setContentsMargins(5, 5, 5, 5)
         self.form_layout.setSpacing(10)
         self.form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         self.form_layout.setFormAlignment(Qt.AlignmentFlag.AlignRight)
+        self.form_layout.setFieldGrowthPolicy(QtWidgets.QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         self.form_layout.setObjectName("formLayout")
         self.scroll_area.setWidget(self.scroll_area_widget_contents)
 
