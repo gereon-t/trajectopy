@@ -57,3 +57,4 @@ test/tmp
 reports/
 .mapbox_token
 reportdata
+.tox/

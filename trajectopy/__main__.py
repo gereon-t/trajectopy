@@ -10,17 +10,7 @@ import ctypes
 import logging
 import os
 import sys
-
-from PyQt6 import QtGui
-from PyQt6.QtWidgets import QApplication
 from rich.logging import RichHandler
-
-from trajectopy.path import ICON_BG_FILE_PATH
-from trajectopy.views.main_window import VERSION, TrajectopyGUI
-
-if os.name == "nt":
-    myappid = f"gereont.trajectopy.main.{VERSION}"
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 logging.basicConfig(
     format="%(message)s",
@@ -30,6 +20,21 @@ logging.basicConfig(
 
 
 def main():
+    try:
+        from PyQt6 import QtGui
+        from PyQt6.QtWidgets import QApplication
+        from trajectopy.path import ICON_BG_FILE_PATH
+        from trajectopy.gui.views.main_window import VERSION, TrajectopyGUI
+
+        if os.name == "nt":
+            myappid = f"gereont.trajectopy.main.{VERSION}"
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except ImportError:
+        logging.error(
+            "PyQt6 is required to run Trajectopy with a GUI. Install it using 'pip install trajectopy[gui]' or 'pip install PyQt6'."
+        )
+        return
+
     parser = argparse.ArgumentParser(description="Trajectopy - Trajectory Evaluation in Python")
     parser.add_argument("--version", "-v", action="store_true")
     parser.add_argument(

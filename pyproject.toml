@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trajectopy"
-version = "2.0.16"
+version = "2.1.0"
 description = "Trajectory Evaluation in Python"
 authors = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
 maintainers = ["Gereon Tombrink <tombrink@igg.uni-bonn.de>"]
@@ -15,9 +15,22 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.14"
-pyqt6 = "^6.6.1"
+numpy = "^1.26.1"
+matplotlib = "^3.8.2"
+scipy = "^1.12.0"
+networkx = "^3.2.1"
+pointset = "^0.1.5"
+autograd = "^1.6.2"
 rich = "^13.7.0"
-trajectopy-core = ">=3.1.0,<3.2.0"
+plotly = "^5.18.0"
+jinja2 = "^3.1.3"
+pandas = "^2.2.0"
+rosbags = "^0.9.20"
+pyqt6 = { version = "^6.6.1", optional = true }
+
+[tool.poetry.extras]
+gui = ["pyqt6"]
+full = ["pyqt6"]
 
 [tool.poetry.scripts]
 trajectopy = "trajectopy.__main__:main"
@@ -27,9 +40,7 @@ mypy = "^1.5.1"
 black = "^23.9.1"
 pre-commit = "^3.5.0"
 tox = "^4.11.3"
-pillow = "^10.3.0"
-numpy = "^1.26.4"
-pointset = "^0.1.7"
+pytest = "^8.3.4"
 
 [tool.isort]
 profile = "black"

@@ -1,0 +1,17 @@
+figure.figsize: 8, 6
+figure.facecolor: white
+font.size: 14
+font.family: serif
+axes.prop_cycle: cycler("color", ["1E88E5", "#FFC107", "#004D40", "#D81B60", "#2bd2bb", "#a3bbf1", "#3c41fd", "#cc5510", "#3b0732", "#88122b", "#bccb70", "dc9c54"])
+axes.facecolor: E2E2E2
+axes.edgecolor: white
+axes.grid: True
+grid.color: white
+grid.linewidth: 0.3
+axes.grid.which: major
+axes.axisbelow: True
+legend.facecolor: white
+lines.linestyle: -
+lines.marker: .
+savefig.dpi: 1500
+savefig.format: pdf

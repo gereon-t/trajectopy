@@ -9,9 +9,7 @@
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black" /></a>
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/mac%20os-000000?&logo=apple&logoColor=white" /></a>
 
-<h4>Trajectopy is a Python package with an intuitive graphical user interface for empirical trajectory evaluation. </h4>
-
-This repository contains the source code of the trajectopy front end PyQt6 GUI. The back-end is part of the trajectopy-core package, see  [https://github.com/gereon-t/trajectopy-core](https://github.com/gereon-t/trajectopy-core).
+<h4>Trajectopy is a Python package with an optional graphical user interface for empirical trajectory evaluation. </h4>
 
 <p align="center">
   <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/trajectopy_gif_low_quality.gif">
@@ -40,10 +38,12 @@ Trajectopy offers a range of features, including:
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 
 
-## Installation
+## Installation (with GUI)
+
+It is recommended to install trajectopy with the GUI using the following command:
 
 ```console
-pip install trajectopy
+pip install "trajectopy[gui]"
 ```
 
 Run
@@ -52,7 +52,44 @@ Run
 trajectopy
 ```
 
-## Command Line Options
+## Installation (without GUI)
+
+To install trajectopy without the GUI, use the following command:
+
+```console
+pip install trajectopy
+```
+
+Now you can use trajectopy as a Python package in your scripts.
+
+#### Absolute Trajectory Error (ATE)
+
+    
+```python
+import trajectopy as tpy
+
+gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+
+ate_result = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj)
+
+```
+
+#### Relative Pose Error (RPE)
+
+```python
+import trajectopy as tpy
+
+gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+
+rpe_result = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj)
+
+```
+
+More examples can be found [here](https://github.com/gereon-t/trajectopy/tree/main/example_scripts).
+
+## Command Line Options (GUI version only)
 ```console	
 usage: trajectopy [-h] [--version] [--single_thread] [--report_settings REPORT_SETTINGS] [--report_path REPORT_PATH]
 ```
