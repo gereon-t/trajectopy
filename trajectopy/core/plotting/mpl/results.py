@@ -15,10 +15,10 @@ from matplotlib.collections import LineCollection, PolyCollection
 from matplotlib.colorbar import Colorbar
 from matplotlib.figure import Figure
 
-from trajectopy.core.definitions import Unit
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.plotting.utils import derive_xlabel_from_sortings
+from trajectopy.core.settings.comparison import PairDistanceUnit
 from trajectopy.core.settings.mpl_settings import MPLPlotSettings
 
 logger = logging.getLogger("root")
@@ -292,9 +292,9 @@ def plot_rpe(devs: List[RPEResult], plot_settings: MPLPlotSettings = MPLPlotSett
     fig_rot_metric.set_xlabel("pair distance [m]")
     fig_rot_time.set_xlabel("pair distance [s]")
 
-    figure_dict: Dict[str, Dict[Unit, Axes]] = {
-        "pos": {Unit.METER: fig_pos_metric, Unit.SECOND: fig_pos_time},
-        "rot": {Unit.METER: fig_rot_metric, Unit.SECOND: fig_rot_time},
+    figure_dict: Dict[str, Dict[PairDistanceUnit, Axes]] = {
+        "pos": {PairDistanceUnit.METER: fig_pos_metric, PairDistanceUnit.SECOND: fig_pos_time},
+        "rot": {PairDistanceUnit.METER: fig_rot_metric, PairDistanceUnit.SECOND: fig_rot_time},
     }
 
     _plot_rpe_pos(figure_dict["pos"], devs)
@@ -302,8 +302,8 @@ def plot_rpe(devs: List[RPEResult], plot_settings: MPLPlotSettings = MPLPlotSett
 
     _rpy_legend(figure_dict)
 
-    ret_sum = 1 if any(dev.rpe_dev.pair_distance_unit == Unit.METER for dev in devs) else 0
-    if any(dev.rpe_dev.pair_distance_unit == Unit.SECOND for dev in devs):
+    ret_sum = 1 if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.METER for dev in devs) else 0
+    if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.SECOND for dev in devs):
         ret_sum += 2
 
     plt.close({1: fig_time, 2: fig_metric}.get(ret_sum))
@@ -316,7 +316,7 @@ def plot_rpe(devs: List[RPEResult], plot_settings: MPLPlotSettings = MPLPlotSett
     }[ret_sum]
 
 
-def _plot_rpe_pos(figure_dict: Dict[Unit, Axes], devs: List[RPEResult]) -> None:
+def _plot_rpe_pos(figure_dict: Dict[PairDistanceUnit, Axes], devs: List[RPEResult]) -> None:
     for dev in devs:
         line_plot = figure_dict[dev.rpe_dev.pair_distance_unit].plot(
             dev.mean_pair_distances, dev.pos_dev_mean, label=dev.name
@@ -338,7 +338,7 @@ def _plot_rpe_pos(figure_dict: Dict[Unit, Axes], devs: List[RPEResult]) -> None:
         _set_violin_color(violin_plot, line_plot[0].get_color())
 
 
-def _plot_rpe_rot(figure_dict: Dict[Unit, Axes], devs: List[RPEResult]) -> None:
+def _plot_rpe_rot(figure_dict: Dict[PairDistanceUnit, Axes], devs: List[RPEResult]) -> None:
     plot_sum = 0
     for dev in devs:
         if not dev.has_rot_dev:
@@ -384,7 +384,7 @@ def _set_violin_color(violin_dict: dict, color: str) -> None:
                 collection.set_edgecolor(color)
 
 
-def _rpy_legend(figure_dict: Dict[str, Dict[Unit, Axes]]):
+def _rpy_legend(figure_dict: Dict[str, Dict[PairDistanceUnit, Axes]]):
     for d in figure_dict.values():
         for ax in d.values():
             if ax.lines:

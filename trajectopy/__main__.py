@@ -31,7 +31,7 @@ def main():
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         logging.error(
-            "PyQt6 is required to run Trajectopy with a GUI. Install it using 'pip install trajectopy[gui]' or 'pip install PyQt6'."
+            "PyQt6 is required to run Trajectopy with a GUI. Install it using pip install 'trajectopy[gui]' or pip install PyQt6."
         )
         return
 
