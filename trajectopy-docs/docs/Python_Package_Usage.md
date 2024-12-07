@@ -1,6 +1,5 @@
 In addition to the GUI, trajectopy can also be used as a Python package. The package provides a set of functions to evaluate and visualize the quality of trajectory. Trajectopy is designed to be easy to use and to provide a high level of customization.
 
-```bash
 
 ## Absolute Trajectory Error (ATE)
 
@@ -39,9 +38,11 @@ The results of a single trajectory comparison can be visualized in a HTML report
 gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
 est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
+# Evaluation
 ate_result = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj)
 rpe_result = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj)
 
+# Report
 report_settings = tpy.ReportSettings(ate_unit_is_mm=False, scatter_marker_size=8)
 report = tpy.create_deviation_report(ate_result=ate_result, rpe_result=rpe_result, report_settings=report_settings)
 tpy.show_report(report_text=report, filepath="reports/report.html") 
