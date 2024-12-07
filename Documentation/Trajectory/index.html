@@ -1,0 +1,1720 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../Sorting/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
+    
+    
+      
+        <title>Trajectory - Trajectopy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#class-trajectory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trajectopy" class="md-header__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trajectopy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Trajectory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trajectopy" class="md-nav__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    Trajectopy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Getting_Started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Python_Package_Usage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Package Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Settings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Documentation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Documentation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Alignment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Matching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Matching
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Merging/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Merging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Plotting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plotting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Report/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Report
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Result/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Result
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Sorting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sorting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Trajectory
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Trajectory
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class-trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      class Trajectory
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class Trajectory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectory__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.__init__
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="method Trajectory.__init__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorydata_rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.data_rate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of_label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of_unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of_unit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryhas_orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.has_orientation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryquat" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.quat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryrpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.rpy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryse3" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.se3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorysort_switching_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.sort_switching_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorysorting_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.sorting_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryspeed_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.speed_3d
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorytotal_length" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.total_length
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.xyz
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_orientation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_pose" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_pose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_position
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_alignment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_transformation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapproximate" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.approximate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorycopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.copy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorycrop" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.crop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-trajectoryfrom_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod Trajectory.from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-trajectoryfrom_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod Trajectory.from_numpy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryinit_arc_lengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.init_arc_lengths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryinterpolate" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.interpolate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryintersect" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.intersect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorymatch_timestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.match_timestamps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorysort_spatially" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.sort_spatially
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_dataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_dataframe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class-trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      class Trajectory
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class Trajectory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectory__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.__init__
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="method Trajectory.__init__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorydata_rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.data_rate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of_label
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryfunction_of_unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.function_of_unit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryhas_orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.has_orientation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryquat" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.quat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryrpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.rpy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryse3" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.se3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorysort_switching_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.sort_switching_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorysorting_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.sorting_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryspeed_3d" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.speed_3d
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectorytotal_length" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.total_length
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-trajectoryxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      property Trajectory.xyz
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_orientation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_pose" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_pose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryadopt_first_position" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.adopt_first_position
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_alignment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_index" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_index
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapply_transformation" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.apply_transformation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryapproximate" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.approximate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorycopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.copy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorycrop" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.crop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-trajectoryfrom_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod Trajectory.from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-trajectoryfrom_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod Trajectory.from_numpy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryinit_arc_lengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.init_arc_lengths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryinterpolate" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.interpolate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryintersect" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.intersect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorymatch_timestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.match_timestamps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectorysort_spatially" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.sort_spatially
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_dataframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_dataframe
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Trajectory</h1>
+
+<h2 id="class-trajectory"><kbd>class</kbd> <code>Trajectory</code></h2>
+<p>Class representing a trajectory, i.e. position and orientation of a plattform over time </p>
+<ul>
+<li>Position-Computations are always done in a local frame </li>
+<li>Time stamps are always in UTC time </li>
+<li>Rotations are always defined in a East-North-Up frame </li>
+</ul>
+<p><strong>Attributes:</strong></p>
+<ul>
+<li><b><code>pos</code></b> (PointSet):  Position of the trajectory </li>
+<li><b><code>rot</code></b> (RotationSet):  Orientation of the trajectory </li>
+<li><b><code>tstamps</code></b> (np.ndarray):  Time stamps of the trajectory </li>
+<li><b><code>name</code></b> (str):  Name of the trajectory </li>
+<li><b><code>arc_lengths</code></b> (np.ndarray):  Arc lengths of the trajectory </li>
+<li><b><code>speed_3d</code></b> (np.ndarray):  3D speed of the trajectory </li>
+<li><b><code>sorting</code></b> (Sorting):  Sorting of the trajectory </li>
+</ul>
+<p>Methods: </p>
+<ul>
+<li><b><code>__init__</code></b>:  Initialize trajectory </li>
+<li><b><code>__str__</code></b>:  Returns string describing trajectory </li>
+<li><b><code>__repr__</code></b>:  Returns string representation of trajectory </li>
+<li><b><code>__len__</code></b>:  Return number of poses </li>
+<li><b><code>__eq__</code></b>:  Check if two trajectories are equal </li>
+<li><b><code>init_arc_lengths</code></b>:  Initialize arc lengths </li>
+<li><b><code>copy</code></b>:  Deep copy of itself </li>
+<li><b><code>from_file</code></b>:  Create trajectory from file </li>
+<li><b><code>sort_switching_index</code></b>:  Returns the index that switches the sorting of the trajectory </li>
+<li><b><code>sorting_index</code></b>:  Returns the index that sorts the trajectory </li>
+<li><b><code>function_of</code></b>:  Returns the function of the trajectory </li>
+<li><b><code>function_of_unit</code></b>:  Returns the unit of the function of the trajectory </li>
+<li><b><code>function_of_label</code></b>:  Returns the label of the function of the trajectory </li>
+<li><b><code>xyz</code></b>:  Returns the xyz coordinates of the trajectory </li>
+<li><b><code>quat</code></b>:  Returns the quaternion of the trajectory </li>
+<li><b><code>rpy</code></b>:  Returns the roll, pitch, yaw of the trajectory </li>
+<li><b><code>to_dataframe</code></b>:  Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory </li>
+<li><b><code>to_file</code></b>:  Writes trajectory to ascii file </li>
+<li><b><code>from_numpy</code></b>:  Initialize trajectory using numpy arrays </li>
+<li><b><code>se3</code></b>:  Returns SE3 pose list </li>
+<li><b><code>se3.setter</code></b>:  Sets position and rotation from se3 list </li>
+<li><b><code>data_rate</code></b>:  Returns data rate </li>
+<li><b><code>total_length</code></b>:  Return the total trajectory arc_length </li>
+<li><b><code>speed_3d</code></b>:  Returns computed speeds or custom speeds </li>
+<li><b><code>speed_3d.setter</code></b>:  Sets custom speeds </li>
+<li><b><code>speed</code></b>:  Returns trajectory speeds calculated using consecutive point distances </li>
+<li><b><code>crop</code></b>:  Crops trajectory to timespan defined by t_start and t_end </li>
+<li><b><code>interpolate</code></b>:  Interpolates a trajectory to specified timestamps </li>
+<li><b><code>_interpolate_rotations</code></b>:  Function for rotation interpolation of a trajectory </li>
+<li><b><code>_interpolate_positions</code></b>:  Function for position interpolation of a trajectory </li>
+<li><b><code>match_timestamps</code></b>:  Truncates trajectory to only those poses where the timestamps exactly match "tstamps" </li>
+<li><b><code>intersect</code></b>:  Intersects trajectory with a given timestamp vector </li>
+<li><b><code>apply_index</code></b>:  Applies index to the trajectory </li>
+<li><b><code>apply_transformation</code></b>:  Applies transformation to trajectory </li>
+</ul>
+<h3 id="method-trajectory__init__"><kbd>method</kbd> <code>Trajectory.__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">pos</span><span class="p">:</span> <span class="n">pointset</span><span class="o">.</span><span class="n">pointset</span><span class="o">.</span><span class="n">PointSet</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">rot</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rotationset</span><span class="o">.</span><span class="n">RotationSet</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">arc_lengths</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">speed_3d</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">sorting</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">Sorting</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">Sorting</span><span class="o">.</span><span class="n">TIME</span><span class="p">:</span> <span class="s1">&#39;time&#39;</span><span class="o">&gt;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-trajectorydata_rate"><kbd>property</kbd> Trajectory.data_rate</h4>
+<p>Returns data rate </p>
+<hr />
+<h4 id="property-trajectoryfunction_of"><kbd>property</kbd> Trajectory.function_of</h4>
+<p>Returns the function of the trajectory </p>
+<hr />
+<h4 id="property-trajectoryfunction_of_label"><kbd>property</kbd> Trajectory.function_of_label</h4>
+<p>Returns the label of the function of the trajectory </p>
+<hr />
+<h4 id="property-trajectoryfunction_of_unit"><kbd>property</kbd> Trajectory.function_of_unit</h4>
+<p>Returns the unit of the function of the trajectory </p>
+<hr />
+<h4 id="property-trajectoryhas_orientation"><kbd>property</kbd> Trajectory.has_orientation</h4>
+<p>Returns True if orientation is available </p>
+<hr />
+<h4 id="property-trajectoryquat"><kbd>property</kbd> Trajectory.quat</h4>
+<p>Returns the quaternion of the trajectory </p>
+<p>In contrast to the rot.as_quat() attribute, this method reflects the current sorting of the trajectory. </p>
+<hr />
+<h4 id="property-trajectoryrpy"><kbd>property</kbd> Trajectory.rpy</h4>
+<p>Returns the roll, pitch, yaw of the trajectory </p>
+<p>In contrast to the rot.as_euler(seq="xyz") attribute, this method reflects the current sorting of the trajectory. </p>
+<hr />
+<h4 id="property-trajectoryse3"><kbd>property</kbd> Trajectory.se3</h4>
+<p>Returns SE3 pose list </p>
+<hr />
+<h4 id="property-trajectorysort_switching_index"><kbd>property</kbd> Trajectory.sort_switching_index</h4>
+<p>Returns the index that switches the sorting of the trajectory </p>
+<hr />
+<h4 id="property-trajectorysorting_index"><kbd>property</kbd> Trajectory.sorting_index</h4>
+<p>Returns the index that sorts the trajectory </p>
+<hr />
+<h4 id="property-trajectoryspeed"><kbd>property</kbd> Trajectory.speed</h4>
+<p>Returns trajectory speeds calculated using consecutive point distances </p>
+<hr />
+<h4 id="property-trajectoryspeed_3d"><kbd>property</kbd> Trajectory.speed_3d</h4>
+<p>Returns computed speeds or custom speeds </p>
+<hr />
+<h4 id="property-trajectorytotal_length"><kbd>property</kbd> Trajectory.total_length</h4>
+<p>Return the total trajectory arc_length. </p>
+<hr />
+<h4 id="property-trajectoryxyz"><kbd>property</kbd> Trajectory.xyz</h4>
+<p>Returns the xyz coordinates of the trajectory </p>
+<p>In contrast to the pos.xyz attribute, this method reflects the current sorting of the trajectory. </p>
+<hr />
+<h3 id="method-trajectoryadopt_first_orientation"><kbd>method</kbd> <code>Trajectory.adopt_first_orientation</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">adopt_first_orientation</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="s1">&#39;Trajectory&#39;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Transform trajectory so that the first orientation is identical in both </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>trajectory</code></b> (Trajectory):  Target Trajectory </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Transformed trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryadopt_first_pose"><kbd>method</kbd> <code>Trajectory.adopt_first_pose</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">adopt_first_pose</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="s1">&#39;Trajectory&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Transform trajectory so that the first pose is identical in both </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>trajectory</code></b> (Trajectory):  Target Trajectory </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Transformed trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryadopt_first_position"><kbd>method</kbd> <code>Trajectory.adopt_first_position</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">adopt_first_position</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="s1">&#39;Trajectory&#39;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Transform trajectory so that the first position is identical in both </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>trajectory</code></b> (Trajectory):  Target Trajectory </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Transformed trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryapply_alignment"><kbd>method</kbd> <code>Trajectory.apply_alignment</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">apply_alignment</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">alignment_result</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">AlignmentResult</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Transforms trajectory using alignment parameters. </p>
+<p>After computing the alignment parameters needed to align two trajectories, they can be applied to arbitrary trajectories. </p>
+<p><strong>Args:</strong>
+  alignment_result (AlignmentResult) 
+ - <b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </p>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Aligned trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryapply_index"><kbd>method</kbd> <code>Trajectory.apply_index</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">apply_index</span><span class="p">(</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">index</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Applies index to the trajectory </p>
+<p>This will be done either in-place or using a new instance of a trajectory. The index can be used to filter and / or sort the components of the trajectory. </p>
+<p>Those components are: 
+- timestamps (tstamps) 
+- positions (xyz) 
+- rotations (rot) 
+- arc lengths (arc_lengths) 
+- sorting index (_sort_index) </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>index</code></b> (Union[list, np.ndarray]):  index that should be applied </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Trajectory with index applied. </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryapply_transformation"><kbd>method</kbd> <code>Trajectory.apply_transformation</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">apply_transformation</span><span class="p">(</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">transformation</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Applies transformation to trajectory </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>transformation</code></b> (np.ndarray):  4x4 Transformation matrix </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Transformed trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryapproximate"><kbd>method</kbd> <code>Trajectory.approximate</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">approximate</span><span class="p">(</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">approximation_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">approximation</span><span class="o">.</span><span class="n">ApproximationSettings</span> <span class="o">=</span> <span class="n">ApproximationSettings</span><span class="p">(</span><span class="n">fe_int_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">fe_min_obs</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">rot_approx_win_size</span><span class="o">=</span><span class="mf">0.15</span><span class="p">),</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Approximates the trajectory using piecewise cubic polynomial. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>approximation_settings</code></b> (ApproximationSettings):  Approximation settings. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Approximated trajectory. </li>
+</ul>
+<hr />
+<h3 id="method-trajectorycopy"><kbd>method</kbd> <code>Trajectory.copy</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">copy</span><span class="p">()</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Deep copy of itself </p>
+<hr />
+<h3 id="method-trajectorycrop"><kbd>method</kbd> <code>Trajectory.crop</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">crop</span><span class="p">(</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">t_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">t_end</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span class="n">inverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Crops trajectory to timespan defined by t_start and t_end </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>t_start</code></b> (float):  Start timestamp of desired time span </li>
+<li><b><code>t_end</code></b> (float):  End timestamp of desired time span </li>
+<li><b><code>inverse</code></b> (bool, optional):  If true, 'crop' turns  into 'cut', i.e. everthing  outside of t_start and t_end  will be removed.  Defaults to False. </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform crop in-place.  Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Cropped trajectory </li>
+</ul>
+<hr />
+<h3 id="classmethod-trajectoryfrom_file"><kbd>classmethod</kbd> <code>Trajectory.from_file</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io_stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Create trajectory from file </p>
+<p>The file must be a csv file containing columns for at least the timestamp, x, y and z coordinates of the trajectory. Those fields must be named "t", "px", "py" and "pz" in the header using the #fields tag. However, by default a trajectory with "t,px,py,pz,qx,qy,qz,qw" fields is assumed. Additional fields include the arc length, specified by "l", and the speed, specified by "vx", "vy" and "vz". The delimiter can be specified using the #delimiter tag. The default delimiter is a comma. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>filename</code></b> (str):  path to file </li>
+<li><b><code>io_stream</code></b> (bool, optional):  If true, the file is read from a stream. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  trajectory object </li>
+</ul>
+<hr />
+<h3 id="classmethod-trajectoryfrom_numpy"><kbd>classmethod</kbd> <code>Trajectory.from_numpy</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">from_numpy</span><span class="p">(</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">xyz</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">quat</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">epsg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Initialize trajectory using numpy arrays </p>
+<hr />
+<h3 id="method-trajectoryinit_arc_lengths"><kbd>method</kbd> <code>Trajectory.init_arc_lengths</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">init_arc_lengths</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-trajectoryinterpolate"><kbd>method</kbd> <code>Trajectory.interpolate</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">interpolate</span><span class="p">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Interpolates a trajectory to specified timestamps </p>
+<p>This method removes timestamps from tstamps if they lie outside of the timestamp range of the trajectory (self). Since providing values for those timestamps would require an extrapolation and not an interpolation, this behaviour is consistent with the definition of this method. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>tstamps</code></b> (list):  Interpolation timestamps </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform in-place interpolation.  Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Interpolated trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryintersect"><kbd>method</kbd> <code>Trajectory.intersect</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">intersect</span><span class="p">(</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">max_gap_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Intersects trajectory with a given timestamp vector </p>
+<p>After intersection, the trajectory covers the same timespan as 'tstamps'. Further, gaps larger than 'max_gap_size' are removed. If two consecutive timespans in tstamps have a difference of more than 'max_gap_size' seconds, they are considered as the limits of a gap. All timestamps of the trajectory that lie within this gap will be removed. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>tstamps</code></b> (np.ndarray):  Intersection timespans </li>
+<li><b><code>max_gap_size</code></b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 0.5. </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform intersection in-place.  Defaults to True. </li>
+</ul>
+<p><strong>Raises:</strong></p>
+<ul>
+<li><b><code>ValueError</code></b>:  If timespans do not overlap. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Intersected trajectory </li>
+</ul>
+<hr />
+<h3 id="method-trajectorymatch_timestamps"><kbd>method</kbd> <code>Trajectory.match_timestamps</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">match_timestamps</span><span class="p">(</span><span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Truncates trajectory to only those poses where the timestamps exactly match "tstamps" </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>tstamps</code></b> (np.ndarray):  Input timestamps </li>
+<li><b><code>inplace</code></b> (bool, optional):  Perform matching in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Trajectory with matched timestamps </li>
+</ul>
+<hr />
+<h3 id="method-trajectorysort_spatially"><kbd>method</kbd> <code>Trajectory.sort_spatially</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">sort_spatially</span><span class="p">(</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">sorting_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">SortingSettings</span> <span class="o">=</span> <span class="n">SortingSettings</span><span class="p">(</span><span class="n">discard_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">voxel_size</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">movement_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">k_nearest</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+</span></code></pre></div>
+<p>Sorts the trajectory spatially. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>sorting_settings</code></b> (SortingSettings):  Sorting settings. </li>
+<li><b><code>inplace</code></b> (bool, optional):  Whether to sort the trajectory in-place. Defaults to True. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Trajectory</code></b>:  Sorted trajectory. </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryto_dataframe"><kbd>method</kbd> <code>Trajectory.to_dataframe</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="n">DataFrame</span>
+</span></code></pre></div>
+<p>Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory. </p>
+<p>The dataframe is sorted by the current sorting attribute (time or arc_length). </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>sort_by</code></b> (str, optional):  Column to sort by. This  overrides the current sort_by  attribute. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>pd.DataFrame</code></b>:  Trajectory as dataframe </li>
+</ul>
+<hr />
+<h3 id="method-trajectoryto_file"><kbd>method</kbd> <code>Trajectory.to_file</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>Writes trajectory to ascii file </p>
+<p>The first line will always be the epsg information. After that, the trajectory data is written. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>filename</code></b> (str):  Output filename </li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>

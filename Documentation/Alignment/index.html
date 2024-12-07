@@ -1,0 +1,2069 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../settings/">
+      
+      
+        <link rel="next" href="../Evaluation/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
+    
+    
+      
+        <title>Alignment - Trajectopy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#function-estimate_alignment" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trajectopy" class="md-header__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trajectopy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Alignment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trajectopy" class="md-nav__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    Trajectopy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Getting_Started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Python_Package_Usage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python Package Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../settings/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Settings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Documentation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Documentation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Alignment
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Alignment
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-estimate_alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      function estimate_alignment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-alignmentresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      class AlignmentResult
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class AlignmentResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentresult__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentResult.__init__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-alignmentresultfrom_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod AlignmentResult.from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentresultto_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentResult.to_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-alignmentdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      class AlignmentData
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class AlignmentData">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdata__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.__init__
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="method AlignmentData.__init__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_obs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_rpy_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_rpy_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_x_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_x_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_x_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_x_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_xyz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_xyz_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_xyz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_xyz_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_y_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_y_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_y_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_y_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_z_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_z_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_z_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_z_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatagroup_stds" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.group_stds
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatanum_obs_per_epoch" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.num_obs_per_epoch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatanumber_of_epochs" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.number_of_epochs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataobs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatares_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.res_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatarpy_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.rpy_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatasigma_ll" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.sigma_ll
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatatstamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.tstamps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatavar_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.var_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatax_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.x_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatax_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.x_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataxyz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.xyz_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataxyz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.xyz_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatay_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.y_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatay_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.y_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.z_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.z_to
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_obs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_res_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_res_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_var_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_var_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_est_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_est_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_res_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_res_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_var_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_var_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_variance_estimation_subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_variance_estimation_subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_res_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_res_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_var_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_var_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatasetup" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Evaluation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Matching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Matching
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Merging/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Merging
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Plotting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plotting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Report/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Report
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Result/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Result
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Sorting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sorting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Trajectory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Trajectory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#function-estimate_alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      function estimate_alignment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-alignmentresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      class AlignmentResult
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class AlignmentResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentresult__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentResult.__init__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classmethod-alignmentresultfrom_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      classmethod AlignmentResult.from_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentresultto_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentResult.to_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-alignmentdata" class="md-nav__link">
+    <span class="md-ellipsis">
+      class AlignmentData
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class AlignmentData">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdata__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.__init__
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="method AlignmentData.__init__">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_euler_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_euler_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_obs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_rpy_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_rpy_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_speed_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_speed_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_x_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_x_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_x_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_x_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_xyz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_xyz_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_xyz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_xyz_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_y_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_y_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_y_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_y_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_z_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_z_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataest_z_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.est_z_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataeuler_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.euler_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatagroup_stds" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.group_stds
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatanum_obs_per_epoch" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.num_obs_per_epoch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatanumber_of_epochs" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.number_of_epochs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataobs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatares_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.res_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatarpy_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.rpy_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatasigma_ll" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.sigma_ll
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_x" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_x
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_y" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_y
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataspeed_z" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.speed_z
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatatstamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.tstamps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatavar_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.var_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatax_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.x_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatax_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.x_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataxyz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.xyz_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataxyz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.xyz_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatay_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.y_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdatay_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.y_to
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataz_from" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.z_from
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#property-alignmentdataz_to" class="md-nav__link">
+    <span class="md-ellipsis">
+      property AlignmentData.z_to
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_obs_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_obs_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_res_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_res_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatabuild_var_vector" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.build_var_vector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_est_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_est_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_res_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_res_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_var_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_var_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataget_variance_estimation_subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.get_variance_estimation_subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_obs_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_obs_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_res_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_res_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdataset_var_group" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.set_var_group
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-alignmentdatasetup" class="md-nav__link">
+    <span class="md-ellipsis">
+      method AlignmentData.setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Alignment</h1>
+
+<h2 id="function-estimate_alignment"><kbd>function</kbd> <code>estimate_alignment</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">estimate_alignment</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">traj_from</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">traj_to</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">alignment_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">AlignmentSettings</span> <span class="o">=</span> <span class="n">AlignmentSettings</span><span class="p">(</span><span class="n">preprocessing</span><span class="o">=</span><span class="n">AlignmentPreprocessing</span><span class="p">(</span><span class="n">min_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">time_start</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">time_end</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">estimation_settings</span><span class="o">=</span><span class="n">AlignmentEstimationSettings</span><span class="p">(</span><span class="n">trans_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trans_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">trans_z</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rot_x</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rot_y</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rot_z</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">time_shift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_x_speed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_y_speed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_z_speed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lever_x</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lever_y</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lever_z</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sensor_rotation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">auto_update</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">stochastics</span><span class="o">=</span><span class="n">AlignmentStochastics</span><span class="p">(</span><span class="n">std_xy_from</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">std_z_from</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">std_xy_to</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">std_z_to</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">std_roll_pitch</span><span class="o">=</span><span class="mf">0.017453292519943295</span><span class="p">,</span> <span class="n">std_yaw</span><span class="o">=</span><span class="mf">0.017453292519943295</span><span class="p">,</span> <span class="n">std_speed</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">error_probability</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">variance_estimation</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">metric_threshold</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">time_threshold</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">matching_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">matching</span><span class="o">.</span><span class="n">MatchingSettings</span> <span class="o">=</span> <span class="n">MatchingSettings</span><span class="p">(</span><span class="n">method</span><span class="o">=&lt;</span><span class="n">MatchingMethod</span><span class="o">.</span><span class="n">INTERPOLATION</span><span class="p">:</span> <span class="s1">&#39;interpolation&#39;</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">max_time_diff</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">max_distance</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">k_nearest</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">AlignmentResult</span>
+</span></code></pre></div>
+<p>Aligns two trajectories </p>
+<p>Performs a 
+- Helmert 
+- Leverarm 
+- Time shift </p>
+<p>estimation depending on the configuration. After this, the estimated parameters are applied to the 'traj_from' trajectory. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li>traj_from (Trajectory) </li>
+<li>traj_to (Trajectory) </li>
+<li>alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings(). </li>
+<li>matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings(). </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>AlignmentResult</code></b>:  Result of the alignment process </li>
+</ul>
+<h2 id="class-alignmentresult"><kbd>class</kbd> <code>AlignmentResult</code></h2>
+<p>Class to store the result of an alignment. </p>
+<p><strong>Attributes:</strong></p>
+<ul>
+<li><b><code>name</code></b> (str):  Name of the result. </li>
+<li><b><code>position_parameters</code></b> (AlignmentParameters):  Estimated position alignment parameters. </li>
+<li><b><code>rotation_parameters</code></b> (SensorRotationParameters):  Estimated rotation alignment parameters. </li>
+<li><b><code>estimation_of</code></b> (AlignmentEstimationSettings):  Settings defining which parameters were estimated. </li>
+<li><b><code>converged</code></b> (bool):  Whether the estimation converged. </li>
+</ul>
+<h3 id="method-alignmentresult__init__"><kbd>method</kbd> <code>AlignmentResult.__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Alignment Result&#39;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">position_parameters</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">AlignmentParameters</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">rotation_parameters</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">SensorRotationParameters</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">estimation_of</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">AlignmentEstimationSettings</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h3 id="classmethod-alignmentresultfrom_file"><kbd>classmethod</kbd> <code>AlignmentResult.from_file</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="n">AlignmentResult</span>
+</span></code></pre></div>
+<p>Load the result from a file. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>filename</code></b> (str):  Path to the file. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>AlignmentResult</code></b>:  The loaded result. </li>
+</ul>
+<hr />
+<h3 id="method-alignmentresultto_file"><kbd>method</kbd> <code>AlignmentResult.to_file</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>Save the result to a file. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>filename</code></b> (str):  Path to the file. </li>
+</ul>
+<h2 id="class-alignmentdata"><kbd>class</kbd> <code>AlignmentData</code></h2>
+<p>Class holding the observation data required for Alignment </p>
+<p><strong>Attributes:</strong></p>
+<ul>
+<li><b><code>traj_from</code></b> (Trajectory):  Source trajectory </li>
+<li><b><code>traj_to</code></b> (Trajectory):  Target trajectory </li>
+<li><b><code>alignment_settings</code></b> (AlignmentSettings):  Settings for the alignment </li>
+<li><b><code>matching_settings</code></b> (MatchingSettings):  Settings for the matching </li>
+</ul>
+<h3 id="method-alignmentdata__init__"><kbd>method</kbd> <code>AlignmentData.__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">traj_from</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">traj_to</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">alignment_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">AlignmentSettings</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">matching_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">matching</span><span class="o">.</span><span class="n">MatchingSettings</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-alignmentdataest_euler_x"><kbd>property</kbd> AlignmentData.est_euler_x</h4>
+<hr />
+<h4 id="property-alignmentdataest_euler_y"><kbd>property</kbd> AlignmentData.est_euler_y</h4>
+<hr />
+<h4 id="property-alignmentdataest_euler_z"><kbd>property</kbd> AlignmentData.est_euler_z</h4>
+<hr />
+<h4 id="property-alignmentdataest_obs_vector"><kbd>property</kbd> AlignmentData.est_obs_vector</h4>
+<hr />
+<h4 id="property-alignmentdataest_rpy_from"><kbd>property</kbd> AlignmentData.est_rpy_from</h4>
+<hr />
+<h4 id="property-alignmentdataest_speed"><kbd>property</kbd> AlignmentData.est_speed</h4>
+<hr />
+<h4 id="property-alignmentdataest_speed_x"><kbd>property</kbd> AlignmentData.est_speed_x</h4>
+<hr />
+<h4 id="property-alignmentdataest_speed_y"><kbd>property</kbd> AlignmentData.est_speed_y</h4>
+<hr />
+<h4 id="property-alignmentdataest_speed_z"><kbd>property</kbd> AlignmentData.est_speed_z</h4>
+<hr />
+<h4 id="property-alignmentdataest_x_from"><kbd>property</kbd> AlignmentData.est_x_from</h4>
+<hr />
+<h4 id="property-alignmentdataest_x_to"><kbd>property</kbd> AlignmentData.est_x_to</h4>
+<hr />
+<h4 id="property-alignmentdataest_xyz_from"><kbd>property</kbd> AlignmentData.est_xyz_from</h4>
+<hr />
+<h4 id="property-alignmentdataest_xyz_to"><kbd>property</kbd> AlignmentData.est_xyz_to</h4>
+<hr />
+<h4 id="property-alignmentdataest_y_from"><kbd>property</kbd> AlignmentData.est_y_from</h4>
+<hr />
+<h4 id="property-alignmentdataest_y_to"><kbd>property</kbd> AlignmentData.est_y_to</h4>
+<hr />
+<h4 id="property-alignmentdataest_z_from"><kbd>property</kbd> AlignmentData.est_z_from</h4>
+<hr />
+<h4 id="property-alignmentdataest_z_to"><kbd>property</kbd> AlignmentData.est_z_to</h4>
+<hr />
+<h4 id="property-alignmentdataeuler_x"><kbd>property</kbd> AlignmentData.euler_x</h4>
+<hr />
+<h4 id="property-alignmentdataeuler_y"><kbd>property</kbd> AlignmentData.euler_y</h4>
+<hr />
+<h4 id="property-alignmentdataeuler_z"><kbd>property</kbd> AlignmentData.euler_z</h4>
+<hr />
+<h4 id="property-alignmentdatagroup_stds"><kbd>property</kbd> AlignmentData.group_stds</h4>
+<p>Returns the mean standard deviation for each group </p>
+<hr />
+<h4 id="property-alignmentdatanum_obs_per_epoch"><kbd>property</kbd> AlignmentData.num_obs_per_epoch</h4>
+<p>Returns the number of observations per epoch depending on the enabled estimation modes. </p>
+<hr />
+<h4 id="property-alignmentdatanumber_of_epochs"><kbd>property</kbd> AlignmentData.number_of_epochs</h4>
+<hr />
+<h4 id="property-alignmentdataobs_vector"><kbd>property</kbd> AlignmentData.obs_vector</h4>
+<hr />
+<h4 id="property-alignmentdatares_vector"><kbd>property</kbd> AlignmentData.res_vector</h4>
+<hr />
+<h4 id="property-alignmentdatarpy_from"><kbd>property</kbd> AlignmentData.rpy_from</h4>
+<hr />
+<h4 id="property-alignmentdatasigma_ll"><kbd>property</kbd> AlignmentData.sigma_ll</h4>
+<hr />
+<h4 id="property-alignmentdataspeed"><kbd>property</kbd> AlignmentData.speed</h4>
+<hr />
+<h4 id="property-alignmentdataspeed_x"><kbd>property</kbd> AlignmentData.speed_x</h4>
+<hr />
+<h4 id="property-alignmentdataspeed_y"><kbd>property</kbd> AlignmentData.speed_y</h4>
+<hr />
+<h4 id="property-alignmentdataspeed_z"><kbd>property</kbd> AlignmentData.speed_z</h4>
+<hr />
+<h4 id="property-alignmentdatatstamps"><kbd>property</kbd> AlignmentData.tstamps</h4>
+<hr />
+<h4 id="property-alignmentdatavar_vector"><kbd>property</kbd> AlignmentData.var_vector</h4>
+<hr />
+<h4 id="property-alignmentdatax_from"><kbd>property</kbd> AlignmentData.x_from</h4>
+<hr />
+<h4 id="property-alignmentdatax_to"><kbd>property</kbd> AlignmentData.x_to</h4>
+<hr />
+<h4 id="property-alignmentdataxyz_from"><kbd>property</kbd> AlignmentData.xyz_from</h4>
+<hr />
+<h4 id="property-alignmentdataxyz_to"><kbd>property</kbd> AlignmentData.xyz_to</h4>
+<hr />
+<h4 id="property-alignmentdatay_from"><kbd>property</kbd> AlignmentData.y_from</h4>
+<hr />
+<h4 id="property-alignmentdatay_to"><kbd>property</kbd> AlignmentData.y_to</h4>
+<hr />
+<h4 id="property-alignmentdataz_from"><kbd>property</kbd> AlignmentData.z_from</h4>
+<hr />
+<h4 id="property-alignmentdataz_to"><kbd>property</kbd> AlignmentData.z_to</h4>
+<hr />
+<h3 id="method-alignmentdatabuild_obs_vector"><kbd>method</kbd> <code>AlignmentData.build_obs_vector</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">build_obs_vector</span><span class="p">(</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">xyz_from</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">xyz_to</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">rot_from</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rotationset</span><span class="o">.</span><span class="n">RotationSet</span><span class="p">],</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">ndarray</span>
+</span></code></pre></div>
+<p>Creates the observation vector required for the alignment adjustment. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>xyz_from</code></b> (np.ndarray):  Positions to be aligned. </li>
+<li><b><code>xyz_to</code></b> (np.ndarray):  Target Positions. </li>
+<li><b><code>rpy_from</code></b> (np.ndarray):  The roll, pitch, and yaw angles of the platform.  Those angles should describe the rotation of the  body-fixed coordinate system with respect to the  inertial coordinate system. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>np.ndarray</code></b>:  The observation vector required for the alignment adjustment. </li>
+</ul>
+<hr />
+<h3 id="method-alignmentdatabuild_res_vector"><kbd>method</kbd> <code>AlignmentData.build_res_vector</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">build_res_vector</span><span class="p">()</span> <span class="err">→</span> <span class="n">ndarray</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdatabuild_var_vector"><kbd>method</kbd> <code>AlignmentData.build_var_vector</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">build_var_vector</span><span class="p">()</span> <span class="err">→</span> <span class="n">ndarray</span>
+</span></code></pre></div>
+<p>Sets up the variance vector </p>
+<p>Its size depends on whether the leverarm should be estimated or not. In this case, not only the source and the target positions are relevant but also the platform orientations. Also, when estimating the time shift, the platform speed is also considered. </p>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>np.ndarray</code></b>:  variance vector </li>
+</ul>
+<hr />
+<h3 id="method-alignmentdataget_est_obs_group"><kbd>method</kbd> <code>AlignmentData.get_est_obs_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">get_est_obs_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataget_obs_group"><kbd>method</kbd> <code>AlignmentData.get_obs_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">get_obs_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataget_res_group"><kbd>method</kbd> <code>AlignmentData.get_res_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">get_res_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataget_var_group"><kbd>method</kbd> <code>AlignmentData.get_var_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">get_var_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataget_variance_estimation_subset"><kbd>method</kbd> <code>AlignmentData.get_variance_estimation_subset</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">get_variance_estimation_subset</span><span class="p">(</span><span class="n">num_obs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span> <span class="err">→</span> <span class="n">AlignmentData</span>
+</span></code></pre></div>
+<p>Returns a subset of the alignment data for variance estimation </p>
+<p>This method will return a subset of the alignment data that contains 'num_obs' observations. The subset is selected by finding the epoch with the highest standard deviation of the observations. The idea is that a higher variance in the observations will lead to a better estimation of the variances. </p>
+<p>The motivation behind this is that the variance estimation is memory and time consuming. Therefore, a subset of the observations is used for the estimation. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>num_obs</code></b> (int, optional):  Subet size. Defaults to 200. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>AlignmentData</code></b>:  Cropped alignment data </li>
+</ul>
+<hr />
+<h3 id="method-alignmentdataset_obs_group"><kbd>method</kbd> <code>AlignmentData.set_obs_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">set_obs_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataset_res_group"><kbd>method</kbd> <code>AlignmentData.set_res_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">set_res_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdataset_var_group"><kbd>method</kbd> <code>AlignmentData.set_var_group</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">set_var_group</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<hr />
+<h3 id="method-alignmentdatasetup"><kbd>method</kbd> <code>AlignmentData.setup</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">setup</span><span class="p">()</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>Prepare two trajectories for alignment. </p>
+<p>This method will filter the trajectories by speed and resample both trajectories to the same sampling. </p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>
