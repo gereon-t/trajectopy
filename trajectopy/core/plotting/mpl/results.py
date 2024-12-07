@@ -51,18 +51,26 @@ def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5) -> None:
     return max(n_hist)
 
 
-def plot_compact_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
+def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """
-    Plot compact histograms of cross-track and rpy deviations
+    Plots compact ATE histograms for the given ATEResult.
+    The plot contains histograms for the position deviations and, if available, the rotation deviations.
+
+    Args:
+        ate_result (ATEResult): ATE result to plot.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+
+    Returns:
+        Figure: Figure containing the plot.
     """
     fig = plt.figure()
     pos_ax = plt.subplot(2, 1, 1)
-    plot_position_ate_hist(devs, plot_settings)
+    plot_position_ate_hist(ate_result, plot_settings)
     pos_ax.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
 
-    if devs.abs_dev.rot_dev is not None:
+    if ate_result.abs_dev.rot_dev is not None:
         rot_ax = plt.subplot(2, 1, 2)
-        plot_rotation_ate_hist(devs, plot_settings)
+        plot_rotation_ate_hist(ate_result, plot_settings)
         rot_ax.ticklabel_format(style="sci", axis="y", scilimits=(0, 0))
 
     plt.tight_layout()
@@ -114,10 +122,22 @@ def plot_position_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPL
 
 
 def plot_ate_edf(
-    deviation: Union[ATEResult, List[ATEResult]],
+    ate_results: Union[ATEResult, List[ATEResult]],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> Figure:
-    deviation_list = deviation if isinstance(deviation, list) else [deviation]
+    """
+    Plots ATE EDF for the given ATEResult(s) as a line plot using matplotlib.
+    The EDF (Empirical Distribution Function) shows the cummulative probability of the deviations.
+    Using this plot, one can easily see how many percent of the deviations are below a certain value.
+
+    Args:
+        ate_results (Union[ATEResult, List[ATEResult]]): ATE result to plot.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+
+    Returns:
+        Figure: Figure containing the plot.
+    """
+    deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
 
     fig = plt.figure()
 
@@ -161,22 +181,35 @@ def plot_rotation_ate_edf(deviation_list: List[ATEResult]) -> None:
 
 
 def plot_ate_bars(
-    deviation_list: List[ATEResult],
+    ate_results: List[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
     mode: str = "positions",
 ) -> Figure:
+    """
+    Plots multiple ATE results as bars for different characteristics (min, max, mean, median, rms, std)
+    using matplotlib.
+
+    Args:
+        ate_result (List[ATEResult]): List of ATE results.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+        mode (str, optional): Mode to plot. Either 'positions' or 'rotations'. Defaults to 'positions'.
+
+    Returns:
+        Figure: Bar plot figure.
+
+    """
     fig, ax = plt.subplots()
 
-    bar_width = 0.9 / len(deviation_list)
+    bar_width = 0.9 / len(ate_results)
     characteristics = ["Min", "Max", "Mean", "Median", "RMS", "STD"]
     unit = plot_settings.unit_str if mode == "positions" else "[°]"
     spacings = np.linspace(
-        -bar_width * (len(deviation_list) - 1) / 2,
-        bar_width * (len(deviation_list) - 1) / 2,
-        len(deviation_list),
+        -bar_width * (len(ate_results) - 1) / 2,
+        bar_width * (len(ate_results) - 1) / 2,
+        len(ate_results),
     )
     x_positions = np.arange(len(characteristics))
-    for deviation, spacing in zip(deviation_list, spacings):
+    for deviation, spacing in zip(ate_results, spacings):
         if mode == "rotations" and deviation.abs_dev.rot_dev is None:
             continue
 
@@ -212,10 +245,22 @@ def plot_ate_bars(
 
 
 def plot_ate(
-    deviation: Union[ATEResult, List[ATEResult]],
+    ate_results: Union[ATEResult, List[ATEResult]],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> Figure:
-    deviation_list = deviation if isinstance(deviation, list) else [deviation]
+    """
+    Plots ATE for the given ATEResult(s) as a line plot using matplotlib.
+    If available, the plot contains the position and rotation deviations.
+    The x-axis depends on the sorting of the trajectory.
+
+    Args:
+        ate_results (Union[ATEResult, List[ATEResult]]): ATE result(s) to plot.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+
+    Returns:
+        Figure: Figure containing the plot.
+    """
+    deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
     x_label = derive_xlabel_from_sortings([dev.trajectory.sorting.value for dev in deviation_list])
 
     fig = plt.figure()
@@ -265,18 +310,22 @@ def plot_ate(
     return fig
 
 
-def plot_rpe(devs: List[RPEResult], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Tuple[Figure, Figure]:
-    """Plots metric and time RPE for each Deviation given in devs
+def plot_rpe(rpe_results: List[RPEResult]) -> Tuple[Figure, Figure]:
+    """Plots the RPE results as a line plot with violin plots for the position and rotation deviations.
+
+    Depending on the pair distance unit, the unit of the position deviations
+    is either in meters/meters (%) or meters/seconds. The unit of the rotation
+    deviations is respectively in degrees/m or degrees/second.
 
     Args:
-        devs (list[RelativeTrajectoryDeviations]): list of RelativeTrajectoryDeviations
+        rpe_results (list[RelativeTrajectoryDeviations]): list of RelativeTrajectoryDeviations
 
     Returns:
         Tuple[Figure, Figure]: metric and time RPE plots
 
     """
-    if not isinstance(devs, list):
-        devs = [devs]
+    if not isinstance(rpe_results, list):
+        rpe_results = [rpe_results]
 
     fig_metric, (fig_pos_metric, fig_rot_metric) = plt.subplots(2, 1)
     fig_time, (fig_pos_time, fig_rot_time) = plt.subplots(2, 1)
@@ -297,13 +346,13 @@ def plot_rpe(devs: List[RPEResult], plot_settings: MPLPlotSettings = MPLPlotSett
         "rot": {PairDistanceUnit.METER: fig_rot_metric, PairDistanceUnit.SECOND: fig_rot_time},
     }
 
-    _plot_rpe_pos(figure_dict["pos"], devs)
-    _plot_rpe_rot(figure_dict["rot"], devs)
+    _plot_rpe_pos(figure_dict["pos"], rpe_results)
+    _plot_rpe_rot(figure_dict["rot"], rpe_results)
 
     _rpy_legend(figure_dict)
 
-    ret_sum = 1 if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.METER for dev in devs) else 0
-    if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.SECOND for dev in devs):
+    ret_sum = 1 if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.METER for dev in rpe_results) else 0
+    if any(dev.rpe_dev.pair_distance_unit == PairDistanceUnit.SECOND for dev in rpe_results):
         ret_sum += 2
 
     plt.close({1: fig_time, 2: fig_metric}.get(ret_sum))
@@ -392,6 +441,13 @@ def _rpy_legend(figure_dict: Dict[str, Dict[PairDistanceUnit, Axes]]):
 
 
 def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()):
+    """
+    Plots the ATE results as a scatter plot with color-coded deviations.
+
+    Args:
+        ate_result (ATEResult): ATE result to plot.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+    """
     plt.figure()
     _colored_scatter_plot(
         xyz=ate_result.trajectory.pos.xyz,

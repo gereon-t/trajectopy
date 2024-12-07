@@ -23,6 +23,10 @@ class RPEResult:
     Relative trajectory deviations describe relative pose deviations between
     two trajectories. The deviations are calculated by comparing pairs of
     positions and orientations in the test and reference trajectory.
+
+    Attributes:
+        rpe_dev (RelativeTrajectoryDeviations): The relative trajectory deviations.
+        name (str): Name of the deviation set.
     """
 
     def __init__(

@@ -16,6 +16,17 @@ from trajectopy.core.settings.alignment import AlignmentEstimationSettings
 
 @dataclass
 class AlignmentResult:
+    """
+    Class to store the result of an alignment.
+
+    Attributes:
+        name (str): Name of the result.
+        position_parameters (AlignmentParameters): Estimated position alignment parameters.
+        rotation_parameters (SensorRotationParameters): Estimated rotation alignment parameters.
+        estimation_of (AlignmentEstimationSettings): Settings defining which parameters were estimated.
+        converged (bool): Whether the estimation converged.
+    """
+
     name: str = "Alignment Result"
     position_parameters: AlignmentParameters = field(default_factory=AlignmentParameters)
     rotation_parameters: SensorRotationParameters = field(default_factory=SensorRotationParameters)

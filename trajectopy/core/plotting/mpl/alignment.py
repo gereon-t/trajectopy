@@ -140,10 +140,11 @@ def _annotate_heatmap(im, data=None, valfmt="{x:.2f}", textcolors=("black", "whi
 
 
 def plot_correlation_heatmap(estimated_parameters: AlignmentParameters, enabled_only: bool = True) -> Figure:
-    """Plots the correlation heatmap of a covariance matrix.
+    """Plots the correlation heatmap of the alignment parameters using matplotlib.
 
     Args:
-        covariance (np.ndarray): Covariance matrix.
+        estimated_parameters (AlignmentParameters): Estimated parameters.
+        enabled_only (bool, optional): Whether to consider only enabled parameters. Defaults to True.
 
     Returns:
         plt.Figure: Correlation heatmap figure.
@@ -171,10 +172,11 @@ def plot_correlation_heatmap(estimated_parameters: AlignmentParameters, enabled_
 
 
 def plot_covariance_heatmap(estimated_parameters: AlignmentParameters, enabled_only: bool = True) -> Figure:
-    """Plots the covariance heatmap of a covariance matrix.
+    """Plots the covariance heatmap of the alignment parameters using matplotlib.
 
     Args:
-        covariance (np.ndarray): Covariance matrix.
+        estimated_parameters (AlignmentParameters): Estimated parameters.
+        enabled_only (bool, optional): Whether to consider only enabled parameters. Defaults to True.
 
     Returns:
         plt.Figure: Covariance heatmap figure.

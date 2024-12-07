@@ -26,6 +26,11 @@ class ATEResult:
     Absolute trajectory deviations describe absolute pose deviations between
     two trajectories. The deviations are calculated by comparing pairs of
     positions and orientations in the test and reference trajectory.
+
+    Attributes:
+        trajectory (Trajectory): The trajectory the deviations are belonging to
+        abs_dev (AbsoluteTrajectoryDeviations): The absolute trajectory deviations
+        name (str): The name of the result
     """
 
     def __init__(

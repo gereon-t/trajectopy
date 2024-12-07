@@ -22,7 +22,9 @@ def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
     Merges a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and merges the
-    trajectories based on their timestamps.
+    trajectories based on their timestamps. Therefore,
+    all trajectories should be in the same coordinate system
+    before merging.
 
     Args:
         list[Trajectory]: List of trajectories to merge.

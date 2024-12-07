@@ -56,8 +56,9 @@ def create_alignment_report(
     Heatmaps are covariance matrix and correlation matrix.
 
     Args:
-        alignment_result: The alignment result to render.
-        report_settings: Report settings.
+        alignment_parameters (AlignmentParameters): Estimated alignment parameters.
+        name (str, optional): Name of the report. Defaults to "Alignment".
+        report_settings (ReportSettings, optional): Report settings. Defaults to ReportSettings()
 
     Returns:
         HTML string of the rendered report including the heatmap plots.

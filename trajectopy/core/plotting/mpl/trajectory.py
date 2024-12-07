@@ -17,7 +17,17 @@ from trajectopy.core.trajectory import Trajectory
 
 def plot_trajectories(trajectories: List[Trajectory], dim: int = 2) -> Tuple[Figure, Figure, Union[Figure, None]]:
     """
-    Plots Trajectories
+    Plots the trajectories in 2d or 3d using matplotlib.
+
+    Args:
+        trajectories (List[Trajectory]): List of trajectories to plot.
+        dim (int, optional): Dimension of the plot. Defaults to 2.
+
+    This function creates one 2D or 3D plot for the xy(z) coordinates of the trajectories,
+    one subplot for the xyz coordinates and one subplot for the rpy angles.
+
+    Returns:
+        Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
     """
     fig_pos = plot_pos(trajectories=trajectories, dim=dim)
     fig_xyz = plot_xyz(trajectories=trajectories)

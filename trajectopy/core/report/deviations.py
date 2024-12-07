@@ -25,12 +25,12 @@ def create_deviation_report(
     report_settings: ReportSettings = ReportSettings(),
 ):
     """
-    Create a deviation report.
+    Create a HTML deviation report containing the absolute trajectory error and relative pose error results.
 
     Args:
-        ate_result (Union[ATEResult, list[ATEResult]]): The absolute trajectory error results
-        rpe_result (Union[RPEResult, list[RPEResult]]): The relative pose error results
-        report_settings (ReportSettings): The report settings
+        ate_result (Union[ATEResult, list[ATEResult]]): The absolute trajectory error results (one or multiple)
+        rpe_result (Union[RPEResult, list[RPEResult]]): The relative pose error results (one or multiple)
+        report_settings (ReportSettings): The report settings, defaults to ReportSettings()
 
     Returns:
         str: The deviation report

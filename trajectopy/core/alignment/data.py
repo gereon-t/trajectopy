@@ -32,7 +32,15 @@ SPEED_VARIANCE_GROUP: List[str] = ["SPEED"]
 
 @dataclass
 class AlignmentData:
-    """Class holding the observation data required for Alignment"""
+    """Class holding the observation data required for Alignment
+
+
+    Attributes:
+        traj_from (Trajectory): Source trajectory
+        traj_to (Trajectory): Target trajectory
+        alignment_settings (AlignmentSettings): Settings for the alignment
+        matching_settings (MatchingSettings): Settings for the matching
+    """
 
     traj_from: Trajectory
     traj_to: Trajectory

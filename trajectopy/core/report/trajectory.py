@@ -40,7 +40,7 @@ def create_trajectory_report(
     *, trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()
 ) -> str:
     """
-    Render trajectories as scatter plot.
+    Render a HTML report containing trajectory plots.
 
     Args:
         trajectories: List of trajectories to render.

@@ -34,12 +34,19 @@ def sort_spatially(
 
     Spatially sorts the positions by constructing the
     minimum-spanning-tree of the positions.
-    Finally, by performing up to 3 breadth-first-searched
+    Finally, by performing up to 3 breadth-first-searches
     within the mst, the spatial sorting can be reconstructed
 
-    This method also takes care of inserting missing points
-    or assuring that the direction of travel is kept during
+    This functionality is only useful if the positions describe a closed
+    loop without intersections.
+
+    This method can also take care of inserting missing points
+    and assures that the direction of travel is kept during
     sorting.
+
+    Args:
+        xyz_unsorted (np.ndarray): unsorted positions
+        settings (SortingSettings, optional): sorting settings. Defaults to SortingSettings().
 
     Returns:
         list: Sort index
