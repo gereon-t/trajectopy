@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#relative-pose-error-rpe" class="md-skip">
+        <a href="#absolute-trajectory-error-ate" class="md-skip">
           Skip to content
         </a>
       
@@ -339,6 +339,15 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#absolute-trajectory-error-ate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Absolute Trajectory Error (ATE)
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#relative-pose-error-rpe" class="md-nav__link">
@@ -660,6 +669,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#absolute-trajectory-error-ate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Absolute Trajectory Error (ATE)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#relative-pose-error-rpe" class="md-nav__link">
     <span class="md-ellipsis">
       Relative Pose Error (RPE)
@@ -716,17 +734,14 @@
   <h1>Python Package Usage</h1>
 
 <p>In addition to the GUI, trajectopy can also be used as a Python package. The package provides a set of functions to evaluate and visualize the quality of trajectory. Trajectopy is designed to be easy to use and to provide a high level of customization.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">## Absolute Trajectory Error (ATE)</span>
+<h2 id="absolute-trajectory-error-ate">Absolute Trajectory Error (ATE)</h2>
+<p>Computing the Absolute Trajectory Error (ATE) between two trajectories is a common evaluation metric in the field of visual odometry and SLAM. The ATE is calculated by aligning the two trajectories and then computing the pose-wise difference between the aligned trajectories.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">trajectopy</span> <span class="k">as</span> <span class="nn">tpy</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Computing<span class="w"> </span>the<span class="w"> </span>Absolute<span class="w"> </span>Trajectory<span class="w"> </span>Error<span class="w"> </span><span class="o">(</span>ATE<span class="o">)</span><span class="w"> </span>between<span class="w"> </span>two<span class="w"> </span>trajectories<span class="w"> </span>is<span class="w"> </span>a<span class="w"> </span>common<span class="w"> </span>evaluation<span class="w"> </span>metric<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>field<span class="w"> </span>of<span class="w"> </span>visual<span class="w"> </span>odometry<span class="w"> </span>and<span class="w"> </span>SLAM.<span class="w"> </span>The<span class="w"> </span>ATE<span class="w"> </span>is<span class="w"> </span>calculated<span class="w"> </span>by<span class="w"> </span>aligning<span class="w"> </span>the<span class="w"> </span>two<span class="w"> </span>trajectories<span class="w"> </span>and<span class="w"> </span><span class="k">then</span><span class="w"> </span>computing<span class="w"> </span>the<span class="w"> </span>pose-wise<span class="w"> </span>difference<span class="w"> </span>between<span class="w"> </span>the<span class="w"> </span>aligned<span class="w"> </span>trajectories.
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="sb">```</span>python
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>import<span class="w"> </span>trajectopy<span class="w"> </span>as<span class="w"> </span>tpy
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nv">gt_traj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>tpy.Trajectory.from_file<span class="o">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="o">)</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nv">est_traj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>tpy.Trajectory.from_file<span class="o">(</span><span class="s2">&quot;./example_data/KITTI_ORB.traj&quot;</span><span class="o">)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nv">ate_result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>tpy.ate<span class="o">(</span><span class="nv">trajectory_gt</span><span class="o">=</span>gt_traj,<span class="w"> </span><span class="nv">trajectory_est</span><span class="o">=</span>est_traj<span class="o">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">gt_traj</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">est_traj</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_ORB.traj&quot;</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">ate_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ate</span><span class="p">(</span><span class="n">trajectory_gt</span><span class="o">=</span><span class="n">gt_traj</span><span class="p">,</span> <span class="n">trajectory_est</span><span class="o">=</span><span class="n">est_traj</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="relative-pose-error-rpe">Relative Pose Error (RPE)</h2>
 <p>The Relative Pose Error (RPE) is another common evaluation metric. The RPE measures the relative pose difference between two trajectories at different time or distance intervals.</p>
@@ -743,12 +758,14 @@
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">gt_traj</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">est_traj</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_ORB.traj&quot;</span><span class="p">)</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">ate_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ate</span><span class="p">(</span><span class="n">trajectory_gt</span><span class="o">=</span><span class="n">gt_traj</span><span class="p">,</span> <span class="n">trajectory_est</span><span class="o">=</span><span class="n">est_traj</span><span class="p">)</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">rpe_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">rpe</span><span class="p">(</span><span class="n">trajectory_gt</span><span class="o">=</span><span class="n">gt_traj</span><span class="p">,</span> <span class="n">trajectory_est</span><span class="o">=</span><span class="n">est_traj</span><span class="p">)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">report_settings</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ReportSettings</span><span class="p">(</span><span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_marker_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">report</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">create_deviation_report</span><span class="p">(</span><span class="n">ate_result</span><span class="o">=</span><span class="n">ate_result</span><span class="p">,</span> <span class="n">rpe_result</span><span class="o">=</span><span class="n">rpe_result</span><span class="p">,</span> <span class="n">report_settings</span><span class="o">=</span><span class="n">report_settings</span><span class="p">)</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">tpy</span><span class="o">.</span><span class="n">show_report</span><span class="p">(</span><span class="n">report_text</span><span class="o">=</span><span class="n">report</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;reports/report.html&quot;</span><span class="p">)</span> 
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Evaluation</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">ate_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ate</span><span class="p">(</span><span class="n">trajectory_gt</span><span class="o">=</span><span class="n">gt_traj</span><span class="p">,</span> <span class="n">trajectory_est</span><span class="o">=</span><span class="n">est_traj</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">rpe_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">rpe</span><span class="p">(</span><span class="n">trajectory_gt</span><span class="o">=</span><span class="n">gt_traj</span><span class="p">,</span> <span class="n">trajectory_est</span><span class="o">=</span><span class="n">est_traj</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Report</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">report_settings</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ReportSettings</span><span class="p">(</span><span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_marker_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">report</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">create_deviation_report</span><span class="p">(</span><span class="n">ate_result</span><span class="o">=</span><span class="n">ate_result</span><span class="p">,</span> <span class="n">rpe_result</span><span class="o">=</span><span class="n">rpe_result</span><span class="p">,</span> <span class="n">report_settings</span><span class="o">=</span><span class="n">report_settings</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">tpy</span><span class="o">.</span><span class="n">show_report</span><span class="p">(</span><span class="n">report_text</span><span class="o">=</span><span class="n">report</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;reports/report.html&quot;</span><span class="p">)</span> 
 </span></code></pre></div>
 <h2 id="multi-trajectory-evaluation-report">Multi Trajectory Evaluation Report</h2>
 <p>Multiple trajectory comparisons can be visualized in a single HTML report.</p>
