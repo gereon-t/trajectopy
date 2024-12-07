@@ -57,10 +57,10 @@ def estimate_alignment(
     to the 'traj_from' trajectory.
 
     Args:
-        traj_from (Trajectory)
-        traj_to (Trajectory)
-        alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
-        matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
+    - traj_from (Trajectory)
+    - traj_to (Trajectory)
+    - alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
+    - matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
 
     Returns:
         AlignmentResult: Result of the alignment process

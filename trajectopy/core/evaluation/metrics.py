@@ -26,6 +26,7 @@ def ate(
         return_alignment (bool, optional): Whether to return the alignment result.
 
     Description:
+
         The ATE is computed by first matching the estimated trajectory to the ground truth trajectory.
         Then, the alignment between the two trajectories is estimated.
         The estimated trajectory is aligned to the ground truth trajectory using the estimated alignment.
@@ -65,6 +66,7 @@ def rpe(
         settings (ProcessingSettings, optional): Processing settings.
 
     Description:
+
         The RPE is computed by comparing the relative poses between the estimated and ground truth trajectories.
         The pose distances are either defined in meters or in seconds depending on the settings.
 

@@ -1,0 +1,28 @@
+site_name: Trajectopy
+theme:
+  name: material
+  logo: assets/icon.png
+  palette:
+    primary: white
+  features:
+    - content.code.copy
+repo_url: https://github.com/gereon-t/trajectopy
+repo_name: gereon-t/trajectopy
+
+extra_javascript: 
+    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+markdown_extensions:
+  - extra
+  - tables
+  - mdx_math:
+      enable_dollar_delimiter: True
+  - fenced_code
+
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

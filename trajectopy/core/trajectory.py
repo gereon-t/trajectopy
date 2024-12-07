@@ -37,9 +37,55 @@ class TrajectoryError(Exception):
 class Trajectory:
     """Class representing a trajectory, i.e. position and orientation of a plattform over time
 
-    Position-Computations are always done in a local frame
-    Time stamps are always in UTC time
-    Rotations are always defined in a East-North-Up frame
+    - Position-Computations are always done in a local frame
+    - Time stamps are always in UTC time
+    - Rotations are always defined in a East-North-Up frame
+
+    Attributes:
+        pos (PointSet): Position of the trajectory
+        rot (RotationSet): Orientation of the trajectory
+        tstamps (np.ndarray): Time stamps of the trajectory
+        name (str): Name of the trajectory
+        arc_lengths (np.ndarray): Arc lengths of the trajectory
+        speed_3d (np.ndarray): 3D speed of the trajectory
+        sorting (Sorting): Sorting of the trajectory
+
+    Methods:
+
+        __init__: Initialize trajectory
+        __str__: Returns string describing trajectory
+        __repr__: Returns string representation of trajectory
+        __len__: Return number of poses
+        __eq__: Check if two trajectories are equal
+        init_arc_lengths: Initialize arc lengths
+        copy: Deep copy of itself
+        from_file: Create trajectory from file
+        sort_switching_index: Returns the index that switches the sorting of the trajectory
+        sorting_index: Returns the index that sorts the trajectory
+        function_of: Returns the function of the trajectory
+        function_of_unit: Returns the unit of the function of the trajectory
+        function_of_label: Returns the label of the function of the trajectory
+        xyz: Returns the xyz coordinates of the trajectory
+        quat: Returns the quaternion of the trajectory
+        rpy: Returns the roll, pitch, yaw of the trajectory
+        to_dataframe: Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory
+        to_file: Writes trajectory to ascii file
+        from_numpy: Initialize trajectory using numpy arrays
+        se3: Returns SE3 pose list
+        se3.setter: Sets position and rotation from se3 list
+        data_rate: Returns data rate
+        total_length: Return the total trajectory arc_length
+        speed_3d: Returns computed speeds or custom speeds
+        speed_3d.setter: Sets custom speeds
+        speed: Returns trajectory speeds calculated using consecutive point distances
+        crop: Crops trajectory to timespan defined by t_start and t_end
+        interpolate: Interpolates a trajectory to specified timestamps
+        _interpolate_rotations: Function for rotation interpolation of a trajectory
+        _interpolate_positions: Function for position interpolation of a trajectory
+        match_timestamps: Truncates trajectory to only those poses where the timestamps exactly match "tstamps"
+        intersect: Intersects trajectory with a given timestamp vector
+        apply_index: Applies index to the trajectory
+        apply_transformation: Applies transformation to trajectory
     """
 
     _counter = 1
