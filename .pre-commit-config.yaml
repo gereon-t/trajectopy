@@ -1,19 +1,22 @@
 repos:
-- repo: https://github.com/psf/black-pre-commit-mirror
-  rev: 23.9.1
-  hooks:
-    - id: black
-      language_version: python3.10
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: [--line-length=119]
+        stages: [commit]
 
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile=black"]
+        stages: [commit]
 
-- repo: local
-  hooks:
-    - id: run-python-script
-      name: Generate Documentation
-      entry: python generate_api_docs.py
-      language: system
-      stages: [commit]
+  - repo: local
+    hooks:
+      - id: generate-docs
+        name: Generate Documentation
+        entry: python generate_api_docs.py
+        language: system
+        stages: [commit]
