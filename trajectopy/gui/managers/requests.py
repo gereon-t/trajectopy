@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -12,8 +12,8 @@ from enum import Enum, auto
 from typing import Any, List, Protocol
 
 from PyQt6.QtCore import pyqtSignal
-from trajectopy.api.settings import MatchingMethod, ReportSettings
 
+from trajectopy.api.settings import MatchingMethod, ReportSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 

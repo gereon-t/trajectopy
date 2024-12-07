@@ -1,9 +1,10 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
+
 from functools import wraps
 
 from PyQt6 import QtWidgets

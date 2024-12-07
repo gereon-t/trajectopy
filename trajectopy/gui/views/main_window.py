@@ -1,11 +1,10 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
-import datetime
 import logging
 import os
 import shutil
@@ -15,8 +14,8 @@ from typing import Callable, Dict, Union
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent
-from trajectopy.api import ReportSettings
 
+from trajectopy.api import ReportSettings
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
@@ -32,16 +31,12 @@ from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
-from trajectopy.path import VERSION_FILE_PATH
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
-
-VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
-YEAR = str(datetime.datetime.now().year)
-
+from trajectopy.path import VERSION, YEAR
 
 logger = logging.getLogger("root")
 

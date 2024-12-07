@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -25,11 +25,11 @@ from trajectopy.gui.managers.requests import (
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import AlignmentEntry
-from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
+from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
-from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
 
 logger = logging.getLogger("root")
 

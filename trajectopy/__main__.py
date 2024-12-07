@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -10,25 +10,28 @@ import ctypes
 import logging
 import os
 import sys
+
 from rich.logging import RichHandler
+
+from trajectopy.path import ICON_BG_FILE_PATH, VERSION
 
 logging.basicConfig(
     format="%(message)s",
-    level=logging.DEBUG,
+    level=logging.INFO,
     handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
 )
+
+if os.name == "nt":
+    myappid = f"gereont.trajectopy.main.{VERSION}"
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 def main():
     try:
         from PyQt6 import QtGui
         from PyQt6.QtWidgets import QApplication
-        from trajectopy.path import ICON_BG_FILE_PATH
-        from trajectopy.gui.views.main_window import VERSION, TrajectopyGUI
 
-        if os.name == "nt":
-            myappid = f"gereont.trajectopy.main.{VERSION}"
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        from trajectopy.gui.views.main_window import TrajectopyGUI
     except ImportError:
         logging.error(
             "PyQt6 is required to run Trajectopy with a GUI. Install it using pip install 'trajectopy[gui]' or pip install PyQt6."

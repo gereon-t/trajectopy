@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-import trajectopy.api as tpy
 
+import trajectopy.api as tpy
 from trajectopy.core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
 from trajectopy.core.matching import rough_timestamp_matching
 from trajectopy.gui.managers.requests import (

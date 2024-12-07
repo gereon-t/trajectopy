@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Dict, Tuple, Union
 
 import numpy as np
+
 import trajectopy.api as tpy
 from trajectopy.core.input_output.header import HeaderData
 

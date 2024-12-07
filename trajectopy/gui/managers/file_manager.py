@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from trajectopy.core.input_output.rosbag import trajectories_from_rosbag
 
+from trajectopy.core.input_output.rosbag import trajectories_from_rosbag
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,

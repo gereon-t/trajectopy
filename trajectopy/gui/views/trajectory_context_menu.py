@@ -1,7 +1,7 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2023
+Gereon Tombrink, 2024
 mail@gtombrink.de
 """
 
@@ -9,8 +9,8 @@ import logging
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
-from trajectopy.api import MatchingMethod
 
+from trajectopy.api import MatchingMethod
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
