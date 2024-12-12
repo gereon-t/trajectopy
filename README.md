@@ -29,4 +29,4 @@ Trajectopy offers a range of features, including:
 - __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
 - __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
-- __Customizable HTML-based Visualization__: Powered by [Plotly](https://plotly.com/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy-core/blob/main/example_data/report.html))
+- __Customizable HTML-based Visualization__: Powered by [Plotly](https://plotly.com/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy/blob/main/example_data/report.html))
