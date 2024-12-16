@@ -7,21 +7,10 @@ mail@gtombrink.de
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import ticker
 from matplotlib.figure import Figure
 
 from trajectopy.core.alignment.parameters import AlignmentParameters
-
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2024
-mail@gtombrink.de
-"""
-
-
-import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib import ticker
 
 
 # see https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html

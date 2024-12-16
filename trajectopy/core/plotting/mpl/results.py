@@ -462,7 +462,7 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
     _colored_scatter_plot(
         xyz=ate_result.trajectory.pos.xyz,
         c_list=ate_result.rot_dev_comb * 180 / np.pi,
-        c_label=f"Deviation [°]",
+        c_label="Deviation [°]",
     )
 
 

@@ -696,7 +696,7 @@ class Trajectory:
 
             return euler_x, euler_y, euler_z, lever_x, lever_y, lever_z
 
-        trajectory = trajectory if inplace else self.copy()
+        trajectory = self if inplace else self.copy()
 
         # leverarm and time
         (
