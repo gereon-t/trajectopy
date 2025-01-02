@@ -1,8 +1,8 @@
 """
 spatialsorter 
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging

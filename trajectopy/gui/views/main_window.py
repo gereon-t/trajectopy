@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging
@@ -36,7 +36,8 @@ from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
-from trajectopy.path import VERSION, YEAR
+from trajectopy.path import YEAR
+from trajectopy import __version__ as VERSION
 
 logger = logging.getLogger("root")
 

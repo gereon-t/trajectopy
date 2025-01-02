@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -89,7 +89,6 @@ class AboutGUI(QtWidgets.QMainWindow):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "About Trajectopy"))
-        # self.name.setText(_translate("MainWindow", "Trajectopy"))
         self.version.setText(_translate("MainWindow", "Version Number"))
         self.author.setText(_translate("MainWindow", "Gereon Tombrink"))
         self.year.setText(_translate("MainWindow", "2024"))

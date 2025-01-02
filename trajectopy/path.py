@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import datetime
@@ -23,11 +23,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 
-VERSION_FILE_PATH = resource_path("version")
 FULL_ICON_FILE_PATH = resource_path("gui/resources/full-icon-poppins.png")
 ICON_FILE_PATH = resource_path("gui/resources/icon.png")
 ICON_BG_FILE_PATH = resource_path("gui/resources/icon-bg.png")
-
-
-VERSION = open(VERSION_FILE_PATH, "r", encoding="utf-8").read()
 YEAR = str(datetime.datetime.now().year)

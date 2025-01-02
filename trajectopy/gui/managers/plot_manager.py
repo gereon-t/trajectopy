@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging
@@ -98,8 +98,8 @@ class PlotManager(QObject):
             return
 
         multi_report = tpy.create_deviation_report(
-            ate_results=ate_results or None,
-            rpe_results=rpe_results or None,
+            ate_result=ate_results or None,
+            rpe_result=rpe_results or None,
             report_settings=request.report_settings,
         )
         tpy.show_report(report_text=multi_report, filepath=self.report_path(prefix="multi_deviations"))

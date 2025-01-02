@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import argparse
@@ -12,8 +12,8 @@ import os
 import sys
 
 from rich.logging import RichHandler
-
-from trajectopy.path import ICON_BG_FILE_PATH, VERSION
+from trajectopy import __version__ as VERSION
+from trajectopy.path import ICON_BG_FILE_PATH
 
 logging.basicConfig(
     format="%(message)s",

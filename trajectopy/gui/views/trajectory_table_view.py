@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging
@@ -58,7 +58,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         self.trajectory_table_model = trajectory_table_model
         self.setModel(self.trajectory_table_model)
 
-        self.setAlternatingRowColors(True)
+        self.setAlternatingRowColors(False)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)

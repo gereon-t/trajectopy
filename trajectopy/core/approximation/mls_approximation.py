@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging
@@ -47,7 +47,7 @@ def mls_iterative(
         np.ndarray: Approximated positions
     """
     cnt = 1
-    avg_point_movement = np.Inf
+    avg_point_movement = np.inf
     while avg_point_movement > movement_threshold:
         logger.info("Iteration %i ... ", cnt)
         xyz, avg_point_movement = mls_single(xyz=xyz, voxel_size=voxel_size, k_nearest=k_nearest)

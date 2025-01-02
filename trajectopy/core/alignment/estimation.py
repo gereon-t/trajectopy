@@ -1,8 +1,8 @@
 """
 Trajectopy - Trajectory Evaluation in Python
 
-Gereon Tombrink, 2024
-mail@gtombrink.de
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
 """
 
 import logging
@@ -288,7 +288,7 @@ class AlignmentEstimation:
         # obs = [x_from, y_from, z_from, x_to, y_to, z_to, roll_body, pitch_body, yaw_body]
 
         # preparation for iterative adjustment
-        delta_params = np.ones((len(self._est_params),)) * np.Inf
+        delta_params = np.ones((len(self._est_params),)) * np.inf
         self.data.res_vector = np.zeros_like(self.data.obs_vector)
 
         contradiction_w = self._eval_functional_relationship()
