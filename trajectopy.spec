@@ -1,29 +1,30 @@
-# -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
-added_files = [
-    ( 'trajectopy/version', 'trajectopy/' ),
-    ( 'trajectopy/resources/icon.png', 'trajectopy/resources/'),
-    ( 'trajectopy/resources/icon-bg.png', 'trajectopy/resources/'),
-    ( 'trajectopy/resources/full-icon-poppins.png', 'trajectopy/resources/'),
-    ( 'reportdata/generic.html', 'trajectopy/templates/'),
-    ( 'reportdata/multi_template.html', 'trajectopy/templates/'),
-    ( 'reportdata/single_template.html', 'trajectopy/templates/'),
-    ( 'reportdata/icon.png', 'trajectopy/assets/'),
-]
+datas = []
+binaries = []
+hiddenimports = []
+
+tmp_ret_trajectopy = collect_all('trajectopy')
+tmp_ret_rosbags = collect_all('rosbags')
+
+datas += tmp_ret_trajectopy[0] + tmp_ret_rosbags[0]
+binaries += tmp_ret_trajectopy[1] + tmp_ret_rosbags[1]
+hiddenimports += tmp_ret_trajectopy[2] + tmp_ret_rosbags[2]
+
 
 a = Analysis(
     ['trajectopy\\__main__.py'],
     pathex=[],
-    binaries=[],
-    datas=added_files,
-    hiddenimports=['trajectopy_core'],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
-
 pyz = PYZ(a.pure)
 
 exe = EXE(
@@ -45,5 +46,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="trajectopy\\resources\\icon-bg.png"
+    icon='trajectopy\\gui\\resources\\icon-bg.ico',
 )

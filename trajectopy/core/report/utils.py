@@ -19,7 +19,7 @@ import numpy as np
 logger = logging.getLogger("root")
 
 try:
-    BASE_PATH = os.path.join(sys._MEIPASS, "trajectopy")
+    BASE_PATH = os.path.join(sys._MEIPASS, "trajectopy/core/report")
 except Exception:
     BASE_PATH = os.path.dirname(__file__)
 TEMPLATES_PATH = os.path.join(BASE_PATH, "templates")

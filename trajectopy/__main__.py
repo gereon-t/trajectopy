@@ -14,6 +14,9 @@ import sys
 from rich.logging import RichHandler
 from trajectopy import __version__ as VERSION
 from trajectopy.path import ICON_BG_FILE_PATH
+from PyQt6 import QtGui
+from PyQt6.QtWidgets import QApplication
+from trajectopy.gui.views.main_window import TrajectopyGUI
 
 logging.basicConfig(
     format="%(message)s",
@@ -27,17 +30,6 @@ if os.name == "nt":
 
 
 def main():
-    try:
-        from PyQt6 import QtGui
-        from PyQt6.QtWidgets import QApplication
-
-        from trajectopy.gui.views.main_window import TrajectopyGUI
-    except ImportError:
-        logging.error(
-            "PyQt6 is required to run Trajectopy with a GUI. Install it using pip install 'trajectopy[gui]' or pip install PyQt6."
-        )
-        return
-
     parser = argparse.ArgumentParser(description="Trajectopy - Trajectory Evaluation in Python")
     parser.add_argument("--version", "-v", action="store_true")
     parser.add_argument(

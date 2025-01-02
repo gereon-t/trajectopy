@@ -61,3 +61,10 @@ Repository = "https://github.com/gereon-t/trajectopy"
 
 [project.scripts]
 trajectopy = "trajectopy.__main__:main"
+
+[dependency-groups]
+dev = [
+    "lazydocs>=0.4.8",
+    "pillow>=11.1.0",
+    "pyinstaller>=6.11.1",
+]
