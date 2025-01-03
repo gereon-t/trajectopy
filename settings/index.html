@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#processing-settings" class="md-skip">
+        <a href="#choosing-the-plotting-backend" class="md-skip">
           Skip to content
         </a>
       
@@ -361,6 +361,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#choosing-the-plotting-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing the Plotting Backend
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#processing-settings" class="md-nav__link">
     <span class="md-ellipsis">
       Processing Settings
@@ -585,6 +594,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matplotlib-plotting-settings-mplplotsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Matplotlib Plotting Settings (MPLPlotSettings)
+    </span>
+  </a>
   
 </li>
       
@@ -852,6 +870,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#choosing-the-plotting-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing the Plotting Backend
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#processing-settings" class="md-nav__link">
     <span class="md-ellipsis">
       Processing Settings
@@ -1079,6 +1106,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#matplotlib-plotting-settings-mplplotsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Matplotlib Plotting Settings (MPLPlotSettings)
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1099,6 +1135,8 @@
 
   <h1>Settings</h1>
 
+<h2 id="choosing-the-plotting-backend">Choosing the Plotting Backend</h2>
+<p>Since version 2.2.0, you can choose between two plotting backends: <code>matplotlib</code> and <code>plotly</code>. By default the <code>matplotlib</code> backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the <code>plotly</code> backend by clicking "Plotting" in the menu bar and selecting the desired backend.</p>
 <h2 id="processing-settings">Processing Settings</h2>
 <p>Trajectopy offers a range of processing options that can be applied to the imported trajectories. These options are:</p>
 <table>
@@ -1308,6 +1346,17 @@
 <li><code>width</code> (integer): The export width in pixels. Default: 800.</li>
 <li><code>scale</code> (integer): The export scale. Default: 6.</li>
 </ul>
+<h2 id="matplotlib-plotting-settings-mplplotsettings">Matplotlib Plotting Settings (MPLPlotSettings)</h2>
+<ul>
+<li><code>scatter_cbar_show_zero</code> (bool): Indicates whether the colorbar should show zero. Default value is True.</li>
+<li><code>scatter_cbar_steps</code> (int): The number of steps in the colorbar. Default value is 4.</li>
+<li><code>scatter_no_axis</code> (bool): Indicates whether the axis should be hidden. Default value is False.</li>
+<li><code>scatter_max_std</code> (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.</li>
+<li><code>ate_unit_is_mm</code> (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.</li>
+<li><code>hist_as_stairs</code> (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.</li>
+<li><code>directed_ate</code> (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.</li>
+<li><code>scatter_pos_dim</code> (int): The dimension of the position plot. Default value is 2.</li>
+</ul>
 
 
 
@@ -1357,7 +1406,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
       

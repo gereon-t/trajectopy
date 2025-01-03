@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.47">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -351,6 +351,15 @@
   <a href="#importing-trajectories" class="md-nav__link">
     <span class="md-ellipsis">
       Importing Trajectories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-the-plotting-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing the Plotting Backend
     </span>
   </a>
   
@@ -705,6 +714,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#choosing-the-plotting-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing the Plotting Backend
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#keyboard-shortcuts-gui-version-only" class="md-nav__link">
     <span class="md-ellipsis">
       Keyboard Shortcuts (GUI version only)
@@ -746,24 +764,27 @@
 </span></code></pre></div>
 <p>Now you can use trajectopy as a Python package in your scripts.</p>
 <h2 id="command-line-options-gui-version-only">Command Line Options (GUI version only)</h2>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="go">usage: trajectopy [-h] [--version] [--single_thread] [--report_settings REPORT_SETTINGS] [--report_path REPORT_PATH]</span>
+<p><div class="language-console highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="go">usage: trajectopy [-h] [--version] [--single-thread] [--report-settings REPORT_SETTINGS] [--mpl-settings MPL_SETTINGS] [--report-path REPORT_PATH] [--mapbox-token MAPBOX_TOKEN]</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="go">Trajectopy - Trajectory Evaluation in Python</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="go">options:</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="go">  -h, --help            show this help message and exit</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="go">  --version, -v</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="go">  --single-thread       Disable multithreading</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="go">  --report-settings REPORT_SETTINGS</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="go">                        Path to JSON report settings file that will override the default settings.</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="go">  --mpl-settings MPL_SETTINGS</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="go">                        Path to JSON matplotlib plot settings file that will override the default settings.</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="go">  --report-path, -o REPORT_PATH</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="go">                        Output directory for all reports of one session. If not specified, a temporary directory will be used.</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="go">  --mapbox-token MAPBOX_TOKEN</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="go">                        Mapbox token to use Mapbox map styles in trajectory plots.</span>
 </span></code></pre></div>
-<p><div class="language-console highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="go">options:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="go">    -h, --help            show this help message and exit</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="go">    --version, -v</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="go">    --single_thread       Disable multithreading</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="go">    --report_settings REPORT_SETTINGS, -s REPORT_SETTINGS</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="go">                            Path to JSON report settings file</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="go">                            that will override the default settings.</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="go">    --report_path REPORT_PATH, -o REPORT_PATH</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="go">                            Output directory for all reports of one session. If not specified, a temporary directory will be used.</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="go">    --mapbox_token MAPBOX_TOKEN, -t MAPBOX_TOKEN</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="go">                            Mapbox token to use Mapbox map styles in trajectory plots.</span>
-</span></code></pre></div>
-Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the <code>--report_path</code> option. The report settings can be customized using a JSON file.
+Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the <code>--report-path</code> option. The report settings can be customized using a JSON file.
 The report settings file must include all available settings. You can find a sample file <a href="https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json">here</a>.</p>
 <p>Example:
-<div class="language-console highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="go">trajectopy -s custom.json -o ./persistent_report_directory</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="go">trajectopy -s custom.json -o ./persistent_report_directory</span>
 </span></code></pre></div></p>
 <h2 id="importing-trajectories">Importing Trajectories</h2>
 <p>Trajectories can be imported using the "Add" button below the trajectory table or by dragging files into the area of the trajectory table.
@@ -851,6 +872,8 @@ Below you can find a table of all allowed header entries and their meaning.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="choosing-the-plotting-backend">Choosing the Plotting Backend</h2>
+<p>Since version 2.2.0, you can choose between two plotting backends: <code>matplotlib</code> and <code>plotly</code>. By default the <code>matplotlib</code> backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the <code>plotly</code> backend by clicking "Plotting" in the menu bar and selecting the desired backend.</p>
 <h2 id="keyboard-shortcuts-gui-version-only">Keyboard Shortcuts (GUI version only)</h2>
 <table>
 <thead>
@@ -951,7 +974,7 @@ Below you can find a table of all allowed header entries and their meaning.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
       
