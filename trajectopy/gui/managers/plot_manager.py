@@ -7,6 +7,7 @@ tombrink@igg.uni-bonn.de
 
 import logging
 import os
+import threading
 from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -50,7 +51,9 @@ class PlotManager(QObject):
     @pyqtSlot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
-        generic_request_handler(self, request, passthrough_request=True)
+        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
+        request_thread.start()
+        request_thread.join()
 
     def report_path(self, prefix: str = "report") -> str:
         """Return the path to the report file."""

@@ -8,6 +8,7 @@ tombrink@igg.uni-bonn.de
 import glob
 import logging
 import os
+import threading
 from typing import Callable
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -58,7 +59,9 @@ class SessionManager(QObject):
 
     @pyqtSlot(SessionManagerRequest)
     def handle_request(self, request: SessionManagerRequest) -> None:
-        generic_request_handler(self, request, passthrough_request=True)
+        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
+        request_thread.start()
+        request_thread.join()
 
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))

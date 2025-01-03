@@ -37,25 +37,6 @@ from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
 
-class ThreadWithResult(threading.Thread):
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, *, daemon=None):
-        super().__init__(group=group, target=target, name=name, args=args, kwargs=kwargs, daemon=daemon)
-        self._return = None
-
-    def run(self):
-        # Overwrite run method to store return value
-        try:
-            if self._target is not None:
-                self._return = self._target(*self._args, **self._kwargs)
-        finally:
-            del self._target, self._args, self._kwargs
-            
-    def join(self, timeout=None):
-        super().join(timeout=timeout)
-        return self._return
-
-
 @dataclass
 class TrajectoryEntryPair:
     entry: TrajectoryEntry
@@ -224,6 +205,7 @@ class TrajectoryManager(QObject):
         """
         return self.request.selection.reference_entry
 
+    @show_progress
     @pyqtSlot(TrajectoryManagerRequest)
     def handle_request(self, request: TrajectoryManagerRequest) -> None:
         """
@@ -236,7 +218,9 @@ class TrajectoryManager(QObject):
             None.
         """
         self.request = request
-        generic_request_handler(self, request, passthrough_request=False)
+        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, False))
+        request_thread.start()
+        request_thread.join()
         self.update_view.emit()
 
     def emit_add_trajectory_signal(self, new_trajectory_entry: TrajectoryEntry):
@@ -290,7 +274,6 @@ class TrajectoryManager(QObject):
             )
         )
 
-    @show_progress
     def handle_trajectory_operation(
         self,
         operation: Callable[[TrajectoryEntryPair], Union[tuple, None]],
@@ -319,10 +302,8 @@ class TrajectoryManager(QObject):
                 reference_entry=self.reference_entry,
                 request=self.request,
             )
-            
-            computation_thread = ThreadWithResult(target=operation, args=(entry_pair,))
-            computation_thread.start()
-            output_entries = computation_thread.join()
+
+            output_entries = operation(entry_pair)
 
             if output_entries is None:
                 continue
