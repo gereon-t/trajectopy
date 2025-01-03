@@ -14,7 +14,7 @@ def create_alignment_docs():
     for obj in imports:
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Alignment.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Alignment.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -32,7 +32,7 @@ def create_evaluation_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Evaluation.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Evaluation.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -50,7 +50,7 @@ def create_matching_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Matching.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Matching.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -68,7 +68,7 @@ def create_merging_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Merging.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Merging.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -86,7 +86,7 @@ def create_plotting_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Plotting.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Plotting.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -104,7 +104,7 @@ def create_report_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Report.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Report.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -122,7 +122,7 @@ def create_result_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Result.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Result.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -140,7 +140,7 @@ def create_sorting_docs():
     for _, obj in imports.items():
         markdown_docs += generator.import2md(obj, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Sorting.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Sorting.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -148,7 +148,7 @@ def create_trajectory_docs():
     from trajectopy.core.trajectory import Trajectory
 
     markdown_docs = generator.import2md(Trajectory, depth=2)
-    with open("trajectopy-docs/docs/Documentation/Trajectory.md", "w") as f:
+    with open("trajectopy-docs/docs/Documentation/Trajectory.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 

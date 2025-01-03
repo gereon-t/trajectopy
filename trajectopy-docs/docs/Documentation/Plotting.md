@@ -4,7 +4,7 @@
 ```python
 plot_ate(
     ate_results: Union[trajectopy.core.evaluation.ate_result.ATEResult, List[trajectopy.core.evaluation.ate_result.ATEResult]],
-    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_sigma_factor=3.0, ate_unit_is_mm=False, hist_as_stairs=False, heatmap_spacing=1.0, show_directed_devs=False)
+    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_max_std=3.0, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, scatter_pos_dim=2)
 ) → Figure
 ```
 
@@ -28,7 +28,7 @@ Plots ATE for the given ATEResult(s) as a line plot using matplotlib. If availab
 ```python
 plot_ate_bars(
     ate_results: List[trajectopy.core.evaluation.ate_result.ATEResult],
-    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_sigma_factor=3.0, ate_unit_is_mm=False, hist_as_stairs=False, heatmap_spacing=1.0, show_directed_devs=False),
+    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_max_std=3.0, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, scatter_pos_dim=2),
     mode: str = 'positions'
 ) → Figure
 ```
@@ -54,7 +54,7 @@ Plots multiple ATE results as bars for different characteristics (min, max, mean
 ```python
 plot_ate_edf(
     ate_results: Union[trajectopy.core.evaluation.ate_result.ATEResult, List[trajectopy.core.evaluation.ate_result.ATEResult]],
-    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_sigma_factor=3.0, ate_unit_is_mm=False, hist_as_stairs=False, heatmap_spacing=1.0, show_directed_devs=False)
+    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_max_std=3.0, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, scatter_pos_dim=2)
 ) → Figure
 ```
 
@@ -78,7 +78,7 @@ Plots ATE EDF for the given ATEResult(s) as a line plot using matplotlib. The ED
 ```python
 plot_compact_ate_hist(
     ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
-    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_sigma_factor=3.0, ate_unit_is_mm=False, hist_as_stairs=False, heatmap_spacing=1.0, show_directed_devs=False)
+    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_max_std=3.0, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, scatter_pos_dim=2)
 ) → Figure
 ```
 
@@ -200,8 +200,8 @@ This function creates one 2D or 3D plot for the xy(z) coordinates of the traject
 ```python
 scatter_ate(
     ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
-    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_sigma_factor=3.0, ate_unit_is_mm=False, hist_as_stairs=False, heatmap_spacing=1.0, show_directed_devs=False)
-)
+    plot_settings: trajectopy.core.settings.mpl_settings.MPLPlotSettings = MPLPlotSettings(scatter_cbar_show_zero=True, scatter_cbar_steps=4, scatter_no_axis=False, scatter_max_std=3.0, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, scatter_pos_dim=2)
+) → Tuple[matplotlib.figure.Figure, matplotlib.figure.Figure]
 ```
 
 Plots the ATE results as a scatter plot with color-coded deviations. 
