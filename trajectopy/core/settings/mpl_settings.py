@@ -20,11 +20,11 @@ class MPLPlotSettings(Settings):
     scatter_cbar_show_zero: bool = True
     scatter_cbar_steps: int = 4
     scatter_no_axis: bool = False
-    scatter_sigma_factor: float = 3.0
+    scatter_max_std: float = 3.0
     ate_unit_is_mm: bool = False
     hist_as_stairs: bool = False
-    heatmap_spacing: float = 1.0
-    show_directed_devs: bool = False
+    directed_ate: bool = False
+    scatter_pos_dim: int = 2
 
     @property
     def unit_multiplier(self) -> float:

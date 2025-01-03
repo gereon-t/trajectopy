@@ -13,15 +13,17 @@ from typing import Callable, Dict, Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QAction, QCloseEvent
+from PyQt6.QtGui import QAction, QCloseEvent, QActionGroup
 
 from trajectopy.api import ReportSettings
+from trajectopy.core.settings.mpl_settings import MPLPlotSettings
+from trajectopy.core.settings.plot_backend import PlotBackend
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
     PlotRequest,
-    ReportSettingsRequest,
-    ReportSettingsRequestType,
+    PlotSettingsRequest,
+    PlotSettingsRequestType,
     UIRequest,
     UIRequestType,
     generic_request_handler,
@@ -59,15 +61,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self,
         single_thread: bool = False,
         report_settings_path: str = "",
+        mpl_plot_settings_path: str = "",
         report_output_path: str = "",
         mapbox_token: str = "",
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
-        self.REQUEST_MAPPING: Dict[ReportSettingsRequestType, Callable[[ReportSettingsRequest], None]] = {
-            ReportSettingsRequestType.EXPORT: self.handle_report_settings_export,
-            ReportSettingsRequestType.IMPORT: self.handle_report_settings_import,
-            ReportSettingsRequestType.RESET: self.handle_report_settings_reset,
+        self.REQUEST_MAPPING: Dict[PlotSettingsRequestType, Callable[[PlotSettingsRequest], None]] = {
+            PlotSettingsRequestType.EXPORT: self.handle_plot_settings_export,
+            PlotSettingsRequestType.IMPORT: self.handle_plot_settings_import,
+            PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
         }
 
         self.trajectory_table_model = TrajectoryTableModel()
@@ -84,12 +87,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.report_settings = self.get_report_settings(report_settings_path)
         self.report_settings.scatter_mapbox_token = mapbox_token or self.get_mapbox_token()
         self.report_output_path = self.get_report_directory(report_output_path)
-        self.plot_manager = PlotManager(report_dir=self.report_output_path)
+
+        self.mpl_plot_settings = self.get_mpl_plot_settings(mpl_plot_settings_path)
+
+        self.plot_manager = PlotManager(
+            report_dir=self.report_output_path,
+            plot_backend=PlotBackend.MPL,
+            parent=self,
+        )
 
         if not single_thread:
             self.trajectory_manager.moveToThread(self.computation_thread)
             self.file_manager.moveToThread(self.computation_thread)
-            self.plot_manager.moveToThread(self.computation_thread)
             logger.info("Multithreading enabled")
         else:
             logger.info("Multithreading disabled")
@@ -124,6 +133,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 return ReportSettings()
         else:
             return ReportSettings()
+
+    def get_mpl_plot_settings(self, mpl_plot_settings_path: str = "") -> MPLPlotSettings:
+        if mpl_plot_settings_path:
+            try:
+                logger.info("Loaded MPL plot settings from %s", mpl_plot_settings_path)
+                return MPLPlotSettings.from_file(mpl_plot_settings_path)
+            except Exception as e:
+                logger.error("Could not load MPL plot settings file: %s", e)
+                return MPLPlotSettings()
+        else:
+            return MPLPlotSettings()
 
     def get_mapbox_token(self) -> str:
         mapbox_token = os.environ.get("MAPBOX_TOKEN")
@@ -165,11 +185,45 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         report_settings_action = QAction("Report Settings", parent=self)
         report_settings_action.triggered.connect(self.handle_show_report_settings)
+        report_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
         menubar.addAction(report_settings_action)
+
+        plot_settings_action = QAction("Plot Settings", parent=self)
+        plot_settings_action.triggered.connect(self.handle_show_mpl_settings)
+        plot_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.MPL)
+        menubar.addAction(plot_settings_action)
+
+        plot_backend_menu = QtWidgets.QMenu("Plotting", parent=self)
+        self.plotly_action = QAction("Plotly (HTML)", parent=self, checkable=True)
+        self.matplotlib_action = QAction("Matplotlib", parent=self, checkable=True)
+        self.matplotlib_action.setChecked(self.plot_manager.plot_backend == PlotBackend.MPL)
+        self.plotly_action.setChecked(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
+
+        action_group = QActionGroup(self)
+        action_group.addAction(self.plotly_action)
+        action_group.addAction(self.matplotlib_action)
+
+        plot_backend_menu.addAction(self.plotly_action)
+        plot_backend_menu.addAction(self.matplotlib_action)
+        menubar.addMenu(plot_backend_menu)
+
+        # Connect signals to methods
+        self.plotly_action.triggered.connect(self.set_plotly_backend)
+        self.matplotlib_action.triggered.connect(self.set_matplotlib_backend)
 
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
+
+    def set_plotly_backend(self):
+        self.plot_manager.set_plot_backend(PlotBackend.PLOTLY)
+        self.menuBar().actions()[1].setVisible(True)
+        self.menuBar().actions()[2].setVisible(False)
+
+    def set_matplotlib_backend(self):
+        self.plot_manager.set_plot_backend(PlotBackend.MPL)
+        self.menuBar().actions()[1].setVisible(False)
+        self.menuBar().actions()[2].setVisible(True)
 
     def closeEvent(self, a0: Union[QCloseEvent, None]) -> None:
         self.computation_thread.quit()
@@ -251,8 +305,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
 
     def setup_plottings_connections(self):
-        self.resultTableView.plot_request.connect(self.inject_report_settings)
-        self.trajectoryTableView.plot_request.connect(self.inject_report_settings)
+        self.resultTableView.plot_request.connect(self.inject_plot_settings)
+        self.trajectoryTableView.plot_request.connect(self.inject_plot_settings)
 
     def setup_io_connections(self):
         self.trajectory_manager.update_view.connect(self.refresh)
@@ -268,8 +322,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_table_model.layoutChanged.emit()
         self.result_table_model.layoutChanged.emit()
 
-    @pyqtSlot(ReportSettingsRequest)
-    def handle_report_settings_request(self, request: ReportSettingsRequest) -> None:
+    @pyqtSlot(PlotSettingsRequest)
+    def handle_report_settings_request(self, request: PlotSettingsRequest) -> None:
         """Logic for handling a request."""
         generic_request_handler(self, request, passthrough_request=True)
 
@@ -277,19 +331,27 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         viewer = JSONViewer(settings=self.report_settings, parent=self)
         viewer.show()
 
-    def handle_report_settings_export(self, request: ReportSettingsRequest) -> None:
+    def handle_show_mpl_settings(self) -> None:
+        viewer = JSONViewer(settings=self.mpl_plot_settings, parent=self)
+        viewer.show()
+
+    def handle_plot_settings_export(self, request: PlotSettingsRequest) -> None:
         self.report_settings.to_file(os.path.join(request.file_path, "report_settings.json"))
+        self.mpl_plot_settings.to_file(os.path.join(request.file_path, "mpl_settings.json"))
 
-    def handle_report_settings_import(self, request: ReportSettingsRequest) -> None:
+    def handle_plot_settings_import(self, request: PlotSettingsRequest) -> None:
         self.report_settings = ReportSettings.from_file(os.path.join(request.file_path, "report_settings.json"))
+        self.mpl_plot_settings = MPLPlotSettings.from_file(os.path.join(request.file_path, "mpl_settings.json"))
 
-    def handle_report_settings_reset(self, _: ReportSettingsRequest) -> None:
+    def handle_plot_settings_reset(self, _: PlotSettingsRequest) -> None:
         self.report_settings = ReportSettings()
+        self.mpl_plot_settings = MPLPlotSettings()
 
     @QtCore.pyqtSlot(PlotRequest)
-    def inject_report_settings(self, plot_request: PlotRequest) -> None:
-        logger.debug("Injecting report settings into plot request of type %s", plot_request.type)
+    def inject_plot_settings(self, plot_request: PlotRequest) -> None:
+        logger.debug("Injecting plotting settings into plot request of type %s", plot_request.type)
         plot_request.report_settings = self.report_settings
+        plot_request.mpl_plot_settings = self.mpl_plot_settings
         self.plot_manager.handle_request(plot_request)
 
     @QtCore.pyqtSlot()

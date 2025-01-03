@@ -24,23 +24,24 @@ Now you can use trajectopy as a Python package in your scripts.
 
 ## Command Line Options (GUI version only)
 ```console	
-usage: trajectopy [-h] [--version] [--single_thread] [--report_settings REPORT_SETTINGS] [--report_path REPORT_PATH]
-```
-  
-```console
+usage: trajectopy [-h] [--version] [--single-thread] [--report-settings REPORT_SETTINGS] [--mpl-settings MPL_SETTINGS] [--report-path REPORT_PATH] [--mapbox-token MAPBOX_TOKEN]
+
+Trajectopy - Trajectory Evaluation in Python
+
 options:
-    -h, --help            show this help message and exit
-    --version, -v
-    --single_thread       Disable multithreading
-    --report_settings REPORT_SETTINGS, -s REPORT_SETTINGS
-                            Path to JSON report settings file
-                            that will override the default settings.
-    --report_path REPORT_PATH, -o REPORT_PATH
-                            Output directory for all reports of one session. If not specified, a temporary directory will be used.
-    --mapbox_token MAPBOX_TOKEN, -t MAPBOX_TOKEN
-                            Mapbox token to use Mapbox map styles in trajectory plots.
+  -h, --help            show this help message and exit
+  --version, -v
+  --single-thread       Disable multithreading
+  --report-settings REPORT_SETTINGS
+                        Path to JSON report settings file that will override the default settings.
+  --mpl-settings MPL_SETTINGS
+                        Path to JSON matplotlib plot settings file that will override the default settings.
+  --report-path, -o REPORT_PATH
+                        Output directory for all reports of one session. If not specified, a temporary directory will be used.
+  --mapbox-token MAPBOX_TOKEN
+                        Mapbox token to use Mapbox map styles in trajectory plots.
 ```
-Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report_path` option. The report settings can be customized using a JSON file.
+Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report-path` option. The report settings can be customized using a JSON file.
 The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json).
 
 Example:
@@ -77,6 +78,9 @@ Below you can find a table of all allowed header entries and their meaning.
 | #datetime_timezone | Time zone of the timestamps. During import, all timestamps are converted to UTC considering the input time zone. Choices: [Time zone](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) or "GPS"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | #sorting           | Sorting of the input data. Choices: "chrono": Chronologically sorted data (usually the case), "spatial": Spatially sorted data, i.e. along the arc length. Default: "chrono"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
+## Choosing the Plotting Backend
+
+Since version 2.2.0, you can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend.
 
 ## Keyboard Shortcuts (GUI version only)
 

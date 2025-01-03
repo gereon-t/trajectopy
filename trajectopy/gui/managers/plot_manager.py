@@ -7,14 +7,25 @@ tombrink@igg.uni-bonn.de
 
 import logging
 import os
-import threading
 from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 import trajectopy.api as tpy
-from trajectopy.gui.managers.requests import PlotRequest, PlotRequestType, UIRequest, generic_request_handler
-from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry, ResultEntry
+from trajectopy.core.plotting.mpl.plot_tabs import PlotTabs
+from trajectopy.core.settings.plot_backend import PlotBackend
+from trajectopy.gui.managers.requests import (
+    PlotRequest,
+    PlotRequestType,
+    UIRequest,
+    generic_request_handler,
+)
+from trajectopy.gui.models.entries import (
+    AbsoluteDeviationEntry,
+    AlignmentEntry,
+    RelativeDeviationEntry,
+    ResultEntry,
+)
 from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
@@ -36,8 +47,14 @@ class PlotManager(QObject):
     operation_started = pyqtSignal()
     operation_finished = pyqtSignal()
 
-    def __init__(self, report_dir: str, parent=None) -> None:
+    def __init__(
+        self,
+        report_dir: str,
+        plot_backend: PlotBackend = PlotBackend.PLOTLY,
+        parent=None,
+    ) -> None:
         self.cnt = 0
+        self.plot_backend = plot_backend
         super().__init__(parent)
         self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
             PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
@@ -47,13 +64,16 @@ class PlotManager(QObject):
         }
         self.report_dir = os.path.abspath(report_dir)
 
+    def set_plot_backend(self, plot_backend: PlotBackend) -> None:
+        """Set the plot backend."""
+        logger.info(f"Setting plot backend to {plot_backend}")
+        self.plot_backend = plot_backend
+
     @show_progress
     @pyqtSlot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
-        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
-        request_thread.start()
-        request_thread.join()
+        generic_request_handler(self, request, True)
 
     def report_path(self, prefix: str = "report") -> str:
         """Return the path to the report file."""
@@ -64,10 +84,15 @@ class PlotManager(QObject):
 
     def plot_selected_trajectories(self, request: PlotRequest) -> None:
         trajectory_list = [entry.trajectory for entry in request.trajectory_selection.entries]
-        traj_report = tpy.create_trajectory_report(
-            trajectories=trajectory_list, report_settings=request.report_settings
-        )
-        tpy.show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
+
+        if self.plot_backend == PlotBackend.PLOTLY:
+            traj_report = tpy.create_trajectory_report(
+                trajectories=trajectory_list, report_settings=request.report_settings
+            )
+            tpy.show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
+        elif self.plot_backend == PlotBackend.MPL:
+            plot_tabs = PlotTabs(parent=self.parent())
+            plot_tabs.show_trajectories(trajectory_list, mpl_plot_settings=request.mpl_plot_settings)
 
     def plot_single_deviations(self, request: PlotRequest) -> None:
         ate_results = get_ate_results(request.result_selection.entries)
@@ -84,12 +109,21 @@ class PlotManager(QObject):
         ate_result = ate_results[0] if ate_results else None
         rpe_result = rpe_results[0] if rpe_results else None
 
-        report = tpy.create_deviation_report(
-            ate_result=ate_result, rpe_result=rpe_result, report_settings=request.report_settings
-        )
-        tpy.show_report(
-            report_text=report, filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name)
-        )
+        if self.plot_backend == PlotBackend.PLOTLY:
+            report = tpy.create_deviation_report(
+                ate_result=ate_result,
+                rpe_result=rpe_result,
+                report_settings=request.report_settings,
+            )
+            tpy.show_report(
+                report_text=report,
+                filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name),
+            )
+        elif self.plot_backend == PlotBackend.MPL:
+            plot_tabs = PlotTabs(parent=self.parent())
+            plot_tabs.show_single_deviations(
+                ate_result=ate_result, rpe_result=rpe_result, mpl_plot_settings=request.mpl_plot_settings
+            )
 
     def plot_multi_deviations(self, request: PlotRequest) -> None:
         """Plot multiple absolute deviations."""
@@ -100,22 +134,37 @@ class PlotManager(QObject):
             logger.error("No deviations selected!")
             return
 
-        multi_report = tpy.create_deviation_report(
-            ate_result=ate_results or None,
-            rpe_result=rpe_results or None,
-            report_settings=request.report_settings,
-        )
-        tpy.show_report(report_text=multi_report, filepath=self.report_path(prefix="multi_deviations"))
+        if self.plot_backend == PlotBackend.PLOTLY:
+            multi_report = tpy.create_deviation_report(
+                ate_result=ate_results or None,
+                rpe_result=rpe_results or None,
+                report_settings=request.report_settings,
+            )
+            tpy.show_report(
+                report_text=multi_report,
+                filepath=self.report_path(prefix="multi_deviations"),
+            )
+        elif self.plot_backend == PlotBackend.MPL:
+            plot_tabs = PlotTabs(parent=self.parent())
+            plot_tabs.show_multiple_deviations(
+                ate_results=ate_results, rpe_results=rpe_results, mpl_plot_settings=request.mpl_plot_settings
+            )
 
     def plot_alignment(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AlignmentEntry):
             raise TypeError("Entry must be of type AlignmentEntry!")
 
-        report = tpy.create_alignment_report(
-            alignment_parameters=entry.estimated_parameters, name=entry.name, report_settings=request.report_settings
-        )
+        if self.plot_backend == PlotBackend.PLOTLY:
+            report = tpy.create_alignment_report(
+                alignment_parameters=entry.estimated_parameters,
+                name=entry.name,
+                report_settings=request.report_settings,
+            )
 
-        tpy.show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
+            tpy.show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
+        elif self.plot_backend == PlotBackend.MPL:
+            plot_tabs = PlotTabs(parent=self.parent())
+            plot_tabs.show_alignment_parameters(entry.estimated_parameters)
 
 
 def get_ate_results(entries: List[ResultEntry]) -> List[tpy.ATEResult]:

@@ -16,8 +16,8 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
-    ReportSettingsRequest,
-    ReportSettingsRequestType,
+    PlotSettingsRequest,
+    PlotSettingsRequestType,
     ResultModelRequest,
     ResultModelRequestType,
     SessionManagerRequest,
@@ -47,7 +47,7 @@ class SessionManager(QObject):
     ui_request = pyqtSignal(UIRequest)
     file_request = pyqtSignal(FileRequest)
     operation_finished = pyqtSignal()
-    report_settings_request = pyqtSignal(ReportSettingsRequest)
+    report_settings_request = pyqtSignal(PlotSettingsRequest)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -66,7 +66,7 @@ class SessionManager(QObject):
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
         self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.RESET))
-        self.report_settings_request.emit(ReportSettingsRequest(type=ReportSettingsRequestType.RESET))
+        self.report_settings_request.emit(PlotSettingsRequest(type=PlotSettingsRequestType.RESET))
         logger.info("Cleared application and started a new session.")
 
     def import_session(self, request: SessionManagerRequest) -> None:
@@ -90,7 +90,7 @@ class SessionManager(QObject):
             )
         )
         self.report_settings_request.emit(
-            ReportSettingsRequest(type=ReportSettingsRequestType.IMPORT, file_path=request.file_path)
+            PlotSettingsRequest(type=PlotSettingsRequestType.IMPORT, file_path=request.file_path)
         )
 
     def export_session(self, request: SessionManagerRequest) -> None:
@@ -102,5 +102,5 @@ class SessionManager(QObject):
             ResultModelRequest(type=ResultModelRequestType.EXPORT_ALL, file_path=request.file_path)
         )
         self.report_settings_request.emit(
-            ReportSettingsRequest(type=ReportSettingsRequestType.EXPORT, file_path=request.file_path)
+            PlotSettingsRequest(type=PlotSettingsRequestType.EXPORT, file_path=request.file_path)
         )

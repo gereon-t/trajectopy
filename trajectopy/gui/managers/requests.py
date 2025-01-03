@@ -14,6 +14,7 @@ from typing import Any, List, Protocol
 from PyQt6.QtCore import pyqtSignal
 
 from trajectopy.api.settings import MatchingMethod, ReportSettings
+from trajectopy.core.settings.mpl_settings import MPLPlotSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 
@@ -121,7 +122,7 @@ class UIRequestType(Enum):
     EXPORT_REPORT = auto()
 
 
-class ReportSettingsRequestType(Enum):
+class PlotSettingsRequestType(Enum):
     SHOW = auto()
     IMPORT = auto()
     EXPORT = auto()
@@ -149,6 +150,7 @@ class PlotRequest(DeepCopyRequest):
     report_settings: ReportSettings = field(default_factory=ReportSettings)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
+    mpl_plot_settings: MPLPlotSettings = field(default_factory=MPLPlotSettings)
     dimension: int = 2
 
 
@@ -175,8 +177,8 @@ class SessionManagerRequest:
 
 
 @dataclass
-class ReportSettingsRequest:
-    type: ReportSettingsRequestType
+class PlotSettingsRequest:
+    type: PlotSettingsRequestType
     file_path: str = ""
 
 
