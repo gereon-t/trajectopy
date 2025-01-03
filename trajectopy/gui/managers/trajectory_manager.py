@@ -7,6 +7,7 @@ tombrink@igg.uni-bonn.de
 
 import logging
 from dataclasses import dataclass
+import threading
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -35,6 +36,24 @@ from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
+
+class ThreadWithResult(threading.Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None, *, daemon=None):
+        super().__init__(group=group, target=target, name=name, args=args, kwargs=kwargs, daemon=daemon)
+        self._return = None
+
+    def run(self):
+        # Overwrite run method to store return value
+        try:
+            if self._target is not None:
+                self._return = self._target(*self._args, **self._kwargs)
+        finally:
+            del self._target, self._args, self._kwargs
+            
+    def join(self, timeout=None):
+        super().join(timeout=timeout)
+        return self._return
 
 
 @dataclass
@@ -300,8 +319,10 @@ class TrajectoryManager(QObject):
                 reference_entry=self.reference_entry,
                 request=self.request,
             )
-
-            output_entries = operation(entry_pair)
+            
+            computation_thread = ThreadWithResult(target=operation, args=(entry_pair,))
+            computation_thread.start()
+            output_entries = computation_thread.join()
 
             if output_entries is None:
                 continue
