@@ -65,6 +65,9 @@ trajectopy = "trajectopy.__main__:main"
 [dependency-groups]
 dev = [
     "lazydocs>=0.4.8",
+    "mkdocs-material>=9.5.49",
     "pillow>=11.1.0",
+    "pre-commit>=4.0.1",
     "pyinstaller>=6.11.1",
+    "python-markdown-math>=0.8",
 ]
