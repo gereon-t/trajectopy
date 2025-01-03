@@ -1,0 +1,3 @@
+trajectopy/core/report/templates/*.html linguist-generated
+trajectopy/core/report/assets/*.css linguist-generated
+example_data/*.html linguist-generated
