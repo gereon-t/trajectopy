@@ -14,7 +14,13 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
-from trajectopy.core.plotting.utils import derive_xlabel_from_sortings, get_axis_label
+from trajectopy.core.plotting.utils import (
+    TrajectoriesSorting,
+    derive_xlabel_from_sortings,
+    get_axis_label,
+    get_sorting,
+    is_all_unix,
+)
 from trajectopy.core.report.data import ATEReportDataCollection, RPEReportDataCollection
 from trajectopy.core.settings.report import ReportSettings
 from trajectopy.core.trajectory import Trajectory
@@ -236,10 +242,14 @@ def render_rpe(report_data_collection: RPEReportDataCollection) -> str:
 
 def render_pos_plot(trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
     pos_x_label, pos_y_label, pos_z_label = get_axis_label(trajectories=trajectories)
-    x_label = derive_xlabel_from_sortings([traj.sorting for traj in trajectories])
-
+    trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
+    all_unix = is_all_unix(trajectories)
+    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
     return render_shared_x_plot(
-        x_data=[traj.function_of for traj in trajectories],
+        x_data=[
+            traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.function_of
+            for traj in trajectories
+        ],
         y_data=[[traj.xyz[:, 0], traj.xyz[:, 1], traj.xyz[:, 2]] for traj in trajectories],
         names=[traj.name for traj in trajectories],
         x_label=x_label,
@@ -251,16 +261,20 @@ def render_pos_plot(trajectories: List[Trajectory], report_settings: ReportSetti
 
 def render_rot_plot(trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
     rot_x_label, rot_y_label, rot_z_label = ("roll [°]", "pitch [°]", "yaw [°]")
-    x_label = derive_xlabel_from_sortings([traj.sorting for traj in trajectories])
-
+    trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
+    all_unix = is_all_unix(trajectories)
+    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
     traj_rpy = [np.rad2deg(traj.rpy) for traj in trajectories]
     return render_shared_x_plot(
-        x_data=[traj.function_of for traj in trajectories],
+        x_data=[
+            traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.function_of
+            for traj in trajectories
+        ],
         y_data=[[rpy[:, 0], rpy[:, 1], rpy[:, 2]] for rpy in traj_rpy],
         names=[traj.name for traj in trajectories],
         x_label=x_label,
         y_labels=[rot_x_label, rot_y_label, rot_z_label],
-        title="Position Components",
+        title="Rotation Components",
         report_settings=report_settings,
     )
 

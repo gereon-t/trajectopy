@@ -26,6 +26,15 @@ class Sorting(str, Enum):
     TIME = "time"
     ARC_LENGTH = "arc_length"
 
+    @classmethod
+    def from_str(cls, value: str) -> "Sorting":
+        if value == "time":
+            return Sorting.TIME
+        elif value == "arc_length":
+            return Sorting.ARC_LENGTH
+        else:
+            raise ValueError(f"Unknown sorting method: {value}")
+
 
 def sort_spatially(
     xyz_unsorted: np.ndarray, settings: SortingSettings = SortingSettings()

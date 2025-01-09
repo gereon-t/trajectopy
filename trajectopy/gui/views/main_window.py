@@ -13,8 +13,9 @@ from typing import Callable, Dict, Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QAction, QCloseEvent, QActionGroup
+from PyQt6.QtGui import QAction, QActionGroup, QCloseEvent
 
+from trajectopy import __version__ as VERSION
 from trajectopy.api import ReportSettings
 from trajectopy.core.settings.mpl_settings import MPLPlotSettings
 from trajectopy.core.settings.plot_backend import PlotBackend
@@ -39,7 +40,6 @@ from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
 from trajectopy.path import YEAR
-from trajectopy import __version__ as VERSION
 
 logger = logging.getLogger("root")
 
@@ -340,8 +340,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.mpl_plot_settings.to_file(os.path.join(request.file_path, "mpl_settings.json"))
 
     def handle_plot_settings_import(self, request: PlotSettingsRequest) -> None:
-        self.report_settings = ReportSettings.from_file(os.path.join(request.file_path, "report_settings.json"))
-        self.mpl_plot_settings = MPLPlotSettings.from_file(os.path.join(request.file_path, "mpl_settings.json"))
+        try:
+            self.report_settings = ReportSettings.from_file(os.path.join(request.file_path, "report_settings.json"))
+        except Exception as e:
+            logger.warning("Could not load report settings file: %s", e)
+            self.report_settings = ReportSettings()
+
+        try:
+            self.mpl_plot_settings = MPLPlotSettings.from_file(os.path.join(request.file_path, "mpl_settings.json"))
+        except Exception as e:
+            logger.warning("Could not load MPL plot settings file: %s", e)
+            self.mpl_plot_settings = MPLPlotSettings()
 
     def handle_plot_settings_reset(self, _: PlotSettingsRequest) -> None:
         self.report_settings = ReportSettings()

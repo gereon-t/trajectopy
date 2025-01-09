@@ -20,6 +20,7 @@ from trajectopy.core.alignment.parameters import AlignmentParameters
 from trajectopy.core.alignment.result import AlignmentResult
 from trajectopy.core.approximation.cubic_approximation import piecewise_cubic
 from trajectopy.core.approximation.rot_approximation import rot_average_window
+from trajectopy.core.definitions import UNIX_TIME_THRESHOLD
 from trajectopy.core.rotationset import RotationSet
 from trajectopy.core.settings.approximation import ApproximationSettings
 from trajectopy.core.settings.sorting import SortingSettings
@@ -123,6 +124,7 @@ class Trajectory:
             logger.info("Arc lengths were not provided or had wrong dimensions. Arc lengths were computed instead.")
 
         self.name = name or f"Trajectory {Trajectory._counter}"
+        self._is_unix_time = np.min(self.tstamps) > UNIX_TIME_THRESHOLD
 
         Trajectory._counter += 1
 
@@ -150,6 +152,20 @@ class Trajectory:
         Returns True if orientation is available
         """
         return self.rot is not None and len(self.rot) > 0
+
+    @property
+    def is_unix_time(self) -> bool:
+        """
+        Returns True if time is in unix format
+        """
+        return self._is_unix_time
+
+    @is_unix_time.setter
+    def is_unix_time(self, is_unix_time: bool) -> None:
+        """
+        Sets if time is in unix format
+        """
+        self._is_unix_time = is_unix_time
 
     def __repr__(self) -> str:
         return str(self)
@@ -227,6 +243,7 @@ class Trajectory:
             name=header_data.name,
             arc_lengths=arc_lengths,
             speed_3d=speed_3d,
+            sorting=Sorting.from_str(header_data.sorting),
         )
 
     @property
@@ -251,6 +268,13 @@ class Trajectory:
         return (
             self.tstamps[self.sorting_index] if self.sorting == Sorting.TIME else self.arc_lengths[self.sorting_index]
         )
+
+    @property
+    def datetimes(self) -> np.ndarray:
+        """
+        Returns the datetime of the trajectory
+        """
+        return pd.to_datetime(self.tstamps[self.sorting_index], unit="s")
 
     @property
     def function_of_unit(self) -> str:
@@ -357,6 +381,7 @@ class Trajectory:
                 file.write(f"#epsg {self.pos.epsg}\n")
                 file.write(f"#name {self.name}\n")
                 file.write("#nframe enu\n")
+                file.write(f"#sorting {self.sorting.value}\n")
                 file.write(f"#fields {fields}\n")
 
         if self.rot is None:

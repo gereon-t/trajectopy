@@ -15,9 +15,15 @@ from matplotlib.collections import LineCollection, PolyCollection
 from matplotlib.colorbar import Colorbar
 from matplotlib.figure import Figure
 
+from trajectopy.core.definitions import DATE_FORMATTER
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.plotting.utils import derive_xlabel_from_sortings
+from trajectopy.core.plotting.utils import (
+    TrajectoriesSorting,
+    derive_xlabel_from_sortings,
+    get_sorting,
+    is_all_unix,
+)
 from trajectopy.core.settings.comparison import PairDistanceUnit
 from trajectopy.core.settings.mpl_settings import MPLPlotSettings
 
@@ -255,49 +261,47 @@ def plot_ate(
         Figure: Figure containing the plot.
     """
     deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
-    x_label = derive_xlabel_from_sortings([dev.trajectory.sorting.value for dev in deviation_list])
+    trajectories_list = [dev.trajectory for dev in deviation_list]
+    trajectories_sorting = get_sorting(traj.sorting for traj in trajectories_list)
+    all_unix = is_all_unix(trajectories_list)
+    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
 
     fig = plt.figure()
 
     ax_pos = plt.subplot(2, 1, 1)
     ax_pos.set_xlabel(x_label)
     ax_pos.set_ylabel(f"Deviation {plot_settings.unit_str}")
+    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+        ax_pos.xaxis.set_major_formatter(DATE_FORMATTER)
 
     if any(dev.abs_dev.rot_dev for dev in deviation_list):
         ax_rot = plt.subplot(2, 1, 2)
         ax_rot.set_xlabel(x_label)
         ax_rot.set_ylabel("Deviation [°]")
+        if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+            ax_rot.xaxis.set_major_formatter(DATE_FORMATTER)
     else:
         ax_rot = None
 
-    min_x = np.inf
-    max_x = -np.inf
     for dev in deviation_list:
         if len(dev.trajectory.function_of) == 0:
             logger.warning("Skipping %s as it has no data", dev.name)
             continue
 
         arc_length_sorting = np.argsort(dev.trajectory.function_of)
-        function_of_sorted = dev.trajectory.function_of[arc_length_sorting]
-
-        if (min_val := function_of_sorted[0]) < min_x:
-            min_x = min_val
-
-        if (max_val := function_of_sorted[-1]) > max_x:
-            max_x = max_val
+        function_of = (
+            dev.trajectory.datetimes
+            if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+            else dev.trajectory.function_of
+        )
+        function_of_sorted = function_of[arc_length_sorting]
 
         ax_pos.plot(
-            dev.trajectory.function_of[arc_length_sorting],
+            function_of_sorted,
             dev.pos_dev_comb[arc_length_sorting] * plot_settings.unit_multiplier,
         )
         if ax_rot is not None:
-            ax_rot.plot(
-                dev.trajectory.function_of[arc_length_sorting],
-                np.rad2deg(dev.rot_dev_comb[arc_length_sorting]),
-            )
-            ax_rot.set_xlim(min_x, max_x)
-
-    ax_pos.set_xlim(min_x, max_x)
+            ax_rot.plot(function_of_sorted, np.rad2deg(dev.rot_dev_comb[arc_length_sorting]))
 
     fig.legend([dev.name for dev in deviation_list], ncol=3, loc="upper center")
     plt.tight_layout()

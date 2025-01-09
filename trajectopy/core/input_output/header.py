@@ -106,6 +106,14 @@ class HeaderData:
         return str(self.data.get("nframe", "enu")).lower()
 
     @property
+    def sorting(self) -> str:
+        return str(self.data.get("sorting", "time")).lower()
+
+    @property
+    def state(self) -> str:
+        return str(self.data.get("state", "")).lower()
+
+    @property
     def type(self) -> str:
         return str(self.data.get("type", "trajectoryentry")).lower()
 

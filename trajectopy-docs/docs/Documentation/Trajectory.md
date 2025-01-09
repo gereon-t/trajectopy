@@ -84,6 +84,12 @@ Returns data rate
 
 ---
 
+#### <kbd>property</kbd> Trajectory.datetimes
+
+Returns the datetime of the trajectory 
+
+---
+
 #### <kbd>property</kbd> Trajectory.function_of
 
 Returns the function of the trajectory 
@@ -105,6 +111,12 @@ Returns the unit of the function of the trajectory
 #### <kbd>property</kbd> Trajectory.has_orientation
 
 Returns True if orientation is available 
+
+---
+
+#### <kbd>property</kbd> Trajectory.is_unix_time
+
+Returns True if time is in unix format 
 
 ---
 

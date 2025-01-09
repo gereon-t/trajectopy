@@ -154,7 +154,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         if e.key() == Qt.Key.Key_T:
             self.ui_request.emit(
                 UIRequest(
-                    type=UIRequestType.EPSG_SELECTION,
+                    type=UIRequestType.EPSG_TRANSFORMATION,
                     trajectory_selection=self.selection,
                 )
             )

@@ -107,6 +107,10 @@ class TrajectoryEntry(Entry):
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename)
+
+        with open(filename, "w", newline="\n", encoding="utf-8") as file:
+            file.write(f"#state {self.state}\n")
+
         self.trajectory.to_file(filename=filename, mode="a")
 
     @classmethod
@@ -132,6 +136,7 @@ class TrajectoryEntry(Entry):
             full_filename=str(trajectory_filename),
             trajectory=trajectory,
             settings=traj_settings,
+            state=TrajectoryProcessingState.from_string(header_data.state),
         )
         if header_data.id:
             traj_entry.set_id(entry_id=header_data.id)

@@ -129,16 +129,16 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         single_selection = len(self.get_selection()) == 1
         self.addMenu(self.edit_context_menu)
 
-        change_datum_action = QAction("EPSG", self)
-        change_datum_action.triggered.connect(
+        edit_epsg_action = QAction("EPSG", self)
+        edit_epsg_action.triggered.connect(
             lambda: self.ui_request.emit(
                 UIRequest(
-                    type=UIRequestType.EPSG_SELECTION,
+                    type=UIRequestType.EPSG_EDIT,
                     trajectory_selection=self.get_selection(),
                 )
             )
         )
-        self.edit_context_menu.addAction(change_datum_action)
+        self.edit_context_menu.addAction(edit_epsg_action)
 
         copy_action = QAction("Copy", self)
         copy_action.triggered.connect(
@@ -250,6 +250,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)
+
+        change_datum_action = QAction("Transform to EPSG", self)
+        change_datum_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.EPSG_TRANSFORMATION,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(change_datum_action)
 
         self.action_context_menu.addMenu(self.align_context())
         self.action_context_menu.addMenu(self.compare_context())

@@ -6,14 +6,17 @@ tombrink@igg.uni-bonn.de
 """
 
 import logging
-from dataclasses import dataclass
 import threading
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 import trajectopy.api as tpy
-from trajectopy.core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
+from trajectopy.core.evaluation.comparison import (
+    compare_trajectories_absolute,
+    compare_trajectories_relative,
+)
 from trajectopy.core.matching import rough_timestamp_matching
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
@@ -37,6 +40,7 @@ from trajectopy.util import show_progress
 
 logger = logging.getLogger("root")
 
+
 @dataclass
 class TrajectoryEntryPair:
     entry: TrajectoryEntry
@@ -57,6 +61,7 @@ class TrajectoryManager(QObject):
         update_view (pyqtSignal): A signal emitted when the view needs to be updated.
 
     Possible Requests:
+        TrajectoryManagerRequestType.EDIT_EPSG: Edits the EPSG code of the selected trajectory without transformation (only metadata).
         TrajectoryManagerRequestType.CHANGE_ESPG: Changes the EPSG code of the selected trajectory to the specified EPSG code.
         TrajectoryManagerRequestType.EPSG_TO_REF: Changes the EPSG code of the selected trajectory to the EPSG code of the reference trajectory.
         TrajectoryManagerRequestType.ALIGN: Aligns the selected trajectory to the reference trajectory.
@@ -95,6 +100,11 @@ class TrajectoryManager(QObject):
         super().__init__()
         self.request: TrajectoryManagerRequest
         self.REQUEST_MAPPING: Dict[TrajectoryManagerRequestType, Any] = {
+            TrajectoryManagerRequestType.EDIT_EPSG: lambda: self.handle_trajectory_operation(
+                operation=self.operation_epsg_edit,
+                inplace=True,
+                apply_to_reference=True,
+            ),
             TrajectoryManagerRequestType.CHANGE_ESPG: lambda: self.handle_trajectory_operation(
                 operation=self.operation_epsg_change,
                 inplace=True,
@@ -588,6 +598,24 @@ class TrajectoryManager(QObject):
         )
 
         return (RelativeDeviationEntry(deviations=comparison_result),)
+
+    @staticmethod
+    def operation_epsg_edit(
+        entry_pair: TrajectoryEntryPair,
+    ) -> Tuple[TrajectoryEntry]:
+        """
+        Edits the EPSG of the selected trajectory to the specified EPSG code.
+        No transformation is applied, only the metadata is changed.
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to edit the EPSG code for.
+
+        Returns:
+            None
+        """
+        entry_pair.entry.trajectory.pos.epsg = entry_pair.request.target_epsg
+        entry_pair.entry.trajectory.pos.build_local_transformer()
+        return (entry_pair.entry,)
 
     @staticmethod
     def operation_epsg_change(

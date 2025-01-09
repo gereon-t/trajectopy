@@ -1,6 +1,6 @@
 #epsg 0
 #name Trajectory 4
-#sorting chrono
+#sorting time
 #state 
 #nframe enu
 #fields t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz

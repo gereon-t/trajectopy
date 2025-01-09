@@ -11,7 +11,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from trajectopy.core.plotting.utils import derive_xlabel_from_sortings
+from trajectopy.core.definitions import DATE_FORMATTER
+from trajectopy.core.plotting.utils import (
+    TrajectoriesSorting,
+    derive_xlabel_from_sortings,
+    get_sorting,
+    is_all_unix,
+)
 from trajectopy.core.trajectory import Trajectory
 
 
@@ -75,8 +81,14 @@ def plot_xyz(trajectories: List[Trajectory]) -> Figure:
     for ax, label in zip(axs_xyz, _get_axis_label(trajectories=trajectories)):
         ax.set_ylabel(label)
 
-    x_label = derive_xlabel_from_sortings([traj.sorting.value for traj in trajectories])
+    trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
+    all_unix = is_all_unix(trajectories)
+    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+
     axs_xyz[-1].set_xlabel(x_label)
+
+    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+        axs_xyz[-1].xaxis.set_major_formatter(DATE_FORMATTER)
 
     legend_names = []
     for traj in trajectories:
@@ -85,7 +97,14 @@ def plot_xyz(trajectories: List[Trajectory]) -> Figure:
 
         # xyz fig
         for j, ax in enumerate(axs_xyz):
-            ax.plot(traj.function_of, xyz[:, j])
+            ax.plot(
+                (
+                    traj.datetimes
+                    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+                    else traj.function_of
+                ),
+                xyz[:, j],
+            )
 
     fig_xyz.legend(legend_names, ncol=4, loc="upper center")
     return fig_xyz
@@ -125,8 +144,14 @@ def _get_axis_label(trajectories: List[Trajectory]) -> Tuple[str, str, str]:
 def plot_rpy(trajectories: List[Trajectory]) -> Union[Figure, None]:
     """Plots rpy coordinates of trajectories as subplots"""
     fig_rpy, axs_rpy = plt.subplots(3, 1, sharex=True)
-    x_label = derive_xlabel_from_sortings([traj.sorting.value for traj in trajectories])
+    trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
+    all_unix = is_all_unix(trajectories)
+    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+
     axs_rpy[-1].set_xlabel(x_label)
+
+    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+        axs_rpy[-1].xaxis.set_major_formatter(DATE_FORMATTER)
 
     not_empty = False
     legend_names = []
@@ -137,7 +162,14 @@ def plot_rpy(trajectories: List[Trajectory]) -> Union[Figure, None]:
             rpy = traj.rpy
             ylabels = ["roll [°]", "pitch [°]", "yaw [°]"]
             for j, (ax, yl) in enumerate(zip(axs_rpy, ylabels)):
-                ax.plot(traj.function_of, np.rad2deg(rpy[:, j]))
+                ax.plot(
+                    (
+                        traj.datetimes
+                        if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+                        else traj.function_of
+                    ),
+                    np.rad2deg(rpy[:, j]),
+                )
                 ax.set_ylabel(yl)
             not_empty = True
 

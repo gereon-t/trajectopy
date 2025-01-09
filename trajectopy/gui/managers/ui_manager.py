@@ -29,7 +29,12 @@ from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
-from trajectopy.util import browse_dir_dialog, read_file_dialog, save_file_dialog, show_msg_box
+from trajectopy.util import (
+    browse_dir_dialog,
+    read_file_dialog,
+    save_file_dialog,
+    show_msg_box,
+)
 
 logger = logging.getLogger("root")
 
@@ -87,7 +92,8 @@ class UIManager(QObject):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.REQUEST_MAPPING = {
-            UIRequestType.EPSG_SELECTION: self.epsg_input,
+            UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
+            UIRequestType.EPSG_EDIT: self.epsg_input_edit,
             UIRequestType.ALIGNMENT_SELECTION: self.alignment_selection,
             UIRequestType.IMPORT_TRAJ: self.trajectory_import_dialog,
             UIRequestType.IMPORT_RES: self.result_import_dialog,
@@ -215,7 +221,9 @@ class UIManager(QObject):
             return
 
     def epsg_input(self, request: UIRequest) -> None:
-        epsg, ok = QtWidgets.QInputDialog.getInt(None, "Please enter an EPSG code", "EPSG:")
+        epsg, ok = QtWidgets.QInputDialog.getInt(
+            None, "EPSG Dialog", "Please enter the EPSG code to which the trajectory should be transformed:"
+        )
 
         if not ok or epsg is None:
             return
@@ -223,6 +231,24 @@ class UIManager(QObject):
         self.trajectory_manager_request.emit(
             TrajectoryManagerRequest(
                 type=TrajectoryManagerRequestType.CHANGE_ESPG,
+                selection=request.trajectory_selection,
+                target_epsg=epsg,
+            )
+        )
+
+    def epsg_input_edit(self, request: UIRequest) -> None:
+        epsg, ok = QtWidgets.QInputDialog.getInt(
+            None,
+            "EPSG Dialog",
+            "Please enter the new EPSG code. The trajectory WILL NOT be transformed (use Action -> Transform to EPSG instead):",
+        )
+
+        if not ok or epsg is None:
+            return
+
+        self.trajectory_manager_request.emit(
+            TrajectoryManagerRequest(
+                type=TrajectoryManagerRequestType.EDIT_EPSG,
                 selection=request.trajectory_selection,
                 target_epsg=epsg,
             )

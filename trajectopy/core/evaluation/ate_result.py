@@ -16,6 +16,7 @@ from trajectopy.core.evaluation.deviations import AbsoluteTrajectoryDeviations
 from trajectopy.core.evaluation.utils import rms
 from trajectopy.core.input_output.header import HeaderData
 from trajectopy.core.rotationset import RotationSet
+from trajectopy.core.sorting import Sorting
 from trajectopy.core.trajectory import Trajectory
 
 
@@ -439,6 +440,7 @@ class ATEResult:
             rot=rot,
             tstamps=tstamps,
             arc_lengths=arc_lengths,
+            sorting=Sorting.from_str(header_data.sorting),
         )
         ate_result = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
         return ATEResult(trajectory=trajectory, abs_dev=ate_result)
@@ -472,4 +474,5 @@ class ATEResult:
         with open(filename, mode, newline="\n", encoding="utf-8") as file:
             file.write(f"#name {self.name}\n")
             file.write(f"#epsg {self.trajectory.pos.epsg}\n")
+            file.write(f"#sorting {self.trajectory.sorting.value}\n")
         self.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")

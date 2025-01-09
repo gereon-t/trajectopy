@@ -6,19 +6,66 @@ tombrink@igg.uni-bonn.de
 """
 
 import logging
+from datetime import datetime
+from enum import Enum, auto
 from typing import List, Tuple
 
 from trajectopy.core.sorting import Sorting
+from trajectopy.core.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 
 
-def derive_xlabel_from_sortings(sort_by_list: List[str]) -> str:
+class TrajectoriesSorting(Enum):
+    ALL_TIME = auto()
+    ALL_SPATIAL = auto()
+    MIXED = auto()
+
+
+def is_probably_unix(trajectories: List[Trajectory]) -> bool:
+    """
+    Checks if the supplied trajectories have (likely) unix timestamps as seconds
+    and converts them to datetime objects.
+    """
+    min_time = min(traj.tstamps[0] for traj in trajectories)
+
+    if min_time < 1_000_000:
+        return False
+
+    today = datetime.now()
+    for traj in trajectories:
+        try:
+            converted_date = datetime.fromtimestamp(traj.tstamps[0])
+        except Exception:
+            return False
+
+        if converted_date > today:
+            return False
+
+    return True
+
+
+def get_sorting(sort_by_list: List[str]) -> TrajectoriesSorting:
     if all(sorting == Sorting.ARC_LENGTH for sorting in sort_by_list):
-        return "trajectory length [m]"
+        return TrajectoriesSorting.ALL_SPATIAL
 
     if all(sorting == Sorting.TIME for sorting in sort_by_list):
-        return "time [s]"
+        return TrajectoriesSorting.ALL_TIME
+
+    logger.warning("Data is diffently sorted, weird things might happen.")
+    return TrajectoriesSorting.MIXED
+
+
+def is_all_unix(trajectories: List[Trajectory]) -> bool:
+    return all(traj.is_unix_time for traj in trajectories)
+
+
+def derive_xlabel_from_sortings(trajectories_sorting: TrajectoriesSorting, all_unix: bool) -> str:
+    if trajectories_sorting == TrajectoriesSorting.ALL_SPATIAL:
+        return "trajectory length [m]"
+
+    if trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+        return "time [hh:mm:ss]" if all_unix else "time [s]"
 
     logger.warning("Data is diffently sorted, weird things might happen.")
     return "time [s] / trajectory length [m]"
