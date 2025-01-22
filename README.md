@@ -30,3 +30,20 @@ Trajectopy offers a range of features, including:
 - __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
 - __Customizable HTML-based Visualization__: Powered by [Plotly](https://plotly.com/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy/blob/main/example_data/report.html))
+
+
+## Citation
+
+If you use this library for any academic work, please cite our original [paper](https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html).
+
+```bibtex
+@article{Tombrink2024,
+url = {https://doi.org/10.1515/jag-2024-0040},
+title = {Spatio-temporal trajectory alignment for trajectory evaluation},
+author = {Gereon Tombrink and Ansgar Dreier and Lasse Klingbeil and Heiner Kuhlmann},
+journal = {Journal of Applied Geodesy},
+doi = {doi:10.1515/jag-2024-0040},
+year = {2024},
+codeurl = {https://github.com/gereon-t/trajectopy},
+}
+```

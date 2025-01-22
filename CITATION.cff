@@ -1,10 +1,18 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-authors:
-  - family-names: Tombrink
-    given-names: Gereon
-    orcid: https://orcid.org/0009-0005-3240-1006
-title: "Trajectopy - Trajectory Evaluation in Python"
-version: 2
-doi: 10.5281/zenodo.14591660
-date-released: 2025
+cff-version: 1.2.1
+preferred-citation:
+  title: "Spatio-temporal trajectory alignment for trajectory evaluation"
+  doi: "10.1515/jag-2024-0040"
+  year: "2024"
+  type: article
+  journal: "Journal of Applied Geodesy"
+  url: https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html
+  codeurl: https://github.com/gereon-t/trajectopy
+  authors:
+    - family-names: Tombrink
+      given-names: Gereon
+    - family-names: Dreier
+      given-names: Ansgar
+    - family-names: Klingbeil
+      given-names: Lasse
+    - family-names: Kuhlmann
+      given-names: Heiner
