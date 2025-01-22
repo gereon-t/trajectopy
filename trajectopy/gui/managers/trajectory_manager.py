@@ -48,6 +48,12 @@ class TrajectoryEntryPair:
     reference_entry: Union[TrajectoryEntry, None] = None
 
     def __post_init__(self) -> None:
+        if self.request.type in [
+            TrajectoryManagerRequestType.ATE,
+            TrajectoryManagerRequestType.RPE,
+        ]:  # pipeline requests use matching setting from trajectory
+            return
+
         self.entry.settings.matching.method = self.request.matching_method
 
 
