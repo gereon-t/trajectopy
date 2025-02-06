@@ -294,14 +294,6 @@ Returns RMS of pitch deviations
 Returns RMS of yaw deviations 
 
 
----
-
-#### <kbd>handler</kbd> ATEResult.rot_bias_xyz
-
----
-
-#### <kbd>handler</kbd> ATEResult.rot_dev_xyz
-
 
 ---
 

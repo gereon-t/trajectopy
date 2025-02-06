@@ -20,7 +20,7 @@ def render_alignment_table(
     """
 
     def extract_value(param_string: str) -> str:
-        return param_string.split("=")[1].split("s")[0].strip()
+        return param_string.split("=")[1].split("s-dev")[0].strip()
 
     def extract_std(param_string: str) -> str:
         return param_string.split(":")[-1].strip()
