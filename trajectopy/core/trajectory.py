@@ -6,6 +6,7 @@ tombrink@igg.uni-bonn.de
 """
 
 import copy
+import io
 import logging
 from typing import List, Tuple, Union
 
@@ -365,24 +366,19 @@ class Trajectory:
 
         return dataframe.sort_values(by=sort_by)
 
-    def to_file(self, filename: str, mode: str = "w") -> None:
-        """Writes trajectory to ascii file
+    def to_string(self) -> str:
+        """Writes trajectory to a string instead of a file."""
 
-        The first line will always be the epsg information.
-        After that, the trajectory data is written.
-
-        Args:
-            filename (str): Output filename
-        """
-
-        def write_header(filename: str, mode: str = "w") -> None:
+        def write_header() -> str:
             fields = "t,l,px,py,pz,vx,vy,vz" if self.rot is None else "t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz"
-            with open(filename, mode=mode, newline="\n", encoding="utf-8") as file:
-                file.write(f"#epsg {self.pos.epsg}\n")
-                file.write(f"#name {self.name}\n")
-                file.write("#nframe enu\n")
-                file.write(f"#sorting {self.sorting.value}\n")
-                file.write(f"#fields {fields}\n")
+            header = [
+                f"#epsg {self.pos.epsg}",
+                f"#name {self.name}",
+                "#nframe enu",
+                f"#sorting {self.sorting.value}",
+                f"#fields {fields}",
+            ]
+            return "\n".join(header) + "\n"
 
         if self.rot is None:
             trajectory_data = np.c_[self.tstamps, self.arc_lengths, self.pos.xyz, self.speed_3d]
@@ -395,8 +391,20 @@ class Trajectory:
                 self.speed_3d,
             ]
 
-        write_header(filename=filename, mode=mode)
-        pd.DataFrame(trajectory_data).to_csv(filename, header=False, index=False, mode="a", float_format="%.9f")
+        output = io.StringIO()
+        output.write(write_header())
+        pd.DataFrame(trajectory_data).to_csv(output, header=False, index=False, float_format="%.9f")
+
+        return output.getvalue()
+
+    def to_file(self, filename: str, mode: str = "w") -> None:
+        """Writes trajectory to ascii file
+
+        Args:
+            filename (str): Output filename
+        """
+        with open(filename, mode=mode, newline="\n", encoding="utf-8") as file:
+            file.write(self.to_string())
 
     @classmethod
     def from_numpy(cls, xyz: np.ndarray, quat: np.ndarray, tstamps: np.ndarray, epsg: int = 0) -> "Trajectory":

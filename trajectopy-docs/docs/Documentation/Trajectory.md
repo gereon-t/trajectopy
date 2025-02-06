@@ -607,11 +607,19 @@ to_file(filename: str, mode: str = 'w') → None
 
 Writes trajectory to ascii file 
 
-The first line will always be the epsg information. After that, the trajectory data is written. 
-
 
 
 **Args:**
  
  - <b>`filename`</b> (str):  Output filename 
+
+---
+
+### <kbd>method</kbd> `Trajectory.to_string`
+
+```python
+to_string() → str
+```
+
+Writes trajectory to a string instead of a file. 
 
