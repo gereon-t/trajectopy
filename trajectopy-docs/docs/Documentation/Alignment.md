@@ -460,6 +460,22 @@ Returns the number of observations per epoch depending on the enabled estimation
 
 
 
+---
+
+#### <kbd>handler</kbd> AlignmentData.observation_groups
+
+---
+
+#### <kbd>handler</kbd> AlignmentData.rpy_to
+
+---
+
+#### <kbd>handler</kbd> AlignmentData.thresholds
+
+---
+
+#### <kbd>handler</kbd> AlignmentData.variance_groups
+
 
 ---
 

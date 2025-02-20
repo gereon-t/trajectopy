@@ -791,6 +791,34 @@ class Trajectory:
         trajectory.sorting = Sorting.ARC_LENGTH
         return trajectory
 
+    def divide_into_laps(self, sorting_settings: SortingSettings = SortingSettings()) -> List["Trajectory"]:
+        """
+        Divides the trajectory into laps.
+
+        Args:
+            sorting_settings (SortingSettings): Sorting settings.
+
+        Returns:
+            List[Trajectory]: List of trajectories, each representing a lap.
+
+        """
+        if self.sorting != Sorting.ARC_LENGTH:
+            trajectory = self.sort_spatially(sorting_settings=sorting_settings, inplace=False)
+        else:
+            trajectory = self.copy()
+
+        arc_length_diffs = np.diff(trajectory.arc_lengths)
+        arc_length_threshold = 0.95 * np.max(trajectory.arc_lengths)
+        lap_indices = np.r_[0, np.where(np.abs(arc_length_diffs) > arc_length_threshold)[0], len(trajectory)]
+
+        # divide into laps
+        laps = []
+        for i in range(len(lap_indices) - 1):
+            lap = trajectory.apply_index(np.arange(lap_indices[i], lap_indices[i + 1]), inplace=False)
+            laps.append(lap)
+
+        return laps
+
     def approximate(
         self, approximation_settings: ApproximationSettings = ApproximationSettings(), inplace: bool = True
     ) -> "Trajectory":

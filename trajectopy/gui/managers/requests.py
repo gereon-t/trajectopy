@@ -72,6 +72,7 @@ class TrajectoryManagerRequestType(Enum):
     APPLY_ALIGNMENT = auto()
     APPROXIMATE = auto()
     SORT = auto()
+    DIVIDE_INTO_LAPS = auto()
     EDIT_EPSG = auto()
     CHANGE_ESPG = auto()
     EPSG_TO_REF = auto()

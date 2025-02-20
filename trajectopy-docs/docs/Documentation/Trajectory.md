@@ -410,6 +410,30 @@ Crops trajectory to timespan defined by t_start and t_end
 
 ---
 
+### <kbd>method</kbd> `Trajectory.divide_into_laps`
+
+```python
+divide_into_laps(
+    sorting_settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
+) → List[ForwardRef('Trajectory')]
+```
+
+Divides the trajectory into laps. 
+
+
+
+**Args:**
+ 
+ - <b>`sorting_settings`</b> (SortingSettings):  Sorting settings. 
+
+
+
+**Returns:**
+ 
+ - <b>`List[Trajectory]`</b>:  List of trajectories, each representing a lap. 
+
+---
+
 ### <kbd>classmethod</kbd> `Trajectory.from_file`
 
 ```python

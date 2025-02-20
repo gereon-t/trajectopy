@@ -181,6 +181,20 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.edit_context_menu.addAction(merge_action)
 
+        if not self.get_selection().entries[0].state.sorting_known:
+            return
+
+        switch_sorting_action = QAction("Switch Sorting", self)
+        switch_sorting_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.SWITCH_SORTING,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.edit_context_menu.addAction(switch_sorting_action)
+
         if not single_selection:
             return
 
@@ -208,20 +222,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.edit_context_menu.addAction(export_action)
-
-        if not self.get_selection().entries[0].state.sorting_known:
-            return
-
-        switch_sorting_action = QAction("Switch Sorting", self)
-        switch_sorting_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.SWITCH_SORTING,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.edit_context_menu.addAction(switch_sorting_action)
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
@@ -276,6 +276,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.action_context_menu.addAction(sort_action)
+
+        divide_into_laps_action = QAction("Divide into Laps", self)
+        divide_into_laps_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.DIVIDE_INTO_LAPS,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(divide_into_laps_action)
 
         approximate_action = QAction("Approximate", self)
         approximate_action.triggered.connect(

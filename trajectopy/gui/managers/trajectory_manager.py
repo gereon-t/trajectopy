@@ -5,6 +5,7 @@ Gereon Tombrink, 2025
 tombrink@igg.uni-bonn.de
 """
 
+import copy
 import logging
 import threading
 from dataclasses import dataclass
@@ -183,6 +184,7 @@ class TrajectoryManager(QObject):
             TrajectoryManagerRequestType.SORT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_sort, inplace=False, apply_to_reference=True
             ),
+            TrajectoryManagerRequestType.DIVIDE_INTO_LAPS: self.operation_divide_into_laps,
             TrajectoryManagerRequestType.SWITCH_SORTING: lambda: self.handle_trajectory_operation(
                 operation=self.operation_switch_sorting,
                 inplace=True,
@@ -522,6 +524,36 @@ class TrajectoryManager(QObject):
             ),
         )
 
+    def operation_divide_into_laps(self) -> Tuple[TrajectoryEntry]:
+        """
+        Divides the trajectory into laps based on spatial sorting
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to divide into laps.
+
+        Returns:
+            TrajectoryEntry: The
+
+        """
+        if (selected_entries := self.selected_trajectory_entries()) is None:
+            return
+
+        for selected_entry in selected_entries:
+            logger.info(f"Dividing trajectory {selected_entry.trajectory.name} into laps ...")
+            laps = selected_entry.trajectory.divide_into_laps()
+
+            for i, lap in enumerate(laps):
+                lap.name += f" Lap {i+1}"
+                state = copy.deepcopy(selected_entry.state)
+                state.sorting_known = True
+                new_trajectory_entry = TrajectoryEntry(
+                    full_filename="",
+                    trajectory=lap,
+                    group_id=selected_entry.group_id,
+                    state=state,
+                )
+                self.emit_add_trajectory_signal(new_trajectory_entry)
+
     @staticmethod
     def operation_approximate(
         entry_pair: TrajectoryEntryPair,
@@ -565,6 +597,7 @@ class TrajectoryManager(QObject):
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
+            inplace=False,
         )
 
         if len(traj_ref) != len(traj_test):
