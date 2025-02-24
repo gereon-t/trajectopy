@@ -227,7 +227,7 @@ def _match_trajectories_spatial_interpolation(
 
         if traj_ref.has_orientation and traj_test.has_orientation:
             ref_rots = RotationSet.from_quat(traj_ref.rot.as_quat()[idxs])
-            matched_ref_rot.append(ref_rots.mean())
+            matched_ref_rot.append(ref_rots.mean().as_quat())
             matched_test_rot.append(traj_test.rot.as_quat()[i])
 
         matched_test_pos.append(test_pos)
