@@ -1,4 +1,28 @@
 
+## <kbd>function</kbd> `average_trajectories`
+
+```python
+average_trajectories(
+    trajectories: List[trajectopy.core.trajectory.Trajectory]
+) → Trajectory
+```
+
+Averages a list of trajectories into one trajectory. 
+
+This function ignores EPSG codes and averages trajectories. 
+
+
+
+**Args:**
+ 
+ - <b>`list[Trajectory]`</b>:  List of trajectories to average. 
+
+
+
+**Returns:**
+ 
+ - <b>`Trajectory`</b>:  Averaged trajectory. 
+
 ## <kbd>function</kbd> `merge_trajectories`
 
 ```python

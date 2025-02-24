@@ -13,6 +13,7 @@ import numpy as np
 from pointset import PointSet
 from scipy.spatial import KDTree
 
+from trajectopy.core.rotationset import RotationSet
 from trajectopy.core.settings.matching import MatchingMethod, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.core.utils import Line3D
@@ -211,25 +212,41 @@ def _match_trajectories_spatial_interpolation(
 
     matched_ref_pos = []
     matched_test_pos = []
+
+    matched_test_rot = []
+    matched_ref_rot = []
+
+    matched_arc_lengths = []
     for i, (dists, idxs) in enumerate(zip(distances, closest_indices)):
         if any(np.isinf(dists)):
             continue
 
         test_pos = test_xyz[i, :]
-
         fit_line = Line3D.from_points(ref_xyz[idxs, :])
         line_point = fit_line.evaluate_at(test_pos)
 
+        if traj_ref.has_orientation and traj_test.has_orientation:
+            ref_rots = RotationSet.from_quat(traj_ref.rot.as_quat()[idxs])
+            matched_ref_rot.append(ref_rots.mean())
+            matched_test_rot.append(traj_test.rot.as_quat()[i])
+
         matched_test_pos.append(test_pos)
         matched_ref_pos.append(line_point)
+        matched_arc_lengths.append(np.mean(traj_ref.arc_lengths[idxs]))
 
     traj_test = Trajectory(
         name=traj_test.name,
         pos=PointSet(np.array(matched_test_pos), local_transformer=traj_test.pos.local_transformer),
+        rot=RotationSet.from_quat(np.array(matched_test_rot)) if traj_test.has_orientation else None,
+        sorting=traj_test.sorting,
+        arc_lengths=np.array(matched_arc_lengths),
     )
     traj_ref = Trajectory(
         name=traj_ref.name,
         pos=PointSet(np.array(matched_ref_pos), local_transformer=traj_ref.pos.local_transformer),
+        rot=RotationSet.from_quat(np.array(matched_ref_rot)) if traj_ref.has_orientation else None,
+        sorting=traj_ref.sorting,
+        arc_lengths=np.array(matched_arc_lengths),
     )
 
     return traj_test, traj_ref

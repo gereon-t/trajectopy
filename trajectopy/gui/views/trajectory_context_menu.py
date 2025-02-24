@@ -314,6 +314,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.action_context_menu.addAction(apply_alignment_action)
 
+        average_action = QAction("Average", self)
+        average_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.AVERAGE,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(average_action)
+
         if not self.get_selection().reference_is_set:
             return
 

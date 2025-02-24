@@ -150,6 +150,7 @@ class TrajectoryManager(QObject):
                 inplace=False,
                 apply_to_reference=True,
             ),
+            TrajectoryManagerRequestType.AVERAGE: self.operation_average_trajectories,
             TrajectoryManagerRequestType.COMPARE_ABS: lambda: self.handle_trajectory_operation(
                 operation=self.operation_compare_abs,
                 inplace=False,
@@ -578,6 +579,29 @@ class TrajectoryManager(QObject):
                 state=entry_pair.entry.state,
             ),
         )
+
+    def operation_average_trajectories(self) -> None:
+        """
+        Averages all selected trajectories into one trajectory.
+
+        Args:
+            None.
+
+        Returns:
+            None.
+        """
+        if (selected_entries := self.selected_trajectory_entries()) is None:
+            return
+
+        averaged_trajectory = tpy.average_trajectories([entry.trajectory for entry in selected_entries])
+
+        new_trajectory_entry = TrajectoryEntry(
+            full_filename="",
+            trajectory=averaged_trajectory,
+            group_id=selected_entries[0].group_id,
+        )
+
+        self.emit_add_trajectory_signal(new_trajectory_entry)
 
     @staticmethod
     def operation_compare_abs(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:

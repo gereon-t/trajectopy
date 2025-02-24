@@ -71,6 +71,7 @@ class TrajectoryManagerRequestType(Enum):
     ADAPT_FIRST_ORIENTATION = auto()
     APPLY_ALIGNMENT = auto()
     APPROXIMATE = auto()
+    AVERAGE = auto()
     SORT = auto()
     DIVIDE_INTO_LAPS = auto()
     EDIT_EPSG = auto()

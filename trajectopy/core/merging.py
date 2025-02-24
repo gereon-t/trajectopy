@@ -61,3 +61,49 @@ def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
 
     merged.apply_index(np.argsort(merged.tstamps), inplace=True)
     return merged
+
+
+def average_trajectories(trajectories: List[Trajectory]) -> Trajectory:
+    """
+    Averages a list of trajectories into one trajectory.
+
+    This function ignores EPSG codes and averages trajectories.
+
+    Args:
+        list[Trajectory]: List of trajectories to average.
+
+    Returns:
+        Trajectory: Averaged trajectory.
+
+    """
+    lengths = set(len(t) for t in trajectories)
+
+    if len(lengths) != 1:
+        raise ValueError(
+            "Trajectories must have the same length to be averaged. Ensure this using trajectory matching."
+        )
+
+    xyz_stack = np.stack([t.pos.xyz for t in trajectories], axis=0)
+
+    rots = [t.rot.as_quat() for t in trajectories if t.has_orientation]
+    mean_rots = []
+    for i in range(len(trajectories[0])):
+        rotations = []
+        for rot in rots:
+            rotations.append(rot[i])
+
+        if not rotations:
+            continue
+
+        mean_rots.append(RotationSet.from_quat(np.array(rotations)).mean().as_quat())
+
+    avg_xyz = np.mean(xyz_stack, axis=0)
+
+    avg = Trajectory(
+        name="Averaged",
+        tstamps=trajectories[0].tstamps,
+        pos=PointSet(xyz=avg_xyz, epsg=trajectories[0].pos.epsg),
+        rot=RotationSet.from_quat(mean_rots) if mean_rots else None,
+    )
+
+    return avg
