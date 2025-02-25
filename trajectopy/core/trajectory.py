@@ -447,7 +447,7 @@ class Trajectory:
             matrices[i, :, :] = pose[:3, :3]
 
         self.pos.xyz = xyz
-        self.rot = RotationSet.from_matrix(matrices) if self.has_orientation else None
+        self.rot = RotationSet.from_matrix(matrices)
 
     @property
     def data_rate(self) -> float:
@@ -730,6 +730,7 @@ class Trajectory:
             return euler_x, euler_y, euler_z, lever_x, lever_y, lever_z
 
         trajectory = self if inplace else self.copy()
+        has_orientations = trajectory.has_orientation
 
         # leverarm and time
         (
@@ -767,6 +768,9 @@ class Trajectory:
         if trajectory.rot is not None:
             trajectory.rot = alignment_result.rotation_parameters.rotation_set * trajectory.rot
             logger.info("Applied alignment parameters to orientations.")
+
+        if not has_orientations:
+            trajectory.rot = None
 
         return trajectory
 
