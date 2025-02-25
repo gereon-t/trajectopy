@@ -447,7 +447,7 @@ class Trajectory:
             matrices[i, :, :] = pose[:3, :3]
 
         self.pos.xyz = xyz
-        self.rot = RotationSet.from_matrix(matrices)
+        self.rot = RotationSet.from_matrix(matrices) if self.has_orientation else None
 
     @property
     def data_rate(self) -> float:
