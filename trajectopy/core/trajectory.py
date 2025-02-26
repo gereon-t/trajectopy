@@ -795,7 +795,9 @@ class Trajectory:
         trajectory.sorting = Sorting.ARC_LENGTH
         return trajectory
 
-    def divide_into_laps(self, sorting_settings: SortingSettings = SortingSettings()) -> List["Trajectory"]:
+    def divide_into_laps(
+        self, sorting_settings: SortingSettings = SortingSettings(), return_lap_indices: bool = False
+    ) -> Union[List["Trajectory"], Tuple[List["Trajectory"], np.ndarray]]:
         """
         Divides the trajectory into laps.
 
@@ -821,7 +823,7 @@ class Trajectory:
             lap = trajectory.apply_index(np.arange(lap_indices[i], lap_indices[i + 1]), inplace=False)
             laps.append(lap)
 
-        return laps
+        return laps if not return_lap_indices else laps, lap_indices
 
     def approximate(
         self, approximation_settings: ApproximationSettings = ApproximationSettings(), inplace: bool = True

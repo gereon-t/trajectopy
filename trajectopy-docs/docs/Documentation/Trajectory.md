@@ -414,8 +414,9 @@ Crops trajectory to timespan defined by t_start and t_end
 
 ```python
 divide_into_laps(
-    sorting_settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
-) → List[ForwardRef('Trajectory')]
+    sorting_settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    return_lap_indices: bool = False
+) → Union[List[ForwardRef('Trajectory')], Tuple[List[ForwardRef('Trajectory')], numpy.ndarray]]
 ```
 
 Divides the trajectory into laps. 
