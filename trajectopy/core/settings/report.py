@@ -77,7 +77,7 @@ class ReportSettings(Settings):
 
     scatter_max_std: float = 4.0
     ate_unit_is_mm: bool = False
-    directed_ate: bool = True
+    directed_ate: bool = False
 
     histogram_opacity: float = 0.7
     histogram_bargap: float = 0.1

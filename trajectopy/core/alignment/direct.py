@@ -11,7 +11,12 @@ from typing import Tuple, Union
 import numpy as np
 from scipy.sparse import spdiags
 
-from trajectopy.core.alignment.parameters import HelmertTransformation, Leverarm, Parameter, SensorRotationParameters
+from trajectopy.core.alignment.parameters import (
+    HelmertTransformation,
+    Leverarm,
+    Parameter,
+    SensorRotationParameters,
+)
 from trajectopy.core.alignment.utils import least_squares
 from trajectopy.core.definitions import Unit
 from trajectopy.core.rotationset import RotationSet
@@ -60,14 +65,16 @@ def direct_helmert_transformation(
     )
     estimated_translation = weighted_centroid_to - estimated_scale * estimated_rotation @ weighted_centroid_from
 
-    estimated_rotation_angles = RotationSet.from_matrix(estimated_rotation).as_euler(seq="xyz")
+    yaw = np.atan2(estimated_rotation[1, 0], estimated_rotation[0, 0])
+    pitch = np.atan2(-estimated_rotation[2, 0], np.sqrt(estimated_rotation[2, 1] ** 2 + estimated_rotation[2, 2] ** 2))
+    roll = np.atan2(estimated_rotation[2, 1], estimated_rotation[2, 2])
     return HelmertTransformation(
         trans_x=Parameter(value=estimated_translation[0], name="Translation x", unit=Unit.METER),
         trans_y=Parameter(value=estimated_translation[1], name="Translation y", unit=Unit.METER),
         trans_z=Parameter(value=estimated_translation[2], name="Translation z", unit=Unit.METER),
-        rot_x=Parameter(value=estimated_rotation_angles[0], name="Rotation x", unit=Unit.RADIAN),
-        rot_y=Parameter(value=estimated_rotation_angles[1], name="Rotation y", unit=Unit.RADIAN),
-        rot_z=Parameter(value=estimated_rotation_angles[2], name="Rotation z", unit=Unit.RADIAN),
+        rot_x=Parameter(value=roll, name="Rotation x", unit=Unit.RADIAN),
+        rot_y=Parameter(value=pitch, name="Rotation y", unit=Unit.RADIAN),
+        rot_z=Parameter(value=yaw, name="Rotation z", unit=Unit.RADIAN),
         scale=Parameter(value=estimated_scale, default=1.0, name="Scale", unit=Unit.SCALE),
     )
 

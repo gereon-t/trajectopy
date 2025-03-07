@@ -5,8 +5,8 @@ from typing import Any, Dict, List
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QFont
-from trajectopy.core.settings.base import Settings
 
+from trajectopy.core.settings.base import Settings
 from trajectopy.util import save_file_dialog, show_msg_box
 
 logger = logging.getLogger("root")
@@ -246,7 +246,7 @@ def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> Qt
         settings_field = QtWidgets.QDoubleSpinBox(parent_widget)
         settings_field.setDecimals(4)
         settings_field.setSingleStep(0.0001)
-        settings_field.setMaximum(10000)
+        settings_field.setMaximum(1e15)
         settings_field.setValue(value)
         return settings_field
 
