@@ -524,7 +524,7 @@ def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
                 np.mean(c_list) + plot_settings.scatter_max_std * np.std(c_list),
             ]
         )
-        geq_leq_dict = {0: "$\leq$", plot_settings.scatter_cbar_steps: "$\geq$"}
+        geq_leq_dict = {0: "$\\leq$", plot_settings.scatter_cbar_steps: "$\\geq$"}
 
     c_bar_range = np.abs(upper_bound - lower_bound)
 
