@@ -834,6 +834,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#method-trajectorydivide_into_laps" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.divide_into_laps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#classmethod-trajectoryfrom_file" class="md-nav__link">
     <span class="md-ellipsis">
       classmethod Trajectory.from_file
@@ -909,6 +918,15 @@
   <a href="#method-trajectoryto_file" class="md-nav__link">
     <span class="md-ellipsis">
       method Trajectory.to_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_string" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_string
     </span>
   </a>
   
@@ -1210,6 +1228,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#method-trajectorydivide_into_laps" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.divide_into_laps
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#classmethod-trajectoryfrom_file" class="md-nav__link">
     <span class="md-ellipsis">
       classmethod Trajectory.from_file
@@ -1285,6 +1312,15 @@
   <a href="#method-trajectoryto_file" class="md-nav__link">
     <span class="md-ellipsis">
       method Trajectory.to_file
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-trajectoryto_string" class="md-nav__link">
+    <span class="md-ellipsis">
+      method Trajectory.to_string
     </span>
   </a>
   
@@ -1579,8 +1615,24 @@
 <li><b><code>Trajectory</code></b>:  Cropped trajectory </li>
 </ul>
 <hr />
+<h3 id="method-trajectorydivide_into_laps"><kbd>method</kbd> <code>Trajectory.divide_into_laps</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">divide_into_laps</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">sorting_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">SortingSettings</span> <span class="o">=</span> <span class="n">SortingSettings</span><span class="p">(</span><span class="n">discard_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">voxel_size</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">movement_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">k_nearest</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">return_lap_indices</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ForwardRef</span><span class="p">(</span><span class="s1">&#39;Trajectory&#39;</span><span class="p">)],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ForwardRef</span><span class="p">(</span><span class="s1">&#39;Trajectory&#39;</span><span class="p">)],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span>
+</span></code></pre></div>
+<p>Divides the trajectory into laps. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>sorting_settings</code></b> (SortingSettings):  Sorting settings. </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>List[Trajectory]</code></b>:  List of trajectories, each representing a lap. </li>
+</ul>
+<hr />
 <h3 id="classmethod-trajectoryfrom_file"><kbd>classmethod</kbd> <code>Trajectory.from_file</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io_stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">io_stream</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Create trajectory from file </p>
 <p>The file must be a csv file containing columns for at least the timestamp, x, y and z coordinates of the trajectory. Those fields must be named "t", "px", "py" and "pz" in the header using the #fields tag. However, by default a trajectory with "t,px,py,pz,qx,qy,qz,qw" fields is assumed. Additional fields include the arc length, specified by "l", and the speed, specified by "vx", "vy" and "vz". The delimiter can be specified using the #delimiter tag. The default delimiter is a comma. </p>
@@ -1595,24 +1647,24 @@
 </ul>
 <hr />
 <h3 id="classmethod-trajectoryfrom_numpy"><kbd>classmethod</kbd> <code>Trajectory.from_numpy</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">from_numpy</span><span class="p">(</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">xyz</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">quat</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">epsg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">from_numpy</span><span class="p">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">xyz</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">quat</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">epsg</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Initialize trajectory using numpy arrays </p>
 <hr />
 <h3 id="method-trajectoryinit_arc_lengths"><kbd>method</kbd> <code>Trajectory.init_arc_lengths</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">init_arc_lengths</span><span class="p">()</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">init_arc_lengths</span><span class="p">()</span>
 </span></code></pre></div>
 <hr />
 <h3 id="method-trajectoryinterpolate"><kbd>method</kbd> <code>Trajectory.interpolate</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">interpolate</span><span class="p">(</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">interpolate</span><span class="p">(</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Interpolates a trajectory to specified timestamps </p>
 <p>This method removes timestamps from tstamps if they lie outside of the timestamp range of the trajectory (self). Since providing values for those timestamps would require an extrapolation and not an interpolation, this behaviour is consistent with the definition of this method. </p>
@@ -1627,11 +1679,11 @@
 </ul>
 <hr />
 <h3 id="method-trajectoryintersect"><kbd>method</kbd> <code>Trajectory.intersect</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">intersect</span><span class="p">(</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">max_gap_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">intersect</span><span class="p">(</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">max_gap_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Intersects trajectory with a given timestamp vector </p>
 <p>After intersection, the trajectory covers the same timespan as 'tstamps'. Further, gaps larger than 'max_gap_size' are removed. If two consecutive timespans in tstamps have a difference of more than 'max_gap_size' seconds, they are considered as the limits of a gap. All timestamps of the trajectory that lie within this gap will be removed. </p>
@@ -1651,7 +1703,7 @@
 </ul>
 <hr />
 <h3 id="method-trajectorymatch_timestamps"><kbd>method</kbd> <code>Trajectory.match_timestamps</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">match_timestamps</span><span class="p">(</span><span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">match_timestamps</span><span class="p">(</span><span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Truncates trajectory to only those poses where the timestamps exactly match "tstamps" </p>
 <p><strong>Args:</strong></p>
@@ -1665,10 +1717,10 @@
 </ul>
 <hr />
 <h3 id="method-trajectorysort_spatially"><kbd>method</kbd> <code>Trajectory.sort_spatially</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">sort_spatially</span><span class="p">(</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">sorting_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">SortingSettings</span> <span class="o">=</span> <span class="n">SortingSettings</span><span class="p">(</span><span class="n">discard_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">voxel_size</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">movement_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">k_nearest</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">sort_spatially</span><span class="p">(</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">sorting_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">SortingSettings</span> <span class="o">=</span> <span class="n">SortingSettings</span><span class="p">(</span><span class="n">discard_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">voxel_size</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">movement_threshold</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">k_nearest</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
 <p>Sorts the trajectory spatially. </p>
 <p><strong>Args:</strong></p>
@@ -1682,7 +1734,7 @@
 </ul>
 <hr />
 <h3 id="method-trajectoryto_dataframe"><kbd>method</kbd> <code>Trajectory.to_dataframe</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="n">DataFrame</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">to_dataframe</span><span class="p">(</span><span class="n">sort_by</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="n">DataFrame</span>
 </span></code></pre></div>
 <p>Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory. </p>
 <p>The dataframe is sorted by the current sorting attribute (time or arc_length). </p>
@@ -1696,14 +1748,18 @@
 </ul>
 <hr />
 <h3 id="method-trajectoryto_file"><kbd>method</kbd> <code>Trajectory.to_file</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
 </span></code></pre></div>
 <p>Writes trajectory to ascii file </p>
-<p>The first line will always be the epsg information. After that, the trajectory data is written. </p>
 <p><strong>Args:</strong></p>
 <ul>
 <li><b><code>filename</code></b> (str):  Output filename </li>
 </ul>
+<hr />
+<h3 id="method-trajectoryto_string"><kbd>method</kbd> <code>Trajectory.to_string</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">to_string</span><span class="p">()</span> <span class="err">→</span> <span class="nb">str</span>
+</span></code></pre></div>
+<p>Writes trajectory to a string instead of a file. </p>
 
 
 
