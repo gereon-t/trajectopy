@@ -39,10 +39,10 @@ def read_data(filename: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
 
         if data.shape[1] == 1:
             logger.info("Assuming whitespaces as delimiter since imported data has only one column.")
-            data = pd.read_csv(filename, comment="#", header=None, delim_whitespace=True).to_numpy(dtype=dtype)
+            data = pd.read_csv(filename, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
     except Exception:
         try:
-            data = pd.read_csv(filename, comment="#", header=None, delim_whitespace=True).to_numpy(dtype=dtype)
+            data = pd.read_csv(filename, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
         except Exception:
             logger.warning("Could not read file using pandas. Trying numpy instead.")
             data = np.loadtxt(filename, comments="#")
@@ -68,10 +68,10 @@ def read_string(input_str: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
 
         if data.shape[1] == 1:
             logger.info("Assuming whitespaces as delimiter since imported data has only one column.")
-            data = pd.read_csv(input_str, comment="#", header=None, delim_whitespace=True).to_numpy(dtype=dtype)
+            data = pd.read_csv(input_str, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
     except Exception:
         try:
-            data = pd.read_csv(input_str, comment="#", header=None, delim_whitespace=True).to_numpy(dtype=dtype)
+            data = pd.read_csv(input_str, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
         except Exception:
             logger.warning("Could not read string using pandas. Trying numpy instead.")
             data = np.loadtxt(input_str, comments="#")
