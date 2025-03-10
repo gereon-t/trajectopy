@@ -31,6 +31,10 @@ Trajectopy offers a range of features, including:
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
 - __Customizable Visualization__: Powered by [Plotly](https://plotly.com/) or [Matplotlib](https://matplotlib.org/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy/blob/main/example_data/report.html))
 
+## Web Application (Docker)
+
+A simple web application is available at [gereon-t/trajectopy-web](https://github.com/gereon-t/trajectopy-web) that allows you to use the core functionality of Trajectopy using Docker.
+
 ## Citation
 
 If you use this library for any academic work, please cite our original [paper](https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html).
