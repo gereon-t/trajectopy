@@ -129,6 +129,9 @@ class Trajectory:
 
         Trajectory._counter += 1
 
+        unique_index = np.unique(self.function_of, return_index=True)[1]
+        self.apply_index(unique_index)
+
     def __str__(self) -> str:
         """
         Returns string describing trajectory
