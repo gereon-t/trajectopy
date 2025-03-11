@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 
 from trajectopy.core.alignment.utils import list2box
-from trajectopy.core.definitions import UNIT_FORMAT_RULES, Unit
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.alignment import AlignmentEstimationSettings
+from trajectopy.definitions import UNIT_FORMAT_RULES, Unit
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import AlignmentEstimationSettings
 
 
 class AlignmentParametersError(Exception):

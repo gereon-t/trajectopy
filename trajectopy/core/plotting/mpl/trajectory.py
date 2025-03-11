@@ -11,34 +11,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
-from trajectopy.core.definitions import DATE_FORMATTER
 from trajectopy.core.plotting.utils import (
     TrajectoriesSorting,
     derive_xlabel_from_sortings,
     get_sorting,
     is_all_unix,
 )
-from trajectopy.core.trajectory import Trajectory
-
-
-def plot_trajectories(trajectories: List[Trajectory], dim: int = 2) -> Tuple[Figure, Figure, Union[Figure, None]]:
-    """
-    Plots the trajectories in 2d or 3d using matplotlib.
-
-    Args:
-        trajectories (List[Trajectory]): List of trajectories to plot.
-        dim (int, optional): Dimension of the plot. Defaults to 2.
-
-    This function creates one 2D or 3D plot for the xy(z) coordinates of the trajectories,
-    one subplot for the xyz coordinates and one subplot for the rpy angles.
-
-    Returns:
-        Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
-    """
-    fig_pos = plot_pos(trajectories=trajectories, dim=dim)
-    fig_xyz = plot_xyz(trajectories=trajectories)
-    fig_rpy = plot_rpy(trajectories=trajectories)
-    return fig_pos, fig_xyz, fig_rpy
+from trajectopy.definitions import DATE_FORMATTER
+from trajectopy.trajectory import Trajectory
 
 
 def plot_pos(trajectories: List[Trajectory], dim: int = 2) -> Figure:

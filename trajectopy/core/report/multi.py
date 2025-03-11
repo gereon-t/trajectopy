@@ -13,14 +13,19 @@ import jinja2
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.plotting.plotly import bar_plots, multi_line_plots
-from trajectopy.core.report.data import ATEReportData, ATEReportDataCollection, RPEReportData, RPEReportDataCollection
+from trajectopy.core.report.data import (
+    ATEReportData,
+    ATEReportDataCollection,
+    RPEReportData,
+    RPEReportDataCollection,
+)
 from trajectopy.core.report.utils import TEMPLATES_PATH, convert_icon_to_base64
-from trajectopy.core.settings.report import ReportSettings
+from trajectopy.settings import ReportSettings
 
 logger = logging.getLogger("root")
 
 
-def render_one_line_plots(
+def render_one_line_deviations_plots(
     ate_report_data_collection: Optional[ATEReportDataCollection] = None,
     rpe_report_data_collection: Optional[RPEReportDataCollection] = None,
 ) -> List[str]:
@@ -48,7 +53,7 @@ def render_one_line_plots(
     return one_line_plots
 
 
-def render_multi_report(
+def render_multi_deviations_report(
     *,
     ate_results: Optional[List[ATEResult]] = None,
     rpe_results: Optional[List[RPEResult]] = None,
@@ -87,7 +92,7 @@ def render_multi_report(
         else None
     )
 
-    one_line_plots = render_one_line_plots(ate_report_data_collection, rpe_report_data_collection)
+    one_line_plots = render_one_line_deviations_plots(ate_report_data_collection, rpe_report_data_collection)
 
     context = {
         "title": "Trajectory Comparison",

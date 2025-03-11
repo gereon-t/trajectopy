@@ -6,8 +6,8 @@ tombrink@igg.uni-bonn.de
 """
 
 import logging
-from pathlib import Path
 import threading
+from pathlib import Path
 from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -25,7 +25,7 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.util import show_progress
+from trajectopy.gui.util import show_progress
 
 logger = logging.getLogger("root")
 

@@ -16,9 +16,6 @@ from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
-from trajectopy.api import ReportSettings
-from trajectopy.core.settings.mpl_settings import MPLPlotSettings
-from trajectopy.core.settings.plot_backend import PlotBackend
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
@@ -40,6 +37,7 @@ from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
 from trajectopy.path import YEAR
+from trajectopy.settings import MPLPlotSettings, PlotBackend, ReportSettings
 
 logger = logging.getLogger("root")
 

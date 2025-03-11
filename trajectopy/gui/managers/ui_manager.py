@@ -25,16 +25,16 @@ from trajectopy.gui.managers.requests import (
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import AlignmentEntry
-from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
-from trajectopy.gui.views.json_settings_view import JSONViewer
-from trajectopy.gui.views.properties_window import PropertiesGUI
-from trajectopy.gui.views.result_selection_window import AlignmentSelector
-from trajectopy.util import (
+from trajectopy.gui.util import (
     browse_dir_dialog,
     read_file_dialog,
     save_file_dialog,
     show_msg_box,
 )
+from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
+from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.gui.views.properties_window import PropertiesGUI
+from trajectopy.gui.views.result_selection_window import AlignmentSelector
 
 logger = logging.getLogger("root")
 

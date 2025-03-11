@@ -16,22 +16,19 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from trajectopy.core.alignment.parameters import AlignmentParameters
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.plotting.mpl.alignment import (
-    plot_correlation_heatmap,
-    plot_covariance_heatmap,
-)
-from trajectopy.core.plotting.mpl.results import (
+from trajectopy.plotting import (
     plot_ate,
     plot_ate_bars,
     plot_ate_edf,
     plot_compact_ate_hist,
+    plot_correlation_heatmap,
+    plot_covariance_heatmap,
     plot_rpe,
+    plot_trajectories,
     scatter_ate,
 )
-from trajectopy.core.plotting.mpl.trajectory import plot_trajectories
-from trajectopy.core.settings.mpl_settings import MPLPlotSettings
-from trajectopy.core.trajectory import Trajectory
-
+from trajectopy.settings import MPLPlotSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 

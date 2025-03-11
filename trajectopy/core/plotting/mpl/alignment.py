@@ -8,9 +8,6 @@ tombrink@igg.uni-bonn.de
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import ticker
-from matplotlib.figure import Figure
-
-from trajectopy.core.alignment.parameters import AlignmentParameters
 
 
 # see https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
@@ -126,63 +123,3 @@ def _annotate_heatmap(im, data=None, valfmt="{x:.2f}", textcolors=("black", "whi
             texts.append(text)
 
     return texts
-
-
-def plot_correlation_heatmap(estimated_parameters: AlignmentParameters, enabled_only: bool = True) -> Figure:
-    """Plots the correlation heatmap of the alignment parameters using matplotlib.
-
-    Args:
-        estimated_parameters (AlignmentParameters): Estimated parameters.
-        enabled_only (bool, optional): Whether to consider only enabled parameters. Defaults to True.
-
-    Returns:
-        plt.Figure: Correlation heatmap figure.
-    """
-    covariance_matrix = estimated_parameters.get_covariance_matrix(enabled_only=enabled_only)
-    std_devs = np.sqrt(np.diag(covariance_matrix))
-    correlation_matrix = covariance_matrix / np.outer(std_devs, std_devs)
-    np.fill_diagonal(correlation_matrix, np.nan)
-    fig, ax = plt.subplots()
-    ax.grid(False)
-    im, _ = _heatmap(
-        correlation_matrix,
-        estimated_parameters.params_labels(enabled_only=enabled_only, lower_case=True),
-        estimated_parameters.params_labels(enabled_only=enabled_only, lower_case=True),
-        ax=ax,
-        cmap="coolwarm",
-        cbarlabel="Correlation",
-        cbar_kw={"format": "%.2f"},
-    )
-    _annotate_heatmap(im, valfmt="{x:.2f}")
-    ax.set_aspect("auto")
-
-    plt.tight_layout()
-    return fig
-
-
-def plot_covariance_heatmap(estimated_parameters: AlignmentParameters, enabled_only: bool = True) -> Figure:
-    """Plots the covariance heatmap of the alignment parameters using matplotlib.
-
-    Args:
-        estimated_parameters (AlignmentParameters): Estimated parameters.
-        enabled_only (bool, optional): Whether to consider only enabled parameters. Defaults to True.
-
-    Returns:
-        plt.Figure: Covariance heatmap figure.
-    """
-    covariance_matrix = estimated_parameters.get_covariance_matrix(enabled_only=enabled_only)
-    fig, ax = plt.subplots()
-    ax.grid(False)
-    im, _ = _heatmap(
-        covariance_matrix,
-        estimated_parameters.params_labels(enabled_only=enabled_only, lower_case=True),
-        estimated_parameters.params_labels(enabled_only=enabled_only, lower_case=True),
-        ax=ax,
-        cmap="coolwarm",
-        cbarlabel="Covariance",
-        cbar_kw={"format": "%.2f"},
-    )
-    _annotate_heatmap(im, valfmt="{x:.3f}")
-    ax.set_aspect("auto")
-    plt.tight_layout()
-    return fig

@@ -10,13 +10,13 @@ import logging
 from typing import Tuple
 
 import numpy as np
-from pointset import PointSet
 from scipy.spatial import KDTree
 
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.matching import MatchingMethod, MatchingSettings
-from trajectopy.core.trajectory import Trajectory
 from trajectopy.core.utils import Line3D
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import MatchingMethod, MatchingSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 
@@ -78,16 +78,16 @@ def match_trajectories(
     logger.info("Matching trajectories using method %s", settings.method.name)
 
     if settings.method == MatchingMethod.INTERPOLATION:
-        return _match_trajectories_interpolation(traj_test=traj_from, traj_ref=traj_to)
+        return match_trajectories_interpolation(traj_test=traj_from, traj_ref=traj_to)
 
     if settings.method == MatchingMethod.NEAREST_TEMPORAL:
-        return _match_trajectories_temporal(traj_test=traj_from, traj_ref=traj_to, max_distance=settings.max_time_diff)
+        return match_trajectories_temporal(traj_test=traj_from, traj_ref=traj_to, max_distance=settings.max_time_diff)
 
     if settings.method == MatchingMethod.NEAREST_SPATIAL:
-        return _match_trajectories_spatial(traj_test=traj_from, traj_ref=traj_to, max_distance=settings.max_distance)
+        return match_trajectories_spatial(traj_test=traj_from, traj_ref=traj_to, max_distance=settings.max_distance)
 
     if settings.method == MatchingMethod.NEAREST_SPATIAL_INTERPOLATED:
-        return _match_trajectories_spatial_interpolation(
+        return match_trajectories_spatial_interpolation(
             traj_test=traj_from,
             traj_ref=traj_to,
             max_distance=settings.max_distance,
@@ -97,7 +97,7 @@ def match_trajectories(
     raise ValueError(f"Matching method {settings.method} not supported!")
 
 
-def _match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajectory) -> Tuple[Trajectory, Trajectory]:
+def match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajectory) -> Tuple[Trajectory, Trajectory]:
     """Ensures that both trajectories are sampled in the same way
 
     This method will intersect both trajectories with each other
@@ -124,7 +124,7 @@ def _match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajector
     return traj_test, traj_ref
 
 
-def _match_trajectories_temporal(
+def match_trajectories_temporal(
     traj_test: Trajectory, traj_ref: Trajectory, max_distance: float = 0.01
 ) -> Tuple[Trajectory, Trajectory]:
     """This method matches both trajectories temporally
@@ -149,7 +149,7 @@ def _match_trajectories_temporal(
     return traj_test.apply_index(test_indices), traj_ref.apply_index(ref_indices)
 
 
-def _match_trajectories_spatial(
+def match_trajectories_spatial(
     traj_test: Trajectory, traj_ref: Trajectory, max_distance: float = 0.0
 ) -> Tuple[Trajectory, Trajectory]:
     """This method matches both trajectories spatially
@@ -173,7 +173,7 @@ def _match_trajectories_spatial(
     return traj_test.apply_index(test_indices), traj_ref.apply_index(ref_indices)
 
 
-def _match_trajectories_spatial_interpolation(
+def match_trajectories_spatial_interpolation(
     traj_test: Trajectory, traj_ref: Trajectory, max_distance: float = 0.0, k_nearest: int = 10
 ) -> Tuple[Trajectory, Trajectory]:
     """This method matches both trajectories spatially by requesting
@@ -293,7 +293,7 @@ def rough_timestamp_matching(traj_ref: Trajectory, traj_test: Trajectory, max_di
     Returns:
         float: Mean time offset
     """
-    traj_test, traj_ref = _match_trajectories_spatial(
+    traj_test, traj_ref = match_trajectories_spatial(
         traj_test=traj_test.copy(), traj_ref=traj_ref.copy(), max_distance=max_distance
     )
     mean_time_offset = np.median(traj_ref.tstamps - traj_test.tstamps)

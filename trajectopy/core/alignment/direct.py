@@ -18,8 +18,8 @@ from trajectopy.core.alignment.parameters import (
     SensorRotationParameters,
 )
 from trajectopy.core.alignment.utils import least_squares
-from trajectopy.core.definitions import Unit
-from trajectopy.core.rotationset import RotationSet
+from trajectopy.definitions import Unit
+from trajectopy.rotationset import RotationSet
 
 logger = logging.getLogger("root")
 

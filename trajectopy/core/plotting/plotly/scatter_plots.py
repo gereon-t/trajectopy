@@ -14,8 +14,8 @@ from plotly.offline import plot
 
 from trajectopy.core.plotting.utils import get_axis_label
 from trajectopy.core.report.data import ATEReportData
-from trajectopy.core.settings.report import ReportSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.settings import ReportSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 

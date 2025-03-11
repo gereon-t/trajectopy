@@ -5,25 +5,17 @@ Gereon Tombrink, 2025
 tombrink@igg.uni-bonn.de
 """
 
-import logging
-from rich.logging import RichHandler
-
-logging.basicConfig(
-    format="%(message)s",
-    level=logging.INFO,
-    handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
-)
-
-import os
-import sys
 import argparse
 import ctypes
-from trajectopy import __version__ as VERSION
-from trajectopy.path import ICON_BG_FILE_PATH
+import os
+import sys
+
 from PyQt6 import QtGui
 from PyQt6.QtWidgets import QApplication
-from trajectopy.gui.views.main_window import TrajectopyGUI
 
+from trajectopy import __version__ as VERSION
+from trajectopy.gui.views.main_window import TrajectopyGUI
+from trajectopy.path import ICON_BG_FILE_PATH
 
 if os.name == "nt":
     myappid = f"gereont.trajectopy.main.{VERSION}"

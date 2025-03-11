@@ -9,7 +9,7 @@ import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
 
-from trajectopy.core.settings.report import ReportSettings
+from trajectopy.settings import ReportSettings
 
 
 def render_heatmap(dataframe: pd.DataFrame, report_settings: ReportSettings = ReportSettings()) -> str:

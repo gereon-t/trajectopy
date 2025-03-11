@@ -6,8 +6,8 @@ from PyQt6 import QtWidgets
 from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QFont
 
-from trajectopy.core.settings.base import Settings
-from trajectopy.util import save_file_dialog, show_msg_box
+from trajectopy.gui.util import save_file_dialog, show_msg_box
+from trajectopy.settings import Settings
 
 logger = logging.getLogger("root")
 

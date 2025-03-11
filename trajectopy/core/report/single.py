@@ -13,15 +13,24 @@ import numpy as np
 
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.plotting.plotly import bar_plots, histograms, line_plots, scatter_plots
+from trajectopy.core.plotting.plotly import (
+    bar_plots,
+    histograms,
+    line_plots,
+    scatter_plots,
+)
 from trajectopy.core.report.data import ATEReportData, RPEReportData
-from trajectopy.core.report.utils import TEMPLATES_PATH, convert_icon_to_base64, number_to_string
-from trajectopy.core.settings.report import ReportSettings
+from trajectopy.core.report.utils import (
+    TEMPLATES_PATH,
+    convert_icon_to_base64,
+    number_to_string,
+)
+from trajectopy.settings import ReportSettings
 
 logger = logging.getLogger("root")
 
 
-def render_side_by_side_plots(ate_report_data: ATEReportData) -> List[str]:
+def render_side_by_side_deviations_plots(ate_report_data: ATEReportData) -> List[str]:
     side_by_side_plots = [scatter_plots.render_pos_devs(ate_report_data)]
 
     if not ate_report_data.has_ate_rot:
@@ -32,7 +41,7 @@ def render_side_by_side_plots(ate_report_data: ATEReportData) -> List[str]:
     return side_by_side_plots
 
 
-def render_one_line_plots(
+def render_one_line_deviations_plots(
     ate_report_data: Optional[ATEReportData] = None, rpe_report_data: Optional[RPEReportData] = None
 ) -> List[str]:
     one_line_plots = []
@@ -79,7 +88,7 @@ def render_one_line_plots(
     return one_line_plots
 
 
-def render_single_report(
+def render_single_deviations_report(
     *,
     ate_result: Optional[ATEResult] = None,
     rpe_result: Optional[RPEResult] = None,
@@ -111,8 +120,8 @@ def render_single_report(
         RPEReportData(rpe_result=rpe_result, settings=report_settings) if rpe_result is not None else None
     )
 
-    side_by_side_plots = render_side_by_side_plots(ate_report_data) if ate_report_data is not None else []
-    one_line_plots = render_one_line_plots(ate_report_data, rpe_report_data)
+    side_by_side_plots = render_side_by_side_deviations_plots(ate_report_data) if ate_report_data is not None else []
+    one_line_plots = render_one_line_deviations_plots(ate_report_data, rpe_report_data)
 
     if len(side_by_side_plots) == 1:
         one_line_plots = side_by_side_plots + one_line_plots

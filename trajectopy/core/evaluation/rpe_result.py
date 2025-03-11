@@ -13,7 +13,7 @@ import pandas as pd
 
 from trajectopy.core.evaluation.deviations import RelativeTrajectoryDeviations
 from trajectopy.core.input_output.header import HeaderData
-from trajectopy.core.settings.comparison import PairDistanceUnit
+from trajectopy.settings import PairDistanceUnit
 
 
 class RPEResult:

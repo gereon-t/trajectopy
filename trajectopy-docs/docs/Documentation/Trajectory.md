@@ -61,13 +61,13 @@ Methods:
 
 ```python
 __init__(
-    pos: pointset.pointset.PointSet,
-    rot: Optional[trajectopy.core.rotationset.RotationSet] = None,
+    pos: trajectopy.pointset.PointSet,
+    rot: Optional[trajectopy.rotationset.RotationSet] = None,
     tstamps: Optional[numpy.ndarray] = None,
     name: str = '',
     arc_lengths: Optional[numpy.ndarray] = None,
     speed_3d: Optional[numpy.ndarray] = None,
-    sorting: trajectopy.core.sorting.Sorting = <Sorting.TIME: 'time'>
+    sorting: trajectopy.sorting.Sorting = <Sorting.TIME: 'time'>
 ) → None
 ```
 
@@ -349,7 +349,7 @@ Applies transformation to trajectory
 
 ```python
 approximate(
-    approximation_settings: trajectopy.core.settings.approximation.ApproximationSettings = ApproximationSettings(fe_int_size=0.15, fe_min_obs=25, rot_approx_win_size=0.15),
+    approximation_settings: trajectopy.settings.ApproximationSettings = ApproximationSettings(fe_int_size=0.15, fe_min_obs=25, rot_approx_win_size=0.15),
     inplace: bool = True
 ) → Trajectory
 ```
@@ -414,7 +414,7 @@ Crops trajectory to timespan defined by t_start and t_end
 
 ```python
 divide_into_laps(
-    sorting_settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     return_lap_indices: bool = False
 ) → Union[List[ForwardRef('Trajectory')], Tuple[List[ForwardRef('Trajectory')], numpy.ndarray]]
 ```
@@ -578,7 +578,7 @@ Truncates trajectory to only those poses where the timestamps exactly match "tst
 
 ```python
 sort_spatially(
-    sorting_settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     inplace: bool = True
 ) → Trajectory
 ```
@@ -637,6 +637,24 @@ Writes trajectory to ascii file
 **Args:**
  
  - <b>`filename`</b> (str):  Output filename 
+
+---
+
+### <kbd>method</kbd> `Trajectory.to_kml`
+
+```python
+to_kml(filename: str, precision: float = 1e-06) → str
+```
+
+Create a KML file from a trajectory. 
+
+
+
+**Args:**
+ 
+ - <b>`trajectory`</b> (Trajectory):  Trajectory to be exported. 
+ - <b>`filename`</b> (str):  Filename of the KML file. 
+ - <b>`precision`</b> (float, optional):  Precision of the exported positions in degree. Defaults to 1e-6. 
 
 ---
 

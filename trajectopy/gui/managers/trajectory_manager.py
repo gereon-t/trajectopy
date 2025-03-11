@@ -13,12 +13,12 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-import trajectopy.api as tpy
+from trajectopy.alignment import estimate_alignment
 from trajectopy.core.evaluation.comparison import (
     compare_trajectories_absolute,
     compare_trajectories_relative,
 )
-from trajectopy.core.matching import rough_timestamp_matching
+from trajectopy.evaluation import ate, rpe
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
     ResultModelRequestType,
@@ -37,7 +37,10 @@ from trajectopy.gui.models.entries import (
     TrajectoryEntry,
 )
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.util import show_progress
+from trajectopy.gui.util import show_progress
+from trajectopy.matching import match_trajectories, rough_timestamp_matching
+from trajectopy.merging import average_trajectories, merge_trajectories
+from trajectopy.sorting import Sorting
 
 logger = logging.getLogger("root")
 
@@ -350,7 +353,7 @@ class TrajectoryManager(QObject):
         if (selected_entries := self.selected_trajectory_entries()) is None:
             return
 
-        merged_trajectory = tpy.merge_trajectories([entry.trajectory for entry in selected_entries])
+        merged_trajectory = merge_trajectories([entry.trajectory for entry in selected_entries])
 
         new_trajectory_entry = TrajectoryEntry(
             full_filename="",
@@ -373,9 +376,7 @@ class TrajectoryManager(QObject):
             None.
         """
         entry_pair.entry.trajectory.sorting = (
-            tpy.Sorting.TIME
-            if entry_pair.entry.trajectory.sorting == tpy.Sorting.ARC_LENGTH
-            else tpy.Sorting.ARC_LENGTH
+            Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.ARC_LENGTH else Sorting.ARC_LENGTH
         )
         return (entry_pair.entry,)
 
@@ -593,7 +594,7 @@ class TrajectoryManager(QObject):
         if (selected_entries := self.selected_trajectory_entries()) is None:
             return
 
-        averaged_trajectory = tpy.average_trajectories([entry.trajectory for entry in selected_entries])
+        averaged_trajectory = average_trajectories([entry.trajectory for entry in selected_entries])
 
         new_trajectory_entry = TrajectoryEntry(
             full_filename="",
@@ -617,7 +618,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = tpy.match_trajectories(
+        traj_test, traj_ref = match_trajectories(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
@@ -645,7 +646,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = tpy.match_trajectories(
+        traj_test, traj_ref = match_trajectories(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
@@ -737,7 +738,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        alignment_result = tpy.estimate_alignment(
+        alignment_result = estimate_alignment(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             alignment_settings=entry_pair.entry.settings.alignment,
@@ -803,7 +804,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = tpy.match_trajectories(
+        traj_test, traj_ref = match_trajectories(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
@@ -933,7 +934,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = tpy.match_trajectories(
+        traj_test, traj_ref = match_trajectories(
             traj_from=entry_pair.entry.trajectory,
             traj_to=reference_entry.trajectory,
             settings=entry_pair.entry.settings.matching,
@@ -970,7 +971,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        ate_result, alignment_result = tpy.ate(
+        ate_result, alignment_result = ate(
             trajectory_est=entry_pair.entry.trajectory,
             trajectory_gt=reference_entry.trajectory,
             settings=entry_pair.entry.settings,
@@ -993,7 +994,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        rpe_result = tpy.rpe(
+        rpe_result = rpe(
             trajectory_est=entry_pair.entry.trajectory,
             trajectory_gt=reference_entry.trajectory,
             settings=entry_pair.entry.settings,

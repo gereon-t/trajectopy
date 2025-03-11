@@ -11,9 +11,9 @@ from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-import trajectopy.api as tpy
+from trajectopy.core.evaluation.ate_result import ATEResult
+from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.plotting.mpl.plot_tabs import PlotTabs
-from trajectopy.core.settings.plot_backend import PlotBackend
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -26,7 +26,14 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
     ResultEntry,
 )
-from trajectopy.util import show_progress
+from trajectopy.gui.util import show_progress
+from trajectopy.report import (
+    create_alignment_report,
+    create_deviation_report,
+    create_trajectory_report,
+    show_report,
+)
+from trajectopy.settings import PlotBackend
 
 logger = logging.getLogger("root")
 
@@ -86,10 +93,10 @@ class PlotManager(QObject):
         trajectory_list = [entry.trajectory for entry in request.trajectory_selection.entries]
 
         if self.plot_backend == PlotBackend.PLOTLY:
-            traj_report = tpy.create_trajectory_report(
+            traj_report = create_trajectory_report(
                 trajectories=trajectory_list, report_settings=request.report_settings
             )
-            tpy.show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
+            show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
         elif self.plot_backend == PlotBackend.MPL:
             plot_tabs = PlotTabs(parent=self.parent())
             plot_tabs.show_trajectories(trajectory_list, mpl_plot_settings=request.mpl_plot_settings)
@@ -110,12 +117,12 @@ class PlotManager(QObject):
         rpe_result = rpe_results[0] if rpe_results else None
 
         if self.plot_backend == PlotBackend.PLOTLY:
-            report = tpy.create_deviation_report(
+            report = create_deviation_report(
                 ate_result=ate_result,
                 rpe_result=rpe_result,
                 report_settings=request.report_settings,
             )
-            tpy.show_report(
+            show_report(
                 report_text=report,
                 filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name),
             )
@@ -135,12 +142,12 @@ class PlotManager(QObject):
             return
 
         if self.plot_backend == PlotBackend.PLOTLY:
-            multi_report = tpy.create_deviation_report(
+            multi_report = create_deviation_report(
                 ate_result=ate_results or None,
                 rpe_result=rpe_results or None,
                 report_settings=request.report_settings,
             )
-            tpy.show_report(
+            show_report(
                 report_text=multi_report,
                 filepath=self.report_path(prefix="multi_deviations"),
             )
@@ -155,23 +162,23 @@ class PlotManager(QObject):
             raise TypeError("Entry must be of type AlignmentEntry!")
 
         if self.plot_backend == PlotBackend.PLOTLY:
-            report = tpy.create_alignment_report(
+            report = create_alignment_report(
                 alignment_parameters=entry.estimated_parameters,
                 name=entry.name,
                 report_settings=request.report_settings,
             )
 
-            tpy.show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
+            show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
         elif self.plot_backend == PlotBackend.MPL:
             plot_tabs = PlotTabs(parent=self.parent())
             plot_tabs.show_alignment_parameters(entry.estimated_parameters)
 
 
-def get_ate_results(entries: List[ResultEntry]) -> List[tpy.ATEResult]:
+def get_ate_results(entries: List[ResultEntry]) -> List[ATEResult]:
     """Return a list of ate results."""
     return [entry.deviations for entry in entries if isinstance(entry, AbsoluteDeviationEntry)]
 
 
-def get_rpe_results(entries: List[ResultEntry]) -> List[tpy.RPEResult]:
+def get_rpe_results(entries: List[ResultEntry]) -> List[RPEResult]:
     """Return a list of rpe results."""
     return [entry.deviations for entry in entries if isinstance(entry, RelativeDeviationEntry)]

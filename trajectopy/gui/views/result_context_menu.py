@@ -18,7 +18,11 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     UIRequestType,
 )
-from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
+from trajectopy.gui.models.entries import (
+    AbsoluteDeviationEntry,
+    AlignmentEntry,
+    RelativeDeviationEntry,
+)
 from trajectopy.gui.models.selection import ResultSelection
 
 

@@ -1,19 +1,18 @@
 
-## <kbd>class</kbd> `Sorting`
+## <kbd>module</kbd> `trajectopy.sorting`
+Trajectopy - Trajectory Evaluation in Python 
+
+Gereon Tombrink, 2025 tombrink@igg.uni-bonn.de 
 
 
+---
 
-
-
-
-
-
-## <kbd>function</kbd> `sort_spatially`
+### <kbd>function</kbd> `sort_spatially`
 
 ```python
 sort_spatially(
     xyz_unsorted: numpy.ndarray,
-    settings: trajectopy.core.settings.sorting.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
+    settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
 ) → Tuple[List[int], numpy.ndarray]
 ```
 
@@ -38,3 +37,52 @@ This method can also take care of inserting missing points and assures that the 
  
  - <b>`list`</b>:  Sort index 
  - <b>`np.ndarray`</b>:  Arc lengths along the path 
+
+
+---
+
+### <kbd>function</kbd> `detect_direction`
+
+```python
+detect_direction(xyz: numpy.ndarray) → int
+```
+
+Detects the direction of travel using polar coordinates 
+
+This only works if the points describe a somewhat circular trajectory which circulates around the origin of the coordinate frame. 
+
+
+
+**Args:**
+ 
+ - <b>`xyz`</b> (np.ndarray):  input positions 
+
+
+
+**Returns:**
+ 
+ - <b>`int`</b>:  -1 / 1 indicating direction of travel 
+
+
+---
+
+### <kbd>function</kbd> `complete_lap_dist`
+
+```python
+complete_lap_dist(xyz, dist_th: float = 0.5) → bool
+```
+
+Function to determine if lap is complete A lap is considered as complete, if the distance between the starting point and the end point is below a specified distance 
+
+
+---
+
+### <kbd>class</kbd> `Sorting`
+
+
+
+
+
+
+
+

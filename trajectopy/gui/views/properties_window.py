@@ -10,10 +10,13 @@ from typing import Dict
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QGuiApplication
 
-from trajectopy.gui.managers.requests import PropertyModelRequest, PropertyModelRequestType
+from trajectopy.gui.managers.requests import (
+    PropertyModelRequest,
+    PropertyModelRequestType,
+)
 from trajectopy.gui.models.entries import PropertyEntry
 from trajectopy.gui.models.property_model import PropertyTableModel
-from trajectopy.util import save_file_dialog
+from trajectopy.gui.util import save_file_dialog
 
 
 class PropertiesGUI(QtWidgets.QMainWindow):

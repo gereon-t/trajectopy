@@ -22,8 +22,8 @@ from trajectopy.core.plotting.utils import (
     is_all_unix,
 )
 from trajectopy.core.report.data import ATEReportDataCollection, RPEReportDataCollection
-from trajectopy.core.settings.report import ReportSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.settings import ReportSettings
+from trajectopy.trajectory import Trajectory
 
 
 def setup_edf_axis(report_data_collection: ATEReportDataCollection) -> Tuple[go.Figure, dict]:

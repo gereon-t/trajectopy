@@ -1415,21 +1415,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pointset"
-version = "0.1.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "numpy", version = "2.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-    { name = "pyproj", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "pyproj", version = "3.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/66/de/12c7175431b52c139e38b5074f7c4e806de38cb0605a6814cad5777e482d/pointset-0.1.5.tar.gz", hash = "sha256:34c2bdf9a0d0ba5cd62f0e68413045d6857936ccc1b00b20be11036cdd98a8b4", size = 9754 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/90/4cbe32ae2641b9babcc703a06be96085801d975bf3d1e9b0e37681623fde/pointset-0.1.5-py3-none-any.whl", hash = "sha256:09638aa775614c5d978ce147d56b040205a8833136341361ed5808659af81cd2", size = 8775 },
-]
-
-[[package]]
 name = "pre-commit"
 version = "4.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2122,7 +2107,7 @@ wheels = [
 
 [[package]]
 name = "trajectopy"
-version = "2.4.4"
+version = "2.4.7"
 source = { editable = "." }
 dependencies = [
     { name = "autograd" },
@@ -2135,7 +2120,6 @@ dependencies = [
     { name = "numpy", version = "2.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pandas" },
     { name = "plotly" },
-    { name = "pointset" },
     { name = "pyproj", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "pyproj", version = "3.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "rich" },
@@ -2169,7 +2153,6 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.0.2" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "plotly", specifier = ">=5.24.1" },
-    { name = "pointset", specifier = ">=0.1.5" },
     { name = "pyproj", specifier = ">=3.6.1" },
     { name = "pyqt6", marker = "extra == 'gui'" },
     { name = "rich", specifier = ">=13.9.4" },

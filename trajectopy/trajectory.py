@@ -8,11 +8,11 @@ tombrink@igg.uni-bonn.de
 import copy
 import io
 import logging
+import xml.etree.ElementTree as ET
 from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pointset import PointSet
 from scipy.spatial.transform import Slerp
 
 import trajectopy.core.input_output.trajectory_io as trajectory_io
@@ -21,12 +21,12 @@ from trajectopy.core.alignment.parameters import AlignmentParameters
 from trajectopy.core.alignment.result import AlignmentResult
 from trajectopy.core.approximation.cubic_approximation import piecewise_cubic
 from trajectopy.core.approximation.rot_approximation import rot_average_window
-from trajectopy.core.definitions import UNIX_TIME_THRESHOLD
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.approximation import ApproximationSettings
-from trajectopy.core.settings.sorting import SortingSettings
-from trajectopy.core.sorting import Sorting, sort_spatially
 from trajectopy.core.utils import common_time_span, gradient_3d, lengths_from_xyz
+from trajectopy.definitions import UNIX_TIME_THRESHOLD
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import ApproximationSettings, SortingSettings
+from trajectopy.sorting import Sorting, sort_spatially
 
 # logger configuration
 logger = logging.getLogger("root")
@@ -911,3 +911,46 @@ class Trajectory:
             trajectory.rot = RotationSet.from_euler(seq="xyz", angles=rpy_from + rotation_difference)
 
         return trajectory
+
+    def to_kml(self, filename: str, precision: float = 1e-6) -> str:
+        """
+        Create a KML file from a trajectory.
+
+        Args:
+            trajectory (Trajectory): Trajectory to be exported.
+            filename (str): Filename of the KML file.
+            precision (float, optional): Precision of the exported positions in degree. Defaults to 1e-6.
+        """
+        traj = self.copy()
+        if traj.pos.local_transformer is None:
+            raise ValueError(
+                "Trajectory must be defined in a well-known coordinate system (EPSG code) to be exported to KML. "
+            )
+        traj.pos.to_epsg(4326)
+
+        traj.pos = traj.pos.round_to(precision)
+        _, indices = np.unique(traj.pos.xyz[:, 0:2], return_index=True, axis=0)
+        traj.apply_index(np.sort(indices))
+
+        kml_file = ET.Element("kml", xmlns="http://earth.google.com/kml/2.1")
+        document = ET.SubElement(kml_file, "Document")
+
+        placemark = ET.SubElement(document, "Placemark")
+        name = ET.SubElement(placemark, "name")
+        name.text = traj.name
+
+        style = ET.SubElement(placemark, "Style")
+        line_style = ET.SubElement(style, "LineStyle")
+        color = ET.SubElement(line_style, "color")
+        color.text = "ff0000ff"
+        width = ET.SubElement(line_style, "width")
+        width.text = "2"
+
+        line_string = ET.SubElement(placemark, "LineString")
+        coordinates = ET.SubElement(line_string, "coordinates")
+
+        coordinates.text = "\n".join(f"  {pos[1]:.9f},{pos[0]:.9f},{0.00:.3f}" for pos in traj.pos.xyz)
+
+        tree = ET.ElementTree(kml_file)
+        ET.indent(tree, space="", level=0)
+        tree.write(filename, encoding="utf-8", xml_declaration=True)

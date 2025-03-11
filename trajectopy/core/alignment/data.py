@@ -16,11 +16,10 @@ import pandas as pd
 from scipy.sparse import spdiags
 
 from trajectopy.core.alignment.utils import gradient_3d
-from trajectopy.core.matching import match_trajectories
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.alignment import AlignmentSettings
-from trajectopy.core.settings.matching import MatchingSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.matching import match_trajectories
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import AlignmentSettings, MatchingSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 

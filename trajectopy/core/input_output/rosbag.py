@@ -10,13 +10,13 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import numpy as np
-from pointset import PointSet
 from rosbags.highlevel import AnyReader
 from rosbags.typesys import Stores, get_typestore
 
 from trajectopy.core.input_output.rosmsg import geometry_pose_stamped_handler
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.trajectory import Trajectory
 
 typestore = get_typestore(Stores.LATEST)
 ROS_MESSAGE_HANDLERS = {"geometry_msgs/msg/PoseStamped": geometry_pose_stamped_handler}

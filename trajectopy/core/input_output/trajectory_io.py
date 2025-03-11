@@ -11,12 +11,12 @@ from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pointset import PointSet
 
-from trajectopy.core.definitions import GPS_LEAP_SECONDS, GPS_WEEK_ZERO, TimeFormat
 from trajectopy.core.input_output.header import HeaderData
 from trajectopy.core.input_output.utils import get_rot_matrix
-from trajectopy.core.rotationset import RotationSet
+from trajectopy.definitions import GPS_LEAP_SECONDS, GPS_WEEK_ZERO, TimeFormat
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
 
 logger = logging.getLogger("root")
 
@@ -39,10 +39,10 @@ def read_data(filename: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
 
         if data.shape[1] == 1:
             logger.info("Assuming whitespaces as delimiter since imported data has only one column.")
-            data = pd.read_csv(filename, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
+            data = pd.read_csv(filename, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
     except Exception:
         try:
-            data = pd.read_csv(filename, comment="#", header=None, sep="\s+").to_numpy(dtype=dtype)
+            data = pd.read_csv(filename, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
         except Exception:
             logger.warning("Could not read file using pandas. Trying numpy instead.")
             data = np.loadtxt(filename, comments="#")

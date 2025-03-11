@@ -6,14 +6,20 @@ import numpy as np
 
 from trajectopy.core.alignment.parameters import AlignmentParameters, Parameter
 from trajectopy.core.alignment.result import AlignmentResult
-from trajectopy.core.definitions import Unit
 from trajectopy.core.evaluation.ate_result import ATEResult
-from trajectopy.core.evaluation.comparison import compare_trajectories_absolute, compare_trajectories_relative
+from trajectopy.core.evaluation.comparison import (
+    compare_trajectories_absolute,
+    compare_trajectories_relative,
+)
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.matching import match_trajectories
-from trajectopy.core.settings.comparison import RelativeComparisonSettings
-from trajectopy.core.settings.matching import MatchingMethod, MatchingSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.definitions import Unit
+from trajectopy.matching import match_trajectories
+from trajectopy.settings import (
+    MatchingMethod,
+    MatchingSettings,
+    RelativeComparisonSettings,
+)
+from trajectopy.trajectory import Trajectory
 
 
 def compare_trajectories_abs(traj_ref: Trajectory, traj_test: Trajectory) -> ATEResult:

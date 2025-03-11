@@ -11,12 +11,15 @@ from typing import Dict, List, Tuple, Union
 import numpy as np
 
 from trajectopy.core.evaluation.ate_result import ATEResult
-from trajectopy.core.evaluation.deviations import AbsoluteTrajectoryDeviations, RelativeTrajectoryDeviations
+from trajectopy.core.evaluation.deviations import (
+    AbsoluteTrajectoryDeviations,
+    RelativeTrajectoryDeviations,
+)
 from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.evaluation.utils import nearest_point
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.comparison import PairDistanceUnit, RelativeComparisonSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import PairDistanceUnit, RelativeComparisonSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 

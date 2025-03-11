@@ -1,6 +1,13 @@
+"""
+Trajectopy - Trajectory Evaluation in Python
+
+Gereon Tombrink, 2025
+tombrink@igg.uni-bonn.de
+"""
+
 from typing import Tuple, Union
 
-from trajectopy.core.alignment.estimation import estimate_alignment
+from trajectopy.alignment import estimate_alignment
 from trajectopy.core.alignment.result import AlignmentResult
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.comparison import (
@@ -8,9 +15,9 @@ from trajectopy.core.evaluation.comparison import (
     compare_trajectories_relative,
 )
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.matching import match_trajectories
-from trajectopy.core.settings.processing import ProcessingSettings
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.matching import match_trajectories
+from trajectopy.settings import ProcessingSettings
+from trajectopy.trajectory import Trajectory
 
 
 def ate(

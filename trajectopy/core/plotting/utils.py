@@ -10,8 +10,8 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import List, Tuple
 
-from trajectopy.core.sorting import Sorting
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.sorting import Sorting
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 

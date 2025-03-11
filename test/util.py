@@ -1,13 +1,13 @@
 from typing import Tuple
 
 import numpy as np
-from pointset import PointSet
 
 from trajectopy.core.alignment.parameters import AlignmentParameters, Parameter
 from trajectopy.core.alignment.result import AlignmentResult
-from trajectopy.core.definitions import Unit
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.definitions import Unit
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.trajectory import Trajectory
 
 
 def generate_noisy_trajectory(num: int) -> Trajectory:

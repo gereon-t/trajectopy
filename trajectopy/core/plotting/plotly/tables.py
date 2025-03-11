@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 
 from trajectopy.core.alignment.parameters import AlignmentParameters
-from trajectopy.core.settings.report import ReportSettings
+from trajectopy.settings import ReportSettings
 
 
 def render_alignment_table(

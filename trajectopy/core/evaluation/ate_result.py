@@ -10,14 +10,14 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-from pointset import PointSet
 
 from trajectopy.core.evaluation.deviations import AbsoluteTrajectoryDeviations
 from trajectopy.core.evaluation.utils import rms
 from trajectopy.core.input_output.header import HeaderData
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.sorting import Sorting
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.sorting import Sorting
+from trajectopy.trajectory import Trajectory
 
 
 class ATEResult:

@@ -42,7 +42,6 @@ dependencies = [
     "numpy>=2.0.2",
     "pandas>=2.2.3",
     "plotly>=5.24.1",
-    "pointset>=0.1.5",
     "pyproj>=3.6.1",
     "rich>=13.9.4",
     "rosbags>=0.9.23",

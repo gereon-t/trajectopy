@@ -9,8 +9,8 @@ import logging
 
 import numpy as np
 
-from trajectopy.core.rotationset import RotationSet
 from trajectopy.core.utils import rndodd
+from trajectopy.rotationset import RotationSet
 
 # logger configuration
 logger = logging.getLogger("root")

@@ -2,9 +2,12 @@ import unittest
 from pathlib import Path
 from test.testdata import generated_trajectory
 
-from trajectopy.core.trajectory import Trajectory
-
-from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
+from trajectopy.gui.models.entries import (
+    AbsoluteDeviationEntry,
+    AlignmentEntry,
+    RelativeDeviationEntry,
+)
+from trajectopy.trajectory import Trajectory
 
 
 class TestIO(unittest.TestCase):

@@ -1,5 +1,5 @@
 """
-spatialsorter 
+Trajectopy - Trajectory Evaluation in Python
 
 Gereon Tombrink, 2025
 tombrink@igg.uni-bonn.de
@@ -15,10 +15,9 @@ import numpy as np
 from scipy.spatial import KDTree
 
 from trajectopy.core.approximation.mls_approximation import mls_iterative
-from trajectopy.core.settings.sorting import SortingSettings
 from trajectopy.core.utils import lengths_from_xyz
+from trajectopy.settings import SortingSettings
 
-# logger configuration
 logger = logging.getLogger("root")
 
 

@@ -10,8 +10,8 @@ from typing import Dict, List, Union
 
 import numpy as np
 
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.settings.comparison import PairDistanceUnit
+from trajectopy.rotationset import RotationSet
+from trajectopy.settings import PairDistanceUnit
 
 
 @dataclass

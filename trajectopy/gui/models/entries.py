@@ -16,8 +16,13 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-import trajectopy.api as tpy
+from trajectopy.core.alignment.parameters import AlignmentParameters
+from trajectopy.core.alignment.result import AlignmentResult
+from trajectopy.core.evaluation.ate_result import ATEResult
+from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.input_output.header import HeaderData
+from trajectopy.settings import AlignmentEstimationSettings, ProcessingSettings
+from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
 
@@ -96,9 +101,9 @@ class TrajectoryEntry(Entry):
     """Class representing a trajectory entry in the trajectory model."""
 
     full_filename: str
-    trajectory: tpy.Trajectory
+    trajectory: Trajectory
     set_as_reference: bool = False
-    settings: tpy.ProcessingSettings = field(default_factory=tpy.ProcessingSettings)
+    settings: ProcessingSettings = field(default_factory=ProcessingSettings)
     group_id: str = field(default_factory=generate_id)
     state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
 
@@ -117,15 +122,15 @@ class TrajectoryEntry(Entry):
     def from_file(cls, trajectory_filename: Path, settings_filename: Path) -> "TrajectoryEntry":
         """Creates a new TrajectoryEntry from a trajectory file and a settings file."""
         header_data = HeaderData.from_file(str(trajectory_filename))
-        trajectory = tpy.Trajectory.from_file(str(trajectory_filename))
+        trajectory = Trajectory.from_file(str(trajectory_filename))
         if settings_filename.is_file():
             logger.info("Using existing settings file: %s", settings_filename)
-            traj_settings = tpy.ProcessingSettings.from_file(str(settings_filename))
+            traj_settings = ProcessingSettings.from_file(str(settings_filename))
         else:
             logger.info(
                 "No settings file found. Settings can be provided by storing a yaml file with the same name in the same directory."
             )
-            traj_settings = tpy.ProcessingSettings()
+            traj_settings = ProcessingSettings()
 
         if trajectory is None:
             raise ValueError(
@@ -257,7 +262,7 @@ class ResultEntry(Entry, ABC):
 class DeviationsEntry(ResultEntry, ABC):
     """Abstract base class for deviation entries in the result model."""
 
-    deviations: Union[tpy.ATEResult, tpy.RPEResult]
+    deviations: Union[ATEResult, RPEResult]
 
     @property
     def name(self) -> str:
@@ -276,7 +281,7 @@ class DeviationsEntry(ResultEntry, ABC):
 class AbsoluteDeviationEntry(DeviationsEntry):
     """Class representing a absolute deviation entry in the result model."""
 
-    deviations: tpy.ATEResult
+    deviations: ATEResult
 
     def __len__(self) -> int:
         return len(self.deviations.abs_dev.pos_dev)
@@ -287,7 +292,7 @@ class AbsoluteDeviationEntry(DeviationsEntry):
 
     @classmethod
     def from_file(cls, filename: str) -> "AbsoluteDeviationEntry":
-        deviations = tpy.ATEResult.from_file(filename)
+        deviations = ATEResult.from_file(filename)
         abs_dev_entry = cls(deviations=deviations)
         abs_dev_entry.set_id(entry_id=HeaderData.from_file(filename).id)
         return abs_dev_entry
@@ -297,7 +302,7 @@ class AbsoluteDeviationEntry(DeviationsEntry):
 class RelativeDeviationEntry(DeviationsEntry):
     """Class representing a relative deviation entry in the result model."""
 
-    deviations: tpy.RPEResult
+    deviations: RPEResult
 
     def __len__(self) -> int:
         return self.deviations.rpe_dev.num_pairs
@@ -308,7 +313,7 @@ class RelativeDeviationEntry(DeviationsEntry):
 
     @classmethod
     def from_file(cls, filename: str) -> "RelativeDeviationEntry":
-        deviations = tpy.RPEResult.from_file(filename)
+        deviations = RPEResult.from_file(filename)
         rel_dev_entry = cls(deviations=deviations)
         rel_dev_entry.set_id(entry_id=HeaderData.from_file(filename).id)
         return rel_dev_entry
@@ -318,7 +323,7 @@ class RelativeDeviationEntry(DeviationsEntry):
 class AlignmentEntry(ResultEntry):
     """Entry storing alignment results."""
 
-    alignment_result: tpy.AlignmentResult = field(default_factory=tpy.AlignmentResult)
+    alignment_result: AlignmentResult = field(default_factory=AlignmentResult)
 
     def __len__(self) -> int:
         return (
@@ -327,11 +332,11 @@ class AlignmentEntry(ResultEntry):
         )
 
     @property
-    def estimated_parameters(self) -> tpy.AlignmentParameters:
+    def estimated_parameters(self) -> AlignmentParameters:
         return self.alignment_result.position_parameters
 
     @property
-    def estimation_of(self) -> tpy.AlignmentEstimationSettings:
+    def estimation_of(self) -> AlignmentEstimationSettings:
         return self.alignment_result.estimation_of
 
     @property
@@ -374,7 +379,7 @@ class AlignmentEntry(ResultEntry):
     @classmethod
     def from_file(cls, filename: str) -> "AlignmentEntry":
         """Creates a new AlignmentEntry from a file."""
-        alignment_result = tpy.AlignmentResult.from_file(filename)
+        alignment_result = AlignmentResult.from_file(filename)
         alignment_entry = cls(alignment_result=alignment_result)
         alignment_entry.set_id(entry_id=HeaderData.from_file(filename).id)
         return alignment_entry

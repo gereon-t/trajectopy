@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from trajectopy.core.settings.base import Settings
+from trajectopy.settings import Settings
 
 
 class SettingsEnum(Enum):

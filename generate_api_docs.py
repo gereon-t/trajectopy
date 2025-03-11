@@ -1,151 +1,91 @@
-import inspect
-
 from lazydocs import MarkdownGenerator
 
 generator = MarkdownGenerator()
 
 
 def create_alignment_docs():
-    import trajectopy.api.alignment
+    import trajectopy.alignment
 
-    imports = [trajectopy.api.estimate_alignment, trajectopy.api.AlignmentResult, trajectopy.api.AlignmentData]
-
-    markdown_docs = ""
-    for obj in imports:
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.alignment, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Alignment.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_evaluation_docs():
-    import trajectopy.api.evaluation
+    import trajectopy.evaluation
 
-    module_attributes = dir(trajectopy.api.evaluation)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.evaluation, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.evaluation, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Evaluation.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_matching_docs():
-    import trajectopy.api.matching
+    import trajectopy.matching
 
-    module_attributes = dir(trajectopy.api.matching)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.matching, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.matching, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Matching.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_merging_docs():
-    import trajectopy.api.merging
+    import trajectopy.merging
 
-    module_attributes = dir(trajectopy.api.merging)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.merging, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.merging, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Merging.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_plotting_docs():
-    import trajectopy.api.plotting
+    import trajectopy.plotting
 
-    module_attributes = dir(trajectopy.api.plotting)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.plotting, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.plotting, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Plotting.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_report_docs():
-    import trajectopy.api.report
+    import trajectopy.report
 
-    module_attributes = dir(trajectopy.api.report)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.report, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.report, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Report.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
-def create_result_docs():
-    import trajectopy.api.result
+def create_ate_result_docs():
+    import trajectopy.core.evaluation.ate_result
 
-    module_attributes = dir(trajectopy.api.result)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.result, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
+    markdown_docs = generator.import2md(trajectopy.core.evaluation.ate_result, depth=2)
 
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    with open("trajectopy-docs/docs/Documentation/ATEResult.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
 
-    with open("trajectopy-docs/docs/Documentation/Result.md", "w", encoding="utf-8") as f:
+
+def create_rpe_result_docs():
+    import trajectopy.core.evaluation.rpe_result
+
+    markdown_docs = generator.import2md(trajectopy.core.evaluation.rpe_result, depth=2)
+
+    with open("trajectopy-docs/docs/Documentation/RPEResult.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_sorting_docs():
-    import trajectopy.api.sorting
+    import trajectopy.sorting
 
-    module_attributes = dir(trajectopy.api.sorting)
-    imports = {
-        name: obj
-        for name, obj in ((attr, getattr(trajectopy.api.sorting, attr)) for attr in module_attributes)
-        if inspect.isfunction(obj) or inspect.isclass(obj)
-    }
-
-    markdown_docs = ""
-    for _, obj in imports.items():
-        markdown_docs += generator.import2md(obj, depth=2)
+    markdown_docs = generator.import2md(trajectopy.sorting, depth=2)
 
     with open("trajectopy-docs/docs/Documentation/Sorting.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_trajectory_docs():
-    from trajectopy.core.trajectory import Trajectory
+    from trajectopy.trajectory import Trajectory
 
     markdown_docs = generator.import2md(Trajectory, depth=2)
     with open("trajectopy-docs/docs/Documentation/Trajectory.md", "w", encoding="utf-8") as f:
@@ -159,7 +99,8 @@ def main():
     create_merging_docs()
     create_plotting_docs()
     create_report_docs()
-    create_result_docs()
+    create_ate_result_docs()
+    create_rpe_result_docs()
     create_sorting_docs()
     create_trajectory_docs()
 

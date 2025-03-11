@@ -4,10 +4,10 @@ from test.util import random_number
 from typing import Any
 
 import numpy as np
-from pointset import PointSet
 
-from trajectopy.core.rotationset import RotationSet
-from trajectopy.core.trajectory import Trajectory
+from trajectopy.pointset import PointSet
+from trajectopy.rotationset import RotationSet
+from trajectopy.trajectory import Trajectory
 
 
 class TestTrajectory(unittest.TestCase):
