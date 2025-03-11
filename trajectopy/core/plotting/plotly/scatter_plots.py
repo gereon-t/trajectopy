@@ -98,16 +98,31 @@ def scatter_plot(
     fig = go.Figure()
 
     plotting_dim = len(report_settings.scatter_axis_order)
+    mean_pos = np.mean(pos, axis=0)
+
     if plotting_dim == 2:
-        fig.add_trace(
-            go.Scattergl(
-                x=pos[:, axes_indices[0]],
-                y=pos[:, axes_indices[1]],
-                mode=report_settings.scatter_mode,
-                marker=marker_dict,
+        if report_settings.scatter_mapbox:
+            fig.add_trace(
+                go.Scattermapbox(
+                    lat=pos[:, axes_indices[0]],
+                    lon=pos[:, axes_indices[1]],
+                    mode=report_settings.scatter_mode,
+                    marker=marker_dict,
+                ),
             )
-        )
+        else:
+            fig.add_trace(
+                go.Scattergl(
+                    x=pos[:, axes_indices[0]],
+                    y=pos[:, axes_indices[1]],
+                    mode=report_settings.scatter_mode,
+                    marker=marker_dict,
+                )
+            )
     elif plotting_dim == 3:
+        if report_settings.scatter_mapbox:
+            logger.warning("Mapbox is not supported for 3D scatter plots.")
+
         fig.add_trace(
             go.Scatter3d(
                 x=pos[:, axes_indices[0]],
@@ -120,11 +135,29 @@ def scatter_plot(
     else:
         raise ValueError(f"Invalid dimension {plotting_dim}.")
 
+    if report_settings.scatter_mapbox_token:
+        mapbox_dict = dict(
+            accesstoken=report_settings.scatter_mapbox_token,
+            bearing=0,
+            center=dict(lat=mean_pos[0], lon=mean_pos[1]),
+            zoom=report_settings.scatter_mapbox_zoom,
+        )
+    else:
+        mapbox_dict = dict(
+            bearing=0,
+            center=dict(lat=mean_pos[0], lon=mean_pos[1]),
+            zoom=report_settings.scatter_mapbox_zoom,
+        )
+
     fig.update_layout(
         xaxis=dict(title=pos_axis_labels[axes_indices[0]]),
         yaxis=dict(title=pos_axis_labels[axes_indices[1]]),
         title=figure_title,
         height=report_settings.single_plot_height,
+        mapbox_style=report_settings.scatter_mapbox_style,
+        mapbox=mapbox_dict,
+        hovermode="closest",
+        autosize=True,
     )
 
     if plotting_dim == 3:

@@ -35,6 +35,9 @@ class ATEReportData:
             self.ate_result.abs_dev.pos_dev *= 1000.0
             self.ate_result.abs_dev.directed_pos_dev *= 1000.0
 
+        if self.settings.scatter_mapbox:
+            self.ate_result.trajectory.pos.to_epsg(4326, inplace=True)
+
     @property
     def short_name(self) -> str:
         return self.ate_result.name.split("vs")[0]
