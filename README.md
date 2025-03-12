@@ -15,6 +15,12 @@
   <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/trajectopy_gif_low_quality.gif">
 </p>
 
+Using [Mapbox](https://www.mapbox.com/), you can visualize your trajectories on a map:
+
+<p align="center">
+  <img style="border-radius: 10px;" src=".images/plot.png">
+</p>
+
 </div>
 
 ## Documentation
