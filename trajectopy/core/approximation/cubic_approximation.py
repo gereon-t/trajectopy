@@ -6,11 +6,11 @@ tombrink@igg.uni-bonn.de
 """
 
 import logging
+from dataclasses import dataclass, field
 from typing import List, Tuple, Union
 
 import numpy as np
-import numpy.matlib as npm
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, lil_matrix
 
 from trajectopy.core.utils import sparse_least_squares
 
@@ -18,19 +18,59 @@ from trajectopy.core.utils import sparse_least_squares
 logger = logging.getLogger("root")
 
 
+@dataclass
+class Interval:
+    start: float
+    end: float
+    values: list[float] = field(default_factory=list)
+
+    def __len__(self) -> int:
+        return len(self.values)
+
+    @property
+    def length(self) -> float:
+        return self.end - self.start
+
+    @property
+    def coefficients(self) -> list[np.ndarray]:
+        return [self._compute_c(v) for v in self.values]
+
+    def _compute_c(self, value: float) -> np.ndarray:
+        """
+        Helper function to compute the coefficients for cubic approximation
+        """
+        relative_length = value - self.start
+        interval_length = self.end - self.start
+        interval_ratio = relative_length / interval_length
+
+        c0 = 1 - 3 * interval_ratio**2 + 2 * interval_ratio**3
+        c1 = relative_length * (1 - 2 * interval_ratio + interval_ratio**2)
+        c2 = 3 * interval_ratio**2 - 2 * interval_ratio**3
+        c3 = relative_length * (interval_ratio**2 - interval_ratio)
+
+        return np.array([c0, c1, c2, c3])
+
+
+class Intervals:
+    def __init__(self):
+        self.intervals: list[Interval] = []
+
+
 class CubicApproximation:
     """
     Class for piecewise cubic approximation
     """
 
-    def __init__(self, function_of: np.ndarray, values: np.ndarray, int_size: float, min_obs: int) -> None:
+    def __init__(
+        self, function_of: np.ndarray, values: np.ndarray, min_win_size: float = 0.25, min_obs: int = 3
+    ) -> None:
         """
         Inititalization of a new CubicApproximation class object
         """
         self.function_of = function_of
         self.values = values
-        self.int_size = int_size
-        self.min_obs = min_obs
+        self.min_win_size = min_win_size
+        self.min_obs = max(3, min_obs)
 
         # fit results
         self.parameters: Union[np.ndarray, None] = None
@@ -75,73 +115,35 @@ class CubicApproximation:
         """
         var_red = self.function_of - self.function_of[0]
 
-        # interval steps
-        interval_steps = np.arange(0, var_red[-1], self.int_size)
+        intervals: list[Interval] = []
+        current_interval_obj = Interval(start=0.0, end=0.0)
 
-        # include endpoint if necessary
-        if interval_steps[-1] != var_red[-1]:
-            interval_steps = np.r_[interval_steps, var_red[-1]]
+        for i, x_value in enumerate(var_red):
+            current_interval_obj.values.append(x_value)
+            current_interval_obj.end = x_value
 
-        # empty list for final interval boundaries
-        t_final = []
-        intervals: List[list] = []
-        coefficients: List[np.ndarray] = []
+            if len(current_interval_obj) >= self.min_obs and current_interval_obj.length > self.min_win_size:
+                intervals.append(current_interval_obj)
+                current_interval_obj = Interval(start=x_value, end=x_value)
 
-        int_list = []
-        int_start_idx = 0
+            if (i == len(var_red) - 1) and (
+                len(current_interval_obj) < self.min_obs or current_interval_obj.length < self.min_win_size
+            ):
+                intervals[-1].end = current_interval_obj.end
+                intervals[-1].values.extend(current_interval_obj.values)
 
-        # go through all trajectory lengths
-        for i, parameters in enumerate(var_red):
-            # compute the current length of the interval
-            int_len = parameters - var_red[int_start_idx]
-            # add current value to the interval
-            int_list.append(parameters)
-
-            # check if it's the last interval
-            last_int = i == len(var_red) - 1
-
-            # if the desired interval length is reached and there are enough observations
-            if (len(int_list) >= self.min_obs and int_len >= self.int_size) or last_int:
-                # if it's the last interval and there are not enough values, merge with the second to last
-                last_too_small = last_int and len(int_list) < self.min_obs
-                if last_too_small:
-                    # extend previous interval
-                    t_start = var_red[int_start_idx - 1]
-                    intervals[-1].extend(int_list)
-                else:
-                    # new interval
-                    t_start = var_red[int_start_idx]
-                    t_final.append(t_start)
-                    intervals.append(int_list)
-
-                # compute coefficients
-                x_a = np.repeat(t_start, len(intervals[-1]))
-                x_e = np.repeat(parameters, len(intervals[-1]))
-                c0, c1, c2, c3 = self._compute_c(intervals[-1], x_a, x_e)
-
-                if last_too_small:
-                    coefficients[-1] = np.c_[c0, c1, c2, c3]
-                else:
-                    coefficients.append(np.c_[c0, c1, c2, c3])
-
-                # reset interval list and start index
-                int_list = []
-
-                int_start_idx = i + 1
-
-        t_final.append(var_red[-1])
-
-        logger.debug(
+        logger.info(
             "Average observation count per interval: %.2f",
             len(var_red) / len(intervals),
         )
 
-        dim = [self.function_of.size, 2 * len(coefficients) + 2]
+        t_final = [0.0] + [interval.end for interval in intervals]
+
         # Design matrix (jacobian)
-        a_design = self._design_matrix(coefficients, dim)
+        a_design = self._design_matrix(intervals)
 
         # least squares
-        logger.debug("Approximation using piece-wise cubic polynomials via least-squares method.")
+        logger.info("Approximation using piece-wise cubic polynomials via least-squares method.")
         xS, lS, residuals = sparse_least_squares(csr_matrix(a_design), self.values[:, None])
 
         # store results
@@ -151,76 +153,42 @@ class CubicApproximation:
         self.interval_steps = t_final + self.function_of[0]
 
     @staticmethod
-    @np.vectorize
-    def _compute_c(location: float, interval_start: float, interval_end: float) -> Tuple[float, float, float, float]:
+    def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, float, float, float]:
         """
         Helper function to compute the coefficients for cubic approximation
         """
-        c0 = (
-            1
-            - 3 * ((location - interval_start) / (interval_end - interval_start)) ** 2
-            + 2 * ((location - interval_start) / (interval_end - interval_start)) ** 3
-        )
+        interval_ratio = relative_length / interval_length
 
-        c1 = (location - interval_start) * (
-            1
-            - 2 * (location - interval_start) / (interval_end - interval_start)
-            + ((location - interval_start) / (interval_end - interval_start)) ** 2
-        )
-
-        c2 = (
-            3 * ((location - interval_start) / (interval_end - interval_start)) ** 2
-            - 2 * ((location - interval_start) / (interval_end - interval_start)) ** 3
-        )
-
-        c3 = (location - interval_start) * (
-            ((location - interval_start) / (interval_end - interval_start)) ** 2
-            - (location - interval_start) / (interval_end - interval_start)
-        )
+        c0 = 1 - 3 * interval_ratio**2 + 2 * interval_ratio**3
+        c1 = relative_length * (1 - 2 * interval_ratio + interval_ratio**2)
+        c2 = 3 * interval_ratio**2 - 2 * interval_ratio**3
+        c3 = relative_length * (interval_ratio**2 - interval_ratio)
 
         return c0, c1, c2, c3
 
-    @staticmethod
-    def _design_matrix(c: List[np.ndarray], dim: List[int]) -> csr_matrix:
-        """
-        Helper function to create the design (jacobian) matrix for least-squares adjustment
-        """
-        # vectorize data
-        c_mat = np.row_stack(c)
-        c_vec = np.reshape(c_mat, (c_mat.size,))
+    def _design_matrix(self, intervals: list[Interval]) -> lil_matrix:
+        rows = len(self.function_of)
+        columns = 2 * len(intervals) + 2
 
-        # column indices
-        # [1,2,3,4;
-        #  1,2,3,4;
-        #    ...
-        #  3,4,5,6;
-        #  3,4,5,6;
-        #    ...
-        # Blocks for intervals
+        a_design = lil_matrix((rows, columns), dtype=float)
 
-        # interval sizes
-        int_sizes = [len(parameters) for parameters in c]
-        # column indicex increase by 2 with each interval
-        col_offs = np.r_[np.arange(0, dim[1] - 4, 2), dim[1] - 4]
-        # offsets are repeated according to interval size
-        col_offs_rep = np.repeat(col_offs, int_sizes).reshape((dim[0], 1))
-        # add offsets to plain [0,1,2,3]
-        col_idx = npm.repmat(np.array([0, 1, 2, 3]), dim[0], 1) + col_offs_rep
-        # vectorize
-        col_idx_vec = np.reshape(col_idx, (col_idx.size,))
+        row_offset = 0
+        for i, interval in enumerate(intervals):
+            matrix = np.array(interval.coefficients)
 
-        # row indices
-        # [0,0,0,0; 1,1,1,1; 2,2,2,2; 3,3,3,3; ...]
-        row_idx = np.repeat(np.arange(0, dim[0], 1), 4)
+            column_start = i * 2
+            column_end = column_start + 4
 
-        # return design matrix
-        return csr_matrix((c_vec, (row_idx, col_idx_vec)))
+            a_design[row_offset : row_offset + len(matrix), column_start:column_end] = matrix
+            row_offset += len(matrix)
+
+        return a_design
 
 
 def piecewise_cubic(
     function_of: np.ndarray,
     values: np.ndarray,
-    int_size: float = 0.15,
+    min_win_size: float = 0.25,
     min_obs: int = 25,
     return_approx_objects: bool = False,
 ) -> Union[Tuple[np.ndarray, List[CubicApproximation]], np.ndarray]:
@@ -239,7 +207,9 @@ def piecewise_cubic(
     """
     # Cubic spline approximation
     # least squares
-    approx_list = [CubicApproximation(function_of, values[:, i], int_size, min_obs) for i in range(values.shape[1])]
+    approx_list = [
+        CubicApproximation(function_of, values[:, i], min_win_size, min_obs) for i in range(values.shape[1])
+    ]
 
     approx_values = np.column_stack([ap.est_obs for ap in approx_list if ap.est_obs is not None])
 

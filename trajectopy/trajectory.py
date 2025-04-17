@@ -844,7 +844,7 @@ class Trajectory:
         xyz_approx = piecewise_cubic(
             function_of=self.function_of,
             values=self.xyz,
-            int_size=approximation_settings.fe_int_size,
+            min_win_size=approximation_settings.fe_int_size,
             min_obs=approximation_settings.fe_min_obs,
         )
 
