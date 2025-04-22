@@ -1,7 +1,7 @@
 import unittest
 from test.testdata import open_loop_trajectory
 from test.util import random_number
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 
@@ -110,7 +110,9 @@ class TestTrajectory(unittest.TestCase):
         target_length = len(trajectory)
         self.check_trajectory_attribute(trajectory.tstamps, target_length=target_length, target_type=np.ndarray)
         self.check_trajectory_attribute(trajectory.pos, target_length=target_length, target_type=PointSet)
-        self.check_trajectory_attribute(trajectory.rot, target_length=target_length, target_type=(RotationSet, None))
+        self.check_trajectory_attribute(
+            trajectory.rot, target_length=target_length, target_type=Union[RotationSet, None]
+        )
         self.check_trajectory_attribute(trajectory.speed, target_length=target_length, target_type=np.ndarray)
         self.check_trajectory_attribute(trajectory.speed_3d, target_length=target_length, target_type=np.ndarray)
         self.check_trajectory_attribute(trajectory.arc_lengths, target_length=target_length, target_type=np.ndarray)

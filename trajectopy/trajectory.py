@@ -676,7 +676,7 @@ class Trajectory:
 
         if traj_self.rot:
             quat_filtered = traj_self.rot.as_quat()[index, :]
-            traj_self.rot = RotationSet.from_quat(quat_filtered)
+            traj_self.rot = RotationSet.from_quat(quat_filtered) if len(quat_filtered) > 0 else None
 
         traj_self.arc_lengths = traj_self.arc_lengths[index]
 
