@@ -45,8 +45,8 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.action_context_menu = QtWidgets.QMenu("Action")
         self.absolute_menu = QtWidgets.QMenu("Absolute", self)
         self.relative_menu = QtWidgets.QMenu("Relative", self)
-        self.least_squares_menu = QtWidgets.QMenu("Least Squares", self)
-        self.align_first_pose_menu = QtWidgets.QMenu("Align First Pose", self)
+        self.least_squares_menu = QtWidgets.QMenu("All Poses", self)
+        self.align_first_pose_menu = QtWidgets.QMenu("First Pose", self)
         self.align_with_reference_sub_menu = QtWidgets.QMenu("Align With Reference", self)
         self._selection: TrajectorySelection
 

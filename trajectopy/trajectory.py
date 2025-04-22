@@ -826,7 +826,7 @@ class Trajectory:
             lap = trajectory.apply_index(np.arange(lap_indices[i], lap_indices[i + 1]), inplace=False)
             laps.append(lap)
 
-        return laps if not return_lap_indices else laps, lap_indices
+        return laps if (not return_lap_indices) else (laps, lap_indices)
 
     def approximate(
         self, approximation_settings: ApproximationSettings = ApproximationSettings(), inplace: bool = True

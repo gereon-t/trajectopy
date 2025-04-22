@@ -480,7 +480,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "Trajectopy - Trajectory Evaluation in Python"))
+        self.setWindowTitle(_translate("MainWindow", "Trajectopy"))
         self.label.setText(_translate("MainWindow", "Trajectories:"))
         self.addTrajectoryButton.setText(_translate("MainWindow", "Add"))
         self.label_2.setText(_translate("MainWindow", "Results:"))
