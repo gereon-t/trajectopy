@@ -844,8 +844,8 @@ class Trajectory:
         xyz_approx = piecewise_cubic(
             function_of=self.function_of,
             values=self.xyz,
-            min_win_size=approximation_settings.fe_int_size,
-            min_obs=approximation_settings.fe_min_obs,
+            min_win_size=approximation_settings.position_interval_size,
+            min_obs=approximation_settings.position_min_observations,
         )
 
         traj_approx = self if inplace else self.copy()
@@ -857,7 +857,7 @@ class Trajectory:
         quat_approx = rot_average_window(
             function_of=self.function_of,
             quat=self.quat,
-            win_size=approximation_settings.rot_approx_win_size,
+            win_size=approximation_settings.rotation_window_size,
         )
         traj_approx.rot = RotationSet.from_quat(quat_approx[self.sort_switching_index, :])
 

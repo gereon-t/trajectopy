@@ -36,7 +36,6 @@ class TestAlignment(unittest.TestCase):
                     time_shift=time_shift_enabled,
                     leverarm=lever_enabled,
                     sensor_rotation=False,
-                    auto_update=False,
                 ),
                 stochastics=AlignmentStochastics(),
             ),

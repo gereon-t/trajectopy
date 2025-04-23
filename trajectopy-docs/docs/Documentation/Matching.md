@@ -62,6 +62,33 @@ This method matches both trajectories spatially by requesting the nearest k posi
 
 ---
 
+### <kbd>function</kbd> `do_overlap`
+
+```python
+do_overlap(
+    traj_test: trajectopy.trajectory.Trajectory,
+    traj_ref: trajectopy.trajectory.Trajectory
+) → bool
+```
+
+Checks if two trajectories overlap 
+
+
+
+**Args:**
+ 
+ - <b>`traj_test`</b> (Trajectory):  Test trajectory 
+ - <b>`traj_ref`</b> (Trajectory):  Reference trajectory 
+
+
+
+**Returns:**
+ 
+ - <b>`bool`</b>:  True if the trajectories overlap, False otherwise 
+
+
+---
+
 ### <kbd>function</kbd> `match_trajectories_interpolation`
 
 ```python

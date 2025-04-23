@@ -41,7 +41,9 @@ from trajectopy.trajectory import Trajectory
 logger = logging.getLogger("root")
 
 
-def plot_trajectories(trajectories: List[Trajectory], dim: int = 2) -> Tuple[Figure, Figure, Union[Figure, None]]:
+def plot_trajectories(
+    trajectories: List[Trajectory], scatter_3d: bool = False
+) -> Tuple[Figure, Figure, Union[Figure, None]]:
     """
     Plots the trajectories in 2d or 3d using matplotlib.
 
@@ -55,7 +57,7 @@ def plot_trajectories(trajectories: List[Trajectory], dim: int = 2) -> Tuple[Fig
     Returns:
         Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
     """
-    fig_pos = plot_pos(trajectories=trajectories, dim=dim)
+    fig_pos = plot_pos(trajectories=trajectories, scatter_3d=scatter_3d)
     fig_xyz = plot_xyz(trajectories=trajectories)
     fig_rpy = plot_rpy(trajectories=trajectories)
     return fig_pos, fig_xyz, fig_rpy
@@ -377,6 +379,7 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
         xyz=ate_result.trajectory.pos.xyz,
         c_list=ate_result.pos_dev_comb * plot_settings.unit_multiplier,
         c_label=f"Deviation {plot_settings.unit_str}",
+        plot_settings=plot_settings,
     )
 
     if not ate_result.has_orientation:
@@ -387,5 +390,6 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
         xyz=ate_result.trajectory.pos.xyz,
         c_list=ate_result.rot_dev_comb * 180 / np.pi,
         c_label="Deviation [°]",
+        plot_settings=plot_settings,
     )
     return pos_fig, rot_fig

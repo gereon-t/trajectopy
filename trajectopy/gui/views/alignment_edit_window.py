@@ -157,22 +157,22 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
         helmert_enabled = self.alignment_entry.estimation_of.helmert_enabled
         leverarm_enabled = self.alignment_entry.estimation_of.leverarm_enabled
         self.trans_x.setChecked(self.alignment_entry.estimated_parameters.sim_trans_x.enabled)
-        self.trans_x.setEnabled(self.alignment_entry.estimation_of.trans_x and helmert_enabled)
+        self.trans_x.setEnabled(self.alignment_entry.estimation_of.translation_x and helmert_enabled)
 
         self.trans_y.setChecked(self.alignment_entry.estimated_parameters.sim_trans_y.enabled)
-        self.trans_y.setEnabled(self.alignment_entry.estimation_of.trans_y and helmert_enabled)
+        self.trans_y.setEnabled(self.alignment_entry.estimation_of.translation_y and helmert_enabled)
 
         self.trans_z.setChecked(self.alignment_entry.estimated_parameters.sim_trans_z.enabled)
-        self.trans_z.setEnabled(self.alignment_entry.estimation_of.trans_z and helmert_enabled)
+        self.trans_z.setEnabled(self.alignment_entry.estimation_of.translation_z and helmert_enabled)
 
         self.rot_x.setChecked(self.alignment_entry.estimated_parameters.sim_rot_x.enabled)
-        self.rot_x.setEnabled(self.alignment_entry.estimation_of.rot_x and helmert_enabled)
+        self.rot_x.setEnabled(self.alignment_entry.estimation_of.rotation_x and helmert_enabled)
 
         self.rot_y.setChecked(self.alignment_entry.estimated_parameters.sim_rot_y.enabled)
-        self.rot_y.setEnabled(self.alignment_entry.estimation_of.rot_y and helmert_enabled)
+        self.rot_y.setEnabled(self.alignment_entry.estimation_of.rotation_y and helmert_enabled)
 
         self.rot_z.setChecked(self.alignment_entry.estimated_parameters.sim_rot_z.enabled)
-        self.rot_z.setEnabled(self.alignment_entry.estimation_of.rot_z and helmert_enabled)
+        self.rot_z.setEnabled(self.alignment_entry.estimation_of.rotation_z and helmert_enabled)
 
         self.scale.setChecked(self.alignment_entry.estimated_parameters.sim_scale.enabled)
         self.scale.setEnabled(self.alignment_entry.estimation_of.scale and helmert_enabled)
@@ -181,13 +181,13 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
         self.time_shift.setEnabled(self.alignment_entry.estimation_of.time_shift_enabled)
 
         self.lever_x.setChecked(self.alignment_entry.estimated_parameters.lever_x.enabled)
-        self.lever_x.setEnabled(self.alignment_entry.estimation_of.lever_x and leverarm_enabled)
+        self.lever_x.setEnabled(self.alignment_entry.estimation_of.leverarm_x and leverarm_enabled)
 
         self.lever_y.setChecked(self.alignment_entry.estimated_parameters.lever_y.enabled)
-        self.lever_y.setEnabled(self.alignment_entry.estimation_of.lever_y and leverarm_enabled)
+        self.lever_y.setEnabled(self.alignment_entry.estimation_of.leverarm_y and leverarm_enabled)
 
         self.lever_z.setChecked(self.alignment_entry.estimated_parameters.lever_z.enabled)
-        self.lever_z.setEnabled(self.alignment_entry.estimation_of.lever_z and leverarm_enabled)
+        self.lever_z.setEnabled(self.alignment_entry.estimation_of.leverarm_z and leverarm_enabled)
 
         self.sensorRot.setChecked(self.alignment_entry.alignment_result.rotation_parameters.any_enabled)
         self.sensorRot.setEnabled(self.alignment_entry.estimation_of.sensor_rotation)

@@ -16,6 +16,7 @@ from matplotlib.colorbar import Colorbar
 
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
+from trajectopy.core.plotting.utils import set_aspect_equal_3d
 from trajectopy.settings import MPLPlotSettings, PairDistanceUnit
 
 logger = logging.getLogger("root")
@@ -222,48 +223,48 @@ def colored_scatter_plot(
     cbar.set_ticks(c_bar_ticks)
     cbar.set_ticklabels(c_bar_ticklabels)
 
-    if plot_settings.scatter_no_axis:
+    if plot_settings.scatter_hide_axes:
         plt.axis("off")
 
 
 def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
     """Configures the colorbar ticks and labels for the scatter plot"""
-    if plot_settings.scatter_max_std == 0:
+    if plot_settings.colorbar_max_std == 0:
         lower_bound = np.min(c_list)
         upper_bound = np.max(c_list)
-        geq_leq_dict = {0: "", plot_settings.scatter_cbar_steps: ""}
+        geq_leq_dict = {0: "", plot_settings.colorbar_steps: ""}
     else:
         lower_bound = np.max(
             [
                 np.min(c_list),
-                np.mean(c_list) - plot_settings.scatter_max_std * np.std(c_list),
+                np.mean(c_list) - plot_settings.colorbar_max_std * np.std(c_list),
             ]
         )
         upper_bound = np.min(
             [
                 np.max(c_list),
-                np.mean(c_list) + plot_settings.scatter_max_std * np.std(c_list),
+                np.mean(c_list) + plot_settings.colorbar_max_std * np.std(c_list),
             ]
         )
-        geq_leq_dict = {0: "$\\leq$", plot_settings.scatter_cbar_steps: "$\\geq$"}
+        geq_leq_dict = {0: "$\\leq$", plot_settings.colorbar_steps: "$\\geq$"}
 
     c_bar_range = np.abs(upper_bound - lower_bound)
 
     c_bar_ticks_and_labels = {
         lower_bound
         + i
-        / plot_settings.scatter_cbar_steps
-        * c_bar_range: f"{geq_leq_dict.get(i, '')}{lower_bound + i/plot_settings.scatter_cbar_steps * c_bar_range:.2f}"
-        for i in range(plot_settings.scatter_cbar_steps + 1)
+        / plot_settings.colorbar_steps
+        * c_bar_range: f"{geq_leq_dict.get(i, '')}{lower_bound + i/plot_settings.colorbar_steps * c_bar_range:.2f}"
+        for i in range(plot_settings.colorbar_steps + 1)
     }
 
     c_list = np.clip(c_list, lower_bound, upper_bound)
 
-    if lower_bound < 0 and upper_bound > 0 and plot_settings.scatter_cbar_show_zero:
+    if lower_bound < 0 and upper_bound > 0 and plot_settings.colorbar_show_zero_crossing:
         c_bar_ticks_and_labels = {
             key: value
             for key, value in c_bar_ticks_and_labels.items()
-            if abs(key) > 0.5 / plot_settings.scatter_cbar_steps * c_bar_range
+            if abs(key) > 0.5 / plot_settings.colorbar_steps * c_bar_range
         }
         c_bar_ticks_and_labels[0] = "0"
 

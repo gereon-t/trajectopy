@@ -162,7 +162,6 @@ class TrajectoryEntry(Entry):
             bool_to_str(self.set_as_reference),
             self.trajectory.sorting.value,
             self.trajectory.pos.epsg,
-            str(self.state),
             self.full_filename,
         )
 

@@ -21,7 +21,7 @@ def render_one_line_trajectory_plots(
     one_line_plots = [
         (
             scatter_plots.render_trajectories_mapbox(trajectories, report_settings)
-            if report_settings.scatter_mapbox
+            if report_settings.scatter_plot_on_map
             else scatter_plots.render_trajectories(trajectories, report_settings)
         )
     ]

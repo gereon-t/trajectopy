@@ -98,26 +98,21 @@ class AlignmentEstimationSettings(Settings):
     during the alignment process
     """
 
-    trans_x: bool = True
-    trans_y: bool = True
-    trans_z: bool = True
-    rot_x: bool = True
-    rot_y: bool = True
-    rot_z: bool = True
+    translation_x: bool = True
+    translation_y: bool = True
+    translation_z: bool = True
+    rotation_x: bool = True
+    rotation_y: bool = True
+    rotation_z: bool = True
     scale: bool = False
 
     time_shift: bool = False
-    use_x_speed: bool = True
-    use_y_speed: bool = True
-    use_z_speed: bool = True
 
-    lever_x: bool = False
-    lever_y: bool = False
-    lever_z: bool = False
+    leverarm_x: bool = False
+    leverarm_y: bool = False
+    leverarm_z: bool = False
 
     sensor_rotation: bool = False
-
-    auto_update: bool = False
 
     def __bool__(self) -> bool:
         return not self.all_lq_disabled
@@ -129,46 +124,37 @@ class AlignmentEstimationSettings(Settings):
         time_shift: bool = False,
         leverarm: bool = False,
         sensor_rotation: bool = False,
-        auto_update: bool = False,
     ) -> "AlignmentEstimationSettings":
         return cls(
-            trans_x=similarity,
-            trans_y=similarity,
-            trans_z=similarity,
-            rot_x=similarity,
-            rot_y=similarity,
-            rot_z=similarity,
+            translation_x=similarity,
+            translation_y=similarity,
+            translation_z=similarity,
+            rotation_x=similarity,
+            rotation_y=similarity,
+            rotation_z=similarity,
             scale=similarity,
             time_shift=time_shift,
-            use_x_speed=time_shift,
-            use_y_speed=time_shift,
-            use_z_speed=time_shift,
-            lever_x=leverarm,
-            lever_y=leverarm,
-            lever_z=leverarm,
+            leverarm_x=leverarm,
+            leverarm_y=leverarm,
+            leverarm_z=leverarm,
             sensor_rotation=sensor_rotation,
-            auto_update=auto_update,
         )
 
     @classmethod
-    def all(cls, sensor_rotation: bool = True, auto_update: bool = False) -> "AlignmentEstimationSettings":
+    def all(cls, sensor_rotation: bool = True) -> "AlignmentEstimationSettings":
         return cls(
-            trans_x=True,
-            trans_y=True,
-            trans_z=True,
-            rot_x=True,
-            rot_y=True,
-            rot_z=True,
+            translation_x=True,
+            translation_y=True,
+            translation_z=True,
+            rotation_x=True,
+            rotation_y=True,
+            rotation_z=True,
             scale=True,
             time_shift=True,
-            use_x_speed=True,
-            use_y_speed=True,
-            use_z_speed=True,
-            lever_x=True,
-            lever_y=True,
-            lever_z=True,
+            leverarm_x=True,
+            leverarm_y=True,
+            leverarm_z=True,
             sensor_rotation=sensor_rotation,
-            auto_update=auto_update,
         )
 
     @classmethod
@@ -179,17 +165,17 @@ class AlignmentEstimationSettings(Settings):
             )
 
         return AlignmentEstimationSettings(
-            trans_x=bool_list[0],
-            trans_y=bool_list[1],
-            trans_z=bool_list[2],
-            rot_x=bool_list[3],
-            rot_y=bool_list[4],
-            rot_z=bool_list[5],
+            translation_x=bool_list[0],
+            translation_y=bool_list[1],
+            translation_z=bool_list[2],
+            rotation_x=bool_list[3],
+            rotation_y=bool_list[4],
+            rotation_z=bool_list[5],
             scale=bool_list[6],
             time_shift=bool_list[7],
-            lever_x=bool_list[8],
-            lever_y=bool_list[9],
-            lever_z=bool_list[10],
+            leverarm_x=bool_list[8],
+            leverarm_y=bool_list[9],
+            leverarm_z=bool_list[10],
             sensor_rotation=any(bool_list[11:]),
         )
 
@@ -211,11 +197,21 @@ class AlignmentEstimationSettings(Settings):
 
     @property
     def helmert_enabled(self) -> bool:
-        return any([self.trans_x, self.trans_y, self.trans_z, self.rot_x, self.rot_y, self.rot_z, self.scale])
+        return any(
+            [
+                self.translation_x,
+                self.translation_y,
+                self.translation_z,
+                self.rotation_x,
+                self.rotation_y,
+                self.rotation_z,
+                self.scale,
+            ]
+        )
 
     @property
     def leverarm_enabled(self) -> bool:
-        return any([self.lever_x, self.lever_y, self.lever_z])
+        return any([self.leverarm_x, self.leverarm_y, self.leverarm_z])
 
     @property
     def time_shift_enabled(self) -> bool:
@@ -245,21 +241,29 @@ class AlignmentEstimationSettings(Settings):
         if not self.time_shift:
             return [False] * 3
 
-        return [self.use_x_speed, self.use_y_speed, self.use_z_speed]
+        return [True] * 3
 
     @property
     def helmert_filter(self) -> List[bool]:
         if not self.helmert_enabled:
             return [False] * 7
 
-        return [self.trans_x, self.trans_y, self.trans_z, self.rot_x, self.rot_y, self.rot_z, self.scale]
+        return [
+            self.translation_x,
+            self.translation_y,
+            self.translation_z,
+            self.rotation_x,
+            self.rotation_y,
+            self.rotation_z,
+            self.scale,
+        ]
 
     @property
     def leverarm_filter(self) -> List[bool]:
         if not self.leverarm_enabled:
             return [False] * 3
 
-        return [self.lever_x, self.lever_y, self.lever_z]
+        return [self.leverarm_x, self.leverarm_y, self.leverarm_z]
 
     @property
     def enabled_lq_parameter_filter(self) -> List[bool]:
@@ -369,9 +373,9 @@ if __name__ == "__main__":
 class ApproximationSettings(Settings):
     """Dataclass defining approximation configuration"""
 
-    fe_int_size: float = 0.15
-    fe_min_obs: int = 25
-    rot_approx_win_size: float = 0.15
+    position_interval_size: float = 0.15
+    position_min_observations: int = 25
+    rotation_window_size: float = 0.15
 
 
 class PairDistanceUnit(Enum):
@@ -492,14 +496,14 @@ if __name__ == "__main__":
 class MPLPlotSettings(Settings):
     """Dataclass defining plot configuration"""
 
-    scatter_cbar_show_zero: bool = True
-    scatter_cbar_steps: int = 4
-    scatter_no_axis: bool = False
-    scatter_max_std: float = 3.0
+    colorbar_show_zero_crossing: bool = True
+    colorbar_steps: int = 4
+    colorbar_max_std: float = 3.0
+    scatter_hide_axes: bool = False
+    scatter_3d: bool = False
     ate_unit_is_mm: bool = False
     hist_as_stairs: bool = False
     directed_ate: bool = False
-    scatter_pos_dim: int = 2
 
     @property
     def unit_multiplier(self) -> float:
@@ -606,7 +610,7 @@ class ReportSettings(Settings):
 
     """
 
-    single_plot_height: int = 640
+    single_plot_height: int = 750
     two_subplots_height: int = 750
     three_subplots_height: int = 860
 
@@ -625,9 +629,9 @@ class ReportSettings(Settings):
     scatter_colorscale: str = "RdYlBu_r"
     scatter_axis_order: str = "xy"
     scatter_marker_size: int = 5
-    scatter_detailed: bool = False
+    scatter_show_individual_dofs: bool = False
 
-    scatter_mapbox: bool = False
+    scatter_plot_on_map: bool = False
     scatter_mapbox_style: str = "open-street-map"
     scatter_mapbox_zoom: int = 15
     scatter_mapbox_token: str = ""
@@ -639,9 +643,9 @@ class ReportSettings(Settings):
     pos_y_unit: str = "m"
     pos_z_unit: str = "m"
 
-    pos_dir_dev_x_name: str = "along"
-    pos_dir_dev_y_name: str = "cross-h"
-    pos_dir_dev_z_name: str = "cross-v"
+    directed_pos_dev_x_name: str = "along"
+    directed_pos_dev_y_name: str = "cross-h"
+    directed_pos_dev_z_name: str = "cross-v"
 
     rot_x_name: str = "roll"
     rot_y_name: str = "pitch"

@@ -40,6 +40,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.pipelines_context_menu = QtWidgets.QMenu("Pipelines")
         self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
         self.match_context_menu = QtWidgets.QMenu("Match With Reference")
+        self.other_context_menu = QtWidgets.QMenu("Other")
         self.view_context_menu = QtWidgets.QMenu("View")
         self.edit_context_menu = QtWidgets.QMenu("Edit")
         self.action_context_menu = QtWidgets.QMenu("Action")
@@ -75,6 +76,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.pipelines_context_menu.clear()
         self.comparison_context_menu.clear()
         self.match_context_menu.clear()
+        self.other_context_menu.clear()
         self.view_context_menu.clear()
         self.edit_context_menu.clear()
         self.action_context_menu.clear()
@@ -251,6 +253,10 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)
 
+        self.action_context_menu.addMenu(self.align_context())
+        self.action_context_menu.addMenu(self.compare_context())
+        self.action_context_menu.addMenu(self.match_context())
+
         change_datum_action = QAction("Transform to EPSG", self)
         change_datum_action.triggered.connect(
             lambda: self.ui_request.emit(
@@ -261,32 +267,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.action_context_menu.addAction(change_datum_action)
-
-        self.action_context_menu.addMenu(self.align_context())
-        self.action_context_menu.addMenu(self.compare_context())
-        self.action_context_menu.addMenu(self.match_context())
-
-        sort_action = QAction("Sort Spatially", self)
-        sort_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.SORT,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.action_context_menu.addAction(sort_action)
-
-        divide_into_laps_action = QAction("Divide into Laps", self)
-        divide_into_laps_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.DIVIDE_INTO_LAPS,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.action_context_menu.addAction(divide_into_laps_action)
 
         approximate_action = QAction("Approximate", self)
         approximate_action.triggered.connect(
@@ -314,16 +294,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.action_context_menu.addAction(apply_alignment_action)
 
-        average_action = QAction("Average", self)
-        average_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.AVERAGE,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.action_context_menu.addAction(average_action)
+        self.action_context_menu.addMenu(self.other_context())
 
         if not self.get_selection().reference_is_set:
             return
@@ -341,6 +312,41 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.action_context_menu.addAction(epsg_to_ref_action)
+
+    def other_context(self) -> QtWidgets.QMenu:
+        sort_action = QAction("Sort Spatially", self)
+        sort_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.SORT,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.other_context_menu.addAction(sort_action)
+
+        divide_into_laps_action = QAction("Divide into Laps", self)
+        divide_into_laps_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.DIVIDE_INTO_LAPS,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.other_context_menu.addAction(divide_into_laps_action)
+
+        average_action = QAction("Average", self)
+        average_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.AVERAGE,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.other_context_menu.addAction(average_action)
+        return self.other_context_menu
 
     def align_context(self) -> QtWidgets.QMenu:
         self.align_with_reference_sub_menu.setEnabled(self.get_selection().reference_is_set)

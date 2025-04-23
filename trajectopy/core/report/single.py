@@ -62,7 +62,7 @@ def render_one_line_deviations_plots(
         )
     )
 
-    if ate_report_data.settings.scatter_detailed:
+    if ate_report_data.settings.scatter_show_individual_dofs:
         one_line_plots.extend(
             (
                 scatter_plots.render_pos_x_devs(ate_report_data),
@@ -77,7 +77,7 @@ def render_one_line_deviations_plots(
     one_line_plots.insert(4, bar_plots.render_rot_bar_plot(ate_report_data))
     one_line_plots.append(line_plots.render_dev_rot_plot(ate_report_data))
 
-    if ate_report_data.settings.scatter_detailed:
+    if ate_report_data.settings.scatter_show_individual_dofs:
         one_line_plots.extend(
             (
                 scatter_plots.render_rot_x_devs(ate_report_data),

@@ -52,9 +52,8 @@ class TrajectoryTableModel(RequestTableModel):
             headers=[
                 "Name",
                 "Reference",
-                "Sort By",
+                "Sorted by",
                 "EPSG",
-                "States",
                 "Filename",
             ],
             REQUEST_MAPPING=REQUEST_MAPPING,

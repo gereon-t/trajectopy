@@ -457,34 +457,34 @@ class AlignmentParameters(ParameterSet):
     @classmethod
     def from_settings(cls, settings: AlignmentEstimationSettings) -> "AlignmentParameters":
         return cls(
-            sim_trans_x=Parameter(enabled=settings.trans_x, value=0.0, default=0.0),
-            sim_trans_y=Parameter(enabled=settings.trans_x, value=0.0, default=0.0),
-            sim_trans_z=Parameter(enabled=settings.trans_x, value=0.0, default=0.0),
-            sim_rot_x=Parameter(enabled=settings.rot_x, value=0.0, default=0.0),
-            sim_rot_y=Parameter(enabled=settings.rot_y, value=0.0, default=0.0),
-            sim_rot_z=Parameter(enabled=settings.rot_z, value=0.0, default=0.0),
+            sim_trans_x=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
+            sim_trans_y=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
+            sim_trans_z=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
+            sim_rot_x=Parameter(enabled=settings.rotation_x, value=0.0, default=0.0),
+            sim_rot_y=Parameter(enabled=settings.rotation_y, value=0.0, default=0.0),
+            sim_rot_z=Parameter(enabled=settings.rotation_z, value=0.0, default=0.0),
             sim_scale=Parameter(enabled=settings.scale, value=1.0, default=1.0),
             time_shift=Parameter(enabled=settings.time_shift, value=0.0, default=0.0),
-            lever_x=Parameter(enabled=settings.lever_x, value=0.0, default=0.0),
-            lever_y=Parameter(enabled=settings.lever_y, value=0.0, default=0.0),
-            lever_z=Parameter(enabled=settings.lever_z, value=0.0, default=0.0),
+            lever_x=Parameter(enabled=settings.leverarm_x, value=0.0, default=0.0),
+            lever_y=Parameter(enabled=settings.leverarm_y, value=0.0, default=0.0),
+            lever_z=Parameter(enabled=settings.leverarm_z, value=0.0, default=0.0),
         )
 
     def apply_settings(self, settings: AlignmentEstimationSettings) -> None:
         """Applies the estimation settings to the parameters by enabling or disabling them"""
-        self.sim_trans_x.enabled = settings.trans_x and settings.helmert_enabled
-        self.sim_trans_y.enabled = settings.trans_y and settings.helmert_enabled
-        self.sim_trans_z.enabled = settings.trans_z and settings.helmert_enabled
-        self.sim_rot_x.enabled = settings.rot_x and settings.helmert_enabled
-        self.sim_rot_y.enabled = settings.rot_y and settings.helmert_enabled
-        self.sim_rot_z.enabled = settings.rot_z and settings.helmert_enabled
+        self.sim_trans_x.enabled = settings.translation_x and settings.helmert_enabled
+        self.sim_trans_y.enabled = settings.translation_y and settings.helmert_enabled
+        self.sim_trans_z.enabled = settings.translation_z and settings.helmert_enabled
+        self.sim_rot_x.enabled = settings.rotation_x and settings.helmert_enabled
+        self.sim_rot_y.enabled = settings.rotation_y and settings.helmert_enabled
+        self.sim_rot_z.enabled = settings.rotation_z and settings.helmert_enabled
         self.sim_scale.enabled = settings.scale and settings.helmert_enabled
 
         self.time_shift.enabled = settings.time_shift_enabled
 
-        self.lever_x.enabled = settings.lever_x and settings.leverarm_enabled
-        self.lever_y.enabled = settings.lever_y and settings.leverarm_enabled
-        self.lever_z.enabled = settings.lever_z and settings.leverarm_enabled
+        self.lever_x.enabled = settings.leverarm_x and settings.leverarm_enabled
+        self.lever_y.enabled = settings.leverarm_y and settings.leverarm_enabled
+        self.lever_z.enabled = settings.leverarm_z and settings.leverarm_enabled
 
     @property
     def helmert(self) -> HelmertTransformation:
@@ -552,17 +552,17 @@ class AlignmentParameters(ParameterSet):
 
     def to_estimation_settings(self) -> AlignmentEstimationSettings:
         return AlignmentEstimationSettings(
-            trans_x=self.sim_trans_x.enabled,
-            trans_y=self.sim_trans_y.enabled,
-            trans_z=self.sim_trans_z.enabled,
-            rot_x=self.sim_rot_x.enabled,
-            rot_y=self.sim_rot_y.enabled,
-            rot_z=self.sim_rot_z.enabled,
+            translation_x=self.sim_trans_x.enabled,
+            translation_y=self.sim_trans_y.enabled,
+            translation_z=self.sim_trans_z.enabled,
+            rotation_x=self.sim_rot_x.enabled,
+            rotation_y=self.sim_rot_y.enabled,
+            rotation_z=self.sim_rot_z.enabled,
             scale=self.sim_scale.enabled,
             time_shift=self.time_shift.enabled,
-            lever_x=self.lever_x.enabled,
-            lever_y=self.lever_y.enabled,
-            lever_z=self.lever_z.enabled,
+            leverarm_x=self.lever_x.enabled,
+            leverarm_y=self.lever_y.enabled,
+            leverarm_z=self.lever_z.enabled,
         )
 
 

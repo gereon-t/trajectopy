@@ -35,7 +35,7 @@ class ATEReportData:
             self.ate_result.abs_dev.pos_dev *= 1000.0
             self.ate_result.abs_dev.directed_pos_dev *= 1000.0
 
-        if self.settings.scatter_mapbox:
+        if self.settings.scatter_plot_on_map:
             self.ate_result.trajectory.pos.to_epsg(4326, inplace=True)
 
     @property
@@ -88,15 +88,15 @@ class ATEReportData:
 
     @property
     def pos_dev_x_name(self) -> str:
-        return self.settings.pos_dir_dev_x_name if self.settings.directed_ate else self.settings.pos_x_name
+        return self.settings.directed_pos_dev_x_name if self.settings.directed_ate else self.settings.pos_x_name
 
     @property
     def pos_dev_y_name(self) -> str:
-        return self.settings.pos_dir_dev_y_name if self.settings.directed_ate else self.settings.pos_y_name
+        return self.settings.directed_pos_dev_y_name if self.settings.directed_ate else self.settings.pos_y_name
 
     @property
     def pos_dev_z_name(self) -> str:
-        return self.settings.pos_dir_dev_z_name if self.settings.directed_ate else self.settings.pos_z_name
+        return self.settings.directed_pos_dev_z_name if self.settings.directed_ate else self.settings.pos_z_name
 
     @cached_property
     def roll(self) -> np.ndarray:

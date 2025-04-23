@@ -16,24 +16,24 @@ from trajectopy.core.plotting.utils import (
     derive_xlabel_from_sortings,
     get_sorting,
     is_all_unix,
+    set_aspect_equal_3d,
 )
 from trajectopy.definitions import DATE_FORMATTER
 from trajectopy.trajectory import Trajectory
 
 
-def plot_pos(trajectories: List[Trajectory], dim: int = 2) -> Figure:
+def plot_pos(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure:
     """Plots xy(z) coordinates of trajectories as 2d or 3d plot"""
     x_label, y_label, z_label = _get_axis_label(trajectories=trajectories)
 
-    if dim == 2:
-        fig_pos, ax_pos = plt.subplots()
-        ax_pos.axis("equal")
-    elif dim == 3:
+    if scatter_3d:
         fig_pos = plt.figure()
         ax_pos = fig_pos.add_subplot(111, projection="3d")
         ax_pos.set_zlabel(z_label)  # type: ignore
     else:
-        raise ValueError(f"Unknown dimension: {dim}")
+        fig_pos, ax_pos = plt.subplots()
+        ax_pos.axis("equal")
+
     ax_pos.set_xlabel(x_label)
     ax_pos.set_ylabel(y_label)
 
@@ -42,13 +42,13 @@ def plot_pos(trajectories: List[Trajectory], dim: int = 2) -> Figure:
         legend_names.append(traj.name)
 
         # pos fig
-        if dim == 2:
-            ax_pos.plot(traj.pos.x, traj.pos.y)
-        elif dim == 3:
+        if scatter_3d:
             ax_pos.plot(traj.pos.x, traj.pos.y, traj.pos.z)
+        else:
+            ax_pos.plot(traj.pos.x, traj.pos.y)
 
-    if dim == 3:
-        _set_aspect_equal_3d(ax_pos)
+    if scatter_3d:
+        set_aspect_equal_3d(ax_pos)
 
     fig_pos.legend(legend_names, ncol=4, loc="upper center")
     return fig_pos
@@ -156,24 +156,3 @@ def plot_rpy(trajectories: List[Trajectory]) -> Union[Figure, None]:
     fig_rpy.legend(legend_names, ncol=4, loc="upper center")
 
     return fig_rpy if not_empty else None
-
-
-def _set_aspect_equal_3d(ax):
-    """
-    https://stackoverflow.com/a/35126679
-    """
-    xlim = ax.get_xlim3d()
-    ylim = ax.get_ylim3d()
-    zlim = ax.get_zlim3d()
-
-    xmean = np.mean(xlim)
-    ymean = np.mean(ylim)
-    zmean = np.mean(zlim)
-
-    plot_radius = max(
-        abs(lim - mean_) for lims, mean_ in ((xlim, xmean), (ylim, ymean), (zlim, zmean)) for lim in lims
-    )
-
-    ax.set_xlim3d([xmean - plot_radius, xmean + plot_radius])
-    ax.set_ylim3d([ymean - plot_radius, ymean + plot_radius])
-    ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])

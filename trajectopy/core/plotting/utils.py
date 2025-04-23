@@ -10,6 +10,8 @@ from datetime import datetime
 from enum import Enum, auto
 from typing import List, Tuple
 
+import numpy as np
+
 from trajectopy.sorting import Sorting
 from trajectopy.trajectory import Trajectory
 
@@ -100,3 +102,24 @@ def get_axis_label(trajectories: List) -> Tuple[str, str, str]:
         f"{y_axis_name} [{unit_name}]",
         f"{z_axis_name} [{z_unit_name}]",
     )
+
+
+def set_aspect_equal_3d(ax):
+    """
+    https://stackoverflow.com/a/35126679
+    """
+    xlim = ax.get_xlim3d()
+    ylim = ax.get_ylim3d()
+    zlim = ax.get_zlim3d()
+
+    xmean = np.mean(xlim)
+    ymean = np.mean(ylim)
+    zmean = np.mean(zlim)
+
+    plot_radius = max(
+        abs(lim - mean_) for lims, mean_ in ((xlim, xmean), (ylim, ymean), (zlim, zmean)) for lim in lims
+    )
+
+    ax.set_xlim3d([xmean - plot_radius, xmean + plot_radius])
+    ax.set_ylim3d([ymean - plot_radius, ymean + plot_radius])
+    ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])

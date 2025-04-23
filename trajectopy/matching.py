@@ -75,6 +75,12 @@ def match_trajectories(
     traj_from = traj_from if inplace else traj_from.copy()
     traj_to = traj_to if inplace else traj_to.copy()
 
+    if not do_overlap(traj_from, traj_to):
+        logger.warning("Trajectories do not overlap! Performing rough matching first.")
+        timeshift = rough_timestamp_matching(traj_ref=traj_to, traj_test=traj_from, max_distance=settings.max_distance)
+        logger.info("Rough matching time offset: %.3f s", timeshift)
+        traj_from.tstamps += timeshift
+
     logger.info("Matching trajectories using method %s", settings.method.name)
 
     if settings.method == MatchingMethod.INTERPOLATION:
@@ -95,6 +101,24 @@ def match_trajectories(
         )
 
     raise ValueError(f"Matching method {settings.method} not supported!")
+
+
+def do_overlap(traj_test: Trajectory, traj_ref: Trajectory) -> bool:
+    """Checks if two trajectories overlap
+
+    Args:
+        traj_test (Trajectory): Test trajectory
+        traj_ref (Trajectory): Reference trajectory
+
+    Returns:
+        bool: True if the trajectories overlap, False otherwise
+    """
+    start_test = traj_test.tstamps[0]
+    end_test = traj_test.tstamps[-1]
+    start_ref = traj_ref.tstamps[0]
+    end_ref = traj_ref.tstamps[-1]
+
+    return (start_test <= end_ref and end_test >= start_ref) or (start_ref <= end_test and end_ref >= start_test)
 
 
 def match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajectory) -> Tuple[Trajectory, Trajectory]:

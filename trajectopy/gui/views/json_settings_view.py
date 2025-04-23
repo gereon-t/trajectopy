@@ -16,6 +16,21 @@ PLOT_MODES = ["lines+markers", "lines", "markers"]
 MATCHING_METHODS = ["nearest_spatial", "nearest_temporal", "interpolation", "nearest_spatial_interpolated"]
 PAIR_DISTANCE_UNITS = ["meter", "second"]
 
+SPECIAL_WORDS = {
+    "mm": "mm",
+    "ate": "ATE",
+    "is": "is",
+    "xy": "XY",
+    "min": "Min.",
+    "max": "Max.",
+    "std": "Std.",
+    "cbar": "Colorbar",
+    "pos": "Position",
+    "rot": "Rotation",
+    "dev": "Deviation",
+    "dofs": "DOFs",
+}
+
 
 class JSONViewer(QtWidgets.QMainWindow):
     def __init__(self, parent, settings: Settings, name: str = "Settings Viewer"):
@@ -183,6 +198,14 @@ class JSONViewer(QtWidgets.QMainWindow):
         return json.dumps(json_content, indent=4)
 
     def populate_form(self, parent_name: str, json_content: Dict[str, Any]):
+        def format_key(key: str) -> str:
+            key_words = key.split("_")
+            formatted_words = []
+            for word in key_words:
+                formatted_words.append(SPECIAL_WORDS.get(word.lower(), word.title()))
+
+            return " ".join(formatted_words)
+
         def pretty_type(type_string: str) -> str:
             return type_string.split("'")[1]
 
@@ -200,7 +223,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
                 group_label.setFont(font)
                 group_label.setObjectName(f"label-{parent_name}-{key}")
-                group_label.setText(_translate("MainWindow", key.replace("_", " ").title()))
+                group_label.setText(_translate("MainWindow", format_key(key)))
                 self.form_layout.setWidget(self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, group_label)
                 self.form_item_cnt += 1
                 self.populate_form(f"{parent_name}-{key}", value)
@@ -211,7 +234,7 @@ class JSONViewer(QtWidgets.QMainWindow):
                     self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, settings_label
                 )
                 settings_label.setText(
-                    _translate("MainWindow", f"{key.replace('_', ' ').title()} ({pretty_type(str(type(value)))})")
+                    _translate("MainWindow", f"{format_key(key)} ({pretty_type(str(type(value)))})")
                 )
 
                 add_settings_field(key, value)

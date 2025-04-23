@@ -38,7 +38,7 @@ from trajectopy.gui.models.entries import (
 )
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.util import show_progress
-from trajectopy.matching import match_trajectories, rough_timestamp_matching
+from trajectopy.matching import match_trajectories
 from trajectopy.merging import average_trajectories, merge_trajectories
 from trajectopy.sorting import Sorting
 
@@ -76,15 +76,10 @@ class TrajectoryManager(QObject):
         TrajectoryManagerRequestType.EPSG_TO_REF: Changes the EPSG code of the selected trajectory to the EPSG code of the reference trajectory.
         TrajectoryManagerRequestType.ALIGN: Aligns the selected trajectory to the reference trajectory.
         TrajectoryManagerRequestType.ADAPT_FIRST_POSE: Adopts the position and orientation of the first pose of the current trajectory to the reference trajectory.
-        TrajectoryManagerRequestType.ADAPT_FIRST_POSITION: Adopts the position of the first pose of the current trajectory to the reference trajectory.
-        TrajectoryManagerRequestType.ADAPT_FIRST_ORIENTATION: Adopts the orientation of the first pose of the current trajectory to the reference trajectory.
         TrajectoryManagerRequestType.APPLY_ALIGNMENT: Applies the selected alignment to the trajectory of the given entry pair.
         TrajectoryManagerRequestType.APPROXIMATE: Approximates the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.COMPARE: Compares the selected trajectory to the reference trajectory.
-        TrajectoryManagerRequestType.INTERPOLATE: Interpolates the trajectory to match the timestamps of the reference trajectory.
         TrajectoryManagerRequestType.MERGE: Merges all selected trajectories into one trajectory.
-        TrajectoryManagerRequestType.INTERSECT: Intersects the trajectory with the reference trajectory, keeping only the poses that have a corresponding pose in the reference trajectory.
-        TrajectoryManagerRequestType.ADAPT_SAMPLING: Combination of intersection and interpolation. After this, the trajectory will be present in the same time intervals as the reference and will have the same sampling. However, this does not mean that they will have exactely the same number of poses.
         TrajectoryManagerRequestType.MATCH_TIMESTAMPS: Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair`. After this, both trajectories will have the same number of poses at the same points in time. This may result in cropping the reference trajectory.
         TrajectoryManagerRequestType.SORT: Sorts the selected trajectory using the settings specified in the entry.
         TrajectoryManagerRequestType.SWITCH_SORTING: Changes the sorting of the trajectory.
@@ -133,16 +128,6 @@ class TrajectoryManager(QObject):
                 inplace=False,
                 apply_to_reference=False,
             ),
-            TrajectoryManagerRequestType.ADAPT_FIRST_POSITION: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adopt_first_position,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.ADAPT_FIRST_ORIENTATION: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adopt_first_orientation,
-                inplace=False,
-                apply_to_reference=False,
-            ),
             TrajectoryManagerRequestType.APPLY_ALIGNMENT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_apply_alignment,
                 inplace=False,
@@ -164,27 +149,7 @@ class TrajectoryManager(QObject):
                 inplace=False,
                 apply_to_reference=False,
             ),
-            TrajectoryManagerRequestType.INTERPOLATE: lambda: self.handle_trajectory_operation(
-                operation=self.operation_interpolate,
-                inplace=False,
-                apply_to_reference=False,
-            ),
             TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
-            TrajectoryManagerRequestType.INTERSECT: lambda: self.handle_trajectory_operation(
-                operation=self.operation_intersect,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.ADAPT_SAMPLING: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adapt_ref_sampling,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.MATCH_TIMESTAMPS: lambda: self.handle_trajectory_operation(
-                operation=self.operation_match_timestamps,
-                inplace=False,
-                apply_to_reference=False,
-            ),
             TrajectoryManagerRequestType.SORT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_sort, inplace=False, apply_to_reference=True
             ),
@@ -381,128 +346,6 @@ class TrajectoryManager(QObject):
         return (entry_pair.entry,)
 
     @staticmethod
-    def operation_intersect(entry_pair: TrajectoryEntryPair) -> Tuple[TrajectoryEntry]:
-        """
-        Intersects the trajectory with the reference trajectory, keeping only the poses that have a corresponding pose
-        in the reference trajectory. The resulting trajectory will not have any poses at timespans where the reference
-        trajectory does not have any poses.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The trajectory entry pair containing the trajectory to be intersected.
-
-        Returns:
-            TrajectoryEntry: The intersected trajectory entry.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory.intersect(reference_entry.trajectory.tstamps),
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_interpolate(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Interpolates the trajectory to match the timestamps of the reference trajectory.
-        The resulting trajectory will have the same number of poses, interpolated at the timestamps
-        of the reference trajectory. However, this is only possible if the reference timestamps do not exceed the
-        timestamps of the trajectory to be interpolated.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The trajectory entry pair containing the trajectory to be interpolated.
-
-        Returns:
-            TrajectoryEntry: The interpolated trajectory entry.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory.interpolate(reference_entry.trajectory.tstamps),
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_adapt_ref_sampling(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """Combination of intersection and interpolation.
-        After this, the trajectory will be present in the
-        same time intervals as the reference and will have
-        the same sampling. However, this does not mean that
-        they will have exactely the same number of poses."""
-
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        resampled_trajectory, _ = entry_pair.entry.trajectory.same_sampling(reference_entry.trajectory)
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=resampled_trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-            ),
-        )
-
-    @staticmethod
-    def operation_match_timestamps(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry, ...]:
-        """
-        Matches the timestamps of the two trajectories in the given `TrajectoryEntryPair`.
-        After this, both trajectories will have the same number of poses at the same
-        points in time. This may result in cropping the reference trajectory.
-
-        Most intrusive time related function which
-        - intersects
-        - interpolates
-        - matches
-        the timestamps
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The trajectory entry pair containing the trajectories to be matched.
-
-        Returns:
-            Tuple[TrajectoryEntry]: A tuple containing the updated trajectory entries for the original and reference trajectories.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        reference_trajectory = reference_entry.trajectory
-        current_trajectory = entry_pair.entry.trajectory
-
-        current_trajectory.same_sampling(reference_trajectory)
-        current_trajectory.match_timestamps(reference_trajectory.tstamps)
-        reference_trajectory.match_timestamps(current_trajectory.tstamps)
-
-        new_ref_trajectory_entry = TrajectoryEntry(
-            full_filename=reference_entry.full_filename,
-            trajectory=reference_trajectory,
-            settings=reference_entry.settings,
-            group_id=reference_entry.group_id,
-        )
-
-        new_trajectory_entry = TrajectoryEntry(
-            full_filename=entry_pair.entry.full_filename,
-            trajectory=current_trajectory,
-            settings=entry_pair.entry.settings,
-            group_id=entry_pair.entry.group_id,
-        )
-        return new_trajectory_entry, new_ref_trajectory_entry
-
-    @staticmethod
     def operation_sort(entry_pair: TrajectoryEntryPair) -> Tuple[TrajectoryEntry]:
         """
         Sorts the selected trajectory using the settings specified in the entry.
@@ -516,6 +359,7 @@ class TrajectoryManager(QObject):
         logger.info("Sorting trajectory ...")
         entry_pair.entry.trajectory.sort_spatially(sorting_settings=entry_pair.entry.settings.sorting)
         entry_pair.entry.state.sorting_known = True
+        entry_pair.entry.trajectory.name += " (sorted)"
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
@@ -571,6 +415,7 @@ class TrajectoryManager(QObject):
         """
         entry_pair.entry.trajectory.approximate(approximation_settings=entry_pair.entry.settings.approximation)
         entry_pair.entry.state.approximated = True
+        entry_pair.entry.trajectory.name += " (approximated)"
         return (
             TrajectoryEntry(
                 full_filename=entry_pair.entry.full_filename,
@@ -747,6 +592,7 @@ class TrajectoryManager(QObject):
 
         traj_aligned = entry_pair.entry.trajectory.apply_alignment(alignment_result=alignment_result, inplace=False)
         entry_pair.entry.state.aligned = True
+        traj_aligned.name += " (aligned)"
 
         return (
             TrajectoryEntry(
@@ -777,6 +623,7 @@ class TrajectoryManager(QObject):
             alignment_result=entry_pair.request.alignment.alignment_result, inplace=False
         )
         entry_pair.entry.state.aligned = True
+        aligned_trajectory.name += " (aligned)"
         new_entry = TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
             trajectory=aligned_trajectory,
@@ -812,6 +659,7 @@ class TrajectoryManager(QObject):
 
         traj_aligned = traj_test.adopt_first_pose(traj_to=traj_ref)
         entry_pair.entry.state.aligned = True
+        traj_aligned.name += " (aligned)"
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,
@@ -824,98 +672,6 @@ class TrajectoryManager(QObject):
             trajectory=traj_ref,
             settings=reference_entry.settings,
             group_id=reference_entry.group_id,
-        )
-
-    @staticmethod
-    def operation_adopt_first_position(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Adopts the position of the first pose of the current trajectory to the reference trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The entry pair containing the current trajectory and the reference
-                trajectory.
-
-        Returns:
-            TrajectoryEntry: A new trajectory entry with the adopted position.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        traj_aligned = entry_pair.entry.trajectory.adopt_first_position(traj_to=reference_entry.trajectory)
-        entry_pair.entry.state.aligned = True
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=traj_aligned,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
-        )
-
-    @staticmethod
-    def operation_adopt_first_orientation(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Adopts the orientation of the first pose of the current trajectory to the reference trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The entry pair containing the current trajectory and the reference
-                trajectory.
-
-        Returns:
-            TrajectoryEntry: A new trajectory entry with the adopted orientation.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        traj_aligned = entry_pair.entry.trajectory.adopt_first_orientation(traj_to=reference_entry.trajectory)
-        entry_pair.entry.state.aligned = True
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=traj_aligned,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
-        )
-
-    @staticmethod
-    def operation_match_timestamps_roughly(
-        entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
-        """
-        Matches the timestamps of the current trajectory roughly to the reference trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The entry pair containing the current trajectory and the reference
-                trajectory.
-        Returns:
-            TrajectoryEntry: A new trajectory entry with the roughly matched timestamps
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        time_delay = rough_timestamp_matching(
-            traj_test=entry_pair.entry.trajectory, traj_ref=reference_entry.trajectory
-        )
-        entry_pair.entry.trajectory.tstamps += time_delay
-        entry_pair.entry.state.matched = True
-
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
         )
 
     @staticmethod
@@ -941,6 +697,9 @@ class TrajectoryManager(QObject):
         )
         reference_entry.state.matched = True
         entry_pair.entry.state.matched = True
+
+        traj_test.name += " (matched)"
+        traj_ref.name += " (matched)"
 
         return TrajectoryEntry(
             full_filename=entry_pair.entry.full_filename,

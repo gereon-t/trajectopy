@@ -101,7 +101,7 @@ def scatter_plot(
     mean_pos = np.mean(pos, axis=0)
 
     if plotting_dim == 2:
-        if report_settings.scatter_mapbox:
+        if report_settings.scatter_plot_on_map:
             fig.add_trace(
                 go.Scattermapbox(
                     lat=pos[:, axes_indices[0]],
@@ -120,7 +120,7 @@ def scatter_plot(
                 )
             )
     elif plotting_dim == 3:
-        if report_settings.scatter_mapbox:
+        if report_settings.scatter_plot_on_map:
             logger.warning("Mapbox is not supported for 3D scatter plots.")
 
         fig.add_trace(

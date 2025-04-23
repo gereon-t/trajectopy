@@ -11,7 +11,7 @@ from typing import List
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtGui, QtWidgets
 
 from trajectopy.core.alignment.parameters import AlignmentParameters
 from trajectopy.core.evaluation.ate_result import ATEResult
@@ -44,18 +44,24 @@ class PlotTabs(QtWidgets.QMainWindow):
 
         if (primary_screen := QtGui.QGuiApplication.primaryScreen()) is not None:
             screen_geometry = primary_screen.availableGeometry()
-            self.resize(screen_geometry.width(), screen_geometry.height() - 50)
+            self.resize(int(screen_geometry.width() * 0.8), int(screen_geometry.height() * 0.8) - 50)
         else:
             logger.warning("Could not determine screen size. Using default size.")
 
-        desired_pos = QtCore.QPoint(screen_geometry.left(), screen_geometry.top())
-        self.move(desired_pos)
+        self.center()
 
         self.canvases: list = []
         self.figure_handles: list = []
         self.toolbar_handles: list = []
         self.tab_handles: list = []
         self.current_window = -1
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def addPlot(self, title: str, figure: Figure):
         """Adds a new tab with a plot"""
@@ -85,7 +91,7 @@ class PlotTabs(QtWidgets.QMainWindow):
             return
 
         self.tabs.clear()
-        fig_pos, fig_xyz, fig_rpy = plot_trajectories(trajectories, dim=mpl_plot_settings.scatter_pos_dim)
+        fig_pos, fig_xyz, fig_rpy = plot_trajectories(trajectories, scatter_3d=mpl_plot_settings.scatter_3d)
         # create tab group
         self.addPlot("Trajectory", fig_pos)
         self.addPlot("XYZ", fig_xyz)

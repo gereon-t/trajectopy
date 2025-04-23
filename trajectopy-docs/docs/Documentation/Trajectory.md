@@ -349,7 +349,7 @@ Applies transformation to trajectory
 
 ```python
 approximate(
-    approximation_settings: trajectopy.settings.ApproximationSettings = ApproximationSettings(fe_int_size=0.15, fe_min_obs=25, rot_approx_win_size=0.15),
+    approximation_settings: trajectopy.settings.ApproximationSettings = ApproximationSettings(position_interval_size=0.15, position_min_observations=25, rotation_window_size=0.15),
     inplace: bool = True
 ) → Trajectory
 ```
