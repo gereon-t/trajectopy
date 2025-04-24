@@ -23,6 +23,20 @@ Using [Mapbox](https://www.mapbox.com/), you can visualize your trajectories on 
 
 </div>
 
+## Installation
+
+Full version (with GUI):
+
+```bash
+pip install "trajectopy[gui]"
+```
+
+Python package only:
+
+```bash
+pip install trajectopy
+```
+
 ## Documentation
 
 <a href="https://gereon-t.github.io/trajectopy/" target="_blank">https://gereon-t.github.io/trajectopy/</a>
