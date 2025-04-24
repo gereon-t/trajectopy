@@ -1,4 +1,4 @@
-#type AlignmentEntry
+#type Alignment
 #name My Custom Alignment
 1.23,True
 4.56,True

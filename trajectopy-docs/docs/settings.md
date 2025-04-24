@@ -22,20 +22,17 @@ Trajectopy offers a range of processing options that can be applied to the impor
 
 ### Estimation Settings
 
-- `trans_x` (boolean): Enable or disable x-translation of the similarity transformation.
-- `trans_y` (boolean): Enable or disable y-translation of the similarity transformation.
-- `trans_z` (boolean): Enable or disable z-translation of the similarity transformation.
-- `rot_x` (boolean): Enable or disable rotation around the X-axis of the similarity transformation.
-- `rot_y` (boolean): Enable or disable rotation around the Y-axis of the similarity transformation.
-- `rot_z` (boolean): Enable or disable rotation around the Z-axis of the similarity transformation.
+- `translation_x` (boolean): Enable or disable x-translation of the similarity transformation.
+- `translation_y` (boolean): Enable or disable y-translation of the similarity transformation.
+- `translation_z` (boolean): Enable or disable z-translation of the similarity transformation.
+- `rotation_x` (boolean): Enable or disable rotation around the X-axis of the similarity transformation.
+- `rotation_y` (boolean): Enable or disable rotation around the Y-axis of the similarity transformation.
+- `rotation_z` (boolean): Enable or disable rotation around the Z-axis of the similarity transformation.
 - `scale` (boolean): Enable or disable scaling of the similarity transformation.
 - `time_shift` (boolean): Enable or disable the estimation of time shift.
-- `use_x_speed` (boolean): Enable or disable the use of X-axis speed for time shift estimation.
-- `use_y_speed` (boolean): Enable or disable the use of Y-axis speed for time shift estimation.
-- `use_z_speed` (boolean): Enable or disable the use of Z-axis speed for time shift estimation.
-- `lever_x` (boolean): Enable or disable estimation of lever arm in the X-axis.
-- `lever_y` (boolean): Enable or disable estimation of lever arm in the Y-axis.
-- `lever_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
+- `leverarm_x` (boolean): Enable or disable estimation of lever arm in the X-axis.
+- `leverarm_y` (boolean): Enable or disable estimation of lever arm in the Y-axis.
+- `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
 - `sensor_rotation` (boolean): Enable or disable estimation of sensor rotation. Independent of the least squares adjustment, a constant rotational offset can be computed between the rotations of both trajectories after the alignment.
 
 ### Stochastics Settings
@@ -149,7 +146,7 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `scatter_colorscale` (str): The colorscale for scatter plots. Default value is "RdYlBu_r".
 - `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
 - `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
-- `scatter_detailed` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
+- `scatter_show_individual_dofs` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
 
 #### ATE Frame Definition
 
@@ -161,7 +158,7 @@ By default, the ATE is split into along-, horizontal-cross- and vertical-cross-t
 
 These settings currently only apply to trajectory only plots without deviations.
 
-- `scatter_mapbox` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
+- `scatter_plot_on_map` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
 - `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".
 - `scatter_mapbox_zoom` (int): The zoom level of the map. Default value is 15.
 - `scatter_mapbox_token` (str): The Mapbox token. Default value is "".
@@ -182,9 +179,9 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `pos_x_unit` (string): Unit for the X-axis position, Default: "m".
 - `pos_y_unit` (string): Unit for the Y-axis position, Default: "m".
 - `pos_z_unit` (string): Unit for the Z-axis position, Default: "m".
-- `pos_dir_dev_x_name` (string): Name for the directed position deviation in along-track direction. Default: "along".
-- `pos_dir_dev_y_name` (string): Name for the directed position deviation in horizontal cross-track direction. Default: "cross-h".
-- `pos_dir_dev_z_name` (string): Name for the directed position deviation in vertical cross-track direction. Default: "cross-v".
+- `directed_pos_dev_x_name` (string): Name for the directed position deviation in along-track direction. Default: "along".
+- `directed_pos_dev_y_name` (string): Name for the directed position deviation in horizontal cross-track direction. Default: "cross-h".
+- `directed_pos_dev_z_name` (string): Name for the directed position deviation in vertical cross-track direction. Default: "cross-v".
 
 ### Rotation Units and Names
 
@@ -210,11 +207,11 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 
 ## Matplotlib Plotting Settings (MPLPlotSettings)
 
-- `scatter_cbar_show_zero` (bool): Indicates whether the colorbar should show zero. Default value is True.
-- `scatter_cbar_steps` (int): The number of steps in the colorbar. Default value is 4.
-- `scatter_no_axis` (bool): Indicates whether the axis should be hidden. Default value is False.
-- `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
+- `colorbar_show_zero_crossing` (bool): Indicates whether the colorbar should show zero. Default value is True.
+- `colorbar_steps` (int): The number of steps in the colorbar. Default value is 4.
+- `scatter_hide_axes` (bool): Indicates whether the axis should be hidden. Default value is False.
+- `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
-- `scatter_pos_dim` (int): The dimension of the position plot. Default value is 2.
+- `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.

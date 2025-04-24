@@ -587,8 +587,8 @@ class ReportSettings(Settings):
     - `scatter_colorscale` (str): The colorscale for scatter plots. Default value is "RdYlBu_r".
     - `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
     - `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
-    - `scatter_detailed` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
-    - `scatter_mapbox` (bool): Indicates whether to use mapbox for scatter plots. Default value is False.
+    - `scatter_show_individual_dofs` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
+    - `scatter_plot_on_map` (bool): Indicates whether to use mapbox for scatter plots. Default value is False.
     - `scatter_mapbox_style` (str): The mapbox style for scatter plots. Default value is "open-street-map".
     - `scatter_mapbox_zoom` (int): The zoom level for scatter plots. Default value is 15.
     - `pos_x_name` (str): The name of the x-coordinate in position data. Default value is "x".
@@ -597,9 +597,9 @@ class ReportSettings(Settings):
     - `pos_x_unit` (str): The unit of the x-coordinate in position data. Default value is "m".
     - `pos_y_unit` (str): The unit of the y-coordinate in position data. Default value is "m".
     - `pos_z_unit` (str): The unit of the z-coordinate in position data. Default value is "m".
-    - `pos_dir_dev_x_name` (str): The name of the along-track direction deviation in position data. Default value is "along".
-    - `pos_dir_dev_y_name` (str): The name of the horizontal-cross-track direction deviation in position data. Default value is "cross-h".
-    - `pos_dir_dev_z_name` (str): The name of the vertical-cross-track direction deviation in position data. Default value is "cross-v".
+    - `directed_pos_dev_x_name` (str): The name of the along-track direction deviation in position data. Default value is "along".
+    - `directed_pos_dev_y_name` (str): The name of the horizontal-cross-track direction deviation in position data. Default value is "cross-h".
+    - `directed_pos_dev_z_name` (str): The name of the vertical-cross-track direction deviation in position data. Default value is "cross-v".
     - `rot_x_name` (str): The name of the roll angle in rotation data. Default value is "roll".
     - `rot_y_name` (str): The name of the pitch angle in rotation data. Default value is "pitch".
     - `rot_z_name` (str): The name of the yaw angle in rotation data. Default value is "yaw".
