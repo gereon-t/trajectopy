@@ -136,6 +136,7 @@ class PlotTabs(QtWidgets.QMainWindow):
 
             if colorbar:
                 colorbar.update_normal(scatter)
+                colorbar.set_label(selected_item.colorbar_label)
             else:
                 colorbar = figure.colorbar(
                     scatter,
