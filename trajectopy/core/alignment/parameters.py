@@ -531,7 +531,9 @@ class AlignmentParameters(ParameterSet):
         dataframe.to_csv(filename, index=False, header=False)
 
     def to_dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame(np.c_[self.values, self.enabled_bool_list, self.covariance_matrix])
+        variances = pd.DataFrame(self.covariance_matrix)
+        parameters = pd.DataFrame({0: self.values, 1: self.enabled_bool_list})
+        return pd.concat([parameters, variances], axis=1)
 
     @classmethod
     def from_file(cls, filename: str) -> "AlignmentParameters":
@@ -546,8 +548,11 @@ class AlignmentParameters(ParameterSet):
         alignment_data = pd.read_csv(filename, comment="#", header=None)
         params: AlignmentParameters = cls()
         params.values = alignment_data.iloc[:11, 0].to_numpy()
-        params.enabled_bool_list = [item != 0.0 for item in alignment_data.iloc[:11, 1].to_list()]
-        params.set_covariance_matrix(alignment_data.iloc[:11, 2:].to_numpy())
+        params.enabled_bool_list = [str(item).lower() != "false" for item in alignment_data.iloc[:11, 1].to_list()]
+
+        if alignment_data.shape[1] > 2:
+            params.set_covariance_matrix(alignment_data.iloc[:11, 2:].to_numpy())
+
         return params
 
     def to_estimation_settings(self) -> AlignmentEstimationSettings:
@@ -618,7 +623,7 @@ class SensorRotationParameters(ParameterSet):
 
         if len(alignment_data) != 14:
             raise ValueError("Alignment file with sensor rotation information must contain 14 lines!")
-        enabled_bool_list = [item != 0.0 for item in alignment_data.iloc[11:, 1].to_list()]
+        enabled_bool_list = [str(item).lower() != "false" for item in alignment_data.iloc[11:, 1].to_list()]
         params: SensorRotationParameters = cls()
         params.values = alignment_data.iloc[11:, 0].to_numpy()
         params.enabled_bool_list = enabled_bool_list
@@ -626,6 +631,6 @@ class SensorRotationParameters(ParameterSet):
 
     def to_file(self, filename: str) -> None:
         with open(filename, mode="a", encoding="utf-8") as file:
-            file.write(f"{self.sensor_rot_x.value},{int(self.sensor_rot_x.enabled)}\n")
-            file.write(f"{self.sensor_rot_y.value},{int(self.sensor_rot_y.enabled)}\n")
-            file.write(f"{self.sensor_rot_z.value},{int(self.sensor_rot_z.enabled)}\n")
+            file.write(f"{self.sensor_rot_x.value},{self.sensor_rot_x.enabled}\n")
+            file.write(f"{self.sensor_rot_y.value},{self.sensor_rot_y.enabled}\n")
+            file.write(f"{self.sensor_rot_z.value},{self.sensor_rot_z.enabled}\n")

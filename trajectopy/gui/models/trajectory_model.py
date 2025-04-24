@@ -52,8 +52,9 @@ class TrajectoryTableModel(RequestTableModel):
             headers=[
                 "Name",
                 "Reference",
-                "Sorted by",
+                "# Poses",
                 "EPSG",
+                "Sorted by",
                 "Filename",
             ],
             REQUEST_MAPPING=REQUEST_MAPPING,
@@ -65,8 +66,8 @@ class TrajectoryTableModel(RequestTableModel):
 
     def export_all(self) -> None:
         for item in self.items:
-            trajectory_filename = os.path.join(self.request.file_path, f"{item.entry_id}.traj")
-            settings_filename = os.path.join(self.request.file_path, f"{item.entry_id}.json")
+            trajectory_filename = os.path.join(self.request.file_path, f"{item.trajectory.name}_{item.entry_id}.traj")
+            settings_filename = os.path.join(self.request.file_path, f"{item.trajectory.name}_{item.entry_id}.json")
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_TRAJ,

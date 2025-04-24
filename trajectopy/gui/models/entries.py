@@ -156,12 +156,13 @@ class TrajectoryEntry(Entry):
         self.trajectory.name = name
 
     @property
-    def column(self) -> Tuple[str, str, str, int, str, str]:
+    def column(self) -> Tuple[str, str, int, str, str, str]:
         return (
             self.name,
             bool_to_str(self.set_as_reference),
-            self.trajectory.sorting.value,
+            len(self.trajectory),
             self.trajectory.pos.epsg,
+            self.trajectory.sorting.value,
             self.full_filename,
         )
 
@@ -242,15 +243,15 @@ class ResultEntry(Entry, ABC):
         """
         header_data = HeaderData.from_file(filename)
 
-        if header_data.type == AbsoluteDeviationEntry.__name__.lower():
+        if header_data.type == "ATE Result".lower():
             logger.info("Detected Absolute Deviations file.")
             return AbsoluteDeviationEntry.from_file(filename)
 
-        if header_data.type == RelativeDeviationEntry.__name__.lower():
+        if header_data.type == "RPE Result".lower():
             logger.info("Detected Relative Deviations file.")
             return RelativeDeviationEntry.from_file(filename)
 
-        if header_data.type == "alignmententry":
+        if header_data.type == "alignment":
             logger.info("Detected Alignment file.")
             return AlignmentEntry.from_file(filename)
 
@@ -282,6 +283,10 @@ class AbsoluteDeviationEntry(DeviationsEntry):
 
     deviations: ATEResult
 
+    @property
+    def type(self) -> str:
+        return "ATE Result"
+
     def __len__(self) -> int:
         return len(self.deviations.abs_dev.pos_dev)
 
@@ -303,6 +308,10 @@ class RelativeDeviationEntry(DeviationsEntry):
 
     deviations: RPEResult
 
+    @property
+    def type(self) -> str:
+        return "RPE Result"
+
     def __len__(self) -> int:
         return self.deviations.rpe_dev.num_pairs
 
@@ -323,6 +332,10 @@ class AlignmentEntry(ResultEntry):
     """Entry storing alignment results."""
 
     alignment_result: AlignmentResult = field(default_factory=AlignmentResult)
+
+    @property
+    def type(self) -> str:
+        return "Alignment"
 
     def __len__(self) -> int:
         return (
@@ -380,7 +393,8 @@ class AlignmentEntry(ResultEntry):
         """Creates a new AlignmentEntry from a file."""
         alignment_result = AlignmentResult.from_file(filename)
         alignment_entry = cls(alignment_result=alignment_result)
-        alignment_entry.set_id(entry_id=HeaderData.from_file(filename).id)
+        entry_id = HeaderData.from_file(filename).id or str(uuid.uuid4())
+        alignment_entry.set_id(entry_id=entry_id)
         return alignment_entry
 
 

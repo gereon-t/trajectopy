@@ -424,7 +424,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # span over whole table width
         header = self.trajectoryTableView.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeMode.Stretch)
 
         self.verticalLayout.addWidget(self.trajectoryTableView)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()

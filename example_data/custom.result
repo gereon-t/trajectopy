@@ -1,0 +1,16 @@
+#type AlignmentEntry
+#name My Custom Alignment
+1.23,True
+4.56,True
+7.89,True
+0.00,True
+0.10,True
+0.20,True
+1.00,False
+0.00,False
+0.00,False
+0.00,False
+0.00,False
+0.00,False
+0.00,False
+0.00,False

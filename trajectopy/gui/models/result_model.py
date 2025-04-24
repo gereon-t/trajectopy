@@ -55,7 +55,7 @@ class ResultTableModel(RequestTableModel):
     def export_all(self) -> None:
         """Exports all results to files named after their entry id."""
         for item in self.items:
-            filename = os.path.join(self.request.file_path, f"{item.entry_id}.result")
+            filename = os.path.join(self.request.file_path, f"{item.name}_{item.entry_id}.result")
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_RES,
