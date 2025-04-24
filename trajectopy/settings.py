@@ -504,6 +504,9 @@ class MPLPlotSettings(Settings):
     ate_unit_is_mm: bool = False
     hist_as_stairs: bool = False
     directed_ate: bool = False
+    dofs_tab: bool = True
+    velocity_tab: bool = True
+    height_tab: bool = True
 
     @property
     def unit_multiplier(self) -> float:

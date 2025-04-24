@@ -215,3 +215,6 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
 - `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
+- `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
+- `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
+- `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.

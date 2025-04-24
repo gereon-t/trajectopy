@@ -180,35 +180,37 @@ class PlotTabs(QtWidgets.QMainWindow):
         if fig_rpy is not None:
             self.add_plot("RPY", fig_rpy)
 
-        self.add_dropdown_plot(
-            name="Velocity",
-            dropdown_items=[
-                PlotableDropdownItem(
-                    name=f"{traj.name} Velocity",
-                    data=traj.pos.xyz,
-                    color_data=traj.speed,
-                    colorbar_label="Velocity [m/s]",
-                    x_label=x_label,
-                    y_label=y_label,
-                )
-                for traj in trajectories
-            ],
-        )
+        if mpl_plot_settings.velocity_tab:
+            self.add_dropdown_plot(
+                name="Velocity",
+                dropdown_items=[
+                    PlotableDropdownItem(
+                        name=f"{traj.name} Velocity",
+                        data=traj.pos.xyz,
+                        color_data=traj.speed,
+                        colorbar_label="Velocity [m/s]",
+                        x_label=x_label,
+                        y_label=y_label,
+                    )
+                    for traj in trajectories
+                ],
+            )
 
-        self.add_dropdown_plot(
-            name="Height",
-            dropdown_items=[
-                PlotableDropdownItem(
-                    name=f"{traj.name} Height",
-                    data=traj.pos.xyz,
-                    color_data=traj.pos.z,
-                    colorbar_label="Height [m]",
-                    x_label=x_label,
-                    y_label=y_label,
-                )
-                for traj in trajectories
-            ],
-        )
+        if mpl_plot_settings.height_tab:
+            self.add_dropdown_plot(
+                name="Height",
+                dropdown_items=[
+                    PlotableDropdownItem(
+                        name=f"{traj.name} Height",
+                        data=traj.pos.xyz,
+                        color_data=traj.pos.z,
+                        colorbar_label="Height [m]",
+                        x_label=x_label,
+                        y_label=y_label,
+                    )
+                    for traj in trajectories
+                ],
+            )
         self.show()
 
     def show_single_deviations(
@@ -254,83 +256,84 @@ class PlotTabs(QtWidgets.QMainWindow):
             if fig_scatter_rot is not None:
                 self.add_plot("ATE Scatter Plot (Rotations)", fig_scatter_rot)
 
-            self.add_dropdown_plot(
-                name="DOFs",
-                dropdown_items=[
-                    PlotableDropdownItem(
-                        name="X",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_x * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Y",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_y * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Z",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_z * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Along-Track",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_along * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Horizontal Cross-Track",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_cross_h * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Vertical Cross-Track",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.pos_dev_cross_v * mpl_plot_settings.unit_multiplier,
-                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Roll",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.rot_dev_x,
-                        colorbar_label="Deviation [°]",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Pitch",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.rot_dev_y,
-                        colorbar_label="Deviation [°]",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                    PlotableDropdownItem(
-                        name="Yaw",
-                        data=ate_result.trajectory.pos.xyz,
-                        color_data=ate_result.rot_dev_z,
-                        colorbar_label="Deviation [°]",
-                        x_label=x_label,
-                        y_label=y_label,
-                    ),
-                ],
-            )
+            if mpl_plot_settings.dofs_tab:
+                self.add_dropdown_plot(
+                    name="DOFs",
+                    dropdown_items=[
+                        PlotableDropdownItem(
+                            name="X",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_x * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Y",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_y * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Z",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_z * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Along-Track",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_along * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Horizontal Cross-Track",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_cross_h * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Vertical Cross-Track",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.pos_dev_cross_v * mpl_plot_settings.unit_multiplier,
+                            colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Roll",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.rot_dev_x,
+                            colorbar_label="Deviation [°]",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Pitch",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.rot_dev_y,
+                            colorbar_label="Deviation [°]",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                        PlotableDropdownItem(
+                            name="Yaw",
+                            data=ate_result.trajectory.pos.xyz,
+                            color_data=ate_result.rot_dev_z,
+                            colorbar_label="Deviation [°]",
+                            x_label=x_label,
+                            y_label=y_label,
+                        ),
+                    ],
+                )
 
         if rpe_result is not None:
             fig_rpe_metric, fig_rpe_time = plot_rpe(rpe_result)
