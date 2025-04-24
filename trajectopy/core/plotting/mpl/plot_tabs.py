@@ -6,8 +6,10 @@ mail@gtombrink.de
 """
 
 import logging
+from dataclasses import dataclass
 from typing import List
 
+import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -16,6 +18,7 @@ from PyQt6 import QtGui, QtWidgets
 from trajectopy.core.alignment.parameters import AlignmentParameters
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
+from trajectopy.core.plotting.utils import get_axis_label
 from trajectopy.plotting import (
     plot_ate,
     plot_ate_bars,
@@ -31,6 +34,18 @@ from trajectopy.settings import MPLPlotSettings
 from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
+
+
+@dataclass
+class PlotableDropdownItem:
+    """Class for dropdown items in the plot tabs"""
+
+    name: str
+    data: np.ndarray
+    color_data: np.ndarray
+    colorbar_label: str
+    x_label: str = "X"
+    y_label: str = "Y"
 
 
 class PlotTabs(QtWidgets.QMainWindow):
@@ -63,7 +78,7 @@ class PlotTabs(QtWidgets.QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def addPlot(self, title: str, figure: Figure):
+    def add_plot(self, title: str, figure: Figure):
         """Adds a new tab with a plot"""
         new_tab = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
@@ -81,6 +96,71 @@ class PlotTabs(QtWidgets.QMainWindow):
         self.figure_handles.append(figure)
         self.tab_handles.append(new_tab)
 
+    def add_dropdown_plot(self, name: str, dropdown_items: List[PlotableDropdownItem]):
+        """
+        Adds a tab with a scatter plot and a dropdown to choose coloring.
+
+        Parameters:
+        - title: Title of the tab
+        - data: Nx2 array (X, Y)
+        - color_options: Dict mapping dropdown option labels to color arrays (length N)
+        """
+        new_tab = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(new_tab)
+        dropdown = QtWidgets.QComboBox()
+        dropdown.addItems(item.name for item in dropdown_items)
+
+        figure = Figure()
+        ax = figure.add_subplot(111)
+        canvas = FigureCanvas(figure)
+        toolbar = NavigationToolbar(canvas, new_tab)
+
+        colorbar = None
+
+        def update_plot(selected_key):
+            nonlocal colorbar
+
+            selected_item = next(item for item in dropdown_items if item.name == selected_key)
+
+            ax.clear()
+            scatter = ax.scatter(
+                selected_item.data[:, 0], selected_item.data[:, 1], c=selected_item.color_data, cmap="RdYlBu_r"
+            )
+
+            ax.set_xlabel(selected_item.x_label)
+            ax.set_ylabel(selected_item.y_label)
+            ax.set_title(selected_key)
+            ax.axis("equal")
+
+            figure.subplots_adjust(right=0.85)
+
+            if colorbar:
+                colorbar.update_normal(scatter)
+            else:
+                colorbar = figure.colorbar(
+                    scatter,
+                    ax=ax,
+                    pad=0.02,
+                    fraction=0.046,
+                    label=selected_item.colorbar_label,
+                )
+
+            canvas.draw()
+
+        dropdown.currentTextChanged.connect(update_plot)
+
+        layout.addWidget(dropdown)
+        layout.addWidget(toolbar)
+        layout.addWidget(canvas)
+
+        self.tabs.addTab(new_tab, name)
+        self.tab_handles.append(new_tab)
+        self.canvases.append(canvas)
+        self.figure_handles.append(figure)
+        self.toolbar_handles.append(toolbar)
+
+        update_plot(dropdown.currentText())
+
     def show_trajectories(
         self, trajectories: List[Trajectory], mpl_plot_settings: MPLPlotSettings = MPLPlotSettings()
     ) -> None:
@@ -90,13 +170,44 @@ class PlotTabs(QtWidgets.QMainWindow):
         if not trajectories:
             return
 
+        x_label, y_label, _ = get_axis_label(trajectories)
         self.tabs.clear()
         fig_pos, fig_xyz, fig_rpy = plot_trajectories(trajectories, scatter_3d=mpl_plot_settings.scatter_3d)
         # create tab group
-        self.addPlot("Trajectory", fig_pos)
-        self.addPlot("XYZ", fig_xyz)
+        self.add_plot("Trajectory", fig_pos)
+        self.add_plot("XYZ", fig_xyz)
         if fig_rpy is not None:
-            self.addPlot("RPY", fig_rpy)
+            self.add_plot("RPY", fig_rpy)
+
+        self.add_dropdown_plot(
+            name="Velocity",
+            dropdown_items=[
+                PlotableDropdownItem(
+                    name=f"{traj.name} Velocity",
+                    data=traj.pos.xyz,
+                    color_data=traj.speed,
+                    colorbar_label="Velocity [m/s]",
+                    x_label=x_label,
+                    y_label=y_label,
+                )
+                for traj in trajectories
+            ],
+        )
+
+        self.add_dropdown_plot(
+            name="Height",
+            dropdown_items=[
+                PlotableDropdownItem(
+                    name=f"{traj.name} Height",
+                    data=traj.pos.xyz,
+                    color_data=traj.pos.z,
+                    colorbar_label="Height [m]",
+                    x_label=x_label,
+                    y_label=y_label,
+                )
+                for traj in trajectories
+            ],
+        )
         self.show()
 
     def show_single_deviations(
@@ -109,6 +220,8 @@ class PlotTabs(QtWidgets.QMainWindow):
         """Plots single trajectory deviations"""
         self.tabs.clear()
 
+        x_label, y_label, _ = get_axis_label([ate_result.trajectory])
+
         if not title:
             if ate_result is not None:
                 title = ate_result.name
@@ -119,34 +232,113 @@ class PlotTabs(QtWidgets.QMainWindow):
 
         if ate_result is not None:
             fig_ate_hist = plot_compact_ate_hist(ate_result=ate_result, plot_settings=mpl_plot_settings)
-            self.addPlot("ATE Histograms", fig_ate_hist)
+            self.add_plot("ATE Histograms", fig_ate_hist)
 
             fig_ate_line = plot_ate(ate_result, plot_settings=mpl_plot_settings)
-            self.addPlot("ATE Line Plot", fig_ate_line)
+            self.add_plot("ATE Line Plot", fig_ate_line)
 
             fig_ate_bars = plot_ate_bars([ate_result], plot_settings=mpl_plot_settings, mode="positions")
-            self.addPlot("ATE Bars (Positions)", fig_ate_bars)
+            self.add_plot("ATE Bars (Positions)", fig_ate_bars)
 
             if ate_result.has_orientation:
                 fig_ate_bars_rot = plot_ate_bars([ate_result], plot_settings=mpl_plot_settings, mode="rotations")
-                self.addPlot("ATE Bars (Rotations)", fig_ate_bars_rot)
+                self.add_plot("ATE Bars (Rotations)", fig_ate_bars_rot)
 
             fig_cdf = plot_ate_edf(ate_result, plot_settings=mpl_plot_settings)
-            self.addPlot("Empirical Distribution Function", fig_cdf)
+            self.add_plot("Empirical Distribution Function", fig_cdf)
 
             fig_scatter_pos, fig_scatter_rot = scatter_ate(ate_result, plot_settings=mpl_plot_settings)
-            self.addPlot("ATE Scatter Plot (Positions)", fig_scatter_pos)
+            self.add_plot("ATE Scatter Plot (Positions)", fig_scatter_pos)
+
             if fig_scatter_rot is not None:
-                self.addPlot("ATE Scatter Plot (Rotations)", fig_scatter_rot)
+                self.add_plot("ATE Scatter Plot (Rotations)", fig_scatter_rot)
+
+            self.add_dropdown_plot(
+                name="DOFs",
+                dropdown_items=[
+                    PlotableDropdownItem(
+                        name="X",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_x * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Y",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_y * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Z",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_z * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Along-Track",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_along * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Horizontal Cross-Track",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_cross_h * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Vertical Cross-Track",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.pos_dev_cross_v * mpl_plot_settings.unit_multiplier,
+                        colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Roll",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.rot_dev_x,
+                        colorbar_label="Deviation [°]",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Pitch",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.rot_dev_y,
+                        colorbar_label="Deviation [°]",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                    PlotableDropdownItem(
+                        name="Yaw",
+                        data=ate_result.trajectory.pos.xyz,
+                        color_data=ate_result.rot_dev_z,
+                        colorbar_label="Deviation [°]",
+                        x_label=x_label,
+                        y_label=y_label,
+                    ),
+                ],
+            )
 
         if rpe_result is not None:
             fig_rpe_metric, fig_rpe_time = plot_rpe(rpe_result)
 
             if fig_rpe_metric is not None:
-                self.addPlot("RPE per meter", fig_rpe_metric)
+                self.add_plot("RPE per meter", fig_rpe_metric)
 
             if fig_rpe_time is not None:
-                self.addPlot("RPE per second", fig_rpe_time)
+                self.add_plot("RPE per second", fig_rpe_time)
 
         self.show()
 
@@ -165,36 +357,36 @@ class PlotTabs(QtWidgets.QMainWindow):
 
         if ate_results:
             fig_ate_line = plot_ate(ate_results, plot_settings=mpl_plot_settings)
-            self.addPlot("ATE Line Plot", fig_ate_line)
+            self.add_plot("ATE Line Plot", fig_ate_line)
 
             fig_ate_bars = plot_ate_bars(ate_results, plot_settings=mpl_plot_settings, mode="positions")
-            self.addPlot("ATE Bars (Positions)", fig_ate_bars)
+            self.add_plot("ATE Bars (Positions)", fig_ate_bars)
 
             ate_results_with_rot = [ate for ate in ate_results if ate.has_orientation]
             if ate_results_with_rot:
                 fig_ate_bars_rot = plot_ate_bars(
                     ate_results_with_rot, plot_settings=mpl_plot_settings, mode="rotations"
                 )
-                self.addPlot("ATE Bars (Rotations)", fig_ate_bars_rot)
+                self.add_plot("ATE Bars (Rotations)", fig_ate_bars_rot)
 
             fig_cdf = plot_ate_edf(ate_results, plot_settings=mpl_plot_settings)
-            self.addPlot("Empirical Distribution Function", fig_cdf)
+            self.add_plot("Empirical Distribution Function", fig_cdf)
 
         if rpe_results:
             fig_rpe_metric, fig_rpe_time = plot_rpe(rpe_results)
 
             if fig_rpe_metric is not None:
-                self.addPlot("RPE per meter", fig_rpe_metric)
+                self.add_plot("RPE per meter", fig_rpe_metric)
 
             if fig_rpe_time is not None:
-                self.addPlot("RPE per second", fig_rpe_time)
+                self.add_plot("RPE per second", fig_rpe_time)
 
         self.show()
 
     def show_alignment_parameters(self, estimated_parameters: AlignmentParameters) -> None:
         self.tabs.clear()
         fig_covariance = plot_covariance_heatmap(estimated_parameters)
-        self.addPlot("Parameter Covariance", fig_covariance)
+        self.add_plot("Parameter Covariance", fig_covariance)
         fig_correlation = plot_correlation_heatmap(estimated_parameters)
-        self.addPlot("Parameter Correlation", fig_correlation)
+        self.add_plot("Parameter Correlation", fig_correlation)
         self.show()

@@ -16,7 +16,6 @@ from matplotlib.colorbar import Colorbar
 
 from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.plotting.utils import set_aspect_equal_3d
 from trajectopy.settings import MPLPlotSettings, PairDistanceUnit
 
 logger = logging.getLogger("root")
@@ -197,6 +196,8 @@ def colored_scatter_plot(
     xyz: np.ndarray,
     c_list: list,
     c_label: str,
+    x_label: str = "x [m]",
+    y_label: str = "y [m]",
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> None:
     """
@@ -204,8 +205,8 @@ def colored_scatter_plot(
     """
     plt.axis("equal")
 
-    plt.xlabel("x [m]")
-    plt.ylabel("y [m]")
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
 
     c_list, lower_bound, upper_bound, c_bar_ticks, c_bar_ticklabels = _setup_cbar_params(c_list, plot_settings)
 

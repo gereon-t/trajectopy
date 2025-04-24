@@ -5,7 +5,7 @@ Gereon Tombrink, 2025
 tombrink@igg.uni-bonn.de
 """
 
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -14,6 +14,7 @@ from matplotlib.figure import Figure
 from trajectopy.core.plotting.utils import (
     TrajectoriesSorting,
     derive_xlabel_from_sortings,
+    get_axis_label,
     get_sorting,
     is_all_unix,
     set_aspect_equal_3d,
@@ -24,7 +25,7 @@ from trajectopy.trajectory import Trajectory
 
 def plot_pos(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure:
     """Plots xy(z) coordinates of trajectories as 2d or 3d plot"""
-    x_label, y_label, z_label = _get_axis_label(trajectories=trajectories)
+    x_label, y_label, z_label = get_axis_label(trajectories=trajectories)
 
     if scatter_3d:
         fig_pos = plt.figure()
@@ -58,7 +59,7 @@ def plot_xyz(trajectories: List[Trajectory]) -> Figure:
     """Plots xyz coordinates of trajectories as subplots"""
     fig_xyz, axs_xyz = plt.subplots(3, 1, sharex=True)
 
-    for ax, label in zip(axs_xyz, _get_axis_label(trajectories=trajectories)):
+    for ax, label in zip(axs_xyz, get_axis_label(trajectories=trajectories)):
         ax.set_ylabel(label)
 
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
@@ -88,37 +89,6 @@ def plot_xyz(trajectories: List[Trajectory]) -> Figure:
 
     fig_xyz.legend(legend_names, ncol=4, loc="upper center")
     return fig_xyz
-
-
-def _get_axis_label(trajectories: List[Trajectory]) -> Tuple[str, str, str]:
-    """Returns the unit of the axis"""
-    if all(traj.pos.epsg == 0 for traj in trajectories):
-        return "x [m]", "y [m]", "z [m]"
-
-    unit_set = {traj.pos.crs.axis_info[0].unit_name if traj.pos.crs else "unknown" for traj in trajectories}
-    unit_name = unit_set.pop().replace("metre", "m").replace("degree", "°")
-
-    # there are multiple units
-    if unit_set:
-        return "x", "y", "z"
-
-    axis_info = trajectories[0].pos.crs.axis_info
-    x_axis_name = axis_info[0].name
-    y_axis_name = axis_info[1].name
-
-    if len(axis_info) > 2:
-        z_axis_name = axis_info[2].name
-        z_unit_name = axis_info[2].unit_name.replace("metre", "m").replace("degree", "°")
-    else:
-        # we assume meters as default
-        z_axis_name = "z"
-        z_unit_name = "m"
-
-    return (
-        f"{x_axis_name} [{unit_name}]",
-        f"{y_axis_name} [{unit_name}]",
-        f"{z_axis_name} [{z_unit_name}]",
-    )
 
 
 def plot_rpy(trajectories: List[Trajectory]) -> Union[Figure, None]:

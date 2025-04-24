@@ -123,3 +123,34 @@ def set_aspect_equal_3d(ax):
     ax.set_xlim3d([xmean - plot_radius, xmean + plot_radius])
     ax.set_ylim3d([ymean - plot_radius, ymean + plot_radius])
     ax.set_zlim3d([zmean - plot_radius, zmean + plot_radius])
+
+
+def get_axis_label(trajectories: List[Trajectory]) -> Tuple[str, str, str]:
+    """Returns the unit of the axis"""
+    if all(traj.pos.epsg == 0 for traj in trajectories):
+        return "x [m]", "y [m]", "z [m]"
+
+    unit_set = {traj.pos.crs.axis_info[0].unit_name if traj.pos.crs else "unknown" for traj in trajectories}
+    unit_name = unit_set.pop().replace("metre", "m").replace("degree", "°")
+
+    # there are multiple units
+    if unit_set:
+        return "x", "y", "z"
+
+    axis_info = trajectories[0].pos.crs.axis_info
+    x_axis_name = axis_info[0].name
+    y_axis_name = axis_info[1].name
+
+    if len(axis_info) > 2:
+        z_axis_name = axis_info[2].name
+        z_unit_name = axis_info[2].unit_name.replace("metre", "m").replace("degree", "°")
+    else:
+        # we assume meters as default
+        z_axis_name = "z"
+        z_unit_name = "m"
+
+    return (
+        f"{x_axis_name} [{unit_name}]",
+        f"{y_axis_name} [{unit_name}]",
+        f"{z_axis_name} [{z_unit_name}]",
+    )
