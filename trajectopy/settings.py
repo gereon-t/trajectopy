@@ -501,6 +501,8 @@ class MPLPlotSettings(Settings):
     colorbar_max_std: float = 3.0
     scatter_hide_axes: bool = False
     scatter_3d: bool = False
+    scatter_smooth: bool = False
+    scatter_smooth_window: int = 5
     ate_unit_is_mm: bool = False
     hist_as_stairs: bool = False
     directed_ate: bool = False

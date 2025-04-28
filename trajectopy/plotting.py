@@ -123,6 +123,53 @@ def plot_covariance_heatmap(estimated_parameters: AlignmentParameters, enabled_o
     return fig
 
 
+def plot_ate_3d(ate_results: List[ATEResult], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
+    """
+    Plots the ATE results in 2D using matplotlib.
+
+    Args:
+        ate_results (List[ATEResult]): List of ATE results.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+
+    Returns:
+        Figure: Figure containing the plot.
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+
+    for ate_result in ate_results:
+        if len(ate_result.trajectory.function_of) == 0:
+            logger.warning("Skipping %s as it has no data", ate_result.name)
+            continue
+        ax.plot(
+            (
+                ate_result.pos_dev_cross_h * plot_settings.unit_multiplier
+                if plot_settings.directed_ate
+                else ate_result.pos_dev_x * plot_settings.unit_multiplier
+            ),
+            (
+                ate_result.pos_dev_along * plot_settings.unit_multiplier
+                if plot_settings.directed_ate
+                else ate_result.pos_dev_y * plot_settings.unit_multiplier
+            ),
+            (
+                ate_result.pos_dev_cross_v * plot_settings.unit_multiplier
+                if plot_settings.directed_ate
+                else ate_result.pos_dev_z * plot_settings.unit_multiplier
+            ),
+            ".",
+            label=ate_result.name,
+        )
+
+    ax.set_xlabel(f"{'Horizontal Cross-Track' if plot_settings.directed_ate else 'X'} {plot_settings.unit_str}")
+    ax.set_ylabel(f"{'Along-Track' if plot_settings.directed_ate else 'Y'} {plot_settings.unit_str}")
+    ax.set_zlabel(f"{'Vertical Cross-Track' if plot_settings.directed_ate else 'Z'} {plot_settings.unit_str}")
+
+    ax.legend()
+    plt.tight_layout()
+    return fig
+
+
 def plot_ate_bars(
     ate_results: List[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),

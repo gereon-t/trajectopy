@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+
 import trajectopy as tpy
 
 
@@ -17,6 +18,7 @@ def main():
     tpy.plot_covariance_heatmap(alignment.position_parameters)
     tpy.plot_correlation_heatmap(alignment.position_parameters)
 
+    tpy.plot_ate_3d([ate_result_orb, ate_result_sptam])
     tpy.plot_compact_ate_hist(ate_result_orb)
     tpy.plot_ate([ate_result_orb, ate_result_sptam])
     tpy.plot_ate_bars([ate_result_orb, ate_result_sptam], mode="positions")

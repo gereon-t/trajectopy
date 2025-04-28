@@ -208,6 +208,11 @@ def colored_scatter_plot(
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
+    if plot_settings.scatter_smooth:
+        c_list = np.convolve(
+            c_list, np.ones(plot_settings.scatter_smooth_window) / plot_settings.scatter_smooth_window, mode="same"
+        )
+
     c_list, lower_bound, upper_bound, c_bar_ticks, c_bar_ticklabels = _setup_cbar_params(c_list, plot_settings)
 
     sc = plt.scatter(

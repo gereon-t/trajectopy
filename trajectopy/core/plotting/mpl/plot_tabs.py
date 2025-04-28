@@ -21,6 +21,7 @@ from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.core.plotting.utils import get_axis_label
 from trajectopy.plotting import (
     plot_ate,
+    plot_ate_3d,
     plot_ate_bars,
     plot_ate_edf,
     plot_compact_ate_hist,
@@ -46,6 +47,8 @@ class PlotableDropdownItem:
     colorbar_label: str
     x_label: str = "X"
     y_label: str = "Y"
+    smooth: bool = False
+    smooth_window: int = 5
 
 
 class PlotTabs(QtWidgets.QMainWindow):
@@ -121,11 +124,16 @@ class PlotTabs(QtWidgets.QMainWindow):
             nonlocal colorbar
 
             selected_item = next(item for item in dropdown_items if item.name == selected_key)
+            c_list = selected_item.color_data
+            if selected_item.smooth:
+                c_list = np.convolve(
+                    c_list,
+                    np.ones(selected_item.smooth_window) / selected_item.smooth_window,
+                    mode="same",
+                )
 
             ax.clear()
-            scatter = ax.scatter(
-                selected_item.data[:, 0], selected_item.data[:, 1], c=selected_item.color_data, cmap="RdYlBu_r"
-            )
+            scatter = ax.scatter(selected_item.data[:, 0], selected_item.data[:, 1], c=c_list, cmap="RdYlBu_r")
 
             ax.set_xlabel(selected_item.x_label)
             ax.set_ylabel(selected_item.y_label)
@@ -191,6 +199,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                         colorbar_label="Velocity [m/s]",
                         x_label=x_label,
                         y_label=y_label,
+                        smooth=mpl_plot_settings.scatter_smooth,
+                        smooth_window=mpl_plot_settings.scatter_smooth_window,
                     )
                     for traj in trajectories
                 ],
@@ -207,6 +217,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                         colorbar_label="Height [m]",
                         x_label=x_label,
                         y_label=y_label,
+                        smooth=mpl_plot_settings.scatter_smooth,
+                        smooth_window=mpl_plot_settings.scatter_smooth_window,
                     )
                     for traj in trajectories
                 ],
@@ -243,6 +255,9 @@ class PlotTabs(QtWidgets.QMainWindow):
             fig_ate_bars = plot_ate_bars([ate_result], plot_settings=mpl_plot_settings, mode="positions")
             self.add_plot("ATE Bars (Positions)", fig_ate_bars)
 
+            fig_ate_3d = plot_ate_3d([ate_result], plot_settings=mpl_plot_settings)
+            self.add_plot("ATE 3D Plot", fig_ate_3d)
+
             if ate_result.has_orientation:
                 fig_ate_bars_rot = plot_ate_bars([ate_result], plot_settings=mpl_plot_settings, mode="rotations")
                 self.add_plot("ATE Bars (Rotations)", fig_ate_bars_rot)
@@ -267,6 +282,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Y",
@@ -275,6 +292,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Z",
@@ -283,6 +302,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Along-Track",
@@ -291,6 +312,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Horizontal Cross-Track",
@@ -299,6 +322,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Vertical Cross-Track",
@@ -307,6 +332,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Roll",
@@ -315,6 +342,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Pitch",
@@ -323,6 +352,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                         PlotableDropdownItem(
                             name="Yaw",
@@ -331,6 +362,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
+                            smooth=mpl_plot_settings.scatter_smooth,
+                            smooth_window=mpl_plot_settings.scatter_smooth_window,
                         ),
                     ],
                 )
@@ -365,6 +398,9 @@ class PlotTabs(QtWidgets.QMainWindow):
 
             fig_ate_bars = plot_ate_bars(ate_results, plot_settings=mpl_plot_settings, mode="positions")
             self.add_plot("ATE Bars (Positions)", fig_ate_bars)
+
+            fig_ate_3d = plot_ate_3d(ate_results, plot_settings=mpl_plot_settings)
+            self.add_plot("ATE 3D Plot", fig_ate_3d)
 
             ate_results_with_rot = [ate for ate in ate_results if ate.has_orientation]
             if ate_results_with_rot:
