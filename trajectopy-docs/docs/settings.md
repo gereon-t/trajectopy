@@ -210,6 +210,8 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `colorbar_show_zero_crossing` (bool): Indicates whether the colorbar should show zero. Default value is True.
 - `colorbar_steps` (int): The number of steps in the colorbar. Default value is 4.
 - `scatter_hide_axes` (bool): Indicates whether the axis should be hidden. Default value is False.
+- `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
+- `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
 - `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
