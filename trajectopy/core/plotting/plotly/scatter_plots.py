@@ -178,11 +178,51 @@ def scatter_plot(
     return plot(fig, output_type="div", config=report_settings.single_plot_export.to_config())
 
 
+def render_ate_3d_plot(report_data: ATEReportData) -> str:
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter3d(
+            x=report_data.ate_result.pos_dev_x,
+            y=report_data.ate_result.pos_dev_y,
+            z=report_data.ate_result.pos_dev_z,
+            mode=report_data.settings.scatter_mode,
+            marker=dict(size=report_data.settings.scatter_marker_size),
+        )
+    )
+
+    fig.update_layout(
+        title="ATE 3D Plot",
+        height=report_data.settings.single_plot_height,
+        hovermode="closest",
+        autosize=True,
+        scene=dict(
+            aspectmode="data",
+            xaxis=dict(title=f"{report_data.pos_dev_x_name} [{report_data.ate_unit}]"),
+            yaxis=dict(title=f"{report_data.pos_dev_y_name} [{report_data.ate_unit}]"),
+            zaxis=dict(title=f"{report_data.pos_dev_z_name} [{report_data.ate_unit}]"),
+        ),
+    )
+
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1,
+    )
+
+    return plot(fig, output_type="div", config=report_data.settings.single_plot_export.to_config())
+
+
 def get_marker_dict(
     report_settings: ReportSettings, colorbar_title: str = "", colors: Union[np.ndarray, None] = None
 ) -> dict:
     if colors is None:
         return dict(size=report_settings.scatter_marker_size)
+
+    if report_settings.scatter_smooth:
+        colors = np.convolve(
+            colors, np.ones(report_settings.scatter_smooth_window) / report_settings.scatter_smooth_window, mode="same"
+        )
+
     cbar_min = min(colors)
     cbar_max = min(np.max(colors), cbar_min + np.std(colors) * report_settings.scatter_max_std)
     return dict(

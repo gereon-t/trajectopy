@@ -56,6 +56,7 @@ def render_one_line_deviations_plots(
         (
             histograms.render_pos_devs(ate_report_data),
             bar_plots.render_pos_bar_plot(ate_report_data),
+            scatter_plots.render_ate_3d_plot(ate_report_data),
             line_plots.render_dev_edf(ate_report_data),
             line_plots.render_dev_comb_plot(ate_report_data),
             line_plots.render_dev_pos_plot(ate_report_data),

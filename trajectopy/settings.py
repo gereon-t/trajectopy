@@ -635,6 +635,8 @@ class ReportSettings(Settings):
     scatter_axis_order: str = "xy"
     scatter_marker_size: int = 5
     scatter_show_individual_dofs: bool = False
+    scatter_smooth: bool = False
+    scatter_smooth_window: int = 5
 
     scatter_plot_on_map: bool = False
     scatter_mapbox_style: str = "open-street-map"
