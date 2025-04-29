@@ -235,7 +235,7 @@ def colored_scatter_plot(
 
 def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
     """Configures the colorbar ticks and labels for the scatter plot"""
-    if plot_settings.colorbar_max_std == 0:
+    if plot_settings.colorbar_max_std <= 0:
         lower_bound = np.min(c_list)
         upper_bound = np.max(c_list)
         geq_leq_dict = {0: "", plot_settings.colorbar_steps: ""}

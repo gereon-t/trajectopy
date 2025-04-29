@@ -338,7 +338,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         PlotableDropdownItem(
                             name="Roll",
                             data=ate_result.trajectory.pos.xyz,
-                            color_data=ate_result.rot_dev_x,
+                            color_data=np.rad2deg(ate_result.rot_dev_x),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
@@ -348,7 +348,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         PlotableDropdownItem(
                             name="Pitch",
                             data=ate_result.trajectory.pos.xyz,
-                            color_data=ate_result.rot_dev_y,
+                            color_data=np.rad2deg(ate_result.rot_dev_y),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
@@ -358,7 +358,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         PlotableDropdownItem(
                             name="Yaw",
                             data=ate_result.trajectory.pos.xyz,
-                            color_data=ate_result.rot_dev_z,
+                            color_data=np.rad2deg(ate_result.rot_dev_z),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
                             y_label=y_label,
