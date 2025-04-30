@@ -29,6 +29,8 @@ SPECIAL_WORDS = {
     "rot": "Rotation",
     "dev": "Deviation",
     "dofs": "DOFs",
+    "hist": "Histogram",
+    "as": "as",
 }
 
 
