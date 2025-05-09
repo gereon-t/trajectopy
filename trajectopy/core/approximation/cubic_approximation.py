@@ -100,7 +100,10 @@ class CubicApproximation:
         int_start = self.interval_steps[interval_indices - 1]
         int_end = self.interval_steps[interval_indices]
 
-        c0, c1, c2, c3 = self._compute_c(locations, int_start, int_end)
+        relative_length = locations - int_start
+        interval_length = int_end - int_start
+
+        c0, c1, c2, c3 = self._compute_c(relative_length, interval_length)
 
         return (
             f_vals[interval_indices - 1] * c0
