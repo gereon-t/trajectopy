@@ -210,7 +210,7 @@ def parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_
 
     datetime_strings = np.apply_along_axis(concatenate_strings, 1, trajectory_data[:, time_columns])
 
-    ts_datetime = pd.to_datetime(datetime_strings, format=header_data.datetime_format)
+    ts_datetime = pd.to_datetime(datetime_strings, format=header_data.datetime_format, utc=True)
 
     if header_data.datetime_timezone.upper() == "GPS":
         ts_datetime -= pd.Timedelta(seconds=GPS_LEAP_SECONDS)
