@@ -219,7 +219,7 @@ def parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_
     else:
         time_zone = header_data.datetime_timezone
 
-    ts_datetime = pd.DatetimeIndex(ts_datetime).tz_localize(tz=time_zone)
+    ts_datetime = pd.DatetimeIndex(ts_datetime).tz_convert(tz=time_zone)
     logger.info("Timezone: %s", time_zone)
 
     return np.array([dt_i.timestamp() for dt_i in ts_datetime])
