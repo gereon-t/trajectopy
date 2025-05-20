@@ -70,7 +70,7 @@ def plot_position_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPL
     deviations_xa = devs.abs_dev.directed_pos_dev[:, 0] if plot_settings.directed_ate else devs.abs_dev.pos_dev[:, 0]
     deviations_yh = devs.abs_dev.directed_pos_dev[:, 1] if plot_settings.directed_ate else devs.abs_dev.pos_dev[:, 1]
     deviations_zv = devs.abs_dev.directed_pos_dev[:, 2] if plot_settings.directed_ate else devs.abs_dev.pos_dev[:, 2]
-    labels = ["vertical", "horizontal", "along"] if plot_settings.directed_ate else ["x", "y", "z"]
+    labels = ["vertical", "horizontal", "along"] if plot_settings.directed_ate else ["z", "y", "x"]
 
     plt.xlabel(plot_settings.unit_str)
     plt.ylabel("counts")
