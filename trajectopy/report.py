@@ -90,8 +90,8 @@ def create_trajectory_report(
 
 
 def create_deviation_report(
-    ate_result: Union[ATEResult, list[ATEResult]],
-    rpe_result: Union[RPEResult, list[RPEResult], None],
+    ate_result: Union[ATEResult, List[ATEResult]],
+    rpe_result: Union[RPEResult, List[RPEResult], None],
     report_settings: ReportSettings = ReportSettings(),
 ):
     """

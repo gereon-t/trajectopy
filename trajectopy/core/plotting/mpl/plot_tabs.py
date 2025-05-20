@@ -235,8 +235,6 @@ class PlotTabs(QtWidgets.QMainWindow):
         """Plots single trajectory deviations"""
         self.tabs.clear()
 
-        x_label, y_label, _ = get_axis_label([ate_result.trajectory])
-
         if not title:
             if ate_result is not None:
                 title = ate_result.name
@@ -246,6 +244,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                 title = "Deviations"
 
         if ate_result is not None:
+            x_label, y_label, _ = get_axis_label([ate_result.trajectory])
             fig_ate_hist = plot_compact_ate_hist(ate_result=ate_result, plot_settings=mpl_plot_settings)
             self.add_plot("ATE Histograms", fig_ate_hist)
 
@@ -381,8 +380,8 @@ class PlotTabs(QtWidgets.QMainWindow):
 
     def show_multiple_deviations(
         self,
-        ate_results: list[ATEResult],
-        rpe_results: list[RPEResult],
+        ate_results: List[ATEResult],
+        rpe_results: List[RPEResult],
         mpl_plot_settings: MPLPlotSettings = MPLPlotSettings(),
         title: str = "",
     ) -> None:

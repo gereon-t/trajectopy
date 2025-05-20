@@ -35,15 +35,15 @@ keywords = ["trajectory", "evaluation", "alignment", "similarity", "leverarm", "
 dynamic = ["version"]
 readme = "README.md"
 dependencies = [
-    "autograd>=1.7.0",
-    "jinja2>=3.1.5",
+    "autograd>=1.8.0",
+    "jinja2>=3.1.6",
     "matplotlib>=3.9.4",
     "networkx>=3.2.1",
     "numpy>=2.0.2",
     "pandas>=2.2.3",
-    "plotly>=5.24.1",
+    "plotly>=6.1.0",
     "pyproj>=3.6.1",
-    "rich>=13.9.4",
+    "rich>=14.0.0",
     "rosbags>=0.9.23",
     "scipy>=1.13.1",
 ]
@@ -64,9 +64,9 @@ trajectopy = "trajectopy.__main__:main"
 [dependency-groups]
 dev = [
     "lazydocs>=0.4.8",
-    "mkdocs-material>=9.5.49",
-    "pillow>=11.1.0",
-    "pre-commit>=4.0.1",
-    "pyinstaller>=6.11.1",
-    "python-markdown-math>=0.8",
+    "mkdocs-material>=9.6.14",
+    "pillow>=11.2.1",
+    "pre-commit>=4.2.0",
+    "pyinstaller>=6.13.0",
+    "python-markdown-math>=0.9",
 ]

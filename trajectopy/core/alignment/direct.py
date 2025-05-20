@@ -65,9 +65,11 @@ def direct_helmert_transformation(
     )
     estimated_translation = weighted_centroid_to - estimated_scale * estimated_rotation @ weighted_centroid_from
 
-    yaw = np.atan2(estimated_rotation[1, 0], estimated_rotation[0, 0])
-    pitch = np.atan2(-estimated_rotation[2, 0], np.sqrt(estimated_rotation[2, 1] ** 2 + estimated_rotation[2, 2] ** 2))
-    roll = np.atan2(estimated_rotation[2, 1], estimated_rotation[2, 2])
+    yaw = np.arctan2(estimated_rotation[1, 0], estimated_rotation[0, 0])
+    pitch = np.arctan2(
+        -estimated_rotation[2, 0], np.sqrt(estimated_rotation[2, 1] ** 2 + estimated_rotation[2, 2] ** 2)
+    )
+    roll = np.arctan2(estimated_rotation[2, 1], estimated_rotation[2, 2])
     return HelmertTransformation(
         trans_x=Parameter(value=estimated_translation[0], name="Translation x", unit=Unit.METER),
         trans_y=Parameter(value=estimated_translation[1], name="Translation y", unit=Unit.METER),

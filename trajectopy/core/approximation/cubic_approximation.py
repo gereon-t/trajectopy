@@ -22,7 +22,7 @@ logger = logging.getLogger("root")
 class Interval:
     start: float
     end: float
-    values: list[float] = field(default_factory=list)
+    values: List[float] = field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self.values)
@@ -32,7 +32,7 @@ class Interval:
         return self.end - self.start
 
     @property
-    def coefficients(self) -> list[np.ndarray]:
+    def coefficients(self) -> List[np.ndarray]:
         return [self._compute_c(v) for v in self.values]
 
     def _compute_c(self, value: float) -> np.ndarray:
@@ -169,7 +169,7 @@ class CubicApproximation:
 
         return c0, c1, c2, c3
 
-    def _design_matrix(self, intervals: list[Interval]) -> lil_matrix:
+    def _design_matrix(self, intervals: List[Interval]) -> lil_matrix:
         rows = len(self.function_of)
         columns = 2 * len(intervals) + 2
 
