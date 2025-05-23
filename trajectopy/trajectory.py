@@ -726,7 +726,7 @@ class Trajectory:
                     alignment_parameters.lever_z.value,
                 )
             else:
-                logger.error("Trajectory has no orientations. Cannot apply leverarm.")
+                logger.warning("Trajectory has no orientations. Cannot apply leverarm.")
                 euler_x, euler_y, euler_z = 0, 0, 0
                 lever_x, lever_y, lever_z = 0, 0, 0
 
