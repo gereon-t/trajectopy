@@ -1,15 +1,4 @@
-import logging
-
-from rich.logging import RichHandler
-
-logging.basicConfig(
-    format="%(message)s",
-    level=logging.INFO,
-    handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
-)
-
-
-__version__ = "3.0.5"
+__version__ = "3.0.6"
 
 
 from trajectopy.alignment import *
