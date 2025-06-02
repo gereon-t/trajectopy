@@ -183,24 +183,20 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.edit_context_menu.addAction(merge_action)
 
-        if not self.get_selection().entries[0].state.sorting_known:
-            return
-
-        switch_sorting_action = QAction("Switch Sorting", self)
-        switch_sorting_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.SWITCH_SORTING,
-                    selection=self.get_selection(),
+        if self.get_selection().entries[0].state.sorting_known:
+            switch_sorting_action = QAction("Switch Sorting", self)
+            switch_sorting_action.triggered.connect(
+                lambda: self.trajectory_manager_request.emit(
+                    TrajectoryManagerRequest(
+                        type=TrajectoryManagerRequestType.SWITCH_SORTING,
+                        selection=self.get_selection(),
+                    )
                 )
             )
-        )
-        self.edit_context_menu.addAction(switch_sorting_action)
+            self.edit_context_menu.addAction(switch_sorting_action)
 
-        if not single_selection:
-            return
-
-        self.edit_single()
+        if single_selection:
+            self.edit_single()
 
     def edit_single(self):
         rename_action = QAction("Rename", self)
