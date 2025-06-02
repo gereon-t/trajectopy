@@ -110,6 +110,10 @@ class Trajectory:
         # pose
         self.pos = pos
         self.rot = rot
+
+        if not isinstance(tstamps, np.ndarray):
+            tstamps = np.array(tstamps) if tstamps is not None else None
+
         self.tstamps = np.arange(0, len(pos)) if tstamps is None else tstamps
 
         if speed_3d is not None and len(speed_3d) == len(self.pos):
@@ -726,7 +730,7 @@ class Trajectory:
                     alignment_parameters.lever_z.value,
                 )
             else:
-                logger.error("Trajectory has no orientations. Cannot apply leverarm.")
+                logger.warning("Trajectory has no orientations. Cannot apply leverarm.")
                 euler_x, euler_y, euler_z = 0, 0, 0
                 lever_x, lever_y, lever_z = 0, 0, 0
 
