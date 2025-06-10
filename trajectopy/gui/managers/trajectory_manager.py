@@ -657,7 +657,7 @@ class TrajectoryManager(QObject):
             settings=entry_pair.entry.settings.matching,
         )
 
-        traj_aligned = traj_test.adopt_first_pose(traj_to=traj_ref)
+        traj_aligned = traj_test.adopt_first_pose(trajectory=traj_ref)
         entry_pair.entry.state.aligned = True
         traj_aligned.name += " (aligned)"
 
