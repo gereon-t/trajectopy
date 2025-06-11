@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -670,6 +670,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#function-plot_ate_dof" class="md-nav__link">
+    <span class="md-ellipsis">
+      function plot_ate_dof
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#function-plot_ate_edf" class="md-nav__link">
     <span class="md-ellipsis">
       function plot_ate_edf
@@ -930,6 +939,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#function-plot_ate_dof" class="md-nav__link">
+    <span class="md-ellipsis">
+      function plot_ate_dof
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#function-plot_ate_edf" class="md-nav__link">
     <span class="md-ellipsis">
       function plot_ate_edf
@@ -1108,11 +1126,28 @@
 <li><b><code>Figure</code></b>:  Figure containing the plot. </li>
 </ul>
 <hr />
-<h3 id="function-plot_ate_edf"><kbd>function</kbd> <code>plot_ate_edf</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">plot_ate_edf</span><span class="p">(</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">]],</span>
+<h3 id="function-plot_ate_dof"><kbd>function</kbd> <code>plot_ate_dof</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">plot_ate_dof</span><span class="p">(</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">,</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">MPLPlotSettings</span> <span class="o">=</span> <span class="n">MPLPlotSettings</span><span class="p">(</span><span class="n">colorbar_show_zero_crossing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorbar_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">colorbar_max_std</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">scatter_hide_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_3d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hist_as_stairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">directed_ate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dofs_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">velocity_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Figure</span>
+</span></code></pre></div>
+<p>Plots ATE DOF (Degrees of Freedom) for the given ATEResult(s) as a line plot using matplotlib. The DOF plot shows the deviations in the x, y, and z directions for position and rotation. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>ate_results</code></b> (Union[ATEResult, List[ATEResult]]):  ATE result(s) to plot. </li>
+<li><b><code>plot_settings</code></b> (MPLPlotSettings, optional):  Plot settings. Defaults to MPLPlotSettings(). </li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><b><code>Figure</code></b>:  Figure containing the plot. </li>
+</ul>
+<hr />
+<h3 id="function-plot_ate_edf"><kbd>function</kbd> <code>plot_ate_edf</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">plot_ate_edf</span><span class="p">(</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">]],</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">MPLPlotSettings</span> <span class="o">=</span> <span class="n">MPLPlotSettings</span><span class="p">(</span><span class="n">colorbar_show_zero_crossing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorbar_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">colorbar_max_std</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">scatter_hide_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_3d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hist_as_stairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">directed_ate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dofs_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">velocity_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Figure</span>
 </span></code></pre></div>
 <p>Plots ATE EDF for the given ATEResult(s) as a line plot using matplotlib. The EDF (Empirical Distribution Function) shows the cummulative probability of the deviations. Using this plot, one can easily see how many percent of the deviations are below a certain value. </p>
 <p><strong>Args:</strong></p>
@@ -1126,9 +1161,9 @@
 </ul>
 <hr />
 <h3 id="function-plot_rpe"><kbd>function</kbd> <code>plot_rpe</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">plot_rpe</span><span class="p">(</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">rpe_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">rpe_result</span><span class="o">.</span><span class="n">RPEResult</span><span class="p">]</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">]</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">plot_rpe</span><span class="p">(</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">rpe_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">rpe_result</span><span class="o">.</span><span class="n">RPEResult</span><span class="p">]</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">]</span>
 </span></code></pre></div>
 <p>Plots the RPE results as a line plot with violin plots for the position and rotation deviations. </p>
 <p>Depending on the pair distance unit, the unit of the position deviations is either in meters/meters (%) or meters/seconds. The unit of the rotation deviations is respectively in degrees/m or degrees/second. </p>
@@ -1142,10 +1177,10 @@
 </ul>
 <hr />
 <h3 id="function-scatter_ate"><kbd>function</kbd> <code>scatter_ate</code></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">scatter_ate</span><span class="p">(</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">,</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">MPLPlotSettings</span> <span class="o">=</span> <span class="n">MPLPlotSettings</span><span class="p">(</span><span class="n">colorbar_show_zero_crossing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorbar_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">colorbar_max_std</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">scatter_hide_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_3d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hist_as_stairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">directed_ate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dofs_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">velocity_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">]</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">scatter_ate</span><span class="p">(</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">evaluation</span><span class="o">.</span><span class="n">ate_result</span><span class="o">.</span><span class="n">ATEResult</span><span class="p">,</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n">trajectopy</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">MPLPlotSettings</span> <span class="o">=</span> <span class="n">MPLPlotSettings</span><span class="p">(</span><span class="n">colorbar_show_zero_crossing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">colorbar_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">colorbar_max_std</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">scatter_hide_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_3d</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">scatter_smooth_window</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">hist_as_stairs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">directed_ate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dofs_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">velocity_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_tab</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">]</span>
 </span></code></pre></div>
 <p>Plots the ATE results as a scatter plot with color-coded deviations. </p>
 <p><strong>Args:</strong></p>
@@ -1201,10 +1236,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
       
