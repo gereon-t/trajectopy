@@ -37,7 +37,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.pipelines_context_menu = QtWidgets.QMenu("Pipelines")
+        self.metrics_context_menu = QtWidgets.QMenu("Metrics")
         self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
         self.match_context_menu = QtWidgets.QMenu("Match With Reference")
         self.other_context_menu = QtWidgets.QMenu("Other")
@@ -73,7 +73,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def clear(self) -> None:
         super().clear()
-        self.pipelines_context_menu.clear()
+        self.metrics_context_menu.clear()
         self.comparison_context_menu.clear()
         self.match_context_menu.clear()
         self.other_context_menu.clear()
@@ -124,7 +124,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.view_context()
         self.edit_context()
         self.action_context()
-        self.pipelines_context()
+        self.metrics_context()
 
     def edit_context(self) -> None:
         """Actions sub-context menu"""
@@ -609,9 +609,9 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
         return self.match_context_menu
 
-    def pipelines_context(self) -> None:
-        self.addMenu(self.pipelines_context_menu)
-        self.pipelines_context_menu.setEnabled(self.get_selection().reference_is_set)
+    def metrics_context(self) -> None:
+        self.addMenu(self.metrics_context_menu)
+        self.metrics_context_menu.setEnabled(self.get_selection().reference_is_set)
 
         ate_action = QAction("Compute ATE", self)
         ate_action.triggered.connect(
@@ -633,5 +633,5 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
-        self.pipelines_context_menu.addAction(ate_action)
-        self.pipelines_context_menu.addAction(rpe_action)
+        self.metrics_context_menu.addAction(ate_action)
+        self.metrics_context_menu.addAction(rpe_action)

@@ -23,6 +23,7 @@ from trajectopy.plotting import (
     plot_ate,
     plot_ate_3d,
     plot_ate_bars,
+    plot_ate_dof,
     plot_ate_edf,
     plot_compact_ate_hist,
     plot_correlation_heatmap,
@@ -250,6 +251,9 @@ class PlotTabs(QtWidgets.QMainWindow):
 
             fig_ate_line = plot_ate(ate_result, plot_settings=mpl_plot_settings)
             self.add_plot("ATE Line Plot", fig_ate_line)
+
+            fig_ate_dof = plot_ate_dof(ate_result, plot_settings=mpl_plot_settings)
+            self.add_plot("ATE DOFs", fig_ate_dof)
 
             fig_ate_bars = plot_ate_bars([ate_result], plot_settings=mpl_plot_settings, mode="positions")
             self.add_plot("ATE Bars (Positions)", fig_ate_bars)

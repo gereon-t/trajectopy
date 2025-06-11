@@ -200,6 +200,33 @@ Plots ATE for the given ATEResult(s) as a line plot using matplotlib. If availab
 
 ---
 
+### <kbd>function</kbd> `plot_ate_dof`
+
+```python
+plot_ate_dof(
+    ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+) → Figure
+```
+
+Plots ATE DOF (Degrees of Freedom) for the given ATEResult(s) as a line plot using matplotlib. The DOF plot shows the deviations in the x, y, and z directions for position and rotation. 
+
+
+
+**Args:**
+ 
+ - <b>`ate_results`</b> (Union[ATEResult, List[ATEResult]]):  ATE result(s) to plot. 
+ - <b>`plot_settings`</b> (MPLPlotSettings, optional):  Plot settings. Defaults to MPLPlotSettings(). 
+
+
+
+**Returns:**
+ 
+ - <b>`Figure`</b>:  Figure containing the plot. 
+
+
+---
+
 ### <kbd>function</kbd> `plot_ate_edf`
 
 ```python

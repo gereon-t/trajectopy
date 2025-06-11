@@ -36,6 +36,7 @@ from trajectopy.core.plotting.utils import (
 )
 from trajectopy.definitions import DATE_FORMATTER
 from trajectopy.settings import MPLPlotSettings, PairDistanceUnit
+from trajectopy.sorting import Sorting
 from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger("root")
@@ -320,6 +321,85 @@ def plot_ate(
             ax_rot.plot(function_of_sorted, np.rad2deg(dev.rot_dev_comb[arc_length_sorting]))
 
     fig.legend([dev.name for dev in deviation_list], ncol=3, loc="upper center")
+    plt.tight_layout()
+    return fig
+
+
+def plot_ate_dof(
+    ate_result: ATEResult,
+    plot_settings: MPLPlotSettings = MPLPlotSettings(),
+) -> Figure:
+    """Plots ATE DOF (Degrees of Freedom) for the given ATEResult(s) as a line plot using matplotlib.
+    The DOF plot shows the deviations in the x, y, and z directions for position and rotation.
+
+    Args:
+        ate_results (Union[ATEResult, List[ATEResult]]): ATE result(s) to plot.
+        plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
+
+    Returns:
+        Figure: Figure containing the plot.
+    """
+    trajectory = ate_result.trajectory
+    x_label = derive_xlabel_from_sortings(
+        TrajectoriesSorting.ALL_SPATIAL if trajectory.sorting == Sorting.ARC_LENGTH else TrajectoriesSorting.ALL_TIME,
+        trajectory.is_unix_time,
+    )
+
+    is_unix_time = trajectory.is_unix_time and trajectory.sorting == Sorting.TIME
+
+    fig = plt.figure()
+
+    ax_pos = plt.subplot(2, 1, 1)
+    ax_pos.set_xlabel(x_label)
+    ax_pos.set_ylabel(f"Deviation {plot_settings.unit_str}")
+    if is_unix_time:
+        ax_pos.xaxis.set_major_formatter(DATE_FORMATTER)
+
+    if ate_result.has_orientation:
+        ax_rot = plt.subplot(2, 1, 2)
+        ax_rot.set_xlabel(x_label)
+        ax_rot.set_ylabel("Deviation [°]")
+        if is_unix_time:
+            ax_rot.xaxis.set_major_formatter(DATE_FORMATTER)
+    else:
+        ax_rot = None
+
+    if len(ate_result.trajectory.function_of) == 0:
+        logger.warning("Skipping %s as it has no data", ate_result.name)
+        return fig
+
+    arc_length_sorting = np.argsort(ate_result.trajectory.function_of)
+    function_of = ate_result.trajectory.datetimes if is_unix_time else ate_result.trajectory.function_of
+    function_of_sorted = function_of[arc_length_sorting]
+
+    pos_dev_x = ate_result.pos_dev_along if plot_settings.directed_ate else ate_result.pos_dev_x
+    pos_dev_y = ate_result.pos_dev_cross_h if plot_settings.directed_ate else ate_result.pos_dev_y
+    pos_dev_z = ate_result.pos_dev_cross_v if plot_settings.directed_ate else ate_result.pos_dev_z
+
+    ax_pos.plot(
+        function_of_sorted,
+        pos_dev_x[arc_length_sorting] * plot_settings.unit_multiplier,
+        label="Along-Track" if plot_settings.directed_ate else "X",
+    )
+    ax_pos.plot(
+        function_of_sorted,
+        pos_dev_y[arc_length_sorting] * plot_settings.unit_multiplier,
+        label="Horizontal Cross-Track" if plot_settings.directed_ate else "Y",
+    )
+    ax_pos.plot(
+        function_of_sorted,
+        pos_dev_z[arc_length_sorting] * plot_settings.unit_multiplier,
+        label="Vertical Cross-Track" if plot_settings.directed_ate else "Z",
+    )
+    ax_pos.legend()
+
+    if ax_rot is not None:
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_x[arc_length_sorting]), label="Roll")
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_y[arc_length_sorting]), label="Pitch")
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_z[arc_length_sorting]), label="Yaw")
+        ax_rot.legend()
+
+    ax_pos.set_title(f"{ate_result.name}")
     plt.tight_layout()
     return fig
 
