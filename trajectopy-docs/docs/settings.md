@@ -16,7 +16,7 @@ Trajectopy offers a range of processing options that can be applied to the impor
 
 ### Preprocessing Settings
 
-- `min_speed` (float): Only poses with a speed above this threshold are considered for alignment.
+- `min_speed` (float): Only poses with a speed above this threshold are considered for alignment (meters/second).
 - `time_start` (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 - `time_end` (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 
@@ -52,14 +52,15 @@ Trajectopy offers a range of processing options that can be applied to the impor
 Usually, these settings can be left at their default values.
 
 - `metric_threshold` (float): Iteration threshold for the least squares adjustment regarding the metric parameters.
-- `time_threshold` (float): Iteration threshold for the least squares adjustment regarding the time shift parameter.
+- `time_threshold` (float): Iteration threshold in seconds for the least squares adjustment regarding the time shift parameter.
 
 
 ## Matching Settings
 
 - `method` (`MatchingMethod`): The method used for trajectory matching. Choices: `MatchingMethod.NEAREST_SPATIAL`, `MatchingMethod.NEAREST_TEMPORAL`, `MatchingMethod.INTERPOLATION`, `MatchingMethod.NEAREST_SPATIAL_INTERPOLATED`. The methods are described below.
-- `max_time_diff` (float): Maximum allowed time difference when matching two trajectories using their timestamps.
-- `max_distance` (float): Maximum allowed distance between matched positions during spatial matching.
+- `max_time_diff` (float): Maximum allowed time difference in seconds when matching two trajectories using their timestamps.
+- `max_distance` (float): Maximum allowed distance in meters between matched positions during spatial matching.
+- `max_gap_size` (float): Maximum allowed gap size in seconds within a trajectory during matching.
 - `k_nearest` (integer): The number of nearest neighbors to consider during spatial interpolation matching.
 
 ## Matching Methods

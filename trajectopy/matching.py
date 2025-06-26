@@ -84,7 +84,9 @@ def match_trajectories(
     logger.info("Matching trajectories using method %s", settings.method.name)
 
     if settings.method == MatchingMethod.INTERPOLATION:
-        return match_trajectories_interpolation(traj_test=traj_from, traj_ref=traj_to)
+        return match_trajectories_interpolation(
+            traj_test=traj_from, traj_ref=traj_to, max_gap_size=settings.max_gap_size
+        )
 
     if settings.method == MatchingMethod.NEAREST_TEMPORAL:
         return match_trajectories_temporal(traj_test=traj_from, traj_ref=traj_to, max_distance=settings.max_time_diff)
@@ -121,7 +123,9 @@ def do_overlap(traj_test: Trajectory, traj_ref: Trajectory) -> bool:
     return (start_test <= end_ref and end_test >= start_ref) or (start_ref <= end_test and end_ref >= start_test)
 
 
-def match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajectory) -> Tuple[Trajectory, Trajectory]:
+def match_trajectories_interpolation(
+    traj_test: Trajectory, traj_ref: Trajectory, max_gap_size: float = 10.0
+) -> Tuple[Trajectory, Trajectory]:
     """Ensures that both trajectories are sampled in the same way
 
     This method will intersect both trajectories with each other
@@ -139,8 +143,19 @@ def match_trajectories_interpolation(traj_test: Trajectory, traj_ref: Trajectory
                                         which called this method is
                                         the first returned trajectory.
     """
-    traj_test.intersect(traj_ref.tstamps)
-    traj_ref.intersect(traj_test.tstamps)
+    traj_test.intersect(traj_ref.tstamps, max_gap_size=max_gap_size)
+
+    if traj_test.tstamps.shape[0] == 0:
+        raise ValueError(
+            "Reference trajectory has no timestamps after intersection! Check your matching settings, especially max_gap_size."
+        )
+
+    traj_ref.intersect(traj_test.tstamps, max_gap_size=max_gap_size)
+
+    if traj_ref.tstamps.shape[0] == 0:
+        raise ValueError(
+            "Test trajectory has no timestamps after intersection! Check your matching settings, especially max_gap_size."
+        )
 
     traj_test.interpolate(traj_ref.tstamps)
     traj_test.arc_lengths = copy.deepcopy(traj_ref.arc_lengths)

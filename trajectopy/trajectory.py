@@ -605,7 +605,7 @@ class Trajectory:
         traj_self.apply_index(idx_self)
         return traj_self
 
-    def intersect(self, tstamps: np.ndarray, max_gap_size: float = 2.0, inplace: bool = True) -> "Trajectory":
+    def intersect(self, tstamps: np.ndarray, max_gap_size: float = 10.0, inplace: bool = True) -> "Trajectory":
         """Intersects trajectory with a given timestamp vector
 
         After intersection, the trajectory covers the same
@@ -619,7 +619,7 @@ class Trajectory:
         Args:
             tstamps (np.ndarray): Intersection timespans
             max_gap_size (float, optional): Maximum allowed gap between timespans.
-                                            If Defaults to 0.5.
+                                            If Defaults to 10.0.
             inplace (bool, optional): Perform intersection in-place.
                                       Defaults to True.
 

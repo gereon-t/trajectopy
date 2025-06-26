@@ -13,7 +13,7 @@ Gereon Tombrink, 2025 tombrink@igg.uni-bonn.de
 match_trajectories(
     traj_from: trajectopy.trajectory.Trajectory,
     traj_to: trajectopy.trajectory.Trajectory,
-    settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, k_nearest=10),
+    settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=10),
     inplace: bool = True
 ) → Tuple[trajectopy.trajectory.Trajectory, trajectopy.trajectory.Trajectory]
 ```
@@ -94,7 +94,8 @@ Checks if two trajectories overlap
 ```python
 match_trajectories_interpolation(
     traj_test: trajectopy.trajectory.Trajectory,
-    traj_ref: trajectopy.trajectory.Trajectory
+    traj_ref: trajectopy.trajectory.Trajectory,
+    max_gap_size: float = 10.0
 ) → Tuple[trajectopy.trajectory.Trajectory, trajectopy.trajectory.Trajectory]
 ```
 

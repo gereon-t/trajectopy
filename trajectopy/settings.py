@@ -472,6 +472,7 @@ class MatchingSettings(Settings):
     method: MatchingMethod = MatchingMethod.INTERPOLATION
     max_time_diff: float = 0.01
     max_distance: float = 0.00
+    max_gap_size: float = 10.0
     k_nearest: int = 10
 
     @staticmethod

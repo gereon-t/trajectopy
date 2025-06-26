@@ -520,7 +520,7 @@ This method removes timestamps from tstamps if they lie outside of the timestamp
 ```python
 intersect(
     tstamps: numpy.ndarray,
-    max_gap_size: float = 2.0,
+    max_gap_size: float = 10.0,
     inplace: bool = True
 ) → Trajectory
 ```
@@ -534,7 +534,7 @@ After intersection, the trajectory covers the same timespan as 'tstamps'. Furthe
 **Args:**
  
  - <b>`tstamps`</b> (np.ndarray):  Intersection timespans 
- - <b>`max_gap_size`</b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 0.5. 
+ - <b>`max_gap_size`</b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 10.0. 
  - <b>`inplace`</b> (bool, optional):  Perform intersection in-place.  Defaults to True. 
 
 
