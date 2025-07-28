@@ -73,6 +73,7 @@ class TrajectoryManagerRequestType(Enum):
     DIVIDE_INTO_LAPS = auto()
     EDIT_EPSG = auto()
     CHANGE_ESPG = auto()
+    REARANGE_DOF = auto()
     EPSG_TO_REF = auto()
     MERGE = auto()
     MATCH = auto()
@@ -96,6 +97,7 @@ class TrajectoryModelRequestType(Enum):
 
 class UIRequestType(Enum):
     TRAJ_PROPERTIES = auto()
+    DOF_ORGANIZER = auto()
     RES_PROPERTIES = auto()
     TRAJ_SETTINGS = auto()
     SETTINGS = auto()
@@ -192,6 +194,7 @@ class TrajectoryManagerRequest(DeepCopyRequest):
     grid: float = 0.0
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
     matching_method: MatchingMethod = MatchingMethod.NEAREST_TEMPORAL
+    dof_mapping: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass

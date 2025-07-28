@@ -11,6 +11,7 @@ import threading
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple, Union
 
+import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from trajectopy.alignment import estimate_alignment
@@ -40,6 +41,7 @@ from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.util import show_progress
 from trajectopy.matching import match_trajectories
 from trajectopy.merging import average_trajectories, merge_trajectories
+from trajectopy.rotationset import RotationSet
 from trajectopy.sorting import Sorting
 
 logger = logging.getLogger("root")
@@ -112,6 +114,11 @@ class TrajectoryManager(QObject):
             ),
             TrajectoryManagerRequestType.CHANGE_ESPG: lambda: self.handle_trajectory_operation(
                 operation=self.operation_epsg_change,
+                inplace=True,
+                apply_to_reference=True,
+            ),
+            TrajectoryManagerRequestType.REARANGE_DOF: lambda: self.handle_trajectory_operation(
+                operation=self.operation_rearange_dof,
                 inplace=True,
                 apply_to_reference=True,
             ),
@@ -540,6 +547,54 @@ class TrajectoryManager(QObject):
             None
         """
         entry_pair.entry.trajectory.pos.to_epsg(entry_pair.request.target_epsg)
+        return (entry_pair.entry,)
+
+    @staticmethod
+    def operation_rearange_dof(
+        entry_pair: TrajectoryEntryPair,
+    ) -> Tuple[TrajectoryEntry]:
+        """
+        Rearranges the degrees of freedom (DOF) of the selected trajectory according to the specified request.
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to rearrange DOF for.
+
+        Returns:
+            TrajectoryEntry: The trajectory entry with rearranged DOF.
+        """
+        dof_mapping = entry_pair.request.dof_mapping
+
+        # rearrange the DOF of the trajectory
+        index_mapping = {
+            "X": 0,
+            "Y": 1,
+            "Z": 2,
+            "Roll": 3,
+            "Pitch": 4,
+            "Yaw": 5,
+        }
+
+        xyz = entry_pair.entry.trajectory.pos.xyz
+
+        if entry_pair.entry.trajectory.has_orientation:
+            rpy = np.rad2deg(entry_pair.entry.trajectory.rpy)
+        else:
+            rpy = np.zeros(xyz.shape)
+
+        xyz_rpy = np.hstack((xyz, rpy))
+        new_xyz_rpy = np.zeros_like(xyz_rpy)
+        for i, mapping in enumerate(dof_mapping.values()):
+            new_column = (xyz_rpy[:, index_mapping[mapping["target"]]] + mapping["bias"]) * (
+                1.0 if mapping["sign"] == "+" else -1.0
+            )
+            new_xyz_rpy[:, i] = new_column
+
+        entry_pair.entry.trajectory.pos.xyz = new_xyz_rpy[:, :3]
+        if entry_pair.entry.trajectory.has_orientation:
+            entry_pair.entry.trajectory.rot = RotationSet.from_euler(
+                seq="xyz", angles=new_xyz_rpy[:, 3:6], degrees=True
+            )
+
         return (entry_pair.entry,)
 
     @staticmethod

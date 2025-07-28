@@ -195,6 +195,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
             self.edit_context_menu.addAction(switch_sorting_action)
 
+        dof_action = QAction("Reorganize DOFs", self)
+        dof_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.DOF_ORGANIZER,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.edit_context_menu.addAction(dof_action)
+
         if single_selection:
             self.edit_single()
 

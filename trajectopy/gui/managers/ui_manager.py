@@ -32,6 +32,7 @@ from trajectopy.gui.util import (
     show_msg_box,
 )
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
+from trajectopy.gui.views.dof_organizer import DOFOrganizer
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
@@ -101,6 +102,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_RES: self.result_export_dialog,
             UIRequestType.MESSAGE: self.message_box,
             UIRequestType.TRAJ_PROPERTIES: self.show_trajectory_properties,
+            UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
             UIRequestType.RES_PROPERTIES: self.show_result_properties,
             UIRequestType.TRAJ_SETTINGS: self.show_trajectory_settings,
             UIRequestType.CONFIRM_RESET: self.show_reset_question,
@@ -123,6 +125,11 @@ class UIManager(QObject):
         merged_properties = merge_dicts(tuple(entry.property_dict for entry in request.trajectory_selection.entries))
         property_window.add_from_dict(merged_properties)
         property_window.show()
+
+    def show_dof_organizer(self, request: UIRequest) -> None:
+        dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
+        dof_organizer.selection_made.connect(self.handle_dof_selection)
+        dof_organizer.show()
 
     def show_result_properties(self, request: UIRequest) -> None:
         property_window = PropertiesGUI(parent=self.parent(), num_cols=len(request.result_selection.entries) + 1)
@@ -151,6 +158,16 @@ class UIManager(QObject):
                 type=TrajectoryManagerRequestType.APPLY_ALIGNMENT,
                 selection=self.request.trajectory_selection,
                 alignment=selected_alignment,
+            )
+        )
+
+    @pyqtSlot(dict)
+    def handle_dof_selection(self, dof_mapping: dict) -> None:
+        self.trajectory_manager_request.emit(
+            TrajectoryManagerRequest(
+                type=TrajectoryManagerRequestType.REARANGE_DOF,
+                selection=self.request.trajectory_selection,
+                dof_mapping=dof_mapping,
             )
         )
 
