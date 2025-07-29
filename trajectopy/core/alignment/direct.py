@@ -273,9 +273,9 @@ def align_rotations(rot_from: RotationSet, rot_to: RotationSet) -> SensorRotatio
 
     rpy_from = rot_from.as_euler(seq="xyz")
     rpy_to = rot_to.as_euler(seq="xyz")
-    roll_diff = np.mean(rpy_to[:, 0]) - np.mean(rpy_from[:, 0])
-    pitch_diff = np.mean(rpy_to[:, 1]) - np.mean(rpy_from[:, 1])
-    yaw_diff = np.mean(rpy_to[:, 2]) - np.mean(rpy_from[:, 2])
+    roll_diff = np.mean(np.unwrap(rpy_to[:, 0])) - np.mean(np.unwrap(rpy_from[:, 0]))
+    pitch_diff = np.mean(np.unwrap(rpy_to[:, 1])) - np.mean(np.unwrap(rpy_from[:, 1]))
+    yaw_diff = np.mean(np.unwrap(rpy_to[:, 2])) - np.mean(np.unwrap(rpy_from[:, 2]))
     return SensorRotationParameters(
         sensor_rot_x=Parameter(name="Rotation x", value=roll_diff, enabled=True, unit=Unit.RADIAN),
         sensor_rot_y=Parameter(name="Rotation y", value=pitch_diff, enabled=True, unit=Unit.RADIAN),
