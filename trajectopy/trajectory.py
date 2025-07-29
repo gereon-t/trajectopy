@@ -773,7 +773,14 @@ class Trajectory:
 
         # sensor orientation
         if trajectory.rot is not None:
-            trajectory.rot = alignment_result.rotation_parameters.rotation_set * trajectory.rot
+            new_rpy = trajectory.rpy + np.array(
+                [
+                    alignment_result.rotation_parameters.sensor_rot_x.value,
+                    alignment_result.rotation_parameters.sensor_rot_y.value,
+                    alignment_result.rotation_parameters.sensor_rot_z.value,
+                ]
+            )
+            trajectory.rot = RotationSet.from_euler(seq="xyz", angles=new_rpy)
             logger.info("Applied alignment parameters to orientations.")
 
         if not has_orientations:
