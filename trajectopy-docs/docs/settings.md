@@ -33,7 +33,7 @@ Trajectopy offers a range of processing options that can be applied to the impor
 - `leverarm_x` (boolean): Enable or disable estimation of lever arm in the X-axis.
 - `leverarm_y` (boolean): Enable or disable estimation of lever arm in the Y-axis.
 - `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
-- `sensor_rotation` (boolean): Enable or disable estimation of sensor rotation. Independent of the least squares adjustment, a constant rotational offset can be computed between the rotations of both trajectories after the alignment.
+- `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed. This is a brute-force alignment of the orientations and should only be used as a last resort if the orientations of both trajectories are not aligned. Usually, most rotational misalignments are related to different n-frame definitions and can be solved by setting the `n_frame` parameter correctly (ned or enu) within the .traj file header. Try this before using the sensor rotation option.
 
 ### Stochastics Settings
 
