@@ -1826,7 +1826,7 @@
 <h3 id="method-trajectoryintersect"><kbd>method</kbd> <code>Trajectory.intersect</code></h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">intersect</span><span class="p">(</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">tstamps</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">max_gap_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span class="n">max_gap_size</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">Trajectory</span>
 </span></code></pre></div>
@@ -1835,7 +1835,7 @@
 <p><strong>Args:</strong></p>
 <ul>
 <li><b><code>tstamps</code></b> (np.ndarray):  Intersection timespans </li>
-<li><b><code>max_gap_size</code></b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 0.5. </li>
+<li><b><code>max_gap_size</code></b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 10.0. </li>
 <li><b><code>inplace</code></b> (bool, optional):  Perform intersection in-place.  Defaults to True. </li>
 </ul>
 <p><strong>Raises:</strong></p>

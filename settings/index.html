@@ -1291,7 +1291,7 @@
 <h2 id="alignment-settings">Alignment Settings</h2>
 <h3 id="preprocessing-settings">Preprocessing Settings</h3>
 <ul>
-<li><code>min_speed</code> (float): Only poses with a speed above this threshold are considered for alignment.</li>
+<li><code>min_speed</code> (float): Only poses with a speed above this threshold are considered for alignment (meters/second).</li>
 <li><code>time_start</code> (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
 <li><code>time_end</code> (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
 </ul>
@@ -1308,7 +1308,7 @@
 <li><code>leverarm_x</code> (boolean): Enable or disable estimation of lever arm in the X-axis.</li>
 <li><code>leverarm_y</code> (boolean): Enable or disable estimation of lever arm in the Y-axis.</li>
 <li><code>leverarm_z</code> (boolean): Enable or disable estimation of lever arm in the Z-axis.</li>
-<li><code>sensor_rotation</code> (boolean): Enable or disable estimation of sensor rotation. Independent of the least squares adjustment, a constant rotational offset can be computed between the rotations of both trajectories after the alignment.</li>
+<li><code>sensor_rotation</code> (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed. This is a brute-force alignment of the orientations and should only be used as a last resort if the orientations of both trajectories are not aligned. Usually, most rotational misalignments are related to different n-frame definitions and can be solved by setting the <code>n_frame</code> parameter correctly (ned or enu) within the .traj file header. Try this before using the sensor rotation option.</li>
 </ul>
 <h3 id="stochastics-settings">Stochastics Settings</h3>
 <ul>
@@ -1326,13 +1326,14 @@
 <p>Usually, these settings can be left at their default values.</p>
 <ul>
 <li><code>metric_threshold</code> (float): Iteration threshold for the least squares adjustment regarding the metric parameters.</li>
-<li><code>time_threshold</code> (float): Iteration threshold for the least squares adjustment regarding the time shift parameter.</li>
+<li><code>time_threshold</code> (float): Iteration threshold in seconds for the least squares adjustment regarding the time shift parameter.</li>
 </ul>
 <h2 id="matching-settings">Matching Settings</h2>
 <ul>
 <li><code>method</code> (<code>MatchingMethod</code>): The method used for trajectory matching. Choices: <code>MatchingMethod.NEAREST_SPATIAL</code>, <code>MatchingMethod.NEAREST_TEMPORAL</code>, <code>MatchingMethod.INTERPOLATION</code>, <code>MatchingMethod.NEAREST_SPATIAL_INTERPOLATED</code>. The methods are described below.</li>
-<li><code>max_time_diff</code> (float): Maximum allowed time difference when matching two trajectories using their timestamps.</li>
-<li><code>max_distance</code> (float): Maximum allowed distance between matched positions during spatial matching.</li>
+<li><code>max_time_diff</code> (float): Maximum allowed time difference in seconds when matching two trajectories using their timestamps.</li>
+<li><code>max_distance</code> (float): Maximum allowed distance in meters between matched positions during spatial matching.</li>
+<li><code>max_gap_size</code> (float): Maximum allowed gap size in seconds within a trajectory during matching.</li>
 <li><code>k_nearest</code> (integer): The number of nearest neighbors to consider during spatial interpolation matching.</li>
 </ul>
 <h2 id="matching-methods">Matching Methods</h2>
