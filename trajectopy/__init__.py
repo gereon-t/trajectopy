@@ -1,4 +1,4 @@
-__version__ = "3.0.10"
+__version__ = "3.1.0"
 
 
 from trajectopy.alignment import *
