@@ -82,8 +82,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.x_bias = QtWidgets.QDoubleSpinBox()
         self.x_bias.setMinimum(-10000.0)
         self.x_bias.setMaximum(10000.0)
-        self.x_bias.setDecimals(3)
-        self.x_bias.setSingleStep(0.001)
+        self.x_bias.setDecimals(4)
+        self.x_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.x_bias, 0, 4)
 
         self.label_3 = QtWidgets.QLabel()
@@ -97,8 +97,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.y_bias = QtWidgets.QDoubleSpinBox()
         self.y_bias.setMinimum(-10000.0)
         self.y_bias.setMaximum(10000.0)
-        self.y_bias.setDecimals(3)
-        self.y_bias.setSingleStep(0.001)
+        self.y_bias.setDecimals(4)
+        self.y_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.y_bias, 1, 4)
 
         self.label_5 = QtWidgets.QLabel()
@@ -112,8 +112,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.z_bias = QtWidgets.QDoubleSpinBox()
         self.z_bias.setMinimum(-10000.0)
         self.z_bias.setMaximum(10000.0)
-        self.z_bias.setDecimals(3)
-        self.z_bias.setSingleStep(0.001)
+        self.z_bias.setDecimals(4)
+        self.z_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.z_bias, 2, 4)
 
         self.label_7 = QtWidgets.QLabel()
@@ -127,8 +127,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.roll_bias = QtWidgets.QDoubleSpinBox()
         self.roll_bias.setMinimum(-360.0)
         self.roll_bias.setMaximum(360.0)
-        self.roll_bias.setDecimals(3)
-        self.roll_bias.setSingleStep(0.001)
+        self.roll_bias.setDecimals(4)
+        self.roll_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.roll_bias, 3, 4)
 
         self.label_9 = QtWidgets.QLabel()
@@ -142,8 +142,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.pitch_bias = QtWidgets.QDoubleSpinBox()
         self.pitch_bias.setMinimum(-360.0)
         self.pitch_bias.setMaximum(360.0)
-        self.pitch_bias.setDecimals(3)
-        self.pitch_bias.setSingleStep(0.001)
+        self.pitch_bias.setDecimals(4)
+        self.pitch_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.pitch_bias, 4, 4)
 
         self.label_11 = QtWidgets.QLabel()
@@ -157,8 +157,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.yaw_bias = QtWidgets.QDoubleSpinBox()
         self.yaw_bias.setMinimum(-360.0)
         self.yaw_bias.setMaximum(360.0)
-        self.yaw_bias.setDecimals(3)
-        self.yaw_bias.setSingleStep(0.001)
+        self.yaw_bias.setDecimals(4)
+        self.yaw_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.yaw_bias, 5, 4)
 
         dof_options = ["X", "Y", "Z", "Roll", "Pitch", "Yaw"]
