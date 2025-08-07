@@ -773,7 +773,7 @@ class Trajectory:
 
         # sensor orientation
         if trajectory.rot is not None:
-            trajectory.rot = trajectory.rot * alignment_result.rotation_parameters.rotation_set
+            trajectory.rot = alignment_result.rotation_parameters.rotation_set * trajectory.rot
             logger.info("Applied alignment parameters to orientations.")
 
         if not has_orientations:

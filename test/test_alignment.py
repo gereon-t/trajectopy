@@ -69,6 +69,36 @@ class TestAlignment(unittest.TestCase):
     def test_similarity_lever_time_shift_alignment(self):
         self._alignment_test(similarity_enabled=True, time_shift_enabled=True, lever_enabled=True)
 
+    def test_sensor_alignment_loop(self):
+        trajectory = open_loop_trajectory.copy()
+        trajectory_rotated = trajectory.copy()
+        random_rot = RotationSet.from_euler(
+            seq="xyz",
+            angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
+            degrees=True,
+        )
+        print(f"Random rotation: {random_rot.as_euler(seq='xyz', degrees=True)}")
+        trajectory_rotated.rot = random_rot * trajectory_rotated.rot
+
+        sensor_alignment = align_rotations(trajectory_rotated.rot, trajectory.rot)
+
+        trajectory_rotated_back = trajectory_rotated.copy()
+
+        # apply as in Trajectory.apply_alignment()
+        trajectory_rotated_back.rot = sensor_alignment.rotation_set * trajectory_rotated_back.rot
+        alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rot, trajectory.rot)
+
+        print(
+            "Alignment between rotated back trajectory and original trajectory:"
+            f"\n{alignment_between_back_and_original}"
+        )
+        np.testing.assert_allclose(
+            alignment_between_back_and_original.rotation_set.rotangle,
+            0,
+            atol=1e-8,
+            rtol=1e-8,
+        )
+
     def test_rotation_alignment(self):
         rotations_1 = RotationSet.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
         rotations_2 = (

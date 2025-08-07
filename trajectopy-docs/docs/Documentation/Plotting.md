@@ -95,7 +95,7 @@ Plots the covariance heatmap of the alignment parameters using matplotlib.
 ```python
 plot_ate_3d(
     ate_results: List[trajectopy.core.evaluation.ate_result.ATEResult],
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Figure
 ```
 
@@ -122,7 +122,7 @@ Plots the ATE results in 2D using matplotlib.
 ```python
 plot_ate_bars(
     ate_results: List[trajectopy.core.evaluation.ate_result.ATEResult],
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True),
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True),
     mode: str = 'positions'
 ) → Figure
 ```
@@ -151,7 +151,7 @@ Plots multiple ATE results as bars for different characteristics (min, max, mean
 ```python
 plot_compact_ate_hist(
     ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Figure
 ```
 
@@ -178,7 +178,7 @@ Plots compact ATE histograms for the given ATEResult. The plot contains histogra
 ```python
 plot_ate(
     ate_results: Union[trajectopy.core.evaluation.ate_result.ATEResult, List[trajectopy.core.evaluation.ate_result.ATEResult]],
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Figure
 ```
 
@@ -205,7 +205,7 @@ Plots ATE for the given ATEResult(s) as a line plot using matplotlib. If availab
 ```python
 plot_ate_dof(
     ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Figure
 ```
 
@@ -232,7 +232,7 @@ Plots ATE DOF (Degrees of Freedom) for the given ATEResult(s) as a line plot usi
 ```python
 plot_ate_edf(
     ate_results: Union[trajectopy.core.evaluation.ate_result.ATEResult, List[trajectopy.core.evaluation.ate_result.ATEResult]],
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Figure
 ```
 
@@ -286,7 +286,7 @@ Depending on the pair distance unit, the unit of the position deviations is eith
 ```python
 scatter_ate(
     ate_result: trajectopy.core.evaluation.ate_result.ATEResult,
-    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
+    plot_settings: trajectopy.settings.MPLPlotSettings = MPLPlotSettings(colorbar_show_zero_crossing=True, colorbar_steps=4, colorbar_max_std=3.0, scatter_hide_axes=False, scatter_3d=False, scatter_smooth=False, scatter_smooth_window=5, ate_unit_is_mm=False, ate_remove_above=0.0, hist_as_stairs=False, directed_ate=False, dofs_tab=True, velocity_tab=True, height_tab=True)
 ) → Tuple[matplotlib.figure.Figure, matplotlib.figure.Figure]
 ```
 

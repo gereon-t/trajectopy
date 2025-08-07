@@ -326,6 +326,16 @@ from_file(filename: str)
 
 ---
 
+#### <kbd>method</kbd> `ATEResult.remove_ate_above`
+
+```python
+remove_ate_above(threshold: float) → None
+```
+
+Clips the ATE at a given value. This is useful to remove outliers from the ATE. 
+
+---
+
 #### <kbd>method</kbd> `ATEResult.to_dataframe`
 
 ```python

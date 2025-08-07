@@ -26,13 +26,27 @@ def _norm_hist(*, l, mm: bool = False, alpha: float = 0.5, norm: bool = True) ->
     Plots a histogram
     """
     l = l[np.abs(l) > 1e-6]
-    hist, bin_edges = np.histogram(l, bins="auto")
+    if len(l) == 0:
+        return 0.0
+
+    auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
+    auto_num_bins = len(auto_bin_edges) - 1
+    num_bins = min(auto_num_bins, 300)
+
+    if auto_num_bins > 300:
+        logger.debug(
+            f"Limited number of bins to 300, as more than 300 bins were requested ({len(auto_bin_edges) - 1})."
+        )
+
+    hist, bin_edges = np.histogram(l, bins=num_bins)
+
     if norm:
         hist = hist / len(l)
     if mm:
         bin_edges *= 1000
+
     plt.bar(bin_edges[:-1], hist, width=np.diff(bin_edges), align="edge", alpha=alpha)
-    return max(hist)
+    return max(hist) if len(hist) > 0 else 0.0
 
 
 def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5) -> None:
@@ -40,7 +54,10 @@ def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5) -> None:
     Plots a stair histogram
     """
     l = l[np.abs(l) > 1e-6]
-    hist, bin_edges = np.histogram(l, bins="auto")
+    auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
+    num_bins = min(len(auto_bin_edges) - 1, 300)
+    hist, bin_edges = np.histogram(l, bins=num_bins)
+
     n_hist = hist / len(l)
     if mm:
         bin_edges *= 1000

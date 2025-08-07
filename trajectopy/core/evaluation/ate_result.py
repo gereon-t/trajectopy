@@ -97,6 +97,26 @@ class ATEResult:
 
         return True
 
+    def remove_ate_above(self, threshold: float) -> None:
+        """
+        Clips the ATE at a given value.
+        This is useful to remove outliers from the ATE.
+        """
+        if threshold <= 0.0:
+            return
+
+        ate_below_idx = [dev < threshold for dev in self.pos_dev_comb]
+        self.trajectory.apply_index(ate_below_idx)
+
+        self.abs_dev.pos_dev = self.abs_dev.pos_dev[ate_below_idx]
+        self.abs_dev.directed_pos_dev = self.abs_dev.directed_pos_dev[ate_below_idx]
+
+        if self.abs_dev.rot_dev is not None:
+            self.abs_dev.rot_dev = RotationSet.from_euler(
+                angles=self.abs_dev.rot_dev.as_euler(seq="xyz")[ate_below_idx],
+                seq="xyz",
+            )
+
     @property
     def has_orientation(self) -> bool:
         """

@@ -116,6 +116,12 @@ class PlotManager(QObject):
         ate_result = ate_results[0] if ate_results else None
         rpe_result = rpe_results[0] if rpe_results else None
 
+        ate_result.remove_ate_above(
+            request.mpl_plot_settings.ate_remove_above
+            if self.plot_backend == PlotBackend.MPL
+            else request.report_settings.ate_remove_above
+        )
+
         if self.plot_backend == PlotBackend.PLOTLY:
             report = create_deviation_report(
                 ate_result=ate_result,
@@ -140,6 +146,13 @@ class PlotManager(QObject):
         if not ate_results and not rpe_results:
             logger.error("No deviations selected!")
             return
+
+        for ate in ate_results:
+            ate.remove_ate_above(
+                request.mpl_plot_settings.ate_remove_above
+                if self.plot_backend == PlotBackend.MPL
+                else request.report_settings.ate_remove_above
+            )
 
         if self.plot_backend == PlotBackend.PLOTLY:
             multi_report = create_deviation_report(

@@ -33,7 +33,7 @@ Trajectopy offers a range of processing options that can be applied to the impor
 - `leverarm_x` (boolean): Enable or disable estimation of lever arm in the X-axis.
 - `leverarm_y` (boolean): Enable or disable estimation of lever arm in the Y-axis.
 - `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
-- `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed. This is a brute-force alignment of the orientations and should only be used as a last resort if the orientations of both trajectories are not aligned. Usually, most rotational misalignments are related to different n-frame definitions and can be solved by setting the `n_frame` parameter correctly (ned or enu) within the .traj file header. Try this before using the sensor rotation option.
+- `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.
 
 ### Stochastics Settings
 
@@ -137,6 +137,7 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `three_subplots_height` (int): The height of three subplots. Default value is 750.
 - `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
+- `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.
 - `histogram_opacity` (float): The opacity of the histogram bars. Default value is 0.7.
 - `histogram_bargap` (float): The gap between histogram bars. Default value is 0.1.
@@ -215,9 +216,11 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
 - `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
+- `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
 - `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
 - `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
 - `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
 - `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.
+

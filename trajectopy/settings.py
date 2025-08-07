@@ -505,6 +505,7 @@ class MPLPlotSettings(Settings):
     scatter_smooth: bool = False
     scatter_smooth_window: int = 5
     ate_unit_is_mm: bool = False
+    ate_remove_above: float = 0.0
     hist_as_stairs: bool = False
     directed_ate: bool = False
     dofs_tab: bool = True
@@ -583,6 +584,7 @@ class ReportSettings(Settings):
     - `three_subplots_height` (int): The height of three subplots. Default value is 750.
     - `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.
     - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
+    - `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
     - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.
     - `histogram_opacity` (float): The opacity of the histogram bars. Default value is 0.7.
     - `histogram_bargap` (float): The gap between histogram bars. Default value is 0.1.
@@ -622,6 +624,7 @@ class ReportSettings(Settings):
 
     scatter_max_std: float = 4.0
     ate_unit_is_mm: bool = False
+    ate_remove_above: float = 0.0
     directed_ate: bool = False
 
     histogram_opacity: float = 0.7
