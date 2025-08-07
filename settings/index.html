@@ -1308,7 +1308,7 @@
 <li><code>leverarm_x</code> (boolean): Enable or disable estimation of lever arm in the X-axis.</li>
 <li><code>leverarm_y</code> (boolean): Enable or disable estimation of lever arm in the Y-axis.</li>
 <li><code>leverarm_z</code> (boolean): Enable or disable estimation of lever arm in the Z-axis.</li>
-<li><code>sensor_rotation</code> (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed. This is a brute-force alignment of the orientations and should only be used as a last resort if the orientations of both trajectories are not aligned. Usually, most rotational misalignments are related to different n-frame definitions and can be solved by setting the <code>n_frame</code> parameter correctly (ned or enu) within the .traj file header. Try this before using the sensor rotation option.</li>
+<li><code>sensor_rotation</code> (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.</li>
 </ul>
 <h3 id="stochastics-settings">Stochastics Settings</h3>
 <ul>
@@ -1408,6 +1408,7 @@
 <li><code>three_subplots_height</code> (int): The height of three subplots. Default value is 750.</li>
 <li><code>scatter_max_std</code> (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.</li>
 <li><code>ate_unit_is_mm</code> (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.</li>
+<li><code>ate_remove_above</code> (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.</li>
 <li><code>directed_ate</code> (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.</li>
 <li><code>histogram_opacity</code> (float): The opacity of the histogram bars. Default value is 0.7.</li>
 <li><code>histogram_bargap</code> (float): The gap between histogram bars. Default value is 0.1.</li>
@@ -1480,6 +1481,7 @@
 <li><code>scatter_smooth_window</code> (int): The window size for smoothing the scatter plot. Default value is 5.</li>
 <li><code>colorbar_max_std</code> (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.</li>
 <li><code>ate_unit_is_mm</code> (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.</li>
+<li><code>ate_remove_above</code> (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.</li>
 <li><code>hist_as_stairs</code> (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.</li>
 <li><code>directed_ate</code> (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.</li>
 <li><code>scatter_3d</code> (bool): Indicates whether the scatter plot should be 3D. Default value is False.</li>

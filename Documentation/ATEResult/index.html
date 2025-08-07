@@ -888,6 +888,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#method-ateresultremove_ate_above" class="md-nav__link">
+    <span class="md-ellipsis">
+      method ATEResult.remove_ate_above
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#method-ateresultto_dataframe" class="md-nav__link">
     <span class="md-ellipsis">
       method ATEResult.to_dataframe
@@ -1684,6 +1693,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#method-ateresultremove_ate_above" class="md-nav__link">
+    <span class="md-ellipsis">
+      method ATEResult.remove_ate_above
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#method-ateresultto_dataframe" class="md-nav__link">
     <span class="md-ellipsis">
       method ATEResult.to_dataframe
@@ -1892,13 +1910,18 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
+<h4 id="method-ateresultremove_ate_above"><kbd>method</kbd> <code>ATEResult.remove_ate_above</code></h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">remove_ate_above</span><span class="p">(</span><span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+</span></code></pre></div>
+<p>Clips the ATE at a given value. This is useful to remove outliers from the ATE. </p>
+<hr />
 <h4 id="method-ateresultto_dataframe"><kbd>method</kbd> <code>ATEResult.to_dataframe</code></h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">to_dataframe</span><span class="p">()</span> <span class="err">→</span> <span class="n">DataFrame</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">to_dataframe</span><span class="p">()</span> <span class="err">→</span> <span class="n">DataFrame</span>
 </span></code></pre></div>
 <p>Exports results as pandas dataframe </p>
 <hr />
 <h4 id="method-ateresultto_file"><kbd>method</kbd> <code>ATEResult.to_file</code></h4>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">to_file</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="err">→</span> <span class="kc">None</span>
 </span></code></pre></div>
 <p>Exports results as csv </p>
 
