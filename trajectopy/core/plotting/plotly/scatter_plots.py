@@ -80,6 +80,7 @@ def render_trajectories_mapbox(trajectories: List[Trajectory], report_settings: 
         hovermode="closest",
         mapbox=mapbox_dict,
         height=report_settings.single_plot_height,
+        margin={"r": 0, "t": 40, "l": 0, "b": 0},
     )
 
     return plot(fig, output_type="div", config=report_settings.single_plot_export.to_config())
