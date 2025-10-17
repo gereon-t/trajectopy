@@ -128,6 +128,14 @@ Results in pose distances: [100 m, 200 m, 300 m, 400 m, 500 m, 600 m, 700 m, 800
 
 Furthermore, the user can choose to either use consecutive pose pairs (non-overlapping) or all posible pairs (overlapping).
 
+
+## Sorting Settings
+
+- `voxel_size` (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.
+- `movement_threshold` (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.
+- `k_nearest` (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.
+
+
 ## Report Settings
 
 ### Visualization Settings
