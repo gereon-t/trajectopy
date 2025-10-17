@@ -414,7 +414,7 @@ Crops trajectory to timespan defined by t_start and t_end
 
 ```python
 divide_into_laps(
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     return_lap_indices: bool = False
 ) → Union[List[ForwardRef('Trajectory')], Tuple[List[ForwardRef('Trajectory')], numpy.ndarray]]
 ```
@@ -578,7 +578,7 @@ Truncates trajectory to only those poses where the timestamps exactly match "tst
 
 ```python
 sort_spatially(
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     inplace: bool = True
 ) → Trajectory
 ```

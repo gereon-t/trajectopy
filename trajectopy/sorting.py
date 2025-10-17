@@ -9,10 +9,9 @@ import logging
 from enum import Enum
 from typing import List, Tuple
 
-import matplotlib.tri as mtri
 import networkx as nx
 import numpy as np
-from scipy.spatial import KDTree
+from scipy.spatial import Delaunay
 
 from trajectopy.core.approximation.mls_approximation import mls_iterative
 from trajectopy.core.utils import lengths_from_xyz
@@ -67,23 +66,13 @@ def sort_spatially(
         movement_threshold=settings.movement_threshold,
     )
 
-    sort_index = _sort(xyz_unsorted=mls_unsorted, discard_missing=settings.discard_missing)
+    sort_index = _sort(xyz_unsorted=mls_unsorted)
     mls_sorted = mls_unsorted[sort_index, :]
     return sort_index, lengths_from_xyz(mls_sorted)
 
 
-def _sort(xyz_unsorted: np.ndarray, discard_missing: bool = True) -> List[int]:
-    idx_sort, idx_missing = _mst_sorting(xyz=xyz_unsorted)
-
-    if len(idx_missing) > 0 and not discard_missing:
-        # insert missing points
-        # some unsorted points need to be inserted into the sort vector
-        logger.info("Inserting missing points %i", len(idx_missing))
-        missing_points: list = xyz_unsorted[idx_missing, :].tolist()
-
-        xyz_sorted_temp = xyz_unsorted[idx_sort, :]
-        for m_i, p in zip(idx_missing, missing_points):
-            idx_sort, xyz_sorted_temp = _insert_point(m_i, p, idx_sort, xyz_sorted_temp)
+def _sort(xyz_unsorted: np.ndarray) -> List[int]:
+    idx_sort = _mst_sorting(xyz=xyz_unsorted)
 
     # Set start position of lap as the position with the maximum z-value
     idx_sort = _begin_with(idx=idx_sort, begin=int(np.argmax(xyz_unsorted[:, 2])))
@@ -95,62 +84,6 @@ def _sort(xyz_unsorted: np.ndarray, discard_missing: bool = True) -> List[int]:
         idx_sort = np.flipud(idx_sort).tolist()
 
     return idx_sort
-
-
-def _insert_point(
-    missing_point_index: int,
-    missing_point: np.ndarray,
-    idx_sort: list,
-    xyz_sorted: np.ndarray,
-) -> Tuple[list, np.ndarray]:
-    """Inserts a point into an existing sorting
-
-    This method should only be called internally by the
-    reconstruct method of the SpatialSorter class
-
-    Args:
-        missing_point_index (int): index of the missing point
-                                   i.e. its position in the
-                                   unsorted array of points
-        missing_point (np.ndarray): coordinates of the missing
-                                    point that should be inserted
-        idx_sort (list): list of indices that establish the spatial
-                         sorting in which the missing point needs
-                         to be inserted.
-        xyz_sorted (np.ndarray): coordinates of the sorted points
-                                 (sorted using idx_sort)
-
-    Returns:
-        Tuple[list, np.ndarray]: idx_sort and xyz_sorted with inserted
-                                 point
-    """
-    # xyz_list
-    xyz_list: list = xyz_sorted.tolist()
-
-    # create KDTree for point set
-    tree = KDTree(xyz_sorted)
-
-    # get nearest neighbor
-    _, ii = tree.query(missing_point, k=2)
-
-    # min idx
-    min_idx = min(ii)
-    # max idx
-    max_idx = max(ii)
-
-    idx_diff = abs(max_idx - min_idx)
-
-    # find these neighbours in the sort index list to know where the neighbors
-    # occur in the sorting. We should place the point in between both
-    if idx_diff == 1:
-        idx_sort.insert(min_idx + 1, missing_point_index)
-        xyz_list.insert(min_idx + 1, missing_point)
-    else:
-        diff = int(idx_diff / 2)
-        idx_sort.insert(min_idx + diff, missing_point_index)
-        xyz_list.insert(min_idx + diff, missing_point)
-
-    return idx_sort, np.array(xyz_list)
 
 
 def _mst_sorting(xyz: np.ndarray) -> Tuple[list, list]:
@@ -177,7 +110,7 @@ def _mst_sorting(xyz: np.ndarray) -> Tuple[list, list]:
                            list will be empty.
     """
     # create minimum spanning tree
-    mst, missing = _compute_mst(xyz)
+    mst = _compute_mst(xyz)
 
     # mst = nx.minimum_spanning_tree(delaunay, weight='weight', algorithm='prim')
     logger.info("searching for endpoints")
@@ -207,7 +140,7 @@ def _mst_sorting(xyz: np.ndarray) -> Tuple[list, list]:
     logger.info("reconstructing point order")
     idx_sort = _breadth_first_search(mst, root=end_nodes[0])
 
-    return idx_sort, missing
+    return idx_sort
 
 
 def _begin_with(idx: list, begin: int) -> list:
@@ -228,45 +161,53 @@ def _begin_with(idx: list, begin: int) -> list:
     return idx_max_sort
 
 
-def _compute_mst(xyz: np.ndarray) -> Tuple[nx.Graph, list]:
-    """Function that computes a Minimum-Spanning-Tree
-    using the matplotlib implementation. This implementation
-    may skip some (nearly) colinear points.
+def _compute_mst(xyz: np.ndarray) -> nx.Graph:
+    """
+    Function that computes a Minimum-Spanning-Tree using the
+    robust scipy.spatial.Delaunay implementation.
+
+    This approach correctly includes all points.
 
     Args:
-        xyz (np.ndarray): 2d / 3d positions used for mst computation
+        xyz (np.ndarray): 2d or 3d positions used for mst computation.
 
     Returns:
-        Tuple[nx.Graph, list]: networkx.Graph object of the mst and
-                               list of missing point indices if any
-                               points are missing due to colinearity
+        nx.Graph: networkx.Graph object of the mst.
     """
     num_points = len(xyz)
-    logger.info("building delaunay triangulation")
-    triang = mtri.Triangulation(x=xyz[:, 0], y=xyz[:, 1])
-    edges = triang.edges
+    if num_points < 3:
+        mst = nx.Graph()
+        if num_points == 2:
+            cost = np.linalg.norm(xyz[1] - xyz[0])
+            mst.add_weighted_edges_from([(0, 1, cost)])
+        return mst
 
-    # vertex indices of triangulation compared to initial point set
-    set1 = set(list(range(num_points)))
-    set2 = set(np.unique(np.r_[edges[:, 0], edges[:, 1]]).tolist())
+    logger.info("Building Delaunay triangulation...")
 
-    # missing vertices where dropped due to colinearity
-    missing = list(sorted(set1 - set2))
+    tri = Delaunay(xyz[:, :2])
 
-    # costs
-    e_diffs = xyz[edges[:, 1], :] - xyz[edges[:, 0], :]
+    # tri.simplices gives the indices of the points forming each triangle.
+    # We extract the edges from these triangles.
+    # e.g., triangle (p1, p2, p3) has edges (p1,p2), (p2,p3), (p3,p1)
+    edges = np.vstack((tri.simplices[:, :2], tri.simplices[:, 1:], tri.simplices[:, [0, 2]]))
+
+    # Sort and remove duplicate edges
+    edges = np.sort(edges, axis=1)
+    unique_edges = np.unique(edges, axis=0)
+
+    # Calculate the 3D distance for each edge's weight
+    e_diffs = xyz[unique_edges[:, 1]] - xyz[unique_edges[:, 0]]
     e_costs = np.linalg.norm(e_diffs, axis=1)
 
-    logger.info("computing minimum spanning tree...")
+    logger.info("Computing minimum spanning tree...")
 
-    # add edges to nx graph
-    delaunayt = nx.Graph()
-    delaunayt.add_nodes_from(range(num_points))
-    delaunayt.add_weighted_edges_from(np.c_[edges, e_costs])
-    mst = nx.minimum_spanning_tree(delaunayt)
-    logging.info("%i points were discarded during delaunay triangulation!", len(missing))
+    delaunay_graph = nx.Graph()
+    delaunay_graph.add_nodes_from(range(num_points))
+    delaunay_graph.add_weighted_edges_from(np.c_[unique_edges, e_costs])
 
-    return mst, missing
+    mst = nx.minimum_spanning_tree(delaunay_graph)
+    logger.info("MST computation complete. All %i points were included.", num_points)
+    return mst
 
 
 def _breadth_first_search(graph: nx.Graph, root: int) -> list:

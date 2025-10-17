@@ -12,7 +12,7 @@ Gereon Tombrink, 2025 tombrink@igg.uni-bonn.de
 ```python
 sort_spatially(
     xyz_unsorted: numpy.ndarray,
-    settings: trajectopy.settings.SortingSettings = SortingSettings(discard_missing=True, voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
+    settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4)
 ) → Tuple[List[int], numpy.ndarray]
 ```
 
