@@ -21,11 +21,15 @@ from trajectopy.settings import MPLPlotSettings, PairDistanceUnit
 logger = logging.getLogger("root")
 
 
-def _norm_hist(*, l, mm: bool = False, alpha: float = 0.5, norm: bool = True) -> None:
+def _norm_hist(*, l, mm: bool = False, alpha: float = 0.5, norm: bool = True, percentile: float = 1.0) -> None:
     """
     Plots a histogram
     """
     l = l[np.abs(l) > 1e-6]
+
+    percentile_value = np.percentile(np.abs(l), percentile * 100)
+    l = l[np.abs(l) <= percentile_value]
+
     if len(l) == 0:
         return 0.0
 
@@ -49,11 +53,15 @@ def _norm_hist(*, l, mm: bool = False, alpha: float = 0.5, norm: bool = True) ->
     return max(hist) if len(hist) > 0 else 0.0
 
 
-def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5) -> None:
+def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5, percentile: float = 1.0) -> None:
     """
     Plots a stair histogram
     """
     l = l[np.abs(l) > 1e-6]
+
+    percentile_value = np.percentile(np.abs(l), percentile * 100)
+    l = l[np.abs(l) <= percentile_value]
+
     auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
     num_bins = min(len(auto_bin_edges) - 1, 300)
     hist, bin_edges = np.histogram(l, bins=num_bins)
@@ -73,13 +81,13 @@ def plot_rotation_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPL
     plt.xlabel("[°]")
     plt.ylabel("counts")
     if plot_settings.hist_as_stairs:
-        _stair_hist(l=yaw)
-        _stair_hist(l=pitch)
-        _stair_hist(l=roll)
+        _stair_hist(l=yaw, percentile=plot_settings.hist_percentile)
+        _stair_hist(l=pitch, percentile=plot_settings.hist_percentile)
+        _stair_hist(l=roll, percentile=plot_settings.hist_percentile)
     else:
-        _norm_hist(l=yaw, alpha=0.6, norm=False)
-        _norm_hist(l=pitch, alpha=0.6, norm=False)
-        _norm_hist(l=roll, alpha=0.4, norm=False)
+        _norm_hist(l=yaw, alpha=0.6, norm=False, percentile=plot_settings.hist_percentile)
+        _norm_hist(l=pitch, alpha=0.6, norm=False, percentile=plot_settings.hist_percentile)
+        _norm_hist(l=roll, alpha=0.4, norm=False, percentile=plot_settings.hist_percentile)
     plt.legend(["yaw", "pitch", "roll"])
 
 
@@ -92,13 +100,19 @@ def plot_position_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPL
     plt.xlabel(plot_settings.unit_str)
     plt.ylabel("counts")
     if plot_settings.hist_as_stairs:
-        _stair_hist(l=deviations_zv, mm=plot_settings.ate_unit_is_mm)
-        _stair_hist(l=deviations_yh, mm=plot_settings.ate_unit_is_mm)
-        _stair_hist(l=deviations_xa, mm=plot_settings.ate_unit_is_mm)
+        _stair_hist(l=deviations_zv, mm=plot_settings.ate_unit_is_mm, percentile=plot_settings.hist_percentile)
+        _stair_hist(l=deviations_yh, mm=plot_settings.ate_unit_is_mm, percentile=plot_settings.hist_percentile)
+        _stair_hist(l=deviations_xa, mm=plot_settings.ate_unit_is_mm, percentile=plot_settings.hist_percentile)
     else:
-        _norm_hist(l=deviations_zv, mm=plot_settings.ate_unit_is_mm, norm=False)
-        _norm_hist(l=deviations_yh, mm=plot_settings.ate_unit_is_mm, norm=False)
-        _norm_hist(l=deviations_xa, mm=plot_settings.ate_unit_is_mm, norm=False)
+        _norm_hist(
+            l=deviations_zv, mm=plot_settings.ate_unit_is_mm, norm=False, percentile=plot_settings.hist_percentile
+        )
+        _norm_hist(
+            l=deviations_yh, mm=plot_settings.ate_unit_is_mm, norm=False, percentile=plot_settings.hist_percentile
+        )
+        _norm_hist(
+            l=deviations_xa, mm=plot_settings.ate_unit_is_mm, norm=False, percentile=plot_settings.hist_percentile
+        )
 
     plt.legend(labels)
 

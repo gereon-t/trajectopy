@@ -159,6 +159,7 @@ def scatter_plot(
         mapbox=mapbox_dict,
         hovermode="closest",
         autosize=True,
+        margin={"r": 0, "t": 40, "l": 0, "b": 0},
     )
 
     if plotting_dim == 3:

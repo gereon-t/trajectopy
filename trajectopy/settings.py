@@ -507,6 +507,7 @@ class MPLPlotSettings(Settings):
     ate_unit_is_mm: bool = False
     ate_remove_above: float = 0.0
     hist_as_stairs: bool = False
+    hist_percentile: float = 1.0
     directed_ate: bool = False
     dofs_tab: bool = True
     velocity_tab: bool = True

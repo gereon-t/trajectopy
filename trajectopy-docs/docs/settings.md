@@ -226,6 +226,7 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
+- `hist_percentile` (float): Only show data up to this percentile in the histogram. Useful for data with outliers. Default value is 100.0.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
 - `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
 - `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
