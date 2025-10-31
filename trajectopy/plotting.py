@@ -305,7 +305,9 @@ def plot_ate(
             logger.warning("Skipping %s as it has no data", dev.name)
             continue
 
+        dev_index = np.argsort(dev.trajectory.sort_switching_index)
         arc_length_sorting = np.argsort(dev.trajectory.function_of)
+        dev_index_sorted = dev_index[arc_length_sorting]
         function_of = (
             dev.trajectory.datetimes
             if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
@@ -315,10 +317,10 @@ def plot_ate(
 
         ax_pos.plot(
             function_of_sorted,
-            dev.pos_dev_comb[arc_length_sorting] * plot_settings.unit_multiplier,
+            dev.pos_dev_comb[dev_index_sorted] * plot_settings.unit_multiplier,
         )
         if ax_rot is not None:
-            ax_rot.plot(function_of_sorted, np.rad2deg(dev.rot_dev_comb[arc_length_sorting]))
+            ax_rot.plot(function_of_sorted, np.rad2deg(dev.rot_dev_comb[dev_index_sorted]))
 
     fig.legend([dev.name for dev in deviation_list], ncol=3, loc="upper center")
     plt.tight_layout()
@@ -368,7 +370,9 @@ def plot_ate_dof(
         logger.warning("Skipping %s as it has no data", ate_result.name)
         return fig
 
+    dev_index = np.argsort(ate_result.trajectory.sort_switching_index)
     arc_length_sorting = np.argsort(ate_result.trajectory.function_of)
+    dev_index_sorted = dev_index[arc_length_sorting]
     function_of = ate_result.trajectory.datetimes if is_unix_time else ate_result.trajectory.function_of
     function_of_sorted = function_of[arc_length_sorting]
 
@@ -378,25 +382,25 @@ def plot_ate_dof(
 
     ax_pos.plot(
         function_of_sorted,
-        pos_dev_x[arc_length_sorting] * plot_settings.unit_multiplier,
+        pos_dev_x[dev_index_sorted] * plot_settings.unit_multiplier,
         label="Along-Track" if plot_settings.directed_ate else "X",
     )
     ax_pos.plot(
         function_of_sorted,
-        pos_dev_y[arc_length_sorting] * plot_settings.unit_multiplier,
+        pos_dev_y[dev_index_sorted] * plot_settings.unit_multiplier,
         label="Horizontal Cross-Track" if plot_settings.directed_ate else "Y",
     )
     ax_pos.plot(
         function_of_sorted,
-        pos_dev_z[arc_length_sorting] * plot_settings.unit_multiplier,
+        pos_dev_z[dev_index_sorted] * plot_settings.unit_multiplier,
         label="Vertical Cross-Track" if plot_settings.directed_ate else "Z",
     )
     ax_pos.legend()
 
     if ax_rot is not None:
-        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_x[arc_length_sorting]), label="Roll")
-        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_y[arc_length_sorting]), label="Pitch")
-        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_z[arc_length_sorting]), label="Yaw")
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_x[dev_index_sorted]), label="Roll")
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_y[dev_index_sorted]), label="Pitch")
+        ax_rot.plot(function_of_sorted, np.rad2deg(ate_result.rot_dev_z[dev_index_sorted]), label="Yaw")
         ax_rot.legend()
 
     ax_pos.set_title(f"{ate_result.name}")

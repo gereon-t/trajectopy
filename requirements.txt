@@ -459,9 +459,13 @@ importlib-resources==6.5.2 ; python_full_version < '3.10' \
     --hash=sha256:185f87adef5bcc288449d98fb4fba07cea78bc036455dd44c5fc4a2fe78fed2c \
     --hash=sha256:789cfdc3ed28c78b67a06acb8126751ced69a3d5f79c095a98298cd8a760ccec
     # via matplotlib
-iniconfig==2.1.0 \
+iniconfig==2.1.0 ; python_full_version < '3.10' \
     --hash=sha256:3abbd2e30b36733fee78f9c7f7308f2d0050e88f0087fd25c2645f63c773e1c7 \
     --hash=sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760
+    # via pytest
+iniconfig==2.3.0 ; python_full_version >= '3.10' \
+    --hash=sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730 \
+    --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
     # via pytest
 jinja2==3.1.6 \
     --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
@@ -952,9 +956,9 @@ mkdocs-material-extensions==1.3.1 \
     --hash=sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443 \
     --hash=sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31
     # via mkdocs-material
-narwhals==2.8.0 \
-    --hash=sha256:52e0b22d54718264ae703bd9293af53b04abc995a1414908c3b807ba8c913858 \
-    --hash=sha256:6304856676ba4a79fd34148bda63aed8060dd6edb1227edf3659ce5e091de73c
+narwhals==2.9.0 \
+    --hash=sha256:c59f7de4763004ae81691ce16df71b4e55aead0ead7ccde8c8f2ef8c9559c765 \
+    --hash=sha256:d8cde40a6a8a7049d8e66608b7115ab19464acc6f305d136a8dc8ba396c4acfe
     # via plotly
 networkx==3.2.1 ; python_full_version < '3.10' \
     --hash=sha256:9f1bb5cf3409bf324e0a722c20bdb4c20ee39bf1c30ce8ae499c8502b0b5e0c6 \
@@ -2019,9 +2023,9 @@ tomli==2.3.0 ; python_full_version < '3.11' \
     --hash=sha256:feb0dacc61170ed7ab602d3d972a58f14ee3ee60494292d384649a3dc38ef463 \
     --hash=sha256:ff72b71b5d10d22ecb084d345fc26f42b5143c5533db5e2eaba7d2d335358876
     # via pytest
-typer==0.19.2 \
-    --hash=sha256:755e7e19670ffad8283db353267cb81ef252f595aa6834a0d1ca9312d9326cb9 \
-    --hash=sha256:9ad824308ded0ad06cc716434705f691d4ee0bfd0fb081839d2e426860e7fdca
+typer==0.20.0 \
+    --hash=sha256:1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37 \
+    --hash=sha256:5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a
     # via lazydocs
 typing-extensions==4.15.0 \
     --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
