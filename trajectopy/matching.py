@@ -75,7 +75,10 @@ def match_trajectories(
     traj_from = traj_from if inplace else traj_from.copy()
     traj_to = traj_to if inplace else traj_to.copy()
 
-    if not do_overlap(traj_from, traj_to):
+    if not do_overlap(traj_from, traj_to) and settings.method in [
+        MatchingMethod.NEAREST_TEMPORAL,
+        MatchingMethod.INTERPOLATION,
+    ]:
         logger.warning("Trajectories do not overlap! Performing rough matching first.")
         timeshift = rough_timestamp_matching(traj_ref=traj_to, traj_test=traj_from, max_distance=settings.max_distance)
         logger.info("Rough matching time offset: %.3f s", timeshift)
