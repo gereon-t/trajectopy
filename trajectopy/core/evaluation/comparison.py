@@ -274,7 +274,7 @@ def _along_track_dev(*, p: np.ndarray, line_pts: List, is_last: bool) -> float:
     )
 
 
-def _cross_track_dev(*, p: np.ndarray, line_pts: List, z_slope_dist: bool = False) -> Tuple[float, float]:
+def _cross_track_dev(*, p: np.ndarray, line_pts: List, z_slope_dist: bool = True) -> Tuple[float, float]:
     """
     Helper function that computes the cross track deviation
     """
