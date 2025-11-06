@@ -10,6 +10,7 @@ from trajectopy.core.evaluation.ate_result import ATEResult
 from trajectopy.core.evaluation.comparison import (
     compare_trajectories_absolute,
     compare_trajectories_relative,
+    derive_dev_directions_no_rot,
 )
 from trajectopy.core.evaluation.rpe_result import RPEResult
 from trajectopy.definitions import Unit
@@ -84,3 +85,101 @@ class TestComparison(unittest.TestCase):
         np.testing.assert_almost_equal(-deviations.pos_bias_x, parameters.sim_trans_x.value)
         np.testing.assert_almost_equal(-deviations.pos_bias_y, parameters.sim_trans_y.value)
         np.testing.assert_almost_equal(-deviations.pos_bias_z, parameters.sim_trans_z.value)
+
+    def test_cross_track_deviations_no_rot_no_slope(self) -> None:
+        # reference trajectory positions in direction 1,0 without slope
+        ref_trajectory_xyz = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [3.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+            ]
+        )
+        deviations = np.array(
+            [
+                [0.1, 0.1, 1.0],
+                [-0.1, -0.1, -1.0],
+                [0.2, 0.1, 1.0],
+                [0.05, -0.1, -1.0],
+                [0.3, 0.1, 1.0],
+            ]
+        )
+        test_trajectory_xyz = ref_trajectory_xyz + deviations
+        dir_devs = derive_dev_directions_no_rot(xyz_ref=ref_trajectory_xyz, xyz_test=test_trajectory_xyz)
+        np.testing.assert_almost_equal(dir_devs[:, 0], deviations[:, 0])  # along-track
+        np.testing.assert_almost_equal(dir_devs[:, 1], deviations[:, 1])  # cross-track horizontal
+        np.testing.assert_almost_equal(dir_devs[:, 2], deviations[:, 2])  # cross-track vertical
+
+    def test_cross_track_deviations_no_rot_slope(self) -> None:
+        # reference trajectory positions in direction 1,0 without slope
+        ref_trajectory_xyz = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 1.0],
+                [2.0, 0.0, 2.0],
+                [3.0, 0.0, 3.0],
+                [4.0, 0.0, 4.0],
+            ]
+        )
+        deviations = np.array(
+            [
+                [0.0, 0.1, 0],
+                [0.1, 0.2, 0],
+                [-0.1, 0.3, 0],
+                [0.5, 0.4, 0],
+                [-0.5, 1, 0],
+            ]
+        )
+        test_trajectory_xyz = ref_trajectory_xyz + deviations
+        dir_devs = derive_dev_directions_no_rot(xyz_ref=ref_trajectory_xyz, xyz_test=test_trajectory_xyz)
+
+        # with a slope of 45 degrees, the deviations are split equally into vertical and along-track components
+        np.testing.assert_almost_equal(dir_devs[:, 0], -dir_devs[:, 2])
+
+        # horizontal cross-track deviations remain the same
+        np.testing.assert_almost_equal(dir_devs[:, 1], deviations[:, 1])
+
+        # in total, the deviations are the same as the input deviations
+        np.testing.assert_almost_equal(np.linalg.norm(dir_devs, axis=1), np.linalg.norm(deviations, axis=1))
+
+    def test_cross_track_deviations_no_rot_rotated(self) -> None:
+        # reference trajectory positions in direction 1,0 without slope
+        ref_trajectory_xyz = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 2.0, 0.0],
+                [3.0, 3.0, 0.0],
+                [4.0, 4.0, 0.0],
+            ]
+        )
+        deviations = np.array(
+            [
+                [0.1, 0.1, 0],
+                [-0.1, -0.1, 0],
+                [0.0, 0.0, 0],
+                [0.5, 0.0, 0],
+                [0.0, 0.5, 0],
+            ]
+        )
+        test_trajectory_xyz = ref_trajectory_xyz + deviations
+        dir_devs = derive_dev_directions_no_rot(xyz_ref=ref_trajectory_xyz, xyz_test=test_trajectory_xyz)
+        np.testing.assert_almost_equal(np.linalg.norm(dir_devs, axis=1), np.linalg.norm(deviations, axis=1))
+
+    def test_cross_track_deviations_no_rot_random(self) -> None:
+        # reference trajectory positions in direction 1,0 without slope
+        ref_trajectory_xyz = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 1.0, 0.0],
+                [2.0, 2.0, 0.0],
+                [3.0, 3.0, 0.0],
+                [4.0, 4.0, 0.0],
+            ]
+        )
+        deviations = np.random.uniform(low=-1.0, high=1.0, size=(5, 3))
+        test_trajectory_xyz = ref_trajectory_xyz + deviations
+        dir_devs = derive_dev_directions_no_rot(xyz_ref=ref_trajectory_xyz, xyz_test=test_trajectory_xyz)
+        np.testing.assert_almost_equal(np.linalg.norm(dir_devs, axis=1), np.linalg.norm(deviations, axis=1))

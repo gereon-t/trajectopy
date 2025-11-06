@@ -22,14 +22,10 @@ class Settings(ABC):
     """Base Class for Settings"""
 
     def to_dict(self) -> dict:
-        output = {}
-        for key, value in self.__dict__.items():
-            if issubclass(type(value), Settings):
-                output[key] = value.to_dict()
-            else:
-                output[key] = self.encoder(key, value)
-
-        return output
+        return {
+            key: (value.to_dict() if issubclass(type(value), Settings) else self.encoder(key, value))
+            for key, value in self.__dict__.items()
+        }
 
     @staticmethod
     def encoder(name: str, value: Any) -> Any:
@@ -238,10 +234,7 @@ class AlignmentEstimationSettings(Settings):
 
     @property
     def time_shift_filter(self) -> List[bool]:
-        if not self.time_shift:
-            return [False] * 3
-
-        return [True] * 3
+        return [True] * 3 if self.time_shift else [False] * 3
 
     @property
     def helmert_filter(self) -> List[bool]:
@@ -439,15 +432,11 @@ class RelativeComparisonSettings(Settings):
 
     @staticmethod
     def encoder(name: str, value: Any) -> Any:
-        if name == "pair_distance_unit":
-            return value.value
-        return value
+        return value.value if name == "pair_distance_unit" else value
 
     @staticmethod
     def decoder(name: str, value: Any) -> Any:
-        if name == "pair_distance_unit":
-            return PairDistanceUnit(value)
-        return value
+        return PairDistanceUnit(value) if name == "pair_distance_unit" else value
 
 
 if __name__ == "__main__":

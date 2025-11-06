@@ -81,6 +81,15 @@ class CubicApproximation:
         # compute approximation
         self._cubic_approx()
 
+    @property
+    def interval_bounds(self) -> list[float]:
+        """
+        Get the interval bounds of the cubic approximation
+        """
+        if self.interval_steps is None:
+            raise ValueError("Approximation not yet computed")
+        return [np.min(self.interval_steps), np.max(self.interval_steps)]
+
     def eval(self, locations: np.ndarray) -> np.ndarray:
         """
         Evaluate the cubic approximation at specified locations

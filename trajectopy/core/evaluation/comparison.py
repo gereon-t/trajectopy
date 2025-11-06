@@ -219,6 +219,10 @@ def derive_dev_directions_no_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray) -
     By constructing a 3D line between the corresponding point in xyz_ref and
     its successor (predecessor for the last point) one can determine the
     cross- and along-track deviations for each point in xyz_test
+
+    Returns deviations with respect to the reference trajectory.
+    --> Compared to the reference, how much does the test trajectory
+    deviate along-track, cross-track horizontal, cross-track vertical
     """
     N = len(xyz_test)
 
@@ -264,17 +268,17 @@ def _along_track_dev(*, p: np.ndarray, line_pts: List, is_last: bool) -> float:
     b = line_pts[1]
     p_nearest, t = nearest_point(p=p, line_pts=line_pts)
 
-    if not is_last:
-        return np.sign(t) * np.linalg.norm(p_nearest - a)
+    if is_last:
+        return float(
+            -np.linalg.norm(p_nearest - b)
+            if np.linalg.norm(b - a) > np.linalg.norm(p_nearest - a)
+            else np.linalg.norm(p_nearest - b)
+        )
 
-    return float(
-        -np.linalg.norm(p_nearest - b)
-        if np.linalg.norm(b - a) > np.linalg.norm(p_nearest - a)
-        else np.linalg.norm(p_nearest - b)
-    )
+    return np.sign(t) * np.linalg.norm(p_nearest - a)
 
 
-def _cross_track_dev(*, p: np.ndarray, line_pts: List, z_slope_dist: bool = True) -> Tuple[float, float]:
+def _cross_track_dev(*, p: np.ndarray, line_pts: List) -> Tuple[float, float]:
     """
     Helper function that computes the cross track deviation
     """
@@ -294,24 +298,15 @@ def _cross_track_dev(*, p: np.ndarray, line_pts: List, z_slope_dist: bool = True
     # to explicitly calculate the angle. The calculation of the scalar
     # product or the determination of its sign is sufficient.
 
-    n = [b[1] - a[1], -(b[0] - a[0])]
-    d = p[:2] - a[:2]
-    d_sign = -np.sign(d @ n)
+    # vector in cross-track direction
     diff = p_nearest - p
-    d_cross_h = d_sign * np.sqrt(diff[0] ** 2 + diff[1] ** 2)
     z_diff = diff[2]
-    if z_slope_dist:
-        angle_z = np.arctan2(b[1] - a[1], b[0] - a[0])
-        gamma = np.pi / 2 + angle_z
-        rotm = np.array(
-            [
-                [np.cos(gamma), -np.sin(gamma), 0],
-                [np.sin(gamma), np.cos(gamma), 0],
-                [0, 0, 1],
-            ]
-        )
-        diff_rot = rotm @ p - rotm @ p_nearest
-        d_cross_v = np.sign(z_diff) * np.sqrt(diff_rot[0] ** 2 + diff_rot[2] ** 2)
-    else:
-        d_cross_v = z_diff
+
+    cross_track_direction = np.array([b[1] - a[1], -(b[0] - a[0])])
+    d_cross_h = (diff[:2] @ cross_track_direction[:2]) / np.linalg.norm(cross_track_direction[:2])
+
+    line_direction = b - a
+    xy_diff_in_line_direction = (diff[:2] @ line_direction[:2]) / np.linalg.norm(line_direction[:2])
+    d_cross_v = -np.sign(z_diff) * np.sqrt(z_diff**2 + xy_diff_in_line_direction**2)
+
     return d_cross_h, d_cross_v
