@@ -572,6 +572,7 @@ class TrajectoryManager(QObject):
             "Roll": 3,
             "Pitch": 4,
             "Yaw": 5,
+            "Time": 6,
         }
 
         xyz = entry_pair.entry.trajectory.pos.xyz
@@ -581,18 +582,19 @@ class TrajectoryManager(QObject):
         else:
             rpy = np.zeros(xyz.shape)
 
-        xyz_rpy = np.hstack((xyz, rpy))
-        new_xyz_rpy = np.zeros_like(xyz_rpy)
+        xyz_rpy_t = np.hstack((xyz, rpy, entry_pair.entry.trajectory.tstamps[:, None]))
+        new_xyz_rpy_t = np.zeros_like(xyz_rpy_t)
         for i, mapping in enumerate(dof_mapping.values()):
-            new_column = (xyz_rpy[:, index_mapping[mapping["target"]]] + mapping["bias"]) * (
+            new_column = (xyz_rpy_t[:, index_mapping[mapping["target"]]] + mapping["bias"]) * (
                 1.0 if mapping["sign"] == "+" else -1.0
             )
-            new_xyz_rpy[:, i] = new_column
+            new_xyz_rpy_t[:, i] = new_column
 
-        entry_pair.entry.trajectory.pos.xyz = new_xyz_rpy[:, :3]
+        entry_pair.entry.trajectory.tstamps = new_xyz_rpy_t[:, 6]
+        entry_pair.entry.trajectory.pos.xyz = new_xyz_rpy_t[:, :3]
         if entry_pair.entry.trajectory.has_orientation:
             entry_pair.entry.trajectory.rot = RotationSet.from_euler(
-                seq="xyz", angles=new_xyz_rpy[:, 3:6], degrees=True
+                seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True
             )
 
         return (entry_pair.entry,)

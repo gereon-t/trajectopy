@@ -268,7 +268,8 @@ class Trajectory:
     @property
     def function_of(self) -> np.ndarray:
         """
-        Returns the function of the trajectory
+        Returns the variable that currently parametrizes the trajectory.
+        Depending on the sorting of the trajectory, this is either time or arc length.
         """
         return (
             self.tstamps[self.sorting_index] if self.sorting == Sorting.TIME else self.arc_lengths[self.sorting_index]

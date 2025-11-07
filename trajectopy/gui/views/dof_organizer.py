@@ -46,6 +46,11 @@ class DOFOrganizer(QtWidgets.QMainWindow):
                     "target": self.yaw_combo.currentText(),
                     "bias": self.yaw_bias.value(),
                 },
+                "time": {
+                    "sign": self.time_sign.currentText(),
+                    "target": self.time_combo.currentText(),
+                    "bias": self.time_bias.value(),
+                },
             },
         )
 
@@ -161,10 +166,41 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.yaw_bias.setSingleStep(0.0001)
         self.gridLayout.addWidget(self.yaw_bias, 5, 4)
 
-        dof_options = ["X", "Y", "Z", "Roll", "Pitch", "Yaw"]
+        self.label_13 = QtWidgets.QLabel()
+        self.gridLayout.addWidget(self.label_13, 6, 0)
+        self.time_sign = QtWidgets.QComboBox()
+        self.gridLayout.addWidget(self.time_sign, 6, 1)
+        self.time_combo = QtWidgets.QComboBox()
+        self.gridLayout.addWidget(self.time_combo, 6, 2)
+        self.label_14 = QtWidgets.QLabel()
+        self.gridLayout.addWidget(self.label_14, 6, 3)
+        self.time_bias = QtWidgets.QDoubleSpinBox()
+        self.time_bias.setMinimum(-86400)
+        self.time_bias.setMaximum(86400)
+        self.time_bias.setDecimals(4)
+        self.time_bias.setSingleStep(0.0001)
+        self.gridLayout.addWidget(self.time_bias, 6, 4)
+
+        dof_options = ["X", "Y", "Z", "Roll", "Pitch", "Yaw", "Time"]
         sign_options = ["+", "-"]
-        all_combos = [self.x_combo, self.y_combo, self.z_combo, self.roll_combo, self.pitch_combo, self.yaw_combo]
-        all_signs = [self.x_sign, self.y_sign, self.z_sign, self.roll_sign, self.pitch_sign, self.yaw_sign]
+        all_combos = [
+            self.x_combo,
+            self.y_combo,
+            self.z_combo,
+            self.roll_combo,
+            self.pitch_combo,
+            self.yaw_combo,
+            self.time_combo,
+        ]
+        all_signs = [
+            self.x_sign,
+            self.y_sign,
+            self.z_sign,
+            self.roll_sign,
+            self.pitch_sign,
+            self.yaw_sign,
+            self.time_sign,
+        ]
 
         for combo in all_combos:
             combo.addItems(dof_options)
@@ -175,9 +211,9 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         spacerItem = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding
         )
-        self.gridLayout.addItem(spacerItem, 6, 0, 1, 5)
+        self.gridLayout.addItem(spacerItem, 7, 0, 1, 5)
         self.pushButton = QtWidgets.QPushButton()
-        self.gridLayout.addWidget(self.pushButton, 7, 0, 1, 5)
+        self.gridLayout.addWidget(self.pushButton, 8, 0, 1, 5)
 
         self.retranslateUi()
 
@@ -188,6 +224,7 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.roll_combo.setCurrentIndex(3)
         self.pitch_combo.setCurrentIndex(4)
         self.yaw_combo.setCurrentIndex(5)
+        self.time_combo.setCurrentIndex(6)
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -207,5 +244,7 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.label_10.setText(_translate("MainWindow", "+ (deg)"))
         self.label_11.setText(_translate("MainWindow", "Yaw"))
         self.label_12.setText(_translate("MainWindow", "+ (deg)"))
+        self.label_13.setText(_translate("MainWindow", "Time"))
+        self.label_14.setText(_translate("MainWindow", "+ (s)"))
 
         self.pushButton.setText(_translate("MainWindow", "OK"))

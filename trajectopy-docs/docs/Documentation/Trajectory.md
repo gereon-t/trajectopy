@@ -92,7 +92,7 @@ Returns the datetime of the trajectory
 
 #### <kbd>property</kbd> Trajectory.function_of
 
-Returns the function of the trajectory 
+Returns the variable that currently parametrizes the trajectory. Depending on the sorting of the trajectory, this is either time or arc length. 
 
 ---
 

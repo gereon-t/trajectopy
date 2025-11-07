@@ -195,7 +195,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                 dropdown_items=[
                     PlotableDropdownItem(
                         name=f"{traj.name} Velocity",
-                        data=traj.pos.xyz,
+                        data=traj.pos.xyz,  # unsorted here
                         color_data=traj.speed,
                         colorbar_label="Velocity [m/s]",
                         x_label=x_label,
@@ -213,8 +213,8 @@ class PlotTabs(QtWidgets.QMainWindow):
                 dropdown_items=[
                     PlotableDropdownItem(
                         name=f"{traj.name} Height",
-                        data=traj.pos.xyz,
-                        color_data=traj.pos.z,
+                        data=traj.xyz,
+                        color_data=traj.xyz[:, 2],
                         colorbar_label="Height [m]",
                         x_label=x_label,
                         y_label=y_label,
@@ -280,7 +280,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                     dropdown_items=[
                         PlotableDropdownItem(
                             name="X",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_x * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -290,7 +290,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Y",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_y * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -300,7 +300,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Z",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_z * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -310,7 +310,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Along-Track",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_along * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -320,7 +320,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Horizontal Cross-Track",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_cross_h * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -330,7 +330,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Vertical Cross-Track",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=ate_result.pos_dev_cross_v * mpl_plot_settings.unit_multiplier,
                             colorbar_label=f"Deviation {mpl_plot_settings.unit_str}",
                             x_label=x_label,
@@ -340,7 +340,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Roll",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=np.rad2deg(ate_result.rot_dev_x),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
@@ -350,7 +350,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Pitch",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=np.rad2deg(ate_result.rot_dev_y),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,
@@ -360,7 +360,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                         ),
                         PlotableDropdownItem(
                             name="Yaw",
-                            data=ate_result.trajectory.pos.xyz,
+                            data=ate_result.trajectory.xyz,
                             color_data=np.rad2deg(ate_result.rot_dev_z),
                             colorbar_label="Deviation [°]",
                             x_label=x_label,

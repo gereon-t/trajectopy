@@ -13,7 +13,7 @@ Gereon Tombrink, 2025 tombrink@igg.uni-bonn.de
 match_trajectories(
     traj_from: trajectopy.trajectory.Trajectory,
     traj_to: trajectopy.trajectory.Trajectory,
-    settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=10),
+    settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2),
     inplace: bool = True
 ) → Tuple[trajectopy.trajectory.Trajectory, trajectopy.trajectory.Trajectory]
 ```

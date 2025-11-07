@@ -18,6 +18,20 @@ from trajectopy.core.utils import sparse_least_squares
 logger = logging.getLogger("root")
 
 
+def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, float, float, float]:
+    """
+    Helper function to compute the coefficients for cubic approximation
+    """
+    interval_ratio = relative_length / interval_length
+
+    c0 = 1 - 3 * interval_ratio**2 + 2 * interval_ratio**3
+    c1 = relative_length * (1 - 2 * interval_ratio + interval_ratio**2)
+    c2 = 3 * interval_ratio**2 - 2 * interval_ratio**3
+    c3 = relative_length * (interval_ratio**2 - interval_ratio)
+
+    return c0, c1, c2, c3
+
+
 @dataclass
 class Interval:
     start: float
@@ -33,22 +47,7 @@ class Interval:
 
     @property
     def coefficients(self) -> List[np.ndarray]:
-        return [self._compute_c(v) for v in self.values]
-
-    def _compute_c(self, value: float) -> np.ndarray:
-        """
-        Helper function to compute the coefficients for cubic approximation
-        """
-        relative_length = value - self.start
-        interval_length = self.end - self.start
-        interval_ratio = relative_length / interval_length
-
-        c0 = 1 - 3 * interval_ratio**2 + 2 * interval_ratio**3
-        c1 = relative_length * (1 - 2 * interval_ratio + interval_ratio**2)
-        c2 = 3 * interval_ratio**2 - 2 * interval_ratio**3
-        c3 = relative_length * (interval_ratio**2 - interval_ratio)
-
-        return np.array([c0, c1, c2, c3])
+        return [np.array(_compute_c(v - self.start, self.end - self.start)) for v in self.values]
 
 
 class Intervals:
@@ -112,7 +111,7 @@ class CubicApproximation:
         relative_length = locations - int_start
         interval_length = int_end - int_start
 
-        c0, c1, c2, c3 = self._compute_c(relative_length, interval_length)
+        c0, c1, c2, c3 = _compute_c(relative_length, interval_length)
 
         return (
             f_vals[interval_indices - 1] * c0

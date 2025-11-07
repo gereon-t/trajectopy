@@ -44,6 +44,12 @@ Returns the column names of the dataframe
 
 ---
 
+##### <kbd>property</kbd> ATEResult.function_of
+
+Returns the variable that currently parametrizes the trajectory. Depending on the sorting of the trajectory, this is either time or arc length. 
+
+---
+
 ##### <kbd>property</kbd> ATEResult.has_orientation
 
 Returns True if orientation is available 
@@ -301,6 +307,12 @@ Returns RMS of pitch deviations
 ##### <kbd>property</kbd> ATEResult.rot_rms_z
 
 Returns RMS of yaw deviations 
+
+---
+
+##### <kbd>property</kbd> ATEResult.sorted_abs_rot_dev
+
+Returns absolute rotation deviations sorted according to the trajectory's sorting index 
 
 
 ---

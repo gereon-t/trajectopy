@@ -40,13 +40,14 @@ def plot_pos(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure
 
     legend_names = []
     for traj in trajectories:
+        xyz = traj.xyz
         legend_names.append(traj.name)
 
         # pos fig
         if scatter_3d:
-            ax_pos.plot(traj.pos.x, traj.pos.y, traj.pos.z)
+            ax_pos.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2])
         else:
-            ax_pos.plot(traj.pos.x, traj.pos.y)
+            ax_pos.plot(xyz[:, 0], xyz[:, 1])
 
     if scatter_3d:
         set_aspect_equal_3d(ax_pos)

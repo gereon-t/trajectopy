@@ -150,5 +150,5 @@ def show_report(report_text: str, filepath: str = "") -> None:
 
     with open(file, "w", encoding="utf-8") as f:
         f.write(report_text)
-        url = "file://" + os.path.realpath(f.name)
+        url = f"file://{os.path.realpath(f.name)}"
         webbrowser.open(url)

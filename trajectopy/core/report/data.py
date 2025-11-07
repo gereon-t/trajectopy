@@ -68,7 +68,11 @@ class ATEReportData:
 
     @cached_property
     def function_of(self) -> np.ndarray:
-        return self.ate_result.trajectory.function_of
+        return (
+            self.ate_result.trajectory.datetimes
+            if self.ate_result.trajectory.is_unix_time
+            else self.ate_result.function_of
+        )
 
     @cached_property
     def comb_dev_pos(self) -> np.ndarray:
@@ -76,15 +80,15 @@ class ATEReportData:
 
     @cached_property
     def pos_dev_x(self) -> np.ndarray:
-        return self.ate_result.pos_dev_along if self.settings.directed_ate else self.ate_result.abs_dev.pos_dev[:, 0]
+        return self.ate_result.pos_dev_along if self.settings.directed_ate else self.ate_result.pos_dev_x
 
     @cached_property
     def pos_dev_y(self) -> np.ndarray:
-        return self.ate_result.pos_dev_cross_h if self.settings.directed_ate else self.ate_result.abs_dev.pos_dev[:, 1]
+        return self.ate_result.pos_dev_cross_h if self.settings.directed_ate else self.ate_result.pos_dev_y
 
     @cached_property
     def pos_dev_z(self) -> np.ndarray:
-        return self.ate_result.pos_dev_cross_v if self.settings.directed_ate else self.ate_result.abs_dev.pos_dev[:, 2]
+        return self.ate_result.pos_dev_cross_v if self.settings.directed_ate else self.ate_result.pos_dev_z
 
     @property
     def pos_dev_x_name(self) -> str:

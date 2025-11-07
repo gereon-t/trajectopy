@@ -138,9 +138,7 @@ def _mst_sorting(xyz: np.ndarray) -> Tuple[list, list]:
 
     # breadth-first-search through mst to reconstruct the order
     logger.info("reconstructing point order")
-    idx_sort = _breadth_first_search(mst, root=end_nodes[0])
-
-    return idx_sort
+    return _breadth_first_search(mst, root=end_nodes[0])
 
 
 def _begin_with(idx: list, begin: int) -> list:
