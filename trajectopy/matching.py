@@ -215,6 +215,24 @@ def match_trajectories_spatial(
     return traj_test.apply_index(test_indices), traj_ref.apply_index(ref_indices)
 
 
+def _determine_mean_arc_length(arc_lengths: np.ndarray) -> float:
+    """
+    Determines the mean arc length from a set of arc lengths
+    while considering the circular nature of arc lengths.
+    """
+    max_arc_length = max(arc_lengths)
+    # convert to angles
+    angles = (arc_lengths / max_arc_length) * 2 * np.pi
+    xy = np.c_[np.cos(angles), np.sin(angles)]
+    # average in xy space
+    mean_angle = np.arctan2(np.mean(xy[:, 1]), np.mean(xy[:, 0]))
+
+    # convert back to arc length
+    if mean_angle < 0:
+        mean_angle += 2 * np.pi
+    return (mean_angle / (2 * np.pi)) * max_arc_length
+
+
 def match_trajectories_spatial_interpolation(
     traj_test: Trajectory, traj_ref: Trajectory, max_distance: float = 0.0, k_nearest: int = 10
 ) -> Tuple[Trajectory, Trajectory]:
@@ -260,7 +278,9 @@ def match_trajectories_spatial_interpolation(
 
     matched_arc_lengths = []
     for i, (dists, idxs) in enumerate(zip(distances, closest_indices)):
-        if any(np.isinf(dists)):
+        valid_mask = ~np.isinf(dists)
+        idxs = idxs[valid_mask]
+        if np.any(idxs) is False:
             continue
 
         test_pos = test_xyz[i, :]
@@ -274,7 +294,8 @@ def match_trajectories_spatial_interpolation(
 
         matched_test_pos.append(test_pos)
         matched_ref_pos.append(line_point)
-        matched_arc_lengths.append(np.mean(traj_ref.arc_lengths[idxs]))
+
+        matched_arc_lengths.append(_determine_mean_arc_length(traj_ref.arc_lengths[idxs]))
 
     traj_test = Trajectory(
         name=traj_test.name,
