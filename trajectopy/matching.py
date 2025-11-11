@@ -287,9 +287,11 @@ def match_trajectories_spatial_interpolation(
         fit_line = Line3D.from_points(ref_xyz[idxs, :])
         line_point = fit_line.evaluate_at(test_pos)
 
-        if traj_ref.has_orientation and traj_test.has_orientation:
+        if traj_ref.has_orientation:
             ref_rots = RotationSet.from_quat(traj_ref.rot.as_quat()[idxs])
             matched_ref_rot.append(ref_rots.mean().as_quat())
+
+        if traj_test.has_orientation:
             matched_test_rot.append(traj_test.rot.as_quat()[i])
 
         matched_test_pos.append(test_pos)
