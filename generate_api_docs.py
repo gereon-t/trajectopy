@@ -75,6 +75,15 @@ def create_rpe_result_docs():
         f.write(markdown_docs)
 
 
+def create_alignment_result_docs():
+    import trajectopy.core.alignment.result
+
+    markdown_docs = generator.import2md(trajectopy.core.alignment.result, depth=2)
+
+    with open("trajectopy-docs/docs/Documentation/AlignmentResult.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+
 def create_sorting_docs():
     import trajectopy.sorting
 
@@ -92,6 +101,14 @@ def create_trajectory_docs():
         f.write(markdown_docs)
 
 
+def create_parameter_docs():
+    import trajectopy.core.alignment.parameters
+
+    markdown_docs = generator.import2md(trajectopy.core.alignment.parameters, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Parameters.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+
 def main():
     create_alignment_docs()
     create_evaluation_docs()
@@ -103,6 +120,8 @@ def main():
     create_rpe_result_docs()
     create_sorting_docs()
     create_trajectory_docs()
+    create_parameter_docs()
+    create_alignment_result_docs()
 
 
 if __name__ == "__main__":
