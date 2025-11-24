@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import copy
 import logging
 from dataclasses import dataclass, field
@@ -17,7 +10,7 @@ from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.settings import MatchingMethod, MPLPlotSettings, ReportSettings
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class FileRequestType(Enum):

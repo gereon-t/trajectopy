@@ -1,26 +1,33 @@
-import trajectopy as tpy
+import logging
+
+from trajectopy import settings
+from trajectopy.tools import alignment
+from trajectopy.trajectory import Trajectory
+from trajectopy.visualization import plotly_reports
+
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
     # Import
-    gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-    est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+    est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    settings = tpy.ProcessingSettings()
+    processing_settings = settings.ProcessingSettings()
 
-    alignment_result = tpy.estimate_alignment(
-        traj_from=est_traj,
-        traj_to=gt_traj,
-        alignment_settings=settings.alignment,
-        matching_settings=settings.matching,
+    alignment_result = alignment.estimate_alignment(
+        trajectory=est_traj,
+        other=gt_traj,
+        alignment_settings=processing_settings.alignment,
+        matching_settings=processing_settings.matching,
     )
 
-    report = tpy.create_alignment_report(
+    report = plotly_reports.create_alignment_report(
         alignment_parameters=alignment_result.position_parameters,
         name=alignment_result.name,
     )
-    tpy.show_report(report_text=report, filepath="reports/report.html")
+    plotly_reports.show_report(report_text=report, filepath="reports/report.html")
 
 
 if __name__ == "__main__":

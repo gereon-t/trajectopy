@@ -1,20 +1,29 @@
-import trajectopy as tpy
+import logging
+
+from trajectopy import settings
+from trajectopy.tools import evaluation
+from trajectopy.trajectory import Trajectory
+from trajectopy.visualization import plotly_reports
+
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
     # Import
-    gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-    est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+    est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    settings = tpy.ProcessingSettings()
+    processing_settings = settings.ProcessingSettings()
 
-    ate_result = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj, settings=settings)
-    rpe_result = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj, settings=settings)
+    ate_result = evaluation.ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
+    rpe_result = evaluation.rpe(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
 
-    report_settings = tpy.ReportSettings(ate_unit_is_mm=False, scatter_marker_size=8)
-    report = tpy.create_deviation_report(ate_result=ate_result, rpe_result=rpe_result, report_settings=report_settings)
-    tpy.show_report(report_text=report, filepath="reports/report.html")
+    report_settings = settings.ReportSettings(ate_unit_is_mm=False, scatter_marker_size=8)
+    report = plotly_reports.create_deviation_report(
+        ate_result=ate_result, rpe_result=rpe_result, report_settings=report_settings
+    )
+    plotly_reports.show_report(report_text=report, filepath="reports/report.html")
 
 
 if __name__ == "__main__":

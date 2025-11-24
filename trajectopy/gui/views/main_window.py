@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 import os
 import shutil
@@ -36,10 +29,10 @@ from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
-from trajectopy.path import YEAR
 from trajectopy.settings import MPLPlotSettings, PlotBackend, ReportSettings
+from trajectopy.utils import YEAR
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class TrajectopyGUI(QtWidgets.QMainWindow):

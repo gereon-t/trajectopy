@@ -1,13 +1,6 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from trajectopy.path import FULL_ICON_FILE_PATH
+from trajectopy.utils import FULL_ICON_FILE_PATH
 
 
 class AboutGUI(QtWidgets.QMainWindow):

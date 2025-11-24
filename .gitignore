@@ -62,3 +62,5 @@ trajectopy-docs/site/
 .ruff_cache/
 .python-version
 scripts
+
+.sync-exclude.lst

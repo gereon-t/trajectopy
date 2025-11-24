@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 
 from PyQt6 import QtCore, QtWidgets
@@ -23,9 +16,9 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
 )
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy.matching import MatchingMethod
+from trajectopy.settings import MatchingMethod
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class TrajectoryContextMenu(QtWidgets.QMenu):
@@ -306,7 +299,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         if not self.get_selection().reference_is_set:
             return
 
-        if self.get_selection().reference_entry.trajectory.pos.local_transformer is None:
+        if self.get_selection().reference_entry.trajectory.positions.local_transformer is None:
             return
 
         epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)

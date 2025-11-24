@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 import os
 from typing import List
@@ -24,7 +17,7 @@ from trajectopy.gui.models.entries import AlignmentEntry, ResultEntry
 from trajectopy.gui.models.selection import ResultSelection
 from trajectopy.gui.models.table_model import RequestTableModel
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class ResultTableModel(RequestTableModel):

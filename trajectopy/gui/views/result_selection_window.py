@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 from typing import List
 
 from PyQt6 import QtCore, QtWidgets

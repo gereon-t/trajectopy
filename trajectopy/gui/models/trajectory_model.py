@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import copy
 import logging
 import os
@@ -23,7 +16,7 @@ from trajectopy.gui.models.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.models.table_model import RequestTableModel
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class TrajectoryTableModel(RequestTableModel):

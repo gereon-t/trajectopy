@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 import threading
 from pathlib import Path
@@ -12,7 +5,6 @@ from typing import Callable, Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from trajectopy.core.input_output.rosbag import trajectories_from_rosbag
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
@@ -25,9 +17,10 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.gui.util import show_progress
+from trajectopy.gui.utils import show_progress
+from trajectopy.reading.rosbag import trajectories_from_rosbag
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class FileManager(QObject):

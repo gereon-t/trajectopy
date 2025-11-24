@@ -1,26 +1,33 @@
-import trajectopy as tpy
+import logging
+
+from trajectopy import settings
+from trajectopy.tools import evaluation
+from trajectopy.trajectory import Trajectory
+from trajectopy.visualization import plotly_reports
+
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
     # Import
-    gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-    est_traj_1 = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
-    est_traj_2 = tpy.Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
+    gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+    est_traj_1 = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    est_traj_2 = Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
 
     # default settings
-    settings = tpy.ProcessingSettings()
+    processing_settings = settings.ProcessingSettings()
 
-    ate_result_1 = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj_1, settings=settings)
-    rpe_result_1 = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj_1, settings=settings)
+    ate_result_1 = evaluation.ate(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
+    rpe_result_1 = evaluation.rpe(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
 
-    ate_result_2 = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj_2, settings=settings)
-    rpe_result_2 = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj_2, settings=settings)
+    ate_result_2 = evaluation.ate(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
+    rpe_result_2 = evaluation.rpe(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
 
-    multi_report = tpy.create_deviation_report(
+    multi_report = plotly_reports.create_deviation_report(
         ate_result=[ate_result_1, ate_result_2], rpe_result=[rpe_result_1, rpe_result_2]
     )
 
-    tpy.show_report(report_text=multi_report, filepath="reports/report.html")
+    plotly_reports.show_report(report_text=multi_report, filepath="reports/report.html")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import copy
 import logging
 import threading
@@ -14,12 +7,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from trajectopy.alignment import estimate_alignment
-from trajectopy.core.evaluation.comparison import (
-    compare_trajectories_absolute,
-    compare_trajectories_relative,
-)
-from trajectopy.evaluation import ate, rpe
+from trajectopy.definitions import Sorting
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
     ResultModelRequestType,
@@ -38,13 +26,18 @@ from trajectopy.gui.models.entries import (
     TrajectoryEntry,
 )
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.gui.util import show_progress
-from trajectopy.matching import match_trajectories
-from trajectopy.merging import average_trajectories, merge_trajectories
-from trajectopy.rotationset import RotationSet
-from trajectopy.sorting import Sorting
+from trajectopy.gui.utils import show_progress
+from trajectopy.rotations import Rotations
+from trajectopy.tools import (
+    alignment,
+    approximation,
+    evaluation,
+    matching,
+    merging,
+    sorting,
+)
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -325,7 +318,7 @@ class TrajectoryManager(QObject):
         if (selected_entries := self.selected_trajectory_entries()) is None:
             return
 
-        merged_trajectory = merge_trajectories([entry.trajectory for entry in selected_entries])
+        merged_trajectory = merging.merge_trajectories([entry.trajectory for entry in selected_entries])
 
         new_trajectory_entry = TrajectoryEntry(
             full_filename="",
@@ -348,7 +341,7 @@ class TrajectoryManager(QObject):
             None.
         """
         entry_pair.entry.trajectory.sorting = (
-            Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.ARC_LENGTH else Sorting.ARC_LENGTH
+            Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.PATH_LENGTH else Sorting.PATH_LENGTH
         )
         return (entry_pair.entry,)
 
@@ -364,7 +357,9 @@ class TrajectoryManager(QObject):
             TrajectoryEntry: The sorted trajectory.
         """
         logger.info("Sorting trajectory ...")
-        entry_pair.entry.trajectory.sort_spatially(sorting_settings=entry_pair.entry.settings.sorting)
+        sorting.sort_spatially(
+            trajectory=entry_pair.entry.trajectory, sorting_settings=entry_pair.entry.settings.sorting
+        )
         entry_pair.entry.state.sorting_known = True
         entry_pair.entry.trajectory.name += " (sorted)"
         return (
@@ -393,7 +388,9 @@ class TrajectoryManager(QObject):
 
         for selected_entry in selected_entries:
             logger.info(f"Dividing trajectory {selected_entry.trajectory.name} into laps ...")
-            laps = selected_entry.trajectory.divide_into_laps(selected_entry.settings.sorting)
+            laps = sorting.divide_into_laps(
+                trajectory=selected_entry.trajectory, sorting_settings=selected_entry.settings.sorting
+            )
 
             for i, lap in enumerate(laps):
                 lap.name += f" Lap {i+1}"
@@ -420,7 +417,11 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The approximated trajectory.
         """
-        entry_pair.entry.trajectory.approximate(approximation_settings=entry_pair.entry.settings.approximation)
+        approximation.approximate_cubic(
+            trajectory=entry_pair.entry.trajectory,
+            approximation_settings=entry_pair.entry.settings.approximation,
+            inplace=True,
+        )
         entry_pair.entry.state.approximated = True
         entry_pair.entry.trajectory.name += " (approximated)"
         return (
@@ -446,7 +447,7 @@ class TrajectoryManager(QObject):
         if (selected_entries := self.selected_trajectory_entries()) is None:
             return
 
-        averaged_trajectory = average_trajectories([entry.trajectory for entry in selected_entries])
+        averaged_trajectory = merging.average_trajectories([entry.trajectory for entry in selected_entries])
 
         new_trajectory_entry = TrajectoryEntry(
             full_filename="",
@@ -470,17 +471,16 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = match_trajectories(
-            traj_from=entry_pair.entry.trajectory,
-            traj_to=reference_entry.trajectory,
-            settings=entry_pair.entry.settings.matching,
-            inplace=False,
+        traj_test, traj_ref = matching.match_trajectories(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            matching_settings=entry_pair.entry.settings.matching,
         )
 
         if len(traj_ref) != len(traj_test):
             raise ValueError("Something went wrong during matching.")
 
-        comparison_result = compare_trajectories_absolute(traj_test=traj_test, traj_ref=traj_ref)
+        comparison_result = evaluation._compare_trajectories_absolute(trajectory=traj_test, other=traj_ref)
 
         return (AbsoluteDeviationEntry(deviations=comparison_result),)
 
@@ -498,19 +498,19 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = match_trajectories(
-            traj_from=entry_pair.entry.trajectory,
-            traj_to=reference_entry.trajectory,
-            settings=entry_pair.entry.settings.matching,
+        traj_test, traj_ref = matching.match_trajectories(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            matching_settings=entry_pair.entry.settings.matching,
         )
 
         if len(traj_ref) != len(traj_test):
             raise ValueError("Something went wrong during matching.")
 
-        comparison_result = compare_trajectories_relative(
-            traj_test=traj_test,
-            traj_ref=traj_ref,
-            settings=entry_pair.entry.settings.relative_comparison,
+        comparison_result = evaluation._compare_trajectories_relative(
+            trajectory=traj_test,
+            other=traj_ref,
+            relative_comparison_settings=entry_pair.entry.settings.relative_comparison,
         )
 
         return (RelativeDeviationEntry(deviations=comparison_result),)
@@ -529,8 +529,8 @@ class TrajectoryManager(QObject):
         Returns:
             None
         """
-        entry_pair.entry.trajectory.pos.epsg = entry_pair.request.target_epsg
-        entry_pair.entry.trajectory.pos.build_local_transformer()
+        entry_pair.entry.trajectory.positions.epsg = entry_pair.request.target_epsg
+        entry_pair.entry.trajectory.positions.build_local_transformer()
         return (entry_pair.entry,)
 
     @staticmethod
@@ -546,7 +546,7 @@ class TrajectoryManager(QObject):
         Returns:
             None
         """
-        entry_pair.entry.trajectory.pos.to_epsg(entry_pair.request.target_epsg)
+        entry_pair.entry.trajectory.positions.to_epsg(entry_pair.request.target_epsg)
         return (entry_pair.entry,)
 
     @staticmethod
@@ -575,14 +575,14 @@ class TrajectoryManager(QObject):
             "Time": 6,
         }
 
-        xyz = entry_pair.entry.trajectory.pos.xyz
+        xyz = entry_pair.entry.trajectory.positions.xyz
 
         if entry_pair.entry.trajectory.has_orientation:
             rpy = np.rad2deg(entry_pair.entry.trajectory.rpy)
         else:
             rpy = np.zeros(xyz.shape)
 
-        xyz_rpy_t = np.hstack((xyz, rpy, entry_pair.entry.trajectory.tstamps[:, None]))
+        xyz_rpy_t = np.hstack((xyz, rpy, entry_pair.entry.trajectory.timestamps[:, None]))
         new_xyz_rpy_t = np.zeros_like(xyz_rpy_t)
         for i, mapping in enumerate(dof_mapping.values()):
             new_column = (xyz_rpy_t[:, index_mapping[mapping["target"]]] + mapping["bias"]) * (
@@ -590,10 +590,10 @@ class TrajectoryManager(QObject):
             )
             new_xyz_rpy_t[:, i] = new_column
 
-        entry_pair.entry.trajectory.tstamps = new_xyz_rpy_t[:, 6]
-        entry_pair.entry.trajectory.pos.xyz = new_xyz_rpy_t[:, :3]
+        entry_pair.entry.trajectory.timestamps = new_xyz_rpy_t[:, 6]
+        entry_pair.entry.trajectory.positions.xyz = new_xyz_rpy_t[:, :3]
         if entry_pair.entry.trajectory.has_orientation:
-            entry_pair.entry.trajectory.rot = RotationSet.from_euler(
+            entry_pair.entry.trajectory.rotations = Rotations.from_euler(
                 seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True
             )
 
@@ -614,14 +614,14 @@ class TrajectoryManager(QObject):
             raise ValueError("No reference trajectory selected.")
 
         reference_trajectory = reference_entry.trajectory
-        reference_epsg = reference_trajectory.pos.epsg
-        reference_local_transformer = reference_trajectory.pos.local_transformer
+        reference_epsg = reference_trajectory.positions.epsg
+        reference_local_transformer = reference_trajectory.positions.local_transformer
 
         if reference_local_transformer is None:
             raise ValueError("Reference trajectory has an unknown EPSG code.")
 
-        entry_pair.entry.trajectory.pos.local_transformer = reference_local_transformer
-        entry_pair.entry.trajectory.pos.to_epsg(reference_epsg)
+        entry_pair.entry.trajectory.positions.local_transformer = reference_local_transformer
+        entry_pair.entry.trajectory.positions.to_epsg(reference_epsg)
         return (entry_pair.entry,)
 
     @staticmethod
@@ -640,14 +640,16 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        alignment_result = estimate_alignment(
-            traj_from=entry_pair.entry.trajectory,
-            traj_to=reference_entry.trajectory,
+        alignment_result = alignment.estimate_alignment(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
             alignment_settings=entry_pair.entry.settings.alignment,
             matching_settings=entry_pair.entry.settings.matching,
         )
 
-        traj_aligned = entry_pair.entry.trajectory.apply_alignment(alignment_result=alignment_result, inplace=False)
+        traj_aligned = alignment.apply_alignment(
+            trajectory=entry_pair.entry.trajectory, alignment_result=alignment_result, inplace=False
+        )
         entry_pair.entry.state.aligned = True
         traj_aligned.name += " (aligned)"
 
@@ -676,8 +678,10 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: A new trajectory entry with the aligned trajectory.
         """
-        aligned_trajectory = entry_pair.entry.trajectory.apply_alignment(
-            alignment_result=entry_pair.request.alignment.alignment_result, inplace=False
+        aligned_trajectory = alignment.apply_alignment(
+            trajectory=entry_pair.entry.trajectory,
+            alignment_result=entry_pair.request.alignment.alignment_result,
+            inplace=False,
         )
         entry_pair.entry.state.aligned = True
         aligned_trajectory.name += " (aligned)"
@@ -708,13 +712,13 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = match_trajectories(
-            traj_from=entry_pair.entry.trajectory,
-            traj_to=reference_entry.trajectory,
-            settings=entry_pair.entry.settings.matching,
+        traj_test, traj_ref = matching.match_trajectories(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            matching_settings=entry_pair.entry.settings.matching,
         )
 
-        traj_aligned = traj_test.adopt_first_pose(trajectory=traj_ref)
+        traj_aligned = alignment.adopt_first_pose(trajectory=traj_test, other=traj_ref)
         entry_pair.entry.state.aligned = True
         traj_aligned.name += " (aligned)"
 
@@ -747,10 +751,10 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = match_trajectories(
-            traj_from=entry_pair.entry.trajectory,
-            traj_to=reference_entry.trajectory,
-            settings=entry_pair.entry.settings.matching,
+        traj_test, traj_ref = matching.match_trajectories(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            matching_settings=entry_pair.entry.settings.matching,
         )
         reference_entry.state.matched = True
         entry_pair.entry.state.matched = True
@@ -787,10 +791,10 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        ate_result, alignment_result = ate(
-            trajectory_est=entry_pair.entry.trajectory,
-            trajectory_gt=reference_entry.trajectory,
-            settings=entry_pair.entry.settings,
+        ate_result, alignment_result = evaluation.ate(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            processing_settings=entry_pair.entry.settings,
             return_alignment=True,
         )
 
@@ -810,10 +814,10 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        rpe_result = rpe(
-            trajectory_est=entry_pair.entry.trajectory,
-            trajectory_gt=reference_entry.trajectory,
-            settings=entry_pair.entry.settings,
+        rpe_result = evaluation.rpe(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            processing_settings=entry_pair.entry.settings,
         )
 
         return (RelativeDeviationEntry(deviations=rpe_result),)

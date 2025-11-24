@@ -1,8 +1,8 @@
 
-## <kbd>module</kbd> `trajectopy.core.alignment.parameters`
-Trajectopy - Trajectory Evaluation in Python 
+## <kbd>module</kbd> `trajectopy.alignment.parameters`
 
-Gereon Tombrink, 2025 tombrink@igg.uni-bonn.de 
+
+
 
 **Global Variables**
 ---------------
@@ -283,13 +283,13 @@ Parameter set for a similarity transformation
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    trans_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    trans_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    trans_z: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    rot_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    rot_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    rot_z: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    scale: trajectopy.core.alignment.parameters.Parameter = <factory>
+    trans_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    trans_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    trans_z: trajectopy.alignment.parameters.Parameter = <factory>,
+    rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    rot_z: trajectopy.alignment.parameters.Parameter = <factory>,
+    scale: trajectopy.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -514,9 +514,9 @@ Parameter set for a leverarm
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    z: trajectopy.core.alignment.parameters.Parameter = <factory>
+    x: trajectopy.alignment.parameters.Parameter = <factory>,
+    y: trajectopy.alignment.parameters.Parameter = <factory>,
+    z: trajectopy.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -720,17 +720,17 @@ Parameter set for spatio-temporal alignment
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    sim_trans_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_trans_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_trans_z: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_rot_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_rot_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_rot_z: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sim_scale: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    time_shift: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    lever_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    lever_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    lever_z: trajectopy.core.alignment.parameters.Parameter = <factory>
+    sim_trans_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_trans_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_trans_z: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_rot_z: trajectopy.alignment.parameters.Parameter = <factory>,
+    sim_scale: trajectopy.alignment.parameters.Parameter = <factory>,
+    time_shift: trajectopy.alignment.parameters.Parameter = <factory>,
+    lever_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    lever_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    lever_z: trajectopy.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -1050,9 +1050,9 @@ Parameter set for sensor b-frame rotation
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    sensor_rot_x: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sensor_rot_y: trajectopy.core.alignment.parameters.Parameter = <factory>,
-    sensor_rot_z: trajectopy.core.alignment.parameters.Parameter = <factory>
+    sensor_rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
+    sensor_rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
+    sensor_rot_z: trajectopy.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 

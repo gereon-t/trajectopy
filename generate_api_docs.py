@@ -3,93 +3,52 @@ from lazydocs import MarkdownGenerator
 generator = MarkdownGenerator()
 
 
-def create_alignment_docs():
-    import trajectopy.alignment
+def create_tools_docs():
+    from trajectopy.tools import (
+        alignment,
+        approximation,
+        evaluation,
+        interpolation,
+        matching,
+        merging,
+        sorting,
+    )
 
-    markdown_docs = generator.import2md(trajectopy.alignment, depth=2)
+    markdown_docs = generator.import2md(alignment, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Alignment.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
 
-    with open("trajectopy-docs/docs/Documentation/Alignment.md", "w", encoding="utf-8") as f:
+    markdown_docs = generator.import2md(approximation, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Approximation.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+    markdown_docs = generator.import2md(evaluation, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Evaluation.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+    markdown_docs = generator.import2md(interpolation, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Interpolation.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+    markdown_docs = generator.import2md(matching, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Matching.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+    markdown_docs = generator.import2md(merging, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Merging.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+    markdown_docs = generator.import2md(sorting, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Tools/Sorting.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
-def create_evaluation_docs():
-    import trajectopy.evaluation
+def create_results_docs():
+    import trajectopy.results
 
-    markdown_docs = generator.import2md(trajectopy.evaluation, depth=2)
+    markdown_docs = generator.import2md(trajectopy.results, depth=2)
 
-    with open("trajectopy-docs/docs/Documentation/Evaluation.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_matching_docs():
-    import trajectopy.matching
-
-    markdown_docs = generator.import2md(trajectopy.matching, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/Matching.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_merging_docs():
-    import trajectopy.merging
-
-    markdown_docs = generator.import2md(trajectopy.merging, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/Merging.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_plotting_docs():
-    import trajectopy.plotting
-
-    markdown_docs = generator.import2md(trajectopy.plotting, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/Plotting.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_report_docs():
-    import trajectopy.report
-
-    markdown_docs = generator.import2md(trajectopy.report, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/Report.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_ate_result_docs():
-    import trajectopy.core.evaluation.ate_result
-
-    markdown_docs = generator.import2md(trajectopy.core.evaluation.ate_result, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/ATEResult.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_rpe_result_docs():
-    import trajectopy.core.evaluation.rpe_result
-
-    markdown_docs = generator.import2md(trajectopy.core.evaluation.rpe_result, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/RPEResult.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_alignment_result_docs():
-    import trajectopy.core.alignment.result
-
-    markdown_docs = generator.import2md(trajectopy.core.alignment.result, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/AlignmentResult.md", "w", encoding="utf-8") as f:
-        f.write(markdown_docs)
-
-
-def create_sorting_docs():
-    import trajectopy.sorting
-
-    markdown_docs = generator.import2md(trajectopy.sorting, depth=2)
-
-    with open("trajectopy-docs/docs/Documentation/Sorting.md", "w", encoding="utf-8") as f:
+    with open("trajectopy-docs/docs/Documentation/Results.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
@@ -102,26 +61,27 @@ def create_trajectory_docs():
 
 
 def create_parameter_docs():
-    import trajectopy.core.alignment.parameters
+    import trajectopy.alignment.parameters
 
-    markdown_docs = generator.import2md(trajectopy.core.alignment.parameters, depth=2)
+    markdown_docs = generator.import2md(trajectopy.alignment.parameters, depth=2)
     with open("trajectopy-docs/docs/Documentation/Parameters.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
+def create_settings_docs():
+    import trajectopy.settings
+
+    markdown_docs = generator.import2md(trajectopy.settings, depth=2)
+    with open("trajectopy-docs/docs/Documentation/Settings.md", "w", encoding="utf-8") as f:
+        f.write(markdown_docs)
+
+
 def main():
-    create_alignment_docs()
-    create_evaluation_docs()
-    create_matching_docs()
-    create_merging_docs()
-    create_plotting_docs()
-    create_report_docs()
-    create_ate_result_docs()
-    create_rpe_result_docs()
-    create_sorting_docs()
+    create_tools_docs()
+    create_results_docs()
     create_trajectory_docs()
     create_parameter_docs()
-    create_alignment_result_docs()
+    create_settings_docs()
 
 
 if __name__ == "__main__":

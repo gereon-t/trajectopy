@@ -1,6 +1,6 @@
 import unittest
 
-from trajectopy.evaluation import ate, rpe
+from trajectopy.tools.evaluation import ate, rpe
 from trajectopy.trajectory import Trajectory
 
 
@@ -12,7 +12,7 @@ class TestPipeline(unittest.TestCase):
         self.est = Trajectory.from_file("example_data/KITTI_ORB.traj")
 
     def test_ate(self) -> None:
-        ate(trajectory_gt=self.gt, trajectory_est=self.est)
+        ate(other=self.gt, trajectory=self.est)
 
     def test_rpe(self) -> None:
-        rpe(trajectory_gt=self.gt, trajectory_est=self.est)
+        rpe(other=self.gt, trajectory=self.est)

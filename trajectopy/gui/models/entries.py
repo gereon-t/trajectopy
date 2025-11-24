@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 import os
 import uuid
@@ -16,15 +9,15 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from trajectopy.core.alignment.parameters import AlignmentParameters
-from trajectopy.core.alignment.result import AlignmentResult
-from trajectopy.core.evaluation.ate_result import ATEResult
-from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.input_output.header import HeaderData
+from trajectopy.alignment.parameters import AlignmentParameters
+from trajectopy.reading.header import HeaderData
+from trajectopy.results.alignment_result import AlignmentResult
+from trajectopy.results.ate_result import ATEResult
+from trajectopy.results.rpe_result import RPEResult
 from trajectopy.settings import AlignmentEstimationSettings, ProcessingSettings
 from trajectopy.trajectory import Trajectory
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -161,14 +154,14 @@ class TrajectoryEntry(Entry):
             self.name,
             bool_to_str(self.set_as_reference),
             len(self.trajectory),
-            self.trajectory.pos.epsg,
+            self.trajectory.positions.epsg,
             self.trajectory.sorting.value,
             self.full_filename,
         )
 
     @property
     def has_orientations(self) -> str:
-        return bool_to_str(self.trajectory.rot is not None)
+        return bool_to_str(self.trajectory.rotations is not None)
 
     @property
     def filename(self) -> str:
@@ -179,22 +172,22 @@ class TrajectoryEntry(Entry):
         """Shows a new window with trajectory properties"""
         return {
             "Name": self.trajectory.name,
-            "Date": f"{datetime.fromtimestamp(self.trajectory.tstamps[0]).strftime('%Y-%m-%d %H:%M:%S')} UTC - "
-            f"{datetime.fromtimestamp(self.trajectory.tstamps[-1]).strftime('%Y-%m-%d %H:%M:%S')} UTC",
-            "Duration": f"{timedelta(seconds=float(self.trajectory.tstamps[-1] - self.trajectory.tstamps[0]))}",
+            "Date": f"{datetime.fromtimestamp(self.trajectory.timestamps[0]).strftime('%Y-%m-%d %H:%M:%S')} UTC - "
+            f"{datetime.fromtimestamp(self.trajectory.timestamps[-1]).strftime('%Y-%m-%d %H:%M:%S')} UTC",
+            "Duration": f"{timedelta(seconds=float(self.trajectory.timestamps[-1] - self.trajectory.timestamps[0]))}",
             "EPSG": (
-                f"{self.trajectory.pos.crs}, {self.trajectory.pos.crs.name}"
-                if self.trajectory.pos.crs is not None
+                f"{self.trajectory.positions.crs}, {self.trajectory.positions.crs.name}"
+                if self.trajectory.positions.crs is not None
                 else "local / unknown"
             ),
-            "Orientation available": "yes" if self.trajectory.rot is not None else "no",
+            "Orientation available": "yes" if self.trajectory.rotations is not None else "no",
             "Number of Poses": str(len(self.trajectory)),
             "Sort By:": self.trajectory.sorting.value,
             "Length [m]": f"{self.trajectory.total_length:.3f}",
             "Data Rate [Hz]": f"{self.trajectory.data_rate:.3f}",
-            "Minimum Speed [m/s]": f"{np.min(self.trajectory.speed):.3f}",
-            "Maximum Speed [m/s]": f"{np.max(self.trajectory.speed):.3f}",
-            "Average Speed [m/s]": f"{np.mean(self.trajectory.speed):.3f}",
+            "Minimum Speed [m/s]": f"{np.min(self.trajectory.absolute_velocity):.3f}",
+            "Maximum Speed [m/s]": f"{np.max(self.trajectory.absolute_velocity):.3f}",
+            "Average Speed [m/s]": f"{np.mean(self.trajectory.absolute_velocity):.3f}",
             "Sorting known": "yes" if self.state.sorting_known else "no",
             "Approximated": "yes" if self.state.approximated else "no",
             "Intersected": "yes" if self.state.intersected else "no",

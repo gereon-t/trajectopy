@@ -1,7 +1,9 @@
 from rich.console import Console
 from rich.table import Table
 
-import trajectopy as tpy
+from trajectopy import settings
+from trajectopy.tools import evaluation
+from trajectopy.trajectory import Trajectory
 
 
 def dict_to_table(data: dict):
@@ -18,13 +20,13 @@ def main():
     console = Console()
 
     # Import
-    gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-    est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+    est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    settings = tpy.ProcessingSettings()
+    processing_settings = settings.ProcessingSettings()
 
-    rpe_result = tpy.rpe(trajectory_gt=gt_traj, trajectory_est=est_traj, settings=settings)
+    rpe_result = evaluation.rpe(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
     console.print(dict_to_table(rpe_result.property_dict))
 
 

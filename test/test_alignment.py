@@ -4,16 +4,16 @@ from test.util import transform_randomly
 
 import numpy as np
 
-from trajectopy.alignment import estimate_alignment
-from trajectopy.core.alignment.direct import align_rotations
-from trajectopy.core.alignment.parameters import AlignmentParameters
-from trajectopy.rotationset import RotationSet
+from trajectopy.alignment.direct import align_rotations
+from trajectopy.alignment.parameters import AlignmentParameters
+from trajectopy.rotations import Rotations
 from trajectopy.settings import (
     AlignmentEstimationSettings,
     AlignmentSettings,
     AlignmentStochastics,
     MatchingSettings,
 )
+from trajectopy.tools.alignment import estimate_alignment
 
 
 class TestAlignment(unittest.TestCase):
@@ -28,8 +28,8 @@ class TestAlignment(unittest.TestCase):
         )
 
         alignment_result = estimate_alignment(
-            traj_from=open_loop_trajectory.copy(),
-            traj_to=transformed,
+            trajectory=open_loop_trajectory.copy(),
+            other=transformed,
             alignment_settings=AlignmentSettings(
                 estimation_settings=AlignmentEstimationSettings.from_components(
                     similarity=similarity_enabled,
@@ -72,21 +72,21 @@ class TestAlignment(unittest.TestCase):
     def test_sensor_alignment_loop(self):
         trajectory = open_loop_trajectory.copy()
         trajectory_rotated = trajectory.copy()
-        random_rot = RotationSet.from_euler(
+        random_rot = Rotations.from_euler(
             seq="xyz",
             angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
             degrees=True,
         )
         print(f"Random rotation: {random_rot.as_euler(seq='xyz', degrees=True)}")
-        trajectory_rotated.rot = random_rot * trajectory_rotated.rot
+        trajectory_rotated.rotations = random_rot * trajectory_rotated.rotations
 
-        sensor_alignment = align_rotations(trajectory_rotated.rot, trajectory.rot)
+        sensor_alignment = align_rotations(trajectory_rotated.rotations, trajectory.rotations)
 
         trajectory_rotated_back = trajectory_rotated.copy()
 
         # apply as in Trajectory.apply_alignment()
-        trajectory_rotated_back.rot = sensor_alignment.rotation_set * trajectory_rotated_back.rot
-        alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rot, trajectory.rot)
+        trajectory_rotated_back.rotations = sensor_alignment.rotation_set * trajectory_rotated_back.rotations
+        alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rotations, trajectory.rotations)
 
         print(
             "Alignment between rotated back trajectory and original trajectory:"
@@ -100,9 +100,9 @@ class TestAlignment(unittest.TestCase):
         )
 
     def test_rotation_alignment(self):
-        rotations_1 = RotationSet.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
+        rotations_1 = Rotations.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
         rotations_2 = (
-            RotationSet.from_euler(
+            Rotations.from_euler(
                 seq="xyz",
                 angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
                 degrees=True,

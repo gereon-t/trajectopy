@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 from typing import Dict
 
 from PyQt6 import QtCore, QtWidgets
@@ -16,7 +9,7 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import PropertyEntry
 from trajectopy.gui.models.property_model import PropertyTableModel
-from trajectopy.gui.util import save_file_dialog
+from trajectopy.gui.utils import save_file_dialog
 
 
 class PropertiesGUI(QtWidgets.QMainWindow):

@@ -1,372 +1,165 @@
 
 ## <kbd>class</kbd> `Trajectory`
-Class representing a trajectory, i.e. position and orientation of a plattform over time 
-
-
-- Position-Computations are always done in a local frame 
-- Time stamps are always in UTC time 
-- Rotations are always defined in a East-North-Up frame 
+Class representing a trajectory containing synchronized position, orientation, and time data. 
 
 
 
 **Attributes:**
  
- - <b>`pos`</b> (PointSet):  Position of the trajectory 
- - <b>`rot`</b> (RotationSet):  Orientation of the trajectory 
- - <b>`tstamps`</b> (np.ndarray):  Time stamps of the trajectory 
- - <b>`name`</b> (str):  Name of the trajectory 
- - <b>`arc_lengths`</b> (np.ndarray):  Arc lengths of the trajectory 
- - <b>`speed_3d`</b> (np.ndarray):  3D speed of the trajectory 
- - <b>`sorting`</b> (Sorting):  Sorting of the trajectory 
+ - <b>`positions`</b> (Positions):  Container for spatial coordinates and coordinate reference system (EPSG) data. 
+ - <b>`rotations`</b> (Rotations):  Container for orientation data (quaternions), or None if not provided. 
+ - <b>`timestamps`</b> (np.ndarray):  A 1D array of timestamps corresponding to each pose. 
+ - <b>`name`</b> (str):  An identifier string for the trajectory. 
+ - <b>`path_lengths`</b> (np.ndarray):  A 1D array of cumulative path lengths starting from zero. 
+ - <b>`sorting`</b> (Sorting):  The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH). 
 
-Methods: 
-
-
- - <b>`__init__`</b>:  Initialize trajectory 
- - <b>`__str__`</b>:  Returns string describing trajectory 
- - <b>`__repr__`</b>:  Returns string representation of trajectory 
- - <b>`__len__`</b>:  Return number of poses 
- - <b>`__eq__`</b>:  Check if two trajectories are equal 
- - <b>`init_arc_lengths`</b>:  Initialize arc lengths 
- - <b>`copy`</b>:  Deep copy of itself 
- - <b>`from_file`</b>:  Create trajectory from file 
- - <b>`sort_switching_index`</b>:  Returns the index that switches the sorting of the trajectory 
- - <b>`sorting_index`</b>:  Returns the index that sorts the trajectory 
- - <b>`function_of`</b>:  Returns the function of the trajectory 
- - <b>`function_of_unit`</b>:  Returns the unit of the function of the trajectory 
- - <b>`function_of_label`</b>:  Returns the label of the function of the trajectory 
- - <b>`xyz`</b>:  Returns the xyz coordinates of the trajectory 
- - <b>`quat`</b>:  Returns the quaternion of the trajectory 
- - <b>`rpy`</b>:  Returns the roll, pitch, yaw of the trajectory 
- - <b>`to_dataframe`</b>:  Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory 
- - <b>`to_file`</b>:  Writes trajectory to ascii file 
- - <b>`from_numpy`</b>:  Initialize trajectory using numpy arrays 
- - <b>`se3`</b>:  Returns SE3 pose list 
- - <b>`se3.setter`</b>:  Sets position and rotation from se3 list 
- - <b>`data_rate`</b>:  Returns data rate 
- - <b>`total_length`</b>:  Return the total trajectory arc_length 
- - <b>`speed_3d`</b>:  Returns computed speeds or custom speeds 
- - <b>`speed_3d.setter`</b>:  Sets custom speeds 
- - <b>`speed`</b>:  Returns trajectory speeds calculated using consecutive point distances 
- - <b>`crop`</b>:  Crops trajectory to timespan defined by t_start and t_end 
- - <b>`interpolate`</b>:  Interpolates a trajectory to specified timestamps 
- - <b>`_interpolate_rotations`</b>:  Function for rotation interpolation of a trajectory 
- - <b>`_interpolate_positions`</b>:  Function for position interpolation of a trajectory 
- - <b>`match_timestamps`</b>:  Truncates trajectory to only those poses where the timestamps exactly match "tstamps" 
- - <b>`intersect`</b>:  Intersects trajectory with a given timestamp vector 
- - <b>`apply_index`</b>:  Applies index to the trajectory 
- - <b>`apply_transformation`</b>:  Applies transformation to trajectory 
+Properties: 
+ - <b>`velocity_xyz`</b> (np.ndarray):  The 3D velocity vector $[v_x, v_y, v_z]$ for each pose. 
+ - <b>`absolute_velocity`</b> (np.ndarray):  The scalar speed (magnitude of velocity) for each pose. 
+ - <b>`se3`</b> (List[np.ndarray]):  A list of $4 \times 4$ homogeneous transformation matrices representing the full pose. 
+ - <b>`xyz`</b> (np.ndarray):  The position coordinates sorted according to the current sorting strategy. 
+ - <b>`quat`</b> (np.ndarray):  The orientation quaternions $[x, y, z, w]$ sorted according to the current sorting strategy. 
+ - <b>`rpy`</b> (np.ndarray):  The Euler angles (roll, pitch, yaw) sorted according to the current sorting strategy. 
+ - <b>`total_length`</b> (float):  The total distance covered by the trajectory in meters. 
+ - <b>`data_rate`</b> (float):  The average sampling frequency of the trajectory in Hz. 
+ - <b>`index`</b> (np.ndarray):  The current independent variable array (time or path-length) used for parametrization. 
 
 ### <kbd>method</kbd> `Trajectory.__init__`
 
 ```python
 __init__(
-    pos: trajectopy.pointset.PointSet,
-    rot: Optional[trajectopy.rotationset.RotationSet] = None,
-    tstamps: Optional[numpy.ndarray] = None,
+    xyz: numpy.ndarray,
+    timestamps: numpy.ndarray | None = None,
+    quat: numpy.ndarray | None = None,
+    rpy: numpy.ndarray | None = None,
+    epsg: int = 0,
     name: str = '',
-    arc_lengths: Optional[numpy.ndarray] = None,
-    speed_3d: Optional[numpy.ndarray] = None,
-    sorting: trajectopy.sorting.Sorting = <Sorting.TIME: 'time'>
+    path_lengths: Optional[numpy.ndarray] = None,
+    velocity_xyz: Optional[numpy.ndarray] = None,
+    sorting: trajectopy.definitions.Sorting = <Sorting.TIME: 'time'>
 ) → None
 ```
 
+Initialize a Trajectory object. 
 
 
 
+**Args:**
+ 
+ - <b>`xyz`</b> (np.ndarray):  N x 3 array of position coordinates. 
+ - <b>`timestamps`</b> (np.ndarray | None, optional):  Array of timestamps. If None, a range index is used. 
+ - <b>`quat`</b> (np.ndarray | None, optional):  N x 4 array of quaternions (x, y, z, w). Mutually exclusive with `rpy`. 
+ - <b>`rpy`</b> (np.ndarray | None, optional):  N x 3 array of Roll-Pitch-Yaw angles. Mutually exclusive with `quat`. 
+ - <b>`epsg`</b> (int, optional):  EPSG code for the coordinate system. Defaults to 0. 
+ - <b>`name`</b> (str, optional):  Name of the trajectory. Defaults to generic counter name. 
+ - <b>`path_lengths`</b> (Union[np.ndarray, None], optional):  Pre-calculated path lengths. If None, they are computed from xyz. 
+ - <b>`velocity_xyz`</b> (Union[np.ndarray, None], optional):  Pre-calculated 3D velocities. If None, they are computed via gradient. 
+ - <b>`sorting`</b> (Sorting, optional):  Definition of the sorting logic (TIME or ARC_LENGTH). Defaults to Sorting.TIME. 
 
+
+
+**Raises:**
+ 
+ - <b>`TrajectoryError`</b>:  If both `quat` and `rpy` are provided, or if array dimensions do not match. 
+
+
+---
+
+#### <kbd>property</kbd> Trajectory.absolute_velocity
+
+Returns the norm (magnitude) of the 3D velocity vectors. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.data_rate
 
-Returns data rate 
+Calculates the average data rate (frequency in Hz) based on timestamp differences. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.datetimes
 
-Returns the datetime of the trajectory 
-
----
-
-#### <kbd>property</kbd> Trajectory.function_of
-
-Returns the variable that currently parametrizes the trajectory. Depending on the sorting of the trajectory, this is either time or arc length. 
-
----
-
-#### <kbd>property</kbd> Trajectory.function_of_label
-
-Returns the label of the function of the trajectory 
-
----
-
-#### <kbd>property</kbd> Trajectory.function_of_unit
-
-Returns the unit of the function of the trajectory 
+Returns the timestamps converted to Pandas datetime objects (unit='s'). 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.has_orientation
 
-Returns True if orientation is available 
+Returns True if valid rotation data is available. 
+
+---
+
+#### <kbd>property</kbd> Trajectory.index
+
+Returns the independent variable currently parameterizing the trajectory. This is either the Timestamp vector or the Path Length vector, depending on `self.sorting`. 
+
+---
+
+#### <kbd>property</kbd> Trajectory.index_label
+
+Returns the label string of the current index (e.g., 'time [s]'). 
+
+---
+
+#### <kbd>property</kbd> Trajectory.index_unit
+
+Returns the unit string of the current index ('s' for Time, 'm' for Path Length). 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.is_unix_time
 
-Returns True if time is in unix format 
+Checks if the supplied trajectories have (likely) unix timestamps as seconds and converts them to datetime objects. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.quat
 
-Returns the quaternion of the trajectory 
-
-In contrast to the rot.as_quat() attribute, this method reflects the current sorting of the trajectory. 
+Returns the quaternions sorted according to the current `sorting` strategy. Returns zeros if no rotations are present. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.rpy
 
-Returns the roll, pitch, yaw of the trajectory 
-
-In contrast to the rot.as_euler(seq="xyz") attribute, this method reflects the current sorting of the trajectory. 
+Returns the Roll-Pitch-Yaw angles sorted according to the current `sorting` strategy. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.se3
 
-Returns SE3 pose list 
+Returns a list of SE3 poses (4x4 homogeneous transformation matrices). 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.sort_switching_index
 
-Returns the index that switches the sorting of the trajectory 
+Returns an array of indices that would switch the current sorting (e.g., unsort the data). 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.sorting_index
 
-Returns the index that sorts the trajectory 
-
----
-
-#### <kbd>property</kbd> Trajectory.speed
-
-Returns trajectory speeds calculated using consecutive point distances 
-
----
-
-#### <kbd>property</kbd> Trajectory.speed_3d
-
-Returns computed speeds or custom speeds 
+Returns the indices used to sort the trajectory based on the current `sorting` attribute (Time or Path Length). 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.total_length
 
-Return the total trajectory arc_length. 
+Returns the total cumulative path length of the trajectory in meters. 
+
+---
+
+#### <kbd>property</kbd> Trajectory.velocity_xyz
+
+Returns the 3D velocity vectors. If not set manually, they are computed via gradient of the positions over time. 
 
 ---
 
 #### <kbd>property</kbd> Trajectory.xyz
 
-Returns the xyz coordinates of the trajectory 
+Returns the XYZ coordinates sorted according to the current `sorting` strategy. Note: This differs from `self.positions.xyz`, which retains the original order. 
 
-In contrast to the pos.xyz attribute, this method reflects the current sorting of the trajectory. 
 
-
-
----
-
-### <kbd>method</kbd> `Trajectory.adopt_first_orientation`
-
-```python
-adopt_first_orientation(
-    trajectory: 'Trajectory',
-    inplace: bool = True
-) → Trajectory
-```
-
-Transform trajectory so that the first orientation is identical in both 
-
-
-
-**Args:**
- 
- - <b>`trajectory`</b> (Trajectory):  Target Trajectory 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Transformed trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.adopt_first_pose`
-
-```python
-adopt_first_pose(trajectory: 'Trajectory', inplace: bool = True) → Trajectory
-```
-
-Transform trajectory so that the first pose is identical in both 
-
-
-
-**Args:**
- 
- - <b>`trajectory`</b> (Trajectory):  Target Trajectory 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Transformed trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.adopt_first_position`
-
-```python
-adopt_first_position(
-    trajectory: 'Trajectory',
-    inplace: bool = True
-) → Trajectory
-```
-
-Transform trajectory so that the first position is identical in both 
-
-
-
-**Args:**
- 
- - <b>`trajectory`</b> (Trajectory):  Target Trajectory 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Transformed trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.apply_alignment`
-
-```python
-apply_alignment(
-    alignment_result: trajectopy.core.alignment.result.AlignmentResult,
-    inplace: bool = True
-) → Trajectory
-```
-
-Transforms trajectory using alignment parameters. 
-
-After computing the alignment parameters needed to align two trajectories, they can be applied to arbitrary trajectories. 
-
-
-
-**Args:**
-  alignment_result (AlignmentResult) 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Aligned trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.apply_index`
-
-```python
-apply_index(
-    index: Union[list, numpy.ndarray],
-    inplace: bool = True
-) → Trajectory
-```
-
-Applies index to the trajectory 
-
-This will be done either in-place or using a new instance of a trajectory. The index can be used to filter and / or sort the components of the trajectory. 
-
-Those components are: 
-- timestamps (tstamps) 
-- positions (xyz) 
-- rotations (rot) 
-- arc lengths (arc_lengths) 
-- sorting index (_sort_index) 
-
-
-
-**Args:**
- 
- - <b>`index`</b> (Union[list, np.ndarray]):  index that should be applied 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Trajectory with index applied. 
-
----
-
-### <kbd>method</kbd> `Trajectory.apply_transformation`
-
-```python
-apply_transformation(
-    transformation: numpy.ndarray,
-    inplace: bool = True
-) → Trajectory
-```
-
-Applies transformation to trajectory 
-
-
-
-**Args:**
- 
- - <b>`transformation`</b> (np.ndarray):  4x4 Transformation matrix 
- - <b>`inplace`</b> (bool, optional):  Perform in-place. Defaults to True. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Transformed trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.approximate`
-
-```python
-approximate(
-    approximation_settings: trajectopy.settings.ApproximationSettings = ApproximationSettings(position_interval_size=0.15, position_min_observations=25, rotation_window_size=0.15),
-    inplace: bool = True
-) → Trajectory
-```
-
-Approximates the trajectory using piecewise cubic polynomial. 
-
-
-
-**Args:**
- 
- - <b>`approximation_settings`</b> (ApproximationSettings):  Approximation settings. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  Approximated trajectory. 
 
 ---
 
@@ -376,7 +169,7 @@ Approximates the trajectory using piecewise cubic polynomial.
 copy() → Trajectory
 ```
 
-Deep copy of itself 
+Returns a deep copy of the trajectory instance. 
 
 ---
 
@@ -391,47 +184,22 @@ crop(
 ) → Trajectory
 ```
 
-Crops trajectory to timespan defined by t_start and t_end 
+Crops (or cuts) the trajectory based on a time window. 
 
 
 
 **Args:**
  
- - <b>`t_start`</b> (float):  Start timestamp of desired time span 
- - <b>`t_end`</b> (float):  End timestamp of desired time span 
- - <b>`inverse`</b> (bool, optional):  If true, 'crop' turns  into 'cut', i.e. everthing  outside of t_start and t_end  will be removed.  Defaults to False. 
- - <b>`inplace`</b> (bool, optional):  Perform crop in-place.  Defaults to True. 
+ - <b>`t_start`</b> (float):  Start timestamp of the window. 
+ - <b>`t_end`</b> (float):  End timestamp of the window. 
+ - <b>`inverse`</b> (bool, optional):  If True, removes data *inside* the window (cutting).  If False, keeps data *inside* the window (cropping). Defaults to False. 
+ - <b>`inplace`</b> (bool, optional):  If True, modifies self. If False, returns a new instance. Defaults to True. 
 
 
 
 **Returns:**
  
- - <b>`Trajectory`</b>:  Cropped trajectory 
-
----
-
-### <kbd>method</kbd> `Trajectory.divide_into_laps`
-
-```python
-divide_into_laps(
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
-    return_lap_indices: bool = False
-) → Union[List[ForwardRef('Trajectory')], Tuple[List[ForwardRef('Trajectory')], numpy.ndarray]]
-```
-
-Divides the trajectory into laps. 
-
-
-
-**Args:**
- 
- - <b>`sorting_settings`</b> (SortingSettings):  Sorting settings. 
-
-
-
-**Returns:**
- 
- - <b>`List[Trajectory]`</b>:  List of trajectories, each representing a lap. 
+ - <b>`Trajectory`</b>:  The modified or new trajectory instance. 
 
 ---
 
@@ -441,77 +209,32 @@ Divides the trajectory into laps.
 from_file(filename: str, io_stream: bool = False) → Trajectory
 ```
 
-Create trajectory from file 
+Create a trajectory instance from a file. 
 
-The file must be a csv file containing columns for at least the timestamp, x, y and z coordinates of the trajectory. Those fields must be named "t", "px", "py" and "pz" in the header using the #fields tag. However, by default a trajectory with "t,px,py,pz,qx,qy,qz,qw" fields is assumed. Additional fields include the arc length, specified by "l", and the speed, specified by "vx", "vy" and "vz". The delimiter can be specified using the #delimiter tag. The default delimiter is a comma. 
-
-
-
-**Args:**
- 
- - <b>`filename`</b> (str):  path to file 
- - <b>`io_stream`</b> (bool, optional):  If true, the file is read from a stream. 
-
-
-
-**Returns:**
- 
- - <b>`Trajectory`</b>:  trajectory object 
-
----
-
-### <kbd>classmethod</kbd> `Trajectory.from_numpy`
-
-```python
-from_numpy(
-    xyz: numpy.ndarray,
-    quat: numpy.ndarray,
-    tstamps: numpy.ndarray,
-    epsg: int = 0
-) → Trajectory
-```
-
-Initialize trajectory using numpy arrays 
-
----
-
-### <kbd>method</kbd> `Trajectory.init_arc_lengths`
-
-```python
-init_arc_lengths()
-```
-
-
-
-
-
----
-
-### <kbd>method</kbd> `Trajectory.interpolate`
-
-```python
-interpolate(
-    tstamps: Union[list, numpy.ndarray],
-    inplace: bool = True
-) → Trajectory
-```
-
-Interpolates a trajectory to specified timestamps 
-
-This method removes timestamps from tstamps if they lie outside of the timestamp range of the trajectory (self). Since providing values for those timestamps would require an extrapolation and not an interpolation, this behaviour is consistent with the definition of this method. 
+The file is expected to be a CSV-like format. It handles extraction of timestamps, xyz positions, rotations, path lengths, and velocities via `trajectory_io`. 
 
 
 
 **Args:**
  
- - <b>`tstamps`</b> (list):  Interpolation timestamps 
- - <b>`inplace`</b> (bool, optional):  Perform in-place interpolation.  Defaults to True. 
+ - <b>`filename`</b> (str):  Path to the file or string content if io_stream is True. 
+ - <b>`io_stream`</b> (bool, optional):  If True, `filename` is treated as the raw string content  of the file/stream. Defaults to False. 
 
 
 
 **Returns:**
  
- - <b>`Trajectory`</b>:  Interpolated trajectory 
+ - <b>`Trajectory`</b>:  The loaded trajectory object. 
+
+---
+
+### <kbd>method</kbd> `Trajectory.init_path_lengths`
+
+```python
+init_path_lengths()
+```
+
+Computes cumulative path lengths based on Euclidean distances between consecutive local coordinates. 
 
 ---
 
@@ -519,84 +242,82 @@ This method removes timestamps from tstamps if they lie outside of the timestamp
 
 ```python
 intersect(
-    tstamps: numpy.ndarray,
+    timestamps: numpy.ndarray,
     max_gap_size: float = 10.0,
     inplace: bool = True
 ) → Trajectory
 ```
 
-Intersects trajectory with a given timestamp vector 
+Filters the trajectory to overlap with a reference timestamp vector. 
 
-After intersection, the trajectory covers the same timespan as 'tstamps'. Further, gaps larger than 'max_gap_size' are removed. If two consecutive timespans in tstamps have a difference of more than 'max_gap_size' seconds, they are considered as the limits of a gap. All timestamps of the trajectory that lie within this gap will be removed. 
+This method finds the common time span between self and the reference `timestamps`, crops self to that span, and then filters points that are either exact matches or exist within valid gaps defined by `max_gap_size`. 
 
 
 
 **Args:**
  
- - <b>`tstamps`</b> (np.ndarray):  Intersection timespans 
- - <b>`max_gap_size`</b> (float, optional):  Maximum allowed gap between timespans.  If Defaults to 10.0. 
- - <b>`inplace`</b> (bool, optional):  Perform intersection in-place.  Defaults to True. 
+ - <b>`timestamps`</b> (np.ndarray):  The reference timestamps to intersect with. 
+ - <b>`max_gap_size`</b> (float, optional):  The maximum allowed time gap (in seconds) between  reference timestamps to include trajectory points. Defaults to 10.0. 
+ - <b>`inplace`</b> (bool, optional):  If True, modifies self. Defaults to True. 
 
 
 
 **Raises:**
  
- - <b>`ValueError`</b>:  If timespans do not overlap. 
+ - <b>`ValueError`</b>:  If the time spans do not overlap. 
 
 
 
 **Returns:**
  
- - <b>`Trajectory`</b>:  Intersected trajectory 
+ - <b>`Trajectory`</b>:  The intersected trajectory. 
 
 ---
 
-### <kbd>method</kbd> `Trajectory.match_timestamps`
+### <kbd>method</kbd> `Trajectory.mask`
 
 ```python
-match_timestamps(tstamps: numpy.ndarray, inplace: bool = True) → Trajectory
+mask(mask: Union[list, numpy.ndarray], inplace: bool = True) → Trajectory
 ```
 
-Truncates trajectory to only those poses where the timestamps exactly match "tstamps" 
+Applies a boolean mask or index array to filter all trajectory components. 
+
+Filtered components include: timestamps, positions, rotations, path lengths, and velocities. 
 
 
 
 **Args:**
  
- - <b>`tstamps`</b> (np.ndarray):  Input timestamps 
- - <b>`inplace`</b> (bool, optional):  Perform matching in-place. Defaults to True. 
+ - <b>`mask`</b> (Union[list, np.ndarray]):  Boolean array or list of indices to keep. 
+ - <b>`inplace`</b> (bool, optional):  If True, modifies self. Defaults to True. 
 
 
 
 **Returns:**
  
- - <b>`Trajectory`</b>:  Trajectory with matched timestamps 
+ - <b>`Trajectory`</b>:  The masked trajectory. 
 
 ---
 
-### <kbd>method</kbd> `Trajectory.sort_spatially`
+### <kbd>method</kbd> `Trajectory.overlaps_with`
 
 ```python
-sort_spatially(
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
-    inplace: bool = True
-) → Trajectory
+overlaps_with(other: 'Trajectory') → bool
 ```
 
-Sorts the trajectory spatially. 
+Checks if the time span of this trajectory overlaps with another. 
 
 
 
 **Args:**
  
- - <b>`sorting_settings`</b> (SortingSettings):  Sorting settings. 
- - <b>`inplace`</b> (bool, optional):  Whether to sort the trajectory in-place. Defaults to True. 
+ - <b>`other`</b> (Trajectory):  The trajectory to compare against. 
 
 
 
 **Returns:**
  
- - <b>`Trajectory`</b>:  Sorted trajectory. 
+ - <b>`bool`</b>:  True if the time ranges overlap, False otherwise. 
 
 ---
 
@@ -606,21 +327,21 @@ Sorts the trajectory spatially.
 to_dataframe(sort_by: str = '') → DataFrame
 ```
 
-Returns a pandas dataframe containing tstamps, xyz, quat and speed_3d of the trajectory. 
+Exports the trajectory to a Pandas DataFrame. 
 
-The dataframe is sorted by the current sorting attribute (time or arc_length). 
+Columns usually include: time, path_length, pos_x, pos_y, pos_z, speed_x, speed_y, speed_z, and rotation columns (rot_x/y/z/w) if available. 
 
 
 
 **Args:**
  
- - <b>`sort_by`</b> (str, optional):  Column to sort by. This  overrides the current sort_by  attribute. 
+ - <b>`sort_by`</b> (str, optional):  Column name to sort by. If empty, uses `self.sorting`. 
 
 
 
 **Returns:**
  
- - <b>`pd.DataFrame`</b>:  Trajectory as dataframe 
+ - <b>`pd.DataFrame`</b>:  A dataframe containing the trajectory data. 
 
 ---
 
@@ -630,13 +351,14 @@ The dataframe is sorted by the current sorting attribute (time or arc_length).
 to_file(filename: str, mode: str = 'w') → None
 ```
 
-Writes trajectory to ascii file 
+Writes the trajectory to an ASCII file using the format defined in `to_string`. 
 
 
 
 **Args:**
  
- - <b>`filename`</b> (str):  Output filename 
+ - <b>`filename`</b> (str):  The output file path. 
+ - <b>`mode`</b> (str, optional):  File open mode. Defaults to "w". 
 
 ---
 
@@ -646,15 +368,22 @@ Writes trajectory to ascii file
 to_kml(filename: str, precision: float = 1e-06) → str
 ```
 
-Create a KML file from a trajectory. 
+Exports the trajectory to a Google Earth KML file. 
+
+Requires the trajectory to have a valid EPSG code so it can be converted to WGS84 (EPSG:4326). 
 
 
 
 **Args:**
  
- - <b>`trajectory`</b> (Trajectory):  Trajectory to be exported. 
- - <b>`filename`</b> (str):  Filename of the KML file. 
- - <b>`precision`</b> (float, optional):  Precision of the exported positions in degree. Defaults to 1e-6. 
+ - <b>`filename`</b> (str):  The output filename (e.g., "track.kml"). 
+ - <b>`precision`</b> (float, optional):  Coordinate precision in degrees for rounding/simplification. Defaults to 1e-6. 
+
+
+
+**Raises:**
+ 
+ - <b>`ValueError`</b>:  If the trajectory does not have a known EPSG code. 
 
 ---
 
@@ -664,5 +393,30 @@ Create a KML file from a trajectory.
 to_string() → str
 ```
 
-Writes trajectory to a string instead of a file. 
+Serializes the trajectory to a CSV-formatted string with metadata headers. 
+
+Headers included: #epsg, #name, #nframe, #sorting, #fields. 
+
+---
+
+### <kbd>method</kbd> `Trajectory.transform`
+
+```python
+transform(transformation: numpy.ndarray, inplace: bool = True) → Trajectory
+```
+
+Applies a rigid body transformation to the trajectory poses. 
+
+
+
+**Args:**
+ 
+ - <b>`transformation`</b> (np.ndarray):  A 4x4 homogeneous transformation matrix. 
+ - <b>`inplace`</b> (bool, optional):  If True, modifies self. Defaults to True. 
+
+
+
+**Returns:**
+ 
+ - <b>`Trajectory`</b>:  The transformed trajectory. 
 

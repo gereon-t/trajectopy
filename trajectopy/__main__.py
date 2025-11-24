@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import argparse
 import ctypes
 import logging
@@ -17,7 +10,7 @@ from rich.logging import RichHandler
 
 from trajectopy import __version__ as VERSION
 from trajectopy.gui.views.main_window import TrajectopyGUI
-from trajectopy.path import ICON_BG_FILE_PATH
+from trajectopy.utils import ICON_BG_FILE_PATH
 
 logging.basicConfig(
     format="%(message)s",

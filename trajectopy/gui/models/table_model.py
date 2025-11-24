@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import copy
 import logging
 from enum import Enum
@@ -21,7 +14,7 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import Entry
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=Entry)
 

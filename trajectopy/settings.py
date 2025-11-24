@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import json
 from abc import ABC
 from dataclasses import dataclass, field
@@ -363,7 +356,7 @@ if __name__ == "__main__":
 
 
 @dataclass
-class ApproximationSettings(Settings):
+class CubicApproximationSettings(Settings):
     """Dataclass defining approximation configuration"""
 
     position_interval_size: float = 0.15
@@ -456,6 +449,10 @@ class MatchingMethod(Enum):
     UNKNOWN = "unknown"
 
 
+class InterpolationMethod(Enum):
+    LINEAR = "linear"
+
+
 @dataclass
 class MatchingSettings(Settings):
     method: MatchingMethod = MatchingMethod.INTERPOLATION
@@ -532,7 +529,7 @@ class ProcessingSettings(Settings):
     alignment: AlignmentSettings = field(default_factory=AlignmentSettings)
     matching: MatchingSettings = field(default_factory=MatchingSettings)
     relative_comparison: RelativeComparisonSettings = field(default_factory=RelativeComparisonSettings)
-    approximation: ApproximationSettings = field(default_factory=ApproximationSettings)
+    approximation: CubicApproximationSettings = field(default_factory=CubicApproximationSettings)
     sorting: SortingSettings = field(default_factory=SortingSettings)
 
 

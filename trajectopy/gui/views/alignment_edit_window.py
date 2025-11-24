@@ -1,17 +1,10 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from trajectopy.gui.models.entries import AlignmentEntry
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class AlignmentEditWindow(QtWidgets.QMainWindow):

@@ -1,19 +1,9 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 import os
 from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from trajectopy.core.evaluation.ate_result import ATEResult
-from trajectopy.core.evaluation.rpe_result import RPEResult
-from trajectopy.core.plotting.mpl.plot_tabs import PlotTabs
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -26,16 +16,19 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
     ResultEntry,
 )
-from trajectopy.gui.util import show_progress
-from trajectopy.report import (
+from trajectopy.gui.utils import show_progress
+from trajectopy.results.ate_result import ATEResult
+from trajectopy.results.rpe_result import RPEResult
+from trajectopy.settings import PlotBackend
+from trajectopy.visualization.mpl_plot_tabs import PlotTabs
+from trajectopy.visualization.plotly_reports import (
     create_alignment_report,
     create_deviation_report,
     create_trajectory_report,
     show_report,
 )
-from trajectopy.settings import PlotBackend
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class PlotManager(QObject):

@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import datetime
 from enum import Enum, auto
 from typing import Dict, Tuple
@@ -14,6 +7,26 @@ import numpy as np
 
 UNIX_TIME_THRESHOLD = 1_000_000
 DATE_FORMATTER = mdates.DateFormatter("%H:%M:%S")
+
+
+class Sorting(str, Enum):
+    TIME = "time"
+    PATH_LENGTH = "path_length"
+
+    @classmethod
+    def from_str(cls, value: str) -> "Sorting":
+        if value == "time":
+            return Sorting.TIME
+        elif value == "path_length" or value == "arc_length":
+            return Sorting.PATH_LENGTH
+        else:
+            raise ValueError(f"Unknown sorting method: {value}")
+
+
+class TrajectoriesSorting(Enum):
+    ALL_TIME = auto()
+    ALL_SPATIAL = auto()
+    MIXED = auto()
 
 
 class Unit(Enum):

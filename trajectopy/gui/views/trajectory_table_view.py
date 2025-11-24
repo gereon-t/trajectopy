@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 from typing import List, Optional, Union
 
@@ -29,7 +22,7 @@ from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.views.trajectory_context_menu import TrajectoryContextMenu
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class TrajectoryTableView(QtWidgets.QTableView):

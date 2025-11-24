@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QAction, QCursor

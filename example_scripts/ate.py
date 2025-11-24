@@ -1,7 +1,13 @@
+import logging
+
 from rich.console import Console
 from rich.table import Table
 
-import trajectopy as tpy
+from trajectopy import settings
+from trajectopy.tools import evaluation
+from trajectopy.trajectory import Trajectory
+
+logging.basicConfig(level=logging.INFO)
 
 
 def dict_to_table(data: dict):
@@ -18,13 +24,13 @@ def main():
     console = Console()
 
     # Import
-    gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-    est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+    est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    settings = tpy.ProcessingSettings()
+    processing_settings = settings.ProcessingSettings()
 
-    ate_result = tpy.ate(trajectory_gt=gt_traj, trajectory_est=est_traj, settings=settings)
+    ate_result = evaluation.ate(trajectory=est_traj, other=gt_traj, processing_settings=processing_settings)
     console.print(dict_to_table(ate_result.property_dict))
 
 

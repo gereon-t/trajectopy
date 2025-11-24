@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import numpy as np
 import pandas as pd
 from PyQt6.QtCore import pyqtSignal, pyqtSlot

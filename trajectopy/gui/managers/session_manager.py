@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import glob
 import logging
 import os
@@ -28,7 +21,7 @@ from trajectopy.gui.managers.requests import (
     generic_request_handler,
 )
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 class SessionManager(QObject):

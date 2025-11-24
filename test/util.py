@@ -2,11 +2,12 @@ from typing import Tuple
 
 import numpy as np
 
-from trajectopy.core.alignment.parameters import AlignmentParameters, Parameter
-from trajectopy.core.alignment.result import AlignmentResult
+from trajectopy.alignment.parameters import AlignmentParameters, Parameter
 from trajectopy.definitions import Unit
-from trajectopy.pointset import PointSet
-from trajectopy.rotationset import RotationSet
+from trajectopy.positions import Positions
+from trajectopy.results.alignment_result import AlignmentResult
+from trajectopy.rotations import Rotations
+from trajectopy.tools.alignment import apply_alignment
 from trajectopy.trajectory import Trajectory
 
 
@@ -30,10 +31,10 @@ def generate_noisy_trajectory(num: int) -> Trajectory:
     xyz = xyz[indices]
     rpy = rpy[indices]
 
-    pointset = PointSet(xyz=xyz, epsg=0)
-    rotationset = RotationSet.from_euler(seq="xyz", angles=rpy, degrees=False)
+    pointset = Positions(xyz=xyz, epsg=0)
+    rotationset = Rotations.from_euler(seq="xyz", angles=rpy, degrees=False)
 
-    return Trajectory(pos=pointset, rot=rotationset, tstamps=tstamps)
+    return Trajectory(positions=pointset, rotations=rotationset, timestamps=tstamps)
 
 
 def generate_trajectory(num: int) -> Trajectory:
@@ -56,10 +57,10 @@ def generate_trajectory(num: int) -> Trajectory:
     xyz = xyz[indices]
     rpy = rpy[indices]
 
-    pointset = PointSet(xyz=xyz, epsg=0)
-    rotationset = RotationSet.from_euler(seq="xyz", angles=rpy, degrees=False)
+    pointset = Positions(xyz=xyz, epsg=0)
+    rotationset = Rotations.from_euler(seq="xyz", angles=rpy, degrees=False)
 
-    return Trajectory(pos=pointset, rot=rotationset, tstamps=tstamps)
+    return Trajectory(positions=pointset, rotations=rotationset, timestamps=tstamps)
 
 
 def random_number(lower_bound: float, upper_bound: float) -> float:
@@ -72,7 +73,7 @@ def generate_transformation(
     lever_enabled: bool = True,
 ):
     if similarity_enabled:
-        rand_rot = RotationSet.random().as_euler("xyz", degrees=False) * 0.2
+        rand_rot = Rotations.random().as_euler("xyz", degrees=False) * 0.2
         sim_trans_x = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)
         sim_trans_y = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)
         sim_trans_z = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)
@@ -127,7 +128,7 @@ def transform_randomly(
     parameters = generate_transformation(
         similarity_enabled=similarity_enabled, time_shift_enabled=time_shift_enabled, lever_enabled=lever_enabled
     )
-    transformed = trajectory.apply_alignment(
-        alignment_result=AlignmentResult(position_parameters=parameters), inplace=False
+    transformed = apply_alignment(
+        trajectory, alignment_result=AlignmentResult(position_parameters=parameters), inplace=False
     )
     return transformed, parameters

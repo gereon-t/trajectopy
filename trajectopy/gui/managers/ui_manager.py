@@ -1,10 +1,3 @@
-"""
-Trajectopy - Trajectory Evaluation in Python
-
-Gereon Tombrink, 2025
-tombrink@igg.uni-bonn.de
-"""
-
 import logging
 from typing import Any, Dict, Tuple
 
@@ -25,7 +18,7 @@ from trajectopy.gui.managers.requests import (
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import AlignmentEntry
-from trajectopy.gui.util import (
+from trajectopy.gui.utils import (
     browse_dir_dialog,
     read_file_dialog,
     save_file_dialog,
@@ -37,7 +30,7 @@ from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
 
-logger = logging.getLogger("root")
+logger = logging.getLogger(__name__)
 
 
 def merge_dicts(dicts: Tuple[Dict[str, str], ...]):
