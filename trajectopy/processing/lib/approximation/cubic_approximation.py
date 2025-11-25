@@ -60,13 +60,11 @@ class CubicApproximation:
     Class for piecewise cubic approximation
     """
 
-    def __init__(
-        self, function_of: np.ndarray, values: np.ndarray, min_win_size: float = 0.25, min_obs: int = 3
-    ) -> None:
+    def __init__(self, index: np.ndarray, values: np.ndarray, min_win_size: float = 0.25, min_obs: int = 3) -> None:
         """
         Inititalization of a new CubicApproximation class object
         """
-        self.function_of = function_of
+        self.index = index
         self.values = values
         self.min_win_size = min_win_size
         self.min_obs = max(3, min_obs)
@@ -124,7 +122,7 @@ class CubicApproximation:
         """
         Approximation using piece-wise cubic polynomials
         """
-        var_red = self.function_of - self.function_of[0]
+        var_red = self.index - self.index[0]
 
         intervals: list[Interval] = []
         current_interval_obj = Interval(start=0.0, end=0.0)
@@ -161,7 +159,7 @@ class CubicApproximation:
         self.parameters = xS
         self.est_obs = lS
         self.residuals = residuals
-        self.interval_steps = t_final + self.function_of[0]
+        self.interval_steps = t_final + self.index[0]
 
     @staticmethod
     def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, float, float, float]:
@@ -178,7 +176,7 @@ class CubicApproximation:
         return c0, c1, c2, c3
 
     def _design_matrix(self, intervals: List[Interval]) -> lil_matrix:
-        rows = len(self.function_of)
+        rows = len(self.index)
         columns = 2 * len(intervals) + 2
 
         a_design = lil_matrix((rows, columns), dtype=float)

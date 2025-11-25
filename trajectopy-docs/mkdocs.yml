@@ -1,7 +1,16 @@
 site_name: Trajectopy
+site_description: Trajectory Evaluation in Python - A comprehensive package for trajectory analysis, alignment, and comparison
+site_author: Gereon Tombrink
+site_url: https://gereon-t.github.io/trajectopy/
+
+repo_url: https://github.com/gereon-t/trajectopy
+repo_name: gereon-t/trajectopy
+
 theme:
   name: material
   logo: assets/icon.png
+  favicon: assets/icon.png
+  
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -13,6 +22,7 @@ theme:
     - media: "(prefers-color-scheme: light)"
       scheme: default 
       primary: white
+      accent: blue
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -21,28 +31,141 @@ theme:
     - media: "(prefers-color-scheme: dark)"
       primary: black
       scheme: slate
+      accent: blue
       toggle:
         icon: material/brightness-4
         name: Switch to system preference
+  
   features:
+    - content.code.annotate
     - content.code.copy
-repo_url: https://github.com/gereon-t/trajectopy
-repo_name: gereon-t/trajectopy
+    - content.tabs.link
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
 
-extra_javascript: 
-    - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+# Page navigation structure
+nav:
+  - Home: index.md
+  - User Guide: user_guide.md
+  - File Formats: file_formats.md
+  - Settings: settings.md
+  - API Reference:
+    - api/index.md
+    - Core:
+      - Trajectory: api/core/trajectory.md
+      - Positions: api/core/positions.md
+      - Rotations: api/core/rotations.md
+      - Settings: api/core/settings.md
+    - Processing:
+      - Alignment: api/processing/alignment.md
+      - Evaluation: api/processing/evaluation.md
+      - Interpolation: api/processing/interpolation.md
+      - Matching: api/processing/matching.md
+      - Merging: api/processing/merging.md
+      - Sorting: api/processing/sorting.md
+      - Approximation: api/processing/approximation.md
+      - Parameters: api/processing/parameters.md
+    - Results:
+      - ATE Result: api/results/ate_result.md
+      - RPE Result: api/results/rpe_result.md
+      - Alignment Result: api/results/alignment_result.md
+    - Visualization:
+      - Matplotlib Plots: api/visualization/mpl_plots.md
+      - Plotly Plots: api/visualization/plotly_plots.md
+      - HTML Reports: api/visualization/plotly_reports.md
 
+# Plugins
+plugins:
+  - search:
+      lang: en
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            docstring_section_style: table
+            members_order: source
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: true
+            show_bases: true
+            show_submodules: false
+            heading_level: 2
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+
+# Extensions
 markdown_extensions:
-  - extra
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
   - tables
-  - mdx_math:
-      enable_dollar_delimiter: True
-  - fenced_code
+  - toc:
+      permalink: true
+      toc_depth: 3
 
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra CSS and JavaScript
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+# Additional configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/gereon-t/trajectopy
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/trajectopy/
+  version:
+    provider: mike

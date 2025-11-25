@@ -118,7 +118,7 @@ class ATEResult:
             )
 
     @property
-    def function_of(self) -> np.ndarray:
+    def index(self) -> np.ndarray:
         """
         Returns the variable that currently parametrizes the trajectory.
         Depending on the sorting of the trajectory, this is either time or arc length.

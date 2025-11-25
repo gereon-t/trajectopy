@@ -31,7 +31,7 @@ def approximate_cubic(
         Trajectory: The approximated trajectory.
     """
     xyz_approx = _piecewise_cubic(
-        function_of=trajectory.index,
+        index=trajectory.index,
         values=trajectory.xyz,
         min_win_size=approximation_settings.position_interval_size,
         min_obs=approximation_settings.position_min_observations,
@@ -100,7 +100,7 @@ def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: 
 
 
 def _piecewise_cubic(
-    function_of: np.ndarray,
+    index: np.ndarray,
     values: np.ndarray,
     min_win_size: float = 0.25,
     min_obs: int = 25,
@@ -110,7 +110,7 @@ def _piecewise_cubic(
     Approximates a piecewise cubic function for a given set of input values.
 
     Args:
-        function_of (np.ndarray): The input values to approximate the function for.
+        index (np.ndarray): The input values to approximate the function for.
         values (np.ndarray): The output values corresponding to the input values.
         int_size (float, optional): The interval size for the approximation. Defaults to 0.15.
         min_obs (int, optional): The minimum number of observations required for the approximation. Defaults to 25.
@@ -121,9 +121,7 @@ def _piecewise_cubic(
     """
     # Cubic spline approximation
     # least squares
-    approx_list = [
-        CubicApproximation(function_of, values[:, i], min_win_size, min_obs) for i in range(values.shape[1])
-    ]
+    approx_list = [CubicApproximation(index, values[:, i], min_win_size, min_obs) for i in range(values.shape[1])]
 
     approx_values = np.column_stack([ap.est_obs for ap in approx_list if ap.est_obs is not None])
 

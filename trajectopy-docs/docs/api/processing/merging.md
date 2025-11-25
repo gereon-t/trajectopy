@@ -1,0 +1,3 @@
+# Merging
+
+::: trajectopy.processing.merging

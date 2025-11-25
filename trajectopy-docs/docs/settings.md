@@ -1,7 +1,3 @@
-## Choosing the Plotting Backend
-
-Since version 2.2.0, you can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend.
-
 ## Processing Settings
 
 Trajectopy offers a range of processing options that can be applied to the imported trajectories. These options are:
@@ -136,6 +132,10 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 - `k_nearest` (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.
 
 
+## Choosing the Plotting Backend
+
+Since version 2.2.0, you can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend.
+
 ## Report Settings
 
 ### Visualization Settings
@@ -214,6 +214,14 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `width` (integer): The export width in pixels. Default: 800.
 - `scale` (integer): The export scale. Default: 6.
 
+### Plotting Trajectories on a Map
+
+To plot trajectories on a map, several requirements must be met:
+
+- The trajectory must have valid EPSG information.
+- The plotting backend must be set to `plotly`.
+- The `scatter_plot_on_map` option must be enabled.
+- For `scatter_mapbox_style` other than `open-street-map`, a Mapbox access token (`scatter_mapbox_token`) must be provided. The mapbox token can be obtained after free registration at [Mapbox](https://www.mapbox.com/).
 
 ## Matplotlib Plotting Settings (MPLPlotSettings)
 
@@ -232,4 +240,53 @@ The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapb
 - `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
 - `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
 - `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.
+
+## Custom Matplotlib Plotting
+
+You can customize the style of the plots by placing a `custom.mplstyle` file in the current working directory. The default style that Trajectopy uses is:
+
+```python
+figure.figsize: 8, 6
+figure.facecolor: white
+
+font.size: 12
+font.family: serif
+font.serif: Times New Roman, DejaVu Serif
+
+axes.facecolor: white
+axes.edgecolor: black
+axes.linewidth: 0.8
+axes.labelsize: 14
+axes.titlesize: 14
+axes.grid: True
+axes.axisbelow: True
+axes.prop_cycle: cycler("color", ["#1E88E5", "#FFC107", "#004D40", "#D81B60", "#2bd2bb", "#a3bbf1", "#3c41fd", "#cc5510", "#3b0732", "#88122b", "#bccb70", "#dc9c54"])
+
+grid.color: gray
+grid.alpha: 0.3
+grid.linewidth: 0.5
+axes.grid.which: major
+
+xtick.labelsize: 12
+ytick.labelsize: 12
+xtick.direction: in
+ytick.direction: in
+xtick.major.size: 5
+ytick.major.size: 5
+
+lines.linewidth: 1.5
+lines.linestyle: -
+lines.marker: .
+lines.markersize: 6
+
+legend.frameon: True
+legend.facecolor: white
+legend.edgecolor: black
+legend.loc: best
+legend.framealpha: 1
+
+savefig.dpi: 600
+savefig.format: pdf
+savefig.bbox: tight
+```
 

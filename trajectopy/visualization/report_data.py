@@ -79,11 +79,9 @@ class ATEReportData:
         return self.ate_result.trajectory.xyz[:, 2]
 
     @cached_property
-    def function_of(self) -> np.ndarray:
+    def index(self) -> np.ndarray:
         return (
-            self.ate_result.trajectory.datetimes
-            if self.ate_result.trajectory.is_unix_time
-            else self.ate_result.function_of
+            self.ate_result.trajectory.datetimes if self.ate_result.trajectory.is_unix_time else self.ate_result.index
         )
 
     @cached_property
@@ -282,7 +280,7 @@ class ATEReportData:
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_x,
                 mode=self.settings.plot_mode,
                 name=self.settings.pos_x_name,
@@ -292,7 +290,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_y,
                 mode=self.settings.plot_mode,
                 name=self.settings.pos_y_name,
@@ -302,7 +300,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_z,
                 mode=self.settings.plot_mode,
                 name=self.settings.pos_z_name,
@@ -324,7 +322,7 @@ class ATEReportData:
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.roll,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_x_name,
@@ -334,7 +332,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pitch,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_y_name,
@@ -344,7 +342,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.yaw,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_z_name,
@@ -366,7 +364,7 @@ class ATEReportData:
         fig = make_subplots(rows=3, cols=1, shared_xaxes=True)
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_dev_x,
                 mode=self.settings.plot_mode,
                 name=self.pos_dev_x_name,
@@ -376,7 +374,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_dev_y,
                 mode=self.settings.plot_mode,
                 name=self.pos_dev_y_name,
@@ -386,7 +384,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.pos_dev_z,
                 mode=self.settings.plot_mode,
                 name=self.pos_dev_z_name,
@@ -409,7 +407,7 @@ class ATEReportData:
 
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.rot_dev_x,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_x_name,
@@ -419,7 +417,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.rot_dev_y,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_y_name,
@@ -429,7 +427,7 @@ class ATEReportData:
         )
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.rot_dev_z,
                 mode=self.settings.plot_mode,
                 name=self.settings.rot_z_name,
@@ -458,7 +456,7 @@ class ATEReportData:
 
         fig.add_trace(
             go.Scattergl(
-                x=self.function_of,
+                x=self.index,
                 y=self.comb_dev_pos,
                 mode=self.settings.plot_mode,
                 name="position",
@@ -470,7 +468,7 @@ class ATEReportData:
         if self.has_ate_rot:
             fig.add_trace(
                 go.Scattergl(
-                    x=self.function_of,
+                    x=self.index,
                     y=self.comb_dev_rot,
                     mode=self.settings.plot_mode,
                     name="rotation",
@@ -852,7 +850,7 @@ class ATEReportDataCollection:
         )
 
         return plot_subplots_with_shared_x_axis(
-            x_data=[data.function_of for data in self.items],
+            x_data=[data.index for data in self.items],
             y_data=y_data,
             names=[data.short_name for data in self.items],
             x_label=report_data.function_of_label,
@@ -865,7 +863,7 @@ class ATEReportDataCollection:
         report_data = self.items[0]
 
         return plot_subplots_with_shared_x_axis(
-            x_data=[data.function_of for data in self.items],
+            x_data=[data.index for data in self.items],
             y_data=[[data.pos_dev_x, data.pos_dev_y, data.pos_dev_z] for data in self.items],
             names=[data.short_name for data in self.items],
             x_label=report_data.function_of_label,
@@ -882,7 +880,7 @@ class ATEReportDataCollection:
         report_data = self.items[0]
 
         return plot_subplots_with_shared_x_axis(
-            x_data=[data.function_of for data in self.items],
+            x_data=[data.index for data in self.items],
             y_data=[[data.rot_dev_x, data.rot_dev_y, data.rot_dev_z] for data in self.items if data.has_ate_rot],
             names=[data.short_name for data in self.items],
             x_label=report_data.function_of_label,

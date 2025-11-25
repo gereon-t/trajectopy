@@ -553,7 +553,7 @@ def plot_ate_3d(ate_results: List[ATEResult], plot_settings: MPLPlotSettings = M
     ax = fig.add_subplot(111, projection="3d")
 
     for ate_result in ate_results:
-        if len(ate_result.function_of) == 0:
+        if len(ate_result.index) == 0:
             logger.warning("Skipping %s as it has no data", ate_result.name)
             continue
         ax.plot(
@@ -715,19 +715,19 @@ def plot_ate(
         ax_rot = None
 
     for dev in deviation_list:
-        if len(dev.function_of) == 0:
+        if len(dev.index) == 0:
             logger.warning("Skipping %s as it has no data", dev.name)
             continue
 
-        function_of = (
+        index = (
             dev.trajectory.datetimes
             if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
-            else dev.function_of
+            else dev.index
         )
 
-        ax_pos.plot(function_of, dev.pos_dev_comb * plot_settings.unit_multiplier)
+        ax_pos.plot(index, dev.pos_dev_comb * plot_settings.unit_multiplier)
         if ax_rot is not None:
-            ax_rot.plot(function_of, np.rad2deg(dev.rot_dev_comb))
+            ax_rot.plot(index, np.rad2deg(dev.rot_dev_comb))
 
     fig.legend([dev.name for dev in deviation_list], ncol=3, loc="upper center")
     plt.tight_layout()
@@ -773,7 +773,7 @@ def plot_ate_dof(
     else:
         ax_rot = None
 
-    if len(ate_result.function_of) == 0:
+    if len(ate_result.index) == 0:
         logger.warning("Skipping %s as it has no data", ate_result.name)
         return fig
 
@@ -781,29 +781,29 @@ def plot_ate_dof(
     pos_dev_y = ate_result.pos_dev_cross_h if plot_settings.directed_ate else ate_result.pos_dev_y
     pos_dev_z = ate_result.pos_dev_cross_v if plot_settings.directed_ate else ate_result.pos_dev_z
 
-    function_of = ate_result.trajectory.datetimes if is_unix_time else ate_result.function_of
+    index = ate_result.trajectory.datetimes if is_unix_time else ate_result.index
 
     ax_pos.plot(
-        function_of,
+        index,
         pos_dev_x * plot_settings.unit_multiplier,
         label="Along-Track" if plot_settings.directed_ate else "X",
     )
     ax_pos.plot(
-        function_of,
+        index,
         pos_dev_y * plot_settings.unit_multiplier,
         label="Horizontal Cross-Track" if plot_settings.directed_ate else "Y",
     )
     ax_pos.plot(
-        function_of,
+        index,
         pos_dev_z * plot_settings.unit_multiplier,
         label="Vertical Cross-Track" if plot_settings.directed_ate else "Z",
     )
     ax_pos.legend()
 
     if ax_rot is not None:
-        ax_rot.plot(function_of, np.rad2deg(ate_result.rot_dev_x), label="Roll")
-        ax_rot.plot(function_of, np.rad2deg(ate_result.rot_dev_y), label="Pitch")
-        ax_rot.plot(function_of, np.rad2deg(ate_result.rot_dev_z), label="Yaw")
+        ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_x), label="Roll")
+        ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_y), label="Pitch")
+        ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_z), label="Yaw")
         ax_rot.legend()
 
     ax_pos.set_title(f"{ate_result.name}")

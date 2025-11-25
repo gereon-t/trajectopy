@@ -1,0 +1,3 @@
+# Trajectory
+
+::: trajectopy.core.trajectory

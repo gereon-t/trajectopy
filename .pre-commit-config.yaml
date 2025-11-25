@@ -13,13 +13,6 @@ repos:
         args: ["--profile=black"]
         stages: [pre-commit]
 
-  - repo: local
-    hooks:
-      - id: generate-docs
-        name: Generate Documentation
-        entry: python generate_api_docs.py
-        language: system
-        stages: [pre-commit]
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.6
     hooks:

@@ -304,7 +304,7 @@ def rndodd(s: float) -> int:
 
 
 def round_to_precision(
-    function_of: np.ndarray, data: np.ndarray, resolution: float, filter_size: int = 100
+    index: np.ndarray, data: np.ndarray, resolution: float, filter_size: int = 100
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Reduces the amount of deviations using smoothing and rounding
 
@@ -314,7 +314,7 @@ def round_to_precision(
     are deleted.
 
     Args:
-        function_of (np.ndarray): nxm array that contains for example
+        index (np.ndarray): nxm array that contains for example
                                   time stamps, arc lengths or positions
                                   corresponding to the data.
         data (np.ndarray): nx1 array that contains the data that should
@@ -323,14 +323,14 @@ def round_to_precision(
         filter_size (int): Window / filter size for smoothing
 
     Returns:
-        downsampled function_of and data
+        downsampled index and data
     """
     data_smoothed = np.convolve(data, [1 / filter_size] * filter_size, "same")
     data_rounded = np.round(data_smoothed / resolution) * resolution
-    _, indices = np.unique(np.c_[function_of, data_rounded], return_index=True, axis=0)
+    _, indices = np.unique(np.c_[index, data_rounded], return_index=True, axis=0)
     indices_sorted = np.sort(indices)
 
-    function_of_unique = function_of[indices_sorted, :] if function_of.ndim > 1 else function_of[indices_sorted]
+    function_of_unique = index[indices_sorted, :] if index.ndim > 1 else index[indices_sorted]
     data_unique = data_smoothed[indices_sorted]
 
     return function_of_unique, data_unique
