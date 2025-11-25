@@ -3,6 +3,7 @@ import logging
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QAction, QCursor
 
+from trajectopy.core.settings import MatchingMethod
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -16,7 +17,6 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
 )
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy.settings import MatchingMethod
 
 logger = logging.getLogger(__name__)
 

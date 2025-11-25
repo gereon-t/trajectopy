@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.settings`
+## <kbd>module</kbd> `trajectopy.core.settings`
 
 
 
@@ -696,9 +696,9 @@ Dataclass defining alignment configuration
 
 ```python
 __init__(
-    preprocessing: trajectopy.settings.AlignmentPreprocessing = <factory>,
-    estimation_settings: trajectopy.settings.AlignmentEstimationSettings = <factory>,
-    stochastics: trajectopy.settings.AlignmentStochastics = <factory>,
+    preprocessing: trajectopy.core.settings.AlignmentPreprocessing = <factory>,
+    estimation_settings: trajectopy.core.settings.AlignmentEstimationSettings = <factory>,
+    stochastics: trajectopy.core.settings.AlignmentStochastics = <factory>,
     metric_threshold: float = 0.0001,
     time_threshold: float = 0.0001
 ) → None
@@ -963,7 +963,7 @@ __init__(
     pair_min_distance: float = 100.0,
     pair_max_distance: float = 800.0,
     pair_distance_step: float = 100.0,
-    pair_distance_unit: trajectopy.settings.PairDistanceUnit = <PairDistanceUnit.METER: 'meter'>,
+    pair_distance_unit: trajectopy.core.settings.PairDistanceUnit = <PairDistanceUnit.METER: 'meter'>,
     use_all_pose_pairs: bool = True
 ) → None
 ```
@@ -1097,13 +1097,13 @@ update_from_dict(dct: dict)
 ---
 
 ### <kbd>class</kbd> `MatchingSettings`
-MatchingSettings(method: trajectopy.settings.MatchingMethod = <MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff: float = 0.01, max_distance: float = 0.0, max_gap_size: float = 10.0, k_nearest: int = 2) 
+MatchingSettings(method: trajectopy.core.settings.MatchingMethod = <MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff: float = 0.01, max_distance: float = 0.0, max_gap_size: float = 10.0, k_nearest: int = 2) 
 
 ### <kbd>method</kbd> `MatchingSettings.__init__`
 
 ```python
 __init__(
-    method: trajectopy.settings.MatchingMethod = <MatchingMethod.INTERPOLATION: 'interpolation'>,
+    method: trajectopy.core.settings.MatchingMethod = <MatchingMethod.INTERPOLATION: 'interpolation'>,
     max_time_diff: float = 0.01,
     max_distance: float = 0.0,
     max_gap_size: float = 10.0,
@@ -1493,11 +1493,11 @@ Settings for processing the trajectory.
 
 ```python
 __init__(
-    alignment: trajectopy.settings.AlignmentSettings = <factory>,
-    matching: trajectopy.settings.MatchingSettings = <factory>,
-    relative_comparison: trajectopy.settings.RelativeComparisonSettings = <factory>,
-    approximation: trajectopy.settings.CubicApproximationSettings = <factory>,
-    sorting: trajectopy.settings.SortingSettings = <factory>
+    alignment: trajectopy.core.settings.AlignmentSettings = <factory>,
+    matching: trajectopy.core.settings.MatchingSettings = <factory>,
+    relative_comparison: trajectopy.core.settings.RelativeComparisonSettings = <factory>,
+    approximation: trajectopy.core.settings.CubicApproximationSettings = <factory>,
+    sorting: trajectopy.core.settings.SortingSettings = <factory>
 ) → None
 ```
 
@@ -1812,9 +1812,9 @@ __init__(
     rot_y_name: str = 'pitch',
     rot_z_name: str = 'yaw',
     rot_unit: str = '°',
-    single_plot_export: trajectopy.settings.ExportSettings = <factory>,
-    two_subplots_export: trajectopy.settings.ExportSettings = <factory>,
-    three_subplots_export: trajectopy.settings.ExportSettings = <factory>
+    single_plot_export: trajectopy.core.settings.ExportSettings = <factory>,
+    two_subplots_export: trajectopy.core.settings.ExportSettings = <factory>,
+    three_subplots_export: trajectopy.core.settings.ExportSettings = <factory>
 ) → None
 ```
 

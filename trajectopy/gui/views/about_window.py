@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from trajectopy.utils import FULL_ICON_FILE_PATH
+from trajectopy.utils.common import FULL_ICON_FILE_PATH
 
 
 class AboutGUI(QtWidgets.QMainWindow):

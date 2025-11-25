@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.matching`
+## <kbd>module</kbd> `trajectopy.processing.matching`
 
 
 
@@ -11,8 +11,8 @@
 
 ```python
 match_non_overlapping_timestamps(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
     max_distance: float = 0.0
 ) → float
 ```
@@ -37,7 +37,7 @@ This method roughly matches two trajectories temporally
 
 ```python
 match_timestamps(
-    trajectory: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
     timestamps: numpy.ndarray,
     inplace: bool = True
 ) → Trajectory
@@ -66,11 +66,11 @@ Truncates trajectory to only those poses where the timestamps exactly match "tim
 
 ```python
 match_trajectories(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
-    matching_settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2),
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
+    matching_settings: trajectopy.core.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2),
     inplace: bool = True
-) → Tuple[trajectopy.trajectory.Trajectory, trajectopy.trajectory.Trajectory]
+) → Tuple[trajectopy.core.trajectory.Trajectory, trajectopy.core.trajectory.Trajectory]
 ```
 
 Matches two trajectories using the specified method 

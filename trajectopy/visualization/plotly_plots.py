@@ -9,11 +9,15 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
-from trajectopy.alignment.parameters import AlignmentParameters
-from trajectopy.definitions import TrajectoriesSorting
-from trajectopy.settings import ReportSettings
-from trajectopy.trajectory import Trajectory
-from trajectopy.utils import derive_xlabel_from_sortings, get_axis_label, get_sorting
+from trajectopy.core.settings import ReportSettings
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
+from trajectopy.utils.common import (
+    derive_xlabel_from_sortings,
+    get_axis_label,
+    get_sorting,
+)
+from trajectopy.utils.definitions import TrajectoriesSorting
 
 logger = logging.getLogger(__name__)
 

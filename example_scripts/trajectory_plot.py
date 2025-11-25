@@ -1,7 +1,6 @@
 import logging
 
-from trajectopy import settings
-from trajectopy.trajectory import Trajectory
+from trajectopy import ReportSettings, Trajectory
 from trajectopy.visualization import plotly_reports
 
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +11,7 @@ def main():
     gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
     est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
-    report_settings = settings.ReportSettings(scatter_axis_order="xy", ate_unit_is_mm=False)
+    report_settings = ReportSettings(scatter_axis_order="xy", ate_unit_is_mm=False)
     traj_report = plotly_reports.create_trajectory_report(
         trajectories=[gt_traj, est_traj], report_settings=report_settings
     )

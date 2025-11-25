@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.alignment.parameters`
+## <kbd>module</kbd> `trajectopy.processing.lib.alignment.parameters`
 
 
 
@@ -7,17 +7,6 @@
 **Global Variables**
 ---------------
 - **UNIT_FORMAT_RULES**
-
-
----
-
-### <kbd>class</kbd> `AlignmentParametersError`
-
-
-
-
-
-
 
 
 ---
@@ -38,7 +27,7 @@ __init__(
     default: float = 0.0,
     enabled: bool = True,
     name: str = '',
-    unit: trajectopy.definitions.Unit = <Unit.NONE: 6>
+    unit: trajectopy.utils.definitions.Unit = <Unit.NONE: 6>
 ) → None
 ```
 
@@ -283,13 +272,13 @@ Parameter set for a similarity transformation
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    trans_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    trans_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    trans_z: trajectopy.alignment.parameters.Parameter = <factory>,
-    rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    rot_z: trajectopy.alignment.parameters.Parameter = <factory>,
-    scale: trajectopy.alignment.parameters.Parameter = <factory>
+    trans_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    trans_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    trans_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    rot_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    rot_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    rot_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    scale: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -514,9 +503,9 @@ Parameter set for a leverarm
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    x: trajectopy.alignment.parameters.Parameter = <factory>,
-    y: trajectopy.alignment.parameters.Parameter = <factory>,
-    z: trajectopy.alignment.parameters.Parameter = <factory>
+    x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -720,17 +709,17 @@ Parameter set for spatio-temporal alignment
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    sim_trans_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_trans_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_trans_z: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_rot_z: trajectopy.alignment.parameters.Parameter = <factory>,
-    sim_scale: trajectopy.alignment.parameters.Parameter = <factory>,
-    time_shift: trajectopy.alignment.parameters.Parameter = <factory>,
-    lever_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    lever_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    lever_z: trajectopy.alignment.parameters.Parameter = <factory>
+    sim_trans_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_trans_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_trans_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_rot_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_rot_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_rot_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sim_scale: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    time_shift: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    lever_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    lever_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    lever_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 
@@ -834,7 +823,9 @@ __init__(
 #### <kbd>method</kbd> `AlignmentParameters.apply_settings`
 
 ```python
-apply_settings(settings: trajectopy.settings.AlignmentEstimationSettings) → None
+apply_settings(
+    settings: trajectopy.core.settings.AlignmentEstimationSettings
+) → None
 ```
 
 Applies the estimation settings to the parameters by enabling or disabling them 
@@ -891,7 +882,7 @@ Reads the alignment parameters from a file
 
 ```python
 from_settings(
-    settings: trajectopy.settings.AlignmentEstimationSettings
+    settings: trajectopy.core.settings.AlignmentEstimationSettings
 ) → AlignmentParameters
 ```
 
@@ -1050,9 +1041,9 @@ Parameter set for sensor b-frame rotation
 __init__(
     enabled: bool = True,
     covariance_matrix: numpy.ndarray = <factory>,
-    sensor_rot_x: trajectopy.alignment.parameters.Parameter = <factory>,
-    sensor_rot_y: trajectopy.alignment.parameters.Parameter = <factory>,
-    sensor_rot_z: trajectopy.alignment.parameters.Parameter = <factory>
+    sensor_rot_x: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sensor_rot_y: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>,
+    sensor_rot_z: trajectopy.processing.lib.alignment.parameters.Parameter = <factory>
 ) → None
 ```
 

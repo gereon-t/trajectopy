@@ -36,7 +36,7 @@ __init__(
     name: str = '',
     path_lengths: Optional[numpy.ndarray] = None,
     velocity_xyz: Optional[numpy.ndarray] = None,
-    sorting: trajectopy.definitions.Sorting = <Sorting.TIME: 'time'>
+    sorting: trajectopy.utils.definitions.Sorting = <Sorting.TIME: 'time'>
 ) → None
 ```
 

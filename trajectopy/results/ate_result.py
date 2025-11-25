@@ -5,11 +5,11 @@ from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 
-from trajectopy.definitions import Sorting
-from trajectopy.reading.header import HeaderData
-from trajectopy.rotations import Rotations
-from trajectopy.trajectory import Trajectory
-from trajectopy.utils import rms
+from trajectopy.core.rotations import Rotations
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.readers.header import HeaderData
+from trajectopy.utils.common import rms
+from trajectopy.utils.definitions import Sorting
 
 
 @dataclass

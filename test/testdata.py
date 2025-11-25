@@ -1,4 +1,4 @@
-from trajectopy.trajectory import Trajectory
+from trajectopy.core.trajectory import Trajectory
 
 open_loop_trajectory = Trajectory.from_file("./test/data/open_loop_trajectory.traj")
 open_loop_trajectory.positions.to_epsg(0)

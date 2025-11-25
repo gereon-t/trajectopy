@@ -4,24 +4,27 @@ from test.util import random_number
 
 import numpy as np
 
-from trajectopy.alignment.parameters import AlignmentParameters, Parameter
-from trajectopy.definitions import Unit
-from trajectopy.results.alignment_result import AlignmentResult
-from trajectopy.results.ate_result import ATEResult
-from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import (
+from trajectopy.core.settings import (
     MatchingMethod,
     MatchingSettings,
     RelativeComparisonSettings,
 )
-from trajectopy.tools.alignment import apply_alignment
-from trajectopy.tools.evaluation import (
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.alignment import apply_alignment
+from trajectopy.processing.evaluation import (
     _compare_trajectories_absolute,
     _compare_trajectories_relative,
     _derive_dev_directions_no_rot,
 )
-from trajectopy.tools.matching import match_trajectories
-from trajectopy.trajectory import Trajectory
+from trajectopy.processing.lib.alignment.parameters import (
+    AlignmentParameters,
+    Parameter,
+)
+from trajectopy.processing.matching import match_trajectories
+from trajectopy.results.alignment_result import AlignmentResult
+from trajectopy.results.ate_result import ATEResult
+from trajectopy.results.rpe_result import RPEResult
+from trajectopy.utils.definitions import Unit
 
 
 def compare_trajectories_abs(traj_ref: Trajectory, traj_test: Trajectory) -> ATEResult:

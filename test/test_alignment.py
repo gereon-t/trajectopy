@@ -4,16 +4,16 @@ from test.util import transform_randomly
 
 import numpy as np
 
-from trajectopy.alignment.direct import align_rotations
-from trajectopy.alignment.parameters import AlignmentParameters
-from trajectopy.rotations import Rotations
-from trajectopy.settings import (
+from trajectopy.core.rotations import Rotations
+from trajectopy.core.settings import (
     AlignmentEstimationSettings,
     AlignmentSettings,
     AlignmentStochastics,
     MatchingSettings,
 )
-from trajectopy.tools.alignment import estimate_alignment
+from trajectopy.processing.alignment import estimate_alignment
+from trajectopy.processing.lib.alignment.direct import align_rotations
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 
 class TestAlignment(unittest.TestCase):

@@ -4,6 +4,7 @@ from typing import Callable, Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
+from trajectopy.core.settings import PlotBackend
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -17,10 +18,9 @@ from trajectopy.gui.models.entries import (
     ResultEntry,
 )
 from trajectopy.gui.utils import show_progress
+from trajectopy.gui.views.mpl_plot_tabs import PlotTabs
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import PlotBackend
-from trajectopy.visualization.mpl_plot_tabs import PlotTabs
 from trajectopy.visualization.plotly_reports import (
     create_alignment_report,
     create_deviation_report,

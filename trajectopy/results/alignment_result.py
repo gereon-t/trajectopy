@@ -2,12 +2,12 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from trajectopy.alignment.parameters import (
+from trajectopy.core.settings import AlignmentEstimationSettings
+from trajectopy.processing.lib.alignment.parameters import (
     AlignmentParameters,
     SensorRotationParameters,
 )
-from trajectopy.reading.header import HeaderData
-from trajectopy.settings import AlignmentEstimationSettings
+from trajectopy.readers.header import HeaderData
 
 
 @dataclass

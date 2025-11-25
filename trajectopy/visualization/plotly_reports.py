@@ -11,12 +11,12 @@ import numpy as np
 import pandas as pd
 
 import trajectopy.visualization.plotly_plots as plotly_plots
-from trajectopy.alignment.parameters import AlignmentParameters
+from trajectopy.core.settings import ReportSettings
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import ReportSettings
-from trajectopy.trajectory import Trajectory
-from trajectopy.utils import number_to_string
+from trajectopy.utils.common import number_to_string
 from trajectopy.visualization.report_data import (
     ATEReportData,
     ATEReportDataCollection,

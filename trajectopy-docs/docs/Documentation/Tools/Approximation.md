@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.approximation`
+## <kbd>module</kbd> `trajectopy.processing.approximation`
 
 
 
@@ -11,8 +11,8 @@
 
 ```python
 approximate_cubic(
-    trajectory: trajectopy.trajectory.Trajectory,
-    approximation_settings: trajectopy.settings.CubicApproximationSettings = CubicApproximationSettings(position_interval_size=0.15, position_min_observations=25, rotation_window_size=0.15),
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    approximation_settings: trajectopy.core.settings.CubicApproximationSettings = CubicApproximationSettings(position_interval_size=0.15, position_min_observations=25, rotation_window_size=0.15),
     inplace: bool = False
 ) → Trajectory
 ```

@@ -4,7 +4,7 @@ generator = MarkdownGenerator()
 
 
 def create_tools_docs():
-    from trajectopy.tools import (
+    from trajectopy.processing import (
         alignment,
         approximation,
         evaluation,
@@ -53,7 +53,7 @@ def create_results_docs():
 
 
 def create_trajectory_docs():
-    from trajectopy.trajectory import Trajectory
+    from trajectopy.core.trajectory import Trajectory
 
     markdown_docs = generator.import2md(Trajectory, depth=2)
     with open("trajectopy-docs/docs/Documentation/Trajectory.md", "w", encoding="utf-8") as f:
@@ -61,17 +61,17 @@ def create_trajectory_docs():
 
 
 def create_parameter_docs():
-    import trajectopy.alignment.parameters
+    import trajectopy.processing.lib.alignment.parameters
 
-    markdown_docs = generator.import2md(trajectopy.alignment.parameters, depth=2)
+    markdown_docs = generator.import2md(trajectopy.processing.lib.alignment.parameters, depth=2)
     with open("trajectopy-docs/docs/Documentation/Parameters.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 
 
 def create_settings_docs():
-    import trajectopy.settings
+    import trajectopy.core.settings
 
-    markdown_docs = generator.import2md(trajectopy.settings, depth=2)
+    markdown_docs = generator.import2md(trajectopy.core.settings, depth=2)
     with open("trajectopy-docs/docs/Documentation/Settings.md", "w", encoding="utf-8") as f:
         f.write(markdown_docs)
 

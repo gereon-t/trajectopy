@@ -1,7 +1,7 @@
 import unittest
 
-from trajectopy.tools.evaluation import ate, rpe
-from trajectopy.trajectory import Trajectory
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.evaluation import ate, rpe
 
 
 class TestPipeline(unittest.TestCase):

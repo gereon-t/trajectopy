@@ -3,10 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "trajectopy/__init__.py"
+path = "trajectopy/__version__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["trajectopy"]
+include = [
+    "trajectopy/py.typed",
+]
 
 [project]
 name = "trajectopy"
@@ -59,7 +62,7 @@ Repository = "https://github.com/gereon-t/trajectopy"
 "Bug Tracker" = "https://github.com/gereon-t/trajectopy/issues"
 
 [project.scripts]
-trajectopy = "trajectopy.__main__:main"
+trajectopy = "trajectopy.cli.main:main"
 
 [dependency-groups]
 dev = [

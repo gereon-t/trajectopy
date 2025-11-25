@@ -18,7 +18,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import show_progress
-from trajectopy.reading.rosbag import trajectories_from_rosbag
+from trajectopy.readers.rosbag import trajectories_from_rosbag
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.merging`
+## <kbd>module</kbd> `trajectopy.processing.merging`
 
 
 
@@ -11,7 +11,7 @@
 
 ```python
 merge_trajectories(
-    trajectories: List[trajectopy.trajectory.Trajectory]
+    trajectories: List[trajectopy.core.trajectory.Trajectory]
 ) → Trajectory
 ```
 
@@ -38,7 +38,7 @@ This function ignores EPSG codes and merges the trajectories based on their time
 
 ```python
 average_trajectories(
-    trajectories: List[trajectopy.trajectory.Trajectory]
+    trajectories: List[trajectopy.core.trajectory.Trajectory]
 ) → Trajectory
 ```
 

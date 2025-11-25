@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.interpolation`
+## <kbd>module</kbd> `trajectopy.processing.interpolation`
 
 
 
@@ -11,9 +11,9 @@
 
 ```python
 interpolate(
-    trajectory: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
     timestamps: Union[list, numpy.ndarray],
-    method: trajectopy.settings.InterpolationMethod = <InterpolationMethod.LINEAR: 'linear'>,
+    method: trajectopy.core.settings.InterpolationMethod = <InterpolationMethod.LINEAR: 'linear'>,
     inplace: bool = True
 ) → Trajectory
 ```

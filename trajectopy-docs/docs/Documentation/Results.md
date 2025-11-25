@@ -1,8 +1,6 @@
 
 ## <kbd>module</kbd> `trajectopy.results`
-
-
-
+Result dataclasses for trajectory evaluation. 
 
 **Global Variables**
 ---------------

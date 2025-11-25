@@ -3,9 +3,7 @@ import logging
 from rich.console import Console
 from rich.table import Table
 
-from trajectopy import settings
-from trajectopy.tools import evaluation
-from trajectopy.trajectory import Trajectory
+from trajectopy import ProcessingSettings, Trajectory, ate
 
 logging.basicConfig(level=logging.INFO)
 
@@ -28,9 +26,9 @@ def main():
     est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    processing_settings = settings.ProcessingSettings()
+    processing_settings = ProcessingSettings()
 
-    ate_result = evaluation.ate(trajectory=est_traj, other=gt_traj, processing_settings=processing_settings)
+    ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
     console.print(dict_to_table(ate_result.property_dict))
 
 

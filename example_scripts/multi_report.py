@@ -1,8 +1,6 @@
 import logging
 
-from trajectopy import settings
-from trajectopy.tools import evaluation
-from trajectopy.trajectory import Trajectory
+from trajectopy import ProcessingSettings, Trajectory, ate, rpe
 from trajectopy.visualization import plotly_reports
 
 logging.basicConfig(level=logging.INFO)
@@ -15,13 +13,13 @@ def main():
     est_traj_2 = Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
 
     # default settings
-    processing_settings = settings.ProcessingSettings()
+    processing_settings = ProcessingSettings()
 
-    ate_result_1 = evaluation.ate(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
-    rpe_result_1 = evaluation.rpe(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
+    ate_result_1 = ate(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
+    rpe_result_1 = rpe(other=gt_traj, trajectory=est_traj_1, processing_settings=processing_settings)
 
-    ate_result_2 = evaluation.ate(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
-    rpe_result_2 = evaluation.rpe(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
+    ate_result_2 = ate(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
+    rpe_result_2 = rpe(other=gt_traj, trajectory=est_traj_2, processing_settings=processing_settings)
 
     multi_report = plotly_reports.create_deviation_report(
         ate_result=[ate_result_1, ate_result_2], rpe_result=[rpe_result_1, rpe_result_2]

@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.sorting`
+## <kbd>module</kbd> `trajectopy.processing.sorting`
 
 
 
@@ -11,8 +11,8 @@
 
 ```python
 sort_spatially(
-    trajectory: trajectopy.trajectory.Trajectory,
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    sorting_settings: trajectopy.core.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     inplace: bool = True
 ) → Trajectory
 ```
@@ -40,10 +40,10 @@ Sorts the trajectory spatially.
 
 ```python
 divide_into_laps(
-    trajectory: trajectopy.trajectory.Trajectory,
-    sorting_settings: trajectopy.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    sorting_settings: trajectopy.core.settings.SortingSettings = SortingSettings(voxel_size=0.05, movement_threshold=0.005, k_nearest=4),
     return_lap_indices: bool = False
-) → Union[List[trajectopy.trajectory.Trajectory], Tuple[List[trajectopy.trajectory.Trajectory], numpy.ndarray]]
+) → Union[List[trajectopy.core.trajectory.Trajectory], Tuple[List[trajectopy.core.trajectory.Trajectory], numpy.ndarray]]
 ```
 
 Divides the trajectory into laps. 

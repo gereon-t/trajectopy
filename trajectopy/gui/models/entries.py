@@ -9,13 +9,13 @@ from typing import Dict, Tuple, Union
 
 import numpy as np
 
-from trajectopy.alignment.parameters import AlignmentParameters
-from trajectopy.reading.header import HeaderData
+from trajectopy.core.settings import AlignmentEstimationSettings, ProcessingSettings
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
+from trajectopy.readers.header import HeaderData
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import AlignmentEstimationSettings, ProcessingSettings
-from trajectopy.trajectory import Trajectory
 
 logger = logging.getLogger(__name__)
 

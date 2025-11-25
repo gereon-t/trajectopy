@@ -6,9 +6,9 @@ from typing import Any, List, Protocol
 
 from PyQt6.QtCore import pyqtSignal
 
+from trajectopy.core.settings import MatchingMethod, MPLPlotSettings, ReportSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.settings import MatchingMethod, MPLPlotSettings, ReportSettings
 
 logger = logging.getLogger(__name__)
 

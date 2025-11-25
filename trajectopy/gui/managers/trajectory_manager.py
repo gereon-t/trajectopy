@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from trajectopy.definitions import Sorting
+from trajectopy.core.rotations import Rotations
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
     ResultModelRequestType,
@@ -27,8 +27,7 @@ from trajectopy.gui.models.entries import (
 )
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import show_progress
-from trajectopy.rotations import Rotations
-from trajectopy.tools import (
+from trajectopy.processing import (
     alignment,
     approximation,
     evaluation,
@@ -36,6 +35,7 @@ from trajectopy.tools import (
     merging,
     sorting,
 )
+from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 

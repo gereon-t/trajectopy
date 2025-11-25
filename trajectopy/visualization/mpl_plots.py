@@ -11,19 +11,19 @@ from matplotlib.collections import LineCollection, PolyCollection
 from matplotlib.colorbar import Colorbar
 from matplotlib.figure import Figure
 
-from trajectopy.alignment.parameters import AlignmentParameters
-from trajectopy.definitions import DATE_FORMATTER, Sorting
+from trajectopy.core.settings import MPLPlotSettings, PairDistanceUnit
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import MPLPlotSettings, PairDistanceUnit
-from trajectopy.trajectory import Trajectory
-from trajectopy.utils import (
+from trajectopy.utils.common import (
     TrajectoriesSorting,
     derive_xlabel_from_sortings,
     get_axis_label,
     get_sorting,
     set_aspect_equal_3d,
 )
+from trajectopy.utils.definitions import DATE_FORMATTER, Sorting
 
 logger = logging.getLogger(__name__)
 

@@ -5,11 +5,11 @@ from typing import Any
 
 import numpy as np
 
-from trajectopy.positions import Positions
-from trajectopy.rotations import Rotations
-from trajectopy.tools.interpolation import interpolate
-from trajectopy.tools.matching import match_timestamps
-from trajectopy.trajectory import Trajectory
+from trajectopy.core.positions import Positions
+from trajectopy.core.rotations import Rotations
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.interpolation import interpolate
+from trajectopy.processing.matching import match_timestamps
 
 
 class TestTrajectory(unittest.TestCase):

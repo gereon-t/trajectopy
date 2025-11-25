@@ -2,13 +2,16 @@ from typing import Tuple
 
 import numpy as np
 
-from trajectopy.alignment.parameters import AlignmentParameters, Parameter
-from trajectopy.definitions import Unit
-from trajectopy.positions import Positions
+from trajectopy.core.positions import Positions
+from trajectopy.core.rotations import Rotations
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.alignment import apply_alignment
+from trajectopy.processing.lib.alignment.parameters import (
+    AlignmentParameters,
+    Parameter,
+)
 from trajectopy.results.alignment_result import AlignmentResult
-from trajectopy.rotations import Rotations
-from trajectopy.tools.alignment import apply_alignment
-from trajectopy.trajectory import Trajectory
+from trajectopy.utils.definitions import Unit
 
 
 def generate_noisy_trajectory(num: int) -> Trajectory:

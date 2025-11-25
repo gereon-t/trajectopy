@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import pandas as pd
 
-from trajectopy.reading.header import HeaderData
-from trajectopy.settings import PairDistanceUnit
+from trajectopy.core.settings import PairDistanceUnit
+from trajectopy.readers.header import HeaderData
 
 
 @dataclass

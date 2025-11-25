@@ -11,9 +11,9 @@ import plotly.graph_objects as go
 from plotly.offline import plot
 from plotly.subplots import make_subplots
 
+from trajectopy.core.settings import ReportSettings
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.settings import ReportSettings
 from trajectopy.visualization.plotly_plots import (
     plot_subplots_with_shared_x_axis,
     scatter,

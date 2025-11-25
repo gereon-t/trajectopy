@@ -1,5 +1,5 @@
 
-## <kbd>module</kbd> `trajectopy.tools.alignment`
+## <kbd>module</kbd> `trajectopy.processing.alignment`
 
 
 
@@ -11,10 +11,10 @@
 
 ```python
 estimate_alignment(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
-    alignment_settings: trajectopy.settings.AlignmentSettings = AlignmentSettings(preprocessing=AlignmentPreprocessing(min_speed=0.0, time_start=0.0, time_end=0.0), estimation_settings=AlignmentEstimationSettings(translation_x=True, translation_y=True, translation_z=True, rotation_x=True, rotation_y=True, rotation_z=True, scale=False, time_shift=False, leverarm_x=False, leverarm_y=False, leverarm_z=False, sensor_rotation=False), stochastics=AlignmentStochastics(std_xy_from=1.0, std_z_from=1.0, std_xy_to=1.0, std_z_to=1.0, std_roll_pitch=0.017453292519943295, std_yaw=0.017453292519943295, std_speed=1.0, error_probability=0.05, variance_estimation=False), metric_threshold=0.0001, time_threshold=0.0001),
-    matching_settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2)
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
+    alignment_settings: trajectopy.core.settings.AlignmentSettings = AlignmentSettings(preprocessing=AlignmentPreprocessing(min_speed=0.0, time_start=0.0, time_end=0.0), estimation_settings=AlignmentEstimationSettings(translation_x=True, translation_y=True, translation_z=True, rotation_x=True, rotation_y=True, rotation_z=True, scale=False, time_shift=False, leverarm_x=False, leverarm_y=False, leverarm_z=False, sensor_rotation=False), stochastics=AlignmentStochastics(std_xy_from=1.0, std_z_from=1.0, std_xy_to=1.0, std_z_to=1.0, std_roll_pitch=0.017453292519943295, std_yaw=0.017453292519943295, std_speed=1.0, error_probability=0.05, variance_estimation=False), metric_threshold=0.0001, time_threshold=0.0001),
+    matching_settings: trajectopy.core.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2)
 ) → AlignmentResult
 ```
 
@@ -49,7 +49,7 @@ estimation depending on the configuration. After this, the estimated parameters 
 
 ```python
 apply_alignment(
-    trajectory: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
     alignment_result: trajectopy.results.alignment_result.AlignmentResult,
     inplace: bool = True
 ) → Trajectory
@@ -79,8 +79,8 @@ After computing the alignment parameters needed to align two trajectories, they 
 
 ```python
 adopt_first_pose(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
     inplace: bool = True
 ) → Trajectory
 ```
@@ -107,8 +107,8 @@ Transform trajectory so that the first pose is identical in both
 
 ```python
 adopt_first_position(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
     inplace: bool = True
 ) → Trajectory
 ```
@@ -136,8 +136,8 @@ Transform trajectory so that the first position is identical in both
 
 ```python
 adopt_first_orientation(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
     inplace: bool = True
 ) → Trajectory
 ```
@@ -164,10 +164,10 @@ Transform trajectory so that the first orientation is identical in both
 
 ```python
 align(
-    trajectory: trajectopy.trajectory.Trajectory,
-    other: trajectopy.trajectory.Trajectory,
-    alignment_settings: trajectopy.settings.AlignmentSettings = AlignmentSettings(preprocessing=AlignmentPreprocessing(min_speed=0.0, time_start=0.0, time_end=0.0), estimation_settings=AlignmentEstimationSettings(translation_x=True, translation_y=True, translation_z=True, rotation_x=True, rotation_y=True, rotation_z=True, scale=False, time_shift=False, leverarm_x=False, leverarm_y=False, leverarm_z=False, sensor_rotation=False), stochastics=AlignmentStochastics(std_xy_from=1.0, std_z_from=1.0, std_xy_to=1.0, std_z_to=1.0, std_roll_pitch=0.017453292519943295, std_yaw=0.017453292519943295, std_speed=1.0, error_probability=0.05, variance_estimation=False), metric_threshold=0.0001, time_threshold=0.0001),
-    matching_settings: trajectopy.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2),
+    trajectory: trajectopy.core.trajectory.Trajectory,
+    other: trajectopy.core.trajectory.Trajectory,
+    alignment_settings: trajectopy.core.settings.AlignmentSettings = AlignmentSettings(preprocessing=AlignmentPreprocessing(min_speed=0.0, time_start=0.0, time_end=0.0), estimation_settings=AlignmentEstimationSettings(translation_x=True, translation_y=True, translation_z=True, rotation_x=True, rotation_y=True, rotation_z=True, scale=False, time_shift=False, leverarm_x=False, leverarm_y=False, leverarm_z=False, sensor_rotation=False), stochastics=AlignmentStochastics(std_xy_from=1.0, std_z_from=1.0, std_xy_to=1.0, std_z_to=1.0, std_roll_pitch=0.017453292519943295, std_yaw=0.017453292519943295, std_speed=1.0, error_probability=0.05, variance_estimation=False), metric_threshold=0.0001, time_threshold=0.0001),
+    matching_settings: trajectopy.core.settings.MatchingSettings = MatchingSettings(method=<MatchingMethod.INTERPOLATION: 'interpolation'>, max_time_diff=0.01, max_distance=0.0, max_gap_size=10.0, k_nearest=2),
     inplace: bool = True
 ) → Trajectory
 ```

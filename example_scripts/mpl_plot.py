@@ -2,8 +2,7 @@ import logging
 
 import matplotlib.pyplot as plt
 
-from trajectopy.tools import alignment, evaluation
-from trajectopy.trajectory import Trajectory
+from trajectopy import Trajectory, ate, estimate_alignment, rpe
 from trajectopy.visualization import mpl_plots
 
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +14,10 @@ def main():
     sptam = Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
     mpl_plots.plot_trajectories([gt, orb])
 
-    alignment_result = alignment.estimate_alignment(gt, orb)
-    ate_result_orb = evaluation.ate(gt, orb)
-    ate_result_sptam = evaluation.ate(gt, sptam)
-    rpe_result = evaluation.rpe(gt, orb)
+    alignment_result = estimate_alignment(gt, orb)
+    ate_result_orb = ate(gt, orb)
+    ate_result_sptam = ate(gt, sptam)
+    rpe_result = rpe(gt, orb)
 
     # All available plotting functions
     mpl_plots.plot_covariance_heatmap(alignment_result.position_parameters)

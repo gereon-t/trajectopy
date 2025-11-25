@@ -1,8 +1,6 @@
 import logging
 
-from trajectopy import settings
-from trajectopy.tools import alignment
-from trajectopy.trajectory import Trajectory
+from trajectopy import ProcessingSettings, Trajectory, estimate_alignment
 from trajectopy.visualization import plotly_reports
 
 logging.basicConfig(level=logging.INFO)
@@ -14,9 +12,9 @@ def main():
     est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     # default settings
-    processing_settings = settings.ProcessingSettings()
+    processing_settings = ProcessingSettings()
 
-    alignment_result = alignment.estimate_alignment(
+    alignment_result = estimate_alignment(
         trajectory=est_traj,
         other=gt_traj,
         alignment_settings=processing_settings.alignment,
