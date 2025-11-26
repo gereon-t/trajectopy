@@ -1213,6 +1213,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#trajectopy.results.ate_result.AbsoluteTrajectoryDeviations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AbsoluteTrajectoryDeviations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#trajectopy.results.ate_result.ATEResult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1504,6 +1515,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#trajectopy.results.ate_result.AbsoluteTrajectoryDeviations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AbsoluteTrajectoryDeviations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#trajectopy.results.ate_result.ATEResult" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1577,12 +1599,122 @@
 
 
 
+<h3 id="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">AbsoluteTrajectoryDeviations</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#trajectopy.results.ate_result.AbsoluteTrajectoryDeviations" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">AbsoluteTrajectoryDeviations</span><span class="p">(</span><span class="n">pos_dev</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">directed_pos_dev</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">rot_dev</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Rotations (trajectopy.core.rotations.Rotations)" href="../../core/rotations/#trajectopy.core.rotations.Rotations">Rotations</a></span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rotations_used</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Container holding absolute pose deviations between two trajectories.</p>
+<p>The arrays stored in this dataclass represent per-epoch deviations after
+an optional temporal/spatial alignment of a reference (ground truth) and
+a test trajectory. They are later aggregated by <code>ATEResult</code> to derive
+metrics such as mean/median Absolute Trajectory Error (ATE), directional
+bias, and RMS statistics.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations.pos_dev">pos_dev</span></code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>3D array of absolute position deviation vectors
+in meters. Shape is (N, 3) for N deviation vectors with x, y, z
+components. These deviations are directly depending on the
+definition of the coordinate frame of the trajectories.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations.directed_pos_dev">directed_pos_dev</span></code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>3D array of directed position deviation
+vectors (e.g. along-track, horizontal/vertical cross-track) in meters.
+Shape is (N, 3). These deviations are independent of the global
+coordinate frame, as they are derived based on the along-track
+direction of the trajectory.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations.rot_dev">rot_dev</span></code></b>
+              (<code><a class="autorefs autorefs-internal" title="Rotations (trajectopy.core.rotations.Rotations)" href="../../core/rotations/#trajectopy.core.rotations.Rotations">Rotations</a> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Optional orientation deviations represented
+as a <code>Rotations</code> instance (radians). <code>None</code> if rotational evaluation
+was not performed.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations.rotations_used">rotations_used</span></code></b>
+              (<code><span title="bool">bool</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Indicates whether trajectory rotation information
+was employed to derive the direction frame for <code>directed_pos_dev</code>.
+If False, directional decomposition has relied on positional
+differences only.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h3 id="trajectopy.results.ate_result.ATEResult" class="doc doc-heading">
             <span class="doc doc-object-name doc-class-name">ATEResult</span>
 
 
 <a href="#trajectopy.results.ate_result.ATEResult" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ATEResult</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">abs_dev</span><span class="p">:</span> <span class="n"><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations">AbsoluteTrajectoryDeviations</span></span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ATEResult</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">abs_dev</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AbsoluteTrajectoryDeviations
+
+
+  
+      dataclass
+   (trajectopy.results.ate_result.AbsoluteTrajectoryDeviations)" href="#trajectopy.results.ate_result.AbsoluteTrajectoryDeviations">AbsoluteTrajectoryDeviations</a></span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1607,7 +1739,12 @@ positions and orientations in the test and reference trajectory.</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code><span title="trajectopy.results.ate_result.ATEResult.abs_dev">abs_dev</span></code></b>
-              (<code><span title="trajectopy.results.ate_result.AbsoluteTrajectoryDeviations">AbsoluteTrajectoryDeviations</span></code>)
+              (<code><a class="autorefs autorefs-internal" title="AbsoluteTrajectoryDeviations
+
+
+  
+      dataclass
+   (trajectopy.results.ate_result.AbsoluteTrajectoryDeviations)" href="#trajectopy.results.ate_result.AbsoluteTrajectoryDeviations">AbsoluteTrajectoryDeviations</a></code>)
           –
           <div class="doc-md-description">
             <p>The absolute trajectory deviations</p>
@@ -1631,24 +1768,24 @@ positions and orientations in the test and reference trajectory.</p>
 
 
                   <details class="mkdocstrings-source">
-                    <summary>Source code in <code>trajectopy\results\ate_result.py</code></summary>
-                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
-<span class="normal"><a href="#__codelineno-0-41">41</a></span>
-<span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="bp">self</span><span class="p">,</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n">Trajectory</span><span class="p">,</span>
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span class="n">abs_dev</span><span class="p">:</span> <span class="n">AbsoluteTrajectoryDeviations</span><span class="p">,</span>
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">name</span>
-</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">trajectory</span>
-</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span> <span class="o">=</span> <span class="n">abs_dev</span>
+                    <summary>Source code in <code>trajectopy/results/ate_result.py</code></summary>
+                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-65">65</a></span>
+<span class="normal"><a href="#__codelineno-0-66">66</a></span>
+<span class="normal"><a href="#__codelineno-0-67">67</a></span>
+<span class="normal"><a href="#__codelineno-0-68">68</a></span>
+<span class="normal"><a href="#__codelineno-0-69">69</a></span>
+<span class="normal"><a href="#__codelineno-0-70">70</a></span>
+<span class="normal"><a href="#__codelineno-0-71">71</a></span>
+<span class="normal"><a href="#__codelineno-0-72">72</a></span>
+<span class="normal"><a href="#__codelineno-0-73">73</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+</span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>    <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n">Trajectory</span><span class="p">,</span>
+</span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a>    <span class="n">abs_dev</span><span class="p">:</span> <span class="n">AbsoluteTrajectoryDeviations</span><span class="p">,</span>
+</span><span id="__span-0-69"><a id="__codelineno-0-69" name="__codelineno-0-69"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+</span><span id="__span-0-70"><a id="__codelineno-0-70" name="__codelineno-0-70"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-71"><a id="__codelineno-0-71" name="__codelineno-0-71"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">trajectory</span><span class="o">.</span><span class="n">name</span>
+</span><span id="__span-0-72"><a id="__codelineno-0-72" name="__codelineno-0-72"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">trajectory</span>
+</span><span id="__span-0-73"><a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span> <span class="o">=</span> <span class="n">abs_dev</span>
 </span></code></pre></div></td></tr></table></div>
                   </details>
 
@@ -2863,50 +3000,50 @@ positions and orientations in the test and reference trajectory.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>trajectopy\results\ate_result.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-101">101</a></span>
-<span class="normal"><a href="#__codelineno-0-102">102</a></span>
-<span class="normal"><a href="#__codelineno-0-103">103</a></span>
-<span class="normal"><a href="#__codelineno-0-104">104</a></span>
-<span class="normal"><a href="#__codelineno-0-105">105</a></span>
-<span class="normal"><a href="#__codelineno-0-106">106</a></span>
-<span class="normal"><a href="#__codelineno-0-107">107</a></span>
-<span class="normal"><a href="#__codelineno-0-108">108</a></span>
-<span class="normal"><a href="#__codelineno-0-109">109</a></span>
-<span class="normal"><a href="#__codelineno-0-110">110</a></span>
-<span class="normal"><a href="#__codelineno-0-111">111</a></span>
-<span class="normal"><a href="#__codelineno-0-112">112</a></span>
-<span class="normal"><a href="#__codelineno-0-113">113</a></span>
-<span class="normal"><a href="#__codelineno-0-114">114</a></span>
-<span class="normal"><a href="#__codelineno-0-115">115</a></span>
-<span class="normal"><a href="#__codelineno-0-116">116</a></span>
-<span class="normal"><a href="#__codelineno-0-117">117</a></span>
-<span class="normal"><a href="#__codelineno-0-118">118</a></span>
-<span class="normal"><a href="#__codelineno-0-119">119</a></span>
-<span class="normal"><a href="#__codelineno-0-120">120</a></span>
-<span class="normal"><a href="#__codelineno-0-121">121</a></span>
-<span class="normal"><a href="#__codelineno-0-122">122</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_ate_above</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Clips the ATE at a given value.</span>
-</span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a>
-</span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a><span class="sd">    This is useful to remove outliers from the ATE.</span>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a>
-</span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107"></a><span class="sd">        threshold (float): Maximum ATE value to keep.</span>
-</span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="k">if</span> <span class="n">threshold</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-</span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110"></a>        <span class="k">return</span>
-</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a>
-</span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span class="n">ate_below_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">dev</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_dev_comb</span><span class="p">]</span>
-</span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">ate_below_idx</span><span class="p">)</span>
-</span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span><span class="p">[</span><span class="n">ate_below_idx</span><span class="p">]</span>
-</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span><span class="p">[</span><span class="n">ate_below_idx</span><span class="p">]</span>
-</span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a>
-</span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span> <span class="o">=</span> <span class="n">Rotations</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
-</span><span id="__span-0-120"><a id="__codelineno-0-120" name="__codelineno-0-120"></a>            <span class="n">angles</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">)[</span><span class="n">ate_below_idx</span><span class="p">],</span>
-</span><span id="__span-0-121"><a id="__codelineno-0-121" name="__codelineno-0-121"></a>            <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span>
-</span><span id="__span-0-122"><a id="__codelineno-0-122" name="__codelineno-0-122"></a>        <span class="p">)</span>
+              <summary>Source code in <code>trajectopy/results/ate_result.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-128">128</a></span>
+<span class="normal"><a href="#__codelineno-0-129">129</a></span>
+<span class="normal"><a href="#__codelineno-0-130">130</a></span>
+<span class="normal"><a href="#__codelineno-0-131">131</a></span>
+<span class="normal"><a href="#__codelineno-0-132">132</a></span>
+<span class="normal"><a href="#__codelineno-0-133">133</a></span>
+<span class="normal"><a href="#__codelineno-0-134">134</a></span>
+<span class="normal"><a href="#__codelineno-0-135">135</a></span>
+<span class="normal"><a href="#__codelineno-0-136">136</a></span>
+<span class="normal"><a href="#__codelineno-0-137">137</a></span>
+<span class="normal"><a href="#__codelineno-0-138">138</a></span>
+<span class="normal"><a href="#__codelineno-0-139">139</a></span>
+<span class="normal"><a href="#__codelineno-0-140">140</a></span>
+<span class="normal"><a href="#__codelineno-0-141">141</a></span>
+<span class="normal"><a href="#__codelineno-0-142">142</a></span>
+<span class="normal"><a href="#__codelineno-0-143">143</a></span>
+<span class="normal"><a href="#__codelineno-0-144">144</a></span>
+<span class="normal"><a href="#__codelineno-0-145">145</a></span>
+<span class="normal"><a href="#__codelineno-0-146">146</a></span>
+<span class="normal"><a href="#__codelineno-0-147">147</a></span>
+<span class="normal"><a href="#__codelineno-0-148">148</a></span>
+<span class="normal"><a href="#__codelineno-0-149">149</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-128"><a id="__codelineno-0-128" name="__codelineno-0-128"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_ate_above</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-129"><a id="__codelineno-0-129" name="__codelineno-0-129"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Clips the ATE at a given value.</span>
+</span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>
+</span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a><span class="sd">    This is useful to remove outliers from the ATE.</span>
+</span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a><span class="sd">    Args:</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a><span class="sd">        threshold (float): Maximum ATE value to keep.</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span class="k">if</span> <span class="n">threshold</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+</span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span class="k">return</span>
+</span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>
+</span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span class="n">ate_below_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">dev</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_dev_comb</span><span class="p">]</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span><span class="n">ate_below_idx</span><span class="p">)</span>
+</span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span><span class="p">[</span><span class="n">ate_below_idx</span><span class="p">]</span>
+</span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span><span class="p">[</span><span class="n">ate_below_idx</span><span class="p">]</span>
+</span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a>
+</span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-146"><a id="__codelineno-0-146" name="__codelineno-0-146"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span> <span class="o">=</span> <span class="n">Rotations</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
+</span><span id="__span-0-147"><a id="__codelineno-0-147" name="__codelineno-0-147"></a>            <span class="n">angles</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">)[</span><span class="n">ate_below_idx</span><span class="p">],</span>
+</span><span id="__span-0-148"><a id="__codelineno-0-148" name="__codelineno-0-148"></a>            <span class="n">seq</span><span class="o">=</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span>
+</span><span id="__span-0-149"><a id="__codelineno-0-149" name="__codelineno-0-149"></a>        <span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2930,48 +3067,48 @@ positions and orientations in the test and reference trajectory.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>trajectopy\results\ate_result.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-515">515</a></span>
-<span class="normal"><a href="#__codelineno-0-516">516</a></span>
-<span class="normal"><a href="#__codelineno-0-517">517</a></span>
-<span class="normal"><a href="#__codelineno-0-518">518</a></span>
-<span class="normal"><a href="#__codelineno-0-519">519</a></span>
-<span class="normal"><a href="#__codelineno-0-520">520</a></span>
-<span class="normal"><a href="#__codelineno-0-521">521</a></span>
-<span class="normal"><a href="#__codelineno-0-522">522</a></span>
-<span class="normal"><a href="#__codelineno-0-523">523</a></span>
-<span class="normal"><a href="#__codelineno-0-524">524</a></span>
-<span class="normal"><a href="#__codelineno-0-525">525</a></span>
-<span class="normal"><a href="#__codelineno-0-526">526</a></span>
-<span class="normal"><a href="#__codelineno-0-527">527</a></span>
-<span class="normal"><a href="#__codelineno-0-528">528</a></span>
-<span class="normal"><a href="#__codelineno-0-529">529</a></span>
-<span class="normal"><a href="#__codelineno-0-530">530</a></span>
-<span class="normal"><a href="#__codelineno-0-531">531</a></span>
-<span class="normal"><a href="#__codelineno-0-532">532</a></span>
-<span class="normal"><a href="#__codelineno-0-533">533</a></span>
-<span class="normal"><a href="#__codelineno-0-534">534</a></span>
-<span class="normal"><a href="#__codelineno-0-535">535</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-515"><a id="__codelineno-0-515" name="__codelineno-0-515"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-</span><span id="__span-0-516"><a id="__codelineno-0-516" name="__codelineno-0-516"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-0-517"><a id="__codelineno-0-517" name="__codelineno-0-517"></a><span class="sd">    Exports results as pandas dataframe</span>
-</span><span id="__span-0-518"><a id="__codelineno-0-518" name="__codelineno-0-518"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-519"><a id="__codelineno-0-519" name="__codelineno-0-519"></a>    <span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span>
-</span><span id="__span-0-520"><a id="__codelineno-0-520" name="__codelineno-0-520"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">timestamps</span><span class="p">,</span>
-</span><span id="__span-0-521"><a id="__codelineno-0-521" name="__codelineno-0-521"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">path_lengths</span><span class="p">,</span>
-</span><span id="__span-0-522"><a id="__codelineno-0-522" name="__codelineno-0-522"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span>
-</span><span id="__span-0-523"><a id="__codelineno-0-523" name="__codelineno-0-523"></a>    <span class="p">]</span>
-</span><span id="__span-0-524"><a id="__codelineno-0-524" name="__codelineno-0-524"></a>
-</span><span id="__span-0-525"><a id="__codelineno-0-525" name="__codelineno-0-525"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">has_orientation</span><span class="p">:</span>
-</span><span id="__span-0-526"><a id="__codelineno-0-526" name="__codelineno-0-526"></a>        <span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">trajectory_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()]</span>
-</span><span id="__span-0-527"><a id="__codelineno-0-527" name="__codelineno-0-527"></a>
-</span><span id="__span-0-528"><a id="__codelineno-0-528" name="__codelineno-0-528"></a>    <span class="n">deviation_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span><span class="p">]</span>
-</span><span id="__span-0-529"><a id="__codelineno-0-529" name="__codelineno-0-529"></a>
-</span><span id="__span-0-530"><a id="__codelineno-0-530" name="__codelineno-0-530"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="p">:</span>
-</span><span id="__span-0-531"><a id="__codelineno-0-531" name="__codelineno-0-531"></a>        <span class="n">deviation_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">deviation_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()]</span>
-</span><span id="__span-0-532"><a id="__codelineno-0-532" name="__codelineno-0-532"></a>
-</span><span id="__span-0-533"><a id="__codelineno-0-533" name="__codelineno-0-533"></a>    <span class="n">all_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">trajectory_data</span><span class="p">,</span> <span class="n">deviation_data</span><span class="p">]</span>
-</span><span id="__span-0-534"><a id="__codelineno-0-534" name="__codelineno-0-534"></a>
-</span><span id="__span-0-535"><a id="__codelineno-0-535" name="__codelineno-0-535"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+              <summary>Source code in <code>trajectopy/results/ate_result.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-542">542</a></span>
+<span class="normal"><a href="#__codelineno-0-543">543</a></span>
+<span class="normal"><a href="#__codelineno-0-544">544</a></span>
+<span class="normal"><a href="#__codelineno-0-545">545</a></span>
+<span class="normal"><a href="#__codelineno-0-546">546</a></span>
+<span class="normal"><a href="#__codelineno-0-547">547</a></span>
+<span class="normal"><a href="#__codelineno-0-548">548</a></span>
+<span class="normal"><a href="#__codelineno-0-549">549</a></span>
+<span class="normal"><a href="#__codelineno-0-550">550</a></span>
+<span class="normal"><a href="#__codelineno-0-551">551</a></span>
+<span class="normal"><a href="#__codelineno-0-552">552</a></span>
+<span class="normal"><a href="#__codelineno-0-553">553</a></span>
+<span class="normal"><a href="#__codelineno-0-554">554</a></span>
+<span class="normal"><a href="#__codelineno-0-555">555</a></span>
+<span class="normal"><a href="#__codelineno-0-556">556</a></span>
+<span class="normal"><a href="#__codelineno-0-557">557</a></span>
+<span class="normal"><a href="#__codelineno-0-558">558</a></span>
+<span class="normal"><a href="#__codelineno-0-559">559</a></span>
+<span class="normal"><a href="#__codelineno-0-560">560</a></span>
+<span class="normal"><a href="#__codelineno-0-561">561</a></span>
+<span class="normal"><a href="#__codelineno-0-562">562</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-542"><a id="__codelineno-0-542" name="__codelineno-0-542"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+</span><span id="__span-0-543"><a id="__codelineno-0-543" name="__codelineno-0-543"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-544"><a id="__codelineno-0-544" name="__codelineno-0-544"></a><span class="sd">    Exports results as pandas dataframe</span>
+</span><span id="__span-0-545"><a id="__codelineno-0-545" name="__codelineno-0-545"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-546"><a id="__codelineno-0-546" name="__codelineno-0-546"></a>    <span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span>
+</span><span id="__span-0-547"><a id="__codelineno-0-547" name="__codelineno-0-547"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">timestamps</span><span class="p">,</span>
+</span><span id="__span-0-548"><a id="__codelineno-0-548" name="__codelineno-0-548"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">path_lengths</span><span class="p">,</span>
+</span><span id="__span-0-549"><a id="__codelineno-0-549" name="__codelineno-0-549"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">xyz</span><span class="p">,</span>
+</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a>    <span class="p">]</span>
+</span><span id="__span-0-551"><a id="__codelineno-0-551" name="__codelineno-0-551"></a>
+</span><span id="__span-0-552"><a id="__codelineno-0-552" name="__codelineno-0-552"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">has_orientation</span><span class="p">:</span>
+</span><span id="__span-0-553"><a id="__codelineno-0-553" name="__codelineno-0-553"></a>        <span class="n">trajectory_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">trajectory_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">rotations</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()]</span>
+</span><span id="__span-0-554"><a id="__codelineno-0-554" name="__codelineno-0-554"></a>
+</span><span id="__span-0-555"><a id="__codelineno-0-555" name="__codelineno-0-555"></a>    <span class="n">deviation_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">pos_dev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">directed_pos_dev</span><span class="p">]</span>
+</span><span id="__span-0-556"><a id="__codelineno-0-556" name="__codelineno-0-556"></a>
+</span><span id="__span-0-557"><a id="__codelineno-0-557" name="__codelineno-0-557"></a>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="p">:</span>
+</span><span id="__span-0-558"><a id="__codelineno-0-558" name="__codelineno-0-558"></a>        <span class="n">deviation_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">deviation_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs_dev</span><span class="o">.</span><span class="n">rot_dev</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()]</span>
+</span><span id="__span-0-559"><a id="__codelineno-0-559" name="__codelineno-0-559"></a>
+</span><span id="__span-0-560"><a id="__codelineno-0-560" name="__codelineno-0-560"></a>    <span class="n">all_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">trajectory_data</span><span class="p">,</span> <span class="n">deviation_data</span><span class="p">]</span>
+</span><span id="__span-0-561"><a id="__codelineno-0-561" name="__codelineno-0-561"></a>
+</span><span id="__span-0-562"><a id="__codelineno-0-562" name="__codelineno-0-562"></a>    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2995,24 +3132,24 @@ positions and orientations in the test and reference trajectory.</p>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>trajectopy\results\ate_result.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-537">537</a></span>
-<span class="normal"><a href="#__codelineno-0-538">538</a></span>
-<span class="normal"><a href="#__codelineno-0-539">539</a></span>
-<span class="normal"><a href="#__codelineno-0-540">540</a></span>
-<span class="normal"><a href="#__codelineno-0-541">541</a></span>
-<span class="normal"><a href="#__codelineno-0-542">542</a></span>
-<span class="normal"><a href="#__codelineno-0-543">543</a></span>
-<span class="normal"><a href="#__codelineno-0-544">544</a></span>
-<span class="normal"><a href="#__codelineno-0-545">545</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-537"><a id="__codelineno-0-537" name="__codelineno-0-537"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-0-538"><a id="__codelineno-0-538" name="__codelineno-0-538"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="__span-0-539"><a id="__codelineno-0-539" name="__codelineno-0-539"></a><span class="sd">    Exports results as csv</span>
-</span><span id="__span-0-540"><a id="__codelineno-0-540" name="__codelineno-0-540"></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-541"><a id="__codelineno-0-541" name="__codelineno-0-541"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-</span><span id="__span-0-542"><a id="__codelineno-0-542" name="__codelineno-0-542"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-0-543"><a id="__codelineno-0-543" name="__codelineno-0-543"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#epsg </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">epsg</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-0-544"><a id="__codelineno-0-544" name="__codelineno-0-544"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#sorting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-0-545"><a id="__codelineno-0-545" name="__codelineno-0-545"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.12f</span><span class="s2">&quot;</span><span class="p">)</span>
+              <summary>Source code in <code>trajectopy/results/ate_result.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-564">564</a></span>
+<span class="normal"><a href="#__codelineno-0-565">565</a></span>
+<span class="normal"><a href="#__codelineno-0-566">566</a></span>
+<span class="normal"><a href="#__codelineno-0-567">567</a></span>
+<span class="normal"><a href="#__codelineno-0-568">568</a></span>
+<span class="normal"><a href="#__codelineno-0-569">569</a></span>
+<span class="normal"><a href="#__codelineno-0-570">570</a></span>
+<span class="normal"><a href="#__codelineno-0-571">571</a></span>
+<span class="normal"><a href="#__codelineno-0-572">572</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-564"><a id="__codelineno-0-564" name="__codelineno-0-564"></a><span class="k">def</span><span class="w"> </span><span class="nf">to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-0-565"><a id="__codelineno-0-565" name="__codelineno-0-565"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-566"><a id="__codelineno-0-566" name="__codelineno-0-566"></a><span class="sd">    Exports results as csv</span>
+</span><span id="__span-0-567"><a id="__codelineno-0-567" name="__codelineno-0-567"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-568"><a id="__codelineno-0-568" name="__codelineno-0-568"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+</span><span id="__span-0-569"><a id="__codelineno-0-569" name="__codelineno-0-569"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-0-570"><a id="__codelineno-0-570" name="__codelineno-0-570"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#epsg </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">epsg</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-0-571"><a id="__codelineno-0-571" name="__codelineno-0-571"></a>        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;#sorting </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">sorting</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="__span-0-572"><a id="__codelineno-0-572" name="__codelineno-0-572"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">float_format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%.12f</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
