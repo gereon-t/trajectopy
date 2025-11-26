@@ -11,20 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
-    """
-    Merges a list of trajectories into one trajectory.
+    """Merges a list of trajectories into one trajectory.
 
-    This function ignores EPSG codes and merges the
-    trajectories based on their timestamps. Therefore,
-    all trajectories should be in the same coordinate system
-    before merging.
+    This function ignores EPSG codes and merges the trajectories based on their timestamps.
+    Therefore, all trajectories should be in the same coordinate system before merging.
 
     Args:
-        list[Trajectory]: List of trajectories to merge.
+        trajectories (List[Trajectory]): List of trajectories to merge.
 
     Returns:
         Trajectory: Merged trajectory.
-
     """
     epsg_set = {t.positions.epsg for t in trajectories}
 
@@ -57,17 +53,18 @@ def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
 
 
 def average_trajectories(trajectories: List[Trajectory]) -> Trajectory:
-    """
-    Averages a list of trajectories into one trajectory.
+    """Averages a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and averages trajectories.
 
     Args:
-        list[Trajectory]: List of trajectories to average.
+        trajectories (List[Trajectory]): List of trajectories to average.
 
     Returns:
         Trajectory: Averaged trajectory.
 
+    Raises:
+        ValueError: If trajectories have different lengths.
     """
     lengths = {len(t) for t in trajectories}
 

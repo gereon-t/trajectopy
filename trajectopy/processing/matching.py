@@ -17,13 +17,15 @@ from trajectopy.core.trajectory import Trajectory
 
 
 def match_non_overlapping_timestamps(trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0) -> float:
-    """This method roughly matches two trajectories temporally
+    """Roughly matches two trajectories temporally.
+
     Args:
-        trajectory (Trajectory): Trajectory to match
-        other (Trajectory): Other trajectory to match against
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
+        max_distance (float, optional): Maximum distance for spatial matching. Defaults to 0.0.
 
     Returns:
-        float: Mean time offset
+        float: Mean time offset.
     """
     other, trajectory = _match_trajectories_spatial(
         trajectory=other.copy(), other=trajectory.copy(), max_distance=max_distance
@@ -34,15 +36,15 @@ def match_non_overlapping_timestamps(trajectory: Trajectory, other: Trajectory, 
 
 
 def match_timestamps(trajectory: Trajectory, timestamps: np.ndarray, inplace: bool = True) -> Trajectory:
-    """Truncates trajectory to only those poses where the timestamps exactly match "timestamps"
+    """Truncates trajectory to only those poses where the timestamps exactly match "timestamps".
 
     Args:
-        trajectory (Trajectory): Input trajectory
-        timestamps (np.ndarray): Input timestamps
+        trajectory (Trajectory): Input trajectory.
+        timestamps (np.ndarray): Input timestamps.
         inplace (bool, optional): Perform matching in-place. Defaults to True.
 
     Returns:
-        Trajectory: Trajectory with matched timestamps
+        Trajectory: Trajectory with matched timestamps.
     """
     traj_self = trajectory if inplace else trajectory.copy()
     _, idx_self, _ = np.intersect1d(traj_self.timestamps, timestamps, return_indices=True)
@@ -56,50 +58,30 @@ def match_trajectories(
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
     inplace: bool = True,
 ) -> Tuple[Trajectory, Trajectory]:
-    """
-    Matches two trajectories using the specified method
-
-    Args:
-        trajectory (Trajectory): Trajectory to match
-        other (Trajectory): Other trajectory to match against
-        settings (MatchingSettings, optional): Matching settings. Defaults to MatchingSettings().
-        inplace (bool, optional): Whether to modify the input trajectories. Defaults to True.
+    """Matches two trajectories using the specified method.
 
     Supported methods:
 
-    - MatchingMethod.INTERPOLATION: Interpolates the test trajectory onto the reference trajectory using its timestamps
-    - MatchingMethod.NEAREST_TEMPORAL: Find the nearest temporal match without interpolation
-    - MatchingMethod.NEAREST_SPATIAL: Find the nearest spatial match without interpolation
-    - MatchingMethod.NEAREST_SPATIAL_INTERPOLATED: Find the nearest n spatial matches and spatially interpolate using a 3d line
+    - **INTERPOLATION**: Interpolates the test trajectory onto the reference trajectory using
+      its timestamps. The interpolation is linear for both positions and rotations (SLERP).
+    - **NEAREST_TEMPORAL**: Finds the nearest temporal match without interpolation by finding
+      the nearest timestamp in the target trajectory for each timestamp in the source trajectory.
+    - **NEAREST_SPATIAL**: Finds the nearest spatial match without interpolation by finding
+      the nearest pose in the target trajectory for each pose in the source trajectory using
+      Euclidean distance.
+    - **NEAREST_SPATIAL_INTERPOLATED**: Finds the nearest k spatial matches and spatially
+      interpolates using a 3d line. Both trajectories will have the length of the test trajectory.
+      This method does not support rotation matching.
 
-    Nearest Spatial
-
-    This method matches two trajectories by finding the nearest pose in the target trajectory
-    for each pose in the source trajectory. The distance between two poses is computed using
-    the Euclidean distance between their positions.
-
-    Nearest Temporal
-
-    This method matches two trajectories using their timestamps by finding the nearest
-    timestamp in the target trajectory for each timestamp in the source trajectory.
-
-    Interpolation
-
-    This method matches two trajectories by interpolating the timestamps of one trajectory
-    to the timestamps of the other trajectory. The interpolation is linear for both positions
-    and rotations (SLERP).
-
-    Nearest Spatial Interpolated
-
-    This method matches both trajectories spatially by requesting the nearest k positions
-    from the reference trajectory for each pose in the test trajectory. Then, an interpolation
-    is performed using a 3d line fit of the k nearest positions. After this operation, both
-    trajectories will have the length of the test trajectory. This method does not support
-    rotation matching.
+    Args:
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
+        matching_settings (MatchingSettings, optional): Matching settings. Defaults to
+            MatchingSettings().
+        inplace (bool, optional): Whether to modify the input trajectories. Defaults to True.
 
     Returns:
-        Tuple[Trajectory, Trajectory]: Matched trajectories
-
+        Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
     trajectory = trajectory if inplace else trajectory.copy()
     other = other if inplace else other.copy()
@@ -146,22 +128,20 @@ def match_trajectories(
 def _match_trajectories_interpolation(
     trajectory: Trajectory, other: Trajectory, max_gap_size: float = 10.0
 ) -> Tuple[Trajectory, Trajectory]:
-    """Ensures that both trajectories are sampled in the same way
+    """Ensures that both trajectories are sampled in the same way.
 
-    This method will intersect both trajectories with each other
-    and then approximate the trajectory with the higher data rate
-    onto the other trajectory. The sorting and the arc lengths of
-    both trajectories are identical after the call of this method.
+    This method will intersect both trajectories with each other and then approximate
+    the trajectory with the higher data rate onto the other trajectory. The sorting and
+    the arc lengths of both trajectories are identical after the call of this method.
 
     Args:
-        trajectory (Trajectory): Trajectory to match
-        other (Trajectory): Other trajectory to match against
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
+        max_gap_size (float, optional): Maximum gap size in seconds. Defaults to 10.0.
 
     Returns:
-        Tuple[Trajectory, Trajectory]: Both trajectories with the
-                                        same sampling. The instance
-                                        which called this method is
-                                        the first returned trajectory.
+        Tuple[Trajectory, Trajectory]: Both trajectories with the same sampling. The instance
+            which called this method is the first returned trajectory.
     """
     trajectory.intersect(other.timestamps, max_gap_size=max_gap_size)
 
@@ -185,20 +165,19 @@ def _match_trajectories_interpolation(
 def _match_trajectories_temporal(
     trajectory: Trajectory, other: Trajectory, max_distance: float = 0.01
 ) -> Tuple[Trajectory, Trajectory]:
-    """This method matches both trajectories temporally
+    """Matches both trajectories temporally.
 
-    After this operation, both trajectories will have the length of the
-    test trajectory. This means, that the reference trajectory may be
-    modified.
+    After this operation, both trajectories will have the length of the test trajectory.
+    This means that the reference trajectory may be modified.
 
     Args:
-        trajectory (Trajectory): Trajectory to match
-        other (Trajectory): Other trajectory to match against
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
         max_distance (float, optional): Maximum distance between two timestamps.
-                                        Defaults to 0.1.
+            Defaults to 0.01.
 
     Returns:
-        Tuple[Trajectory, Trajectory]: Matched trajectories
+        Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
     tstamps_ref_2d = np.c_[other.timestamps, np.zeros(other.timestamps.shape)]
     tstamps_test_2d = np.c_[trajectory.timestamps, np.zeros(trajectory.timestamps.shape)]
@@ -210,21 +189,19 @@ def _match_trajectories_temporal(
 def _match_trajectories_spatial(
     trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0
 ) -> Tuple[Trajectory, Trajectory]:
-    """This method matches both trajectories spatially
+    """Matches both trajectories spatially.
 
-    After this operation, both trajectories will have the length of the
-    test trajectory. This means, that the reference trajectory may be
-    modified.
+    After this operation, both trajectories will have the length of the test trajectory.
+    This means that the reference trajectory may be modified.
 
     Args:
-        trajectory (Trajectory): Trajectory to match
-        other (Trajectory): Other trajectory to match against
-        max_distance (float, optional): Maximum distance between two poses.
-                                        Defaults to None. This means all
-                                        matches are accepted.
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
+        max_distance (float, optional): Maximum distance between two poses. Defaults to 0.0.
+            This means all matches are accepted.
 
     Returns:
-        Tuple[Trajectory, Trajectory]: Matched trajectories
+        Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
     ref_indices, test_indices = _kd_matcher(
         ref=other.positions.xyz, test=trajectory.positions.xyz, max_distance=max_distance
@@ -234,9 +211,13 @@ def _match_trajectories_spatial(
 
 
 def _determine_mean_arc_length(arc_lengths: np.ndarray) -> float:
-    """
-    Determines the mean arc length from a set of arc lengths
-    while considering the circular nature of arc lengths.
+    """Determines the mean arc length from a set of arc lengths while considering the circular nature of arc lengths.
+
+    Args:
+        arc_lengths (np.ndarray): Array of arc lengths.
+
+    Returns:
+        float: Mean arc length.
     """
     max_arc_length = max(arc_lengths)
     # convert to angles
@@ -336,7 +317,15 @@ def _match_trajectories_spatial_interpolation(
 
 
 def _kd_matcher(ref: np.ndarray, test: np.ndarray, max_distance: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
-    """This method matches data using a KDTree
+    """Matches data using a KDTree.
+
+    Args:
+        ref (np.ndarray): Reference data points.
+        test (np.ndarray): Test data points.
+        max_distance (float, optional): Maximum distance for matching. Defaults to 0.0.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Matched indices for reference and test data.
 
     Args:
         ref (np.ndarray): Reference data

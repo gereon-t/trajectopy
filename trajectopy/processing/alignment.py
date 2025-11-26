@@ -25,25 +25,19 @@ def estimate_alignment(
     alignment_settings: settings.AlignmentSettings = settings.AlignmentSettings(),
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
 ) -> AlignmentResult:
-    """Aligns two trajectories
+    """Aligns two trajectories.
 
-    Performs a
-    - Helmert
-    - Leverarm
-    - Time shift
-
-    estimation depending on the configuration.
-    After this, the estimated parameters are applied
-    to the 'traj_from' trajectory.
+    Performs Helmert, Leverarm, and Time shift estimation depending on the configuration.
+    After this, the estimated parameters are applied to the 'trajectory' trajectory.
 
     Args:
-    - traj_from (Trajectory)
-    - traj_to (Trajectory)
-    - alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
-    - matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
+        trajectory (Trajectory): Trajectory to align.
+        other (Trajectory): Reference trajectory to align to.
+        alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
+        matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
 
     Returns:
-        AlignmentResult: Result of the alignment process
+        AlignmentResult: Result of the alignment process.
     """
     logger.info("Aligning trajectory positions ...")
 
@@ -82,16 +76,16 @@ def estimate_alignment(
 def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, inplace: bool = True) -> "Trajectory":
     """Transforms trajectory using alignment parameters.
 
-    After computing the alignment parameters needed to align
-    two trajectories, they can be applied to arbitrary trajectories.
+    After computing the alignment parameters needed to align two trajectories, they can be
+    applied to arbitrary trajectories.
 
     Args:
-        trajectory (Trajectory): Trajectory to apply alignment to
-        alignment_result (AlignmentResult)
+        trajectory (Trajectory): Trajectory to apply alignment to.
+        alignment_result (AlignmentResult): Alignment result containing transformation parameters.
         inplace (bool, optional): Perform in-place. Defaults to True.
 
     Returns:
-        Trajectory: Aligned trajectory
+        Trajectory: Aligned trajectory.
     """
 
     def _prepare_alignment_application(
@@ -159,14 +153,15 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
 
 
 def adopt_first_pose(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
-    """Transform trajectory so that the first pose is identical in both
+    """Transform trajectory so that the first pose is identical in both.
 
     Args:
-        traj_from (Trajectory): Trajectory where f
-        inplace (bool, optional): Perform in-place. Defaults to True.
+        trajectory (Trajectory): Trajectory to transform.
+        other (Trajectory): Reference trajectory.
+        inplace (bool, optional): Perform transformation in place. Defaults to True.
 
     Returns:
-        Trajectory: Transformed trajectory
+        Trajectory: Transformed trajectory.
     """
     trajectory = trajectory if inplace else trajectory.copy()
     adopt_first_position(trajectory=trajectory, other=other)
@@ -175,15 +170,15 @@ def adopt_first_pose(trajectory: Trajectory, other: Trajectory, inplace: bool = 
 
 
 def adopt_first_position(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
-    """Transform trajectory so that the first position is identical in both
+    """Transform trajectory so that the first position is identical in both.
 
     Args:
-        trajectory (Trajectory): Trajectory that will be changed
-        other (Trajectory): Trajectory to adopt the first position from
-        inplace (bool, optional): Perform in-place. Defaults to True.
+        trajectory (Trajectory): Trajectory to transform.
+        other (Trajectory): Reference trajectory.
+        inplace (bool, optional): Perform transformation in place. Defaults to True.
 
     Returns:
-        Trajectory: Transformed trajectory
+        Trajectory: Transformed trajectory.
     """
     trajectory = trajectory if inplace else trajectory.copy()
     position_difference = other.positions.xyz[0, :] - trajectory.positions.xyz[0, :]
@@ -192,14 +187,15 @@ def adopt_first_position(trajectory: Trajectory, other: Trajectory, inplace: boo
 
 
 def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
-    """Transform trajectory so that the first orientation is identical in both
+    """Transform trajectory so that the first orientation is identical in both.
 
     Args:
-        trajectory (Trajectory): Target Trajectory
-        inplace (bool, optional): Perform in-place. Defaults to True.
+        trajectory (Trajectory): Trajectory to transform.
+        other (Trajectory): Reference trajectory.
+        inplace (bool, optional): Perform transformation in place. Defaults to True.
 
     Returns:
-        Trajectory: Transformed trajectory
+        Trajectory: Transformed trajectory.
     """
     trajectory = trajectory if inplace else trajectory.copy()
     if trajectory.rotations is not None and other.rotations is not None:
@@ -218,16 +214,19 @@ def align(
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
     inplace: bool = True,
 ) -> Trajectory:
-    """Aligns the trajectory with another trajectory
+    """Aligns the trajectory with another trajectory.
 
     Args:
-        other (Trajectory)
-        alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
-        matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
+        trajectory (Trajectory): Trajectory to align.
+        other (Trajectory): Reference trajectory.
+        alignment_settings (AlignmentSettings, optional): Settings for the alignment process.
+            Defaults to AlignmentSettings().
+        matching_settings (MatchingSettings, optional): Settings for the matching process.
+            Defaults to MatchingSettings().
         inplace (bool, optional): Perform in-place. Defaults to True.
 
     Returns:
-        Trajectory: Aligned trajectory
+        Trajectory: Aligned trajectory.
     """
     alignment = estimate_alignment(
         trajectory=trajectory,

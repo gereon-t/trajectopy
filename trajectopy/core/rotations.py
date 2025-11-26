@@ -5,15 +5,12 @@ from scipy.spatial.transform import Rotation
 
 
 class Rotations(Rotation):
-    """Class representing rotations
+    """Class representing rotations.
 
-    This class is essentially just a wrapper around the parent
-    scipy.spatial.transform.Rotation class. It extends its
-    functionality by introducing + / - operators as well as
-    the ability to create a deepcopy and to output rotation angles.
-
-    Furthermore, it ensures that the naming is consistent with the
-    pointset class.
+    This class is essentially just a wrapper around the parent scipy.spatial.transform.Rotation
+    class. It extends its functionality by introducing + / - operators as well as the ability
+    to create a deepcopy and to output rotation angles. Furthermore, it ensures that the naming
+    is consistent with the pointset class.
     """
 
     def __len__(self) -> int:
@@ -38,7 +35,11 @@ class Rotations(Rotation):
 
     @property
     def rotangle(self) -> np.ndarray:
-        """Returns minimum rotation angle(s)"""
+        """Returns minimum rotation angle(s).
+
+        Returns:
+            np.ndarray: Minimum rotation angle(s) in radians.
+        """
         rotvec = self.as_rotvec()
 
         if rotvec.ndim == 1:

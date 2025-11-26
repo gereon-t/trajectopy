@@ -11,19 +11,14 @@ from trajectopy.exceptions import PointSetError
 class Positions:
     """Class representing (georeferenced) positions.
 
+    The Positions class can hold one or multiple 3d positions with a corresponding EPSG code
+    for datum information. When creating a Positions instance, a transformation pipeline is
+    created based on the passed points, which can transform the points into a local system
+    tangent to the ellipsoid (grs80). Such a local datum is represented within this class with
+    an EPSG code of 0 and is mainly suitable for local calculations within the Positions.
 
-    The Positions class can hold one or multiple 3d positions
-    with a corresponding EPSG code for datum information.
-    When creating a Positions instance, a transformation pipeline
-    is created based on the passed points, which can transform
-    the points into a local system tangent to the ellipsoid (grs80).
-    Such a local datum is represented within this class with an
-    EPSG code of 0 and is mainly suitable for local calculations
-    within the Positions.
-
-    All transformations, including the local transformation, are
-    carried out using pyproj, a python toolbox for projections and
-    transformations.
+    All transformations, including the local transformation, are carried out using pyproj,
+    a python toolbox for projections and transformations.
     """
 
     def __init__(
@@ -35,56 +30,34 @@ class Positions:
         epsg_local_cart: int = 4936,
         epsg_local_geod: int = 4937,
     ) -> None:
-        """Initialize PointSet and create local transformer
+        """Initialize PointSet and create local transformer.
 
-        If a pointset is initialized directly with an EPSG code of 0,
-        such a local transformer cannot be constructed, and a
-        transformation into other EPSG codes is therefore not possible.
-        Use this setting, if you dont have any information about the
-        datum of the passed points.
-        However, if the local transformer is already known, it can be
-        provided during the initialization of the pointset using the
-        local_transformer variable.
+        If a pointset is initialized directly with an EPSG code of 0, such a local transformer
+        cannot be constructed, and a transformation into other EPSG codes is therefore not possible.
+        Use this setting if you don't have any information about the datum of the passed points.
+        However, if the local transformer is already known, it can be provided during the
+        initialization of the pointset using the local_transformer variable.
 
         Args:
-            xyz (np.ndarray): 1- / 2- dimensional numpy array
-                              containing the coordinated of the
-                              input positions
-            epsg (int, optional): EPSG code of the datum of the input
-                                  positions. Defaults to 0.
-            local_transformer (Transformer, optional): pyproj transformer
-                                                       that describes the
-                                                       transformation to
-                                                       a local coordinate
-                                                       system.
-                                                       Defaults to None.
-            init_local_transformer (bool, optional): Specifies if a local
-                                                     transformer should be
-                                                     initialized.
-                                                     Defaults to True.
-            epsg_local_cart (int, optional): EPSG code of the earth-centered
-                                             datum that is used to construct
-                                             the local transformation pipeline.
-                                             In a first step, the coordinates
-                                             are transformed to this coordinate
-                                             frame. In this coordinate frame
-                                             they are reduced by their mean
-                                             position.
-                                             Defaults to 4936.
-            epsg_local_geod (int, optional): In the final step of the local
-                                             transformation pipeline, the
-                                             positions reduced by their mean
-                                             are rotated into a local system
-                                             tangent to the ellipsoid.
-                                             The ellipsoid is defined by this
-                                             parameter using an EPSG code.
-                                             Both EPSG codes, epsg_local_cart
-                                             and epsg_local_geod should refer
-                                             to the same datum (here ETRS89).
-                                             Defaults to 4937.
+            xyz (np.ndarray | list): 1- / 2- dimensional numpy array containing the coordinates
+                of the input positions.
+            epsg (int, optional): EPSG code of the datum of the input positions. Defaults to 0.
+            local_transformer (Transformer, optional): pyproj transformer that describes the
+                transformation to a local coordinate system. Defaults to None.
+            init_local_transformer (bool, optional): Specifies if a local transformer should be
+                initialized. Defaults to True.
+            epsg_local_cart (int, optional): EPSG code of the earth-centered datum that is used
+                to construct the local transformation pipeline. In a first step, the coordinates
+                are transformed to this coordinate frame. In this coordinate frame they are reduced
+                by their mean position. Defaults to 4936.
+            epsg_local_geod (int, optional): In the final step of the local transformation pipeline,
+                the positions reduced by their mean are rotated into a local system tangent to the
+                ellipsoid. The ellipsoid is defined by this parameter using an EPSG code. Both EPSG
+                codes, epsg_local_cart and epsg_local_geod should refer to the same datum (here ETRS89).
+                Defaults to 4937.
 
         Raises:
-            PointSetError: Gets raised, if input xyz is not a numpy array
+            PointSetError: Gets raised if input xyz is not a numpy array.
         """
 
         if not isinstance(xyz, np.ndarray):
@@ -197,24 +170,24 @@ class Positions:
 
     @property
     def xyz(self) -> np.ndarray:
-        """xyz property returning the points within the pointset
+        """Returns the points within the pointset.
 
         Returns:
-            np.ndarray: 2-dimensional numpy array
+            np.ndarray: 2-dimensional numpy array.
         """
         return self.__xyz
 
     @xyz.setter
     def xyz(self, xyz: np.ndarray):
-        """Sets xyz array
+        """Sets xyz array.
 
-        Takes care that xyz is always a 2-dimensional numpy array
+        Takes care that xyz is always a 2-dimensional numpy array.
 
         Args:
-            xyz (np.ndarray): points used to replace the current points
+            xyz (np.ndarray): Points used to replace the current points.
 
         Raises:
-            PointSetError: Gets raised, if input xyz is not a numpy array
+            PointSetError: Gets raised if input xyz is not a numpy array.
         """
         if not isinstance(xyz, np.ndarray):
             raise PointSetError("Input must be numpy array!")
@@ -222,112 +195,101 @@ class Positions:
 
     @property
     def x(self) -> Union[int, float, np.ndarray]:
-        """x property
+        """Returns x coordinate(s).
 
-        The x/y/z properties will either return a one-dimensional numpy
-        array or a single float / int depending on whether there is
-        more than one point in the pointset
+        The x/y/z properties will either return a one-dimensional numpy array or a single
+        float / int depending on whether there is more than one point in the pointset.
 
         Returns:
-            Union[int, float, np.ndarray]
+            Union[int, float, np.ndarray]: X coordinate(s).
         """
         return self.__get_column(idx=0)
 
     @property
     def y(self) -> Union[int, float, np.ndarray]:
-        """y property
+        """Returns y coordinate(s).
 
-        The x/y/z properties will either return a one-dimensional numpy
-        array or a single float / int depending on whether there is
-        more than one point in the pointset
+        The x/y/z properties will either return a one-dimensional numpy array or a single
+        float / int depending on whether there is more than one point in the pointset.
 
         Returns:
-            Union[int, float, np.ndarray]
+            Union[int, float, np.ndarray]: Y coordinate(s).
         """
         return self.__get_column(idx=1)
 
     @property
     def z(self) -> Union[int, float, np.ndarray]:
-        """z property
+        """Returns z coordinate(s).
 
-        The x/y/z properties will either return a one-dimensional numpy
-        array or a single float / int depending on whether there is
-        more than one point in the pointset
+        The x/y/z properties will either return a one-dimensional numpy array or a single
+        float / int depending on whether there is more than one point in the pointset.
 
         Returns:
-            Union[int, float, np.ndarray]
+            Union[int, float, np.ndarray]: Z coordinate(s).
         """
         return self.__get_column(idx=2)
 
     @x.setter
     def x(self, x: Union[int, float, np.ndarray]) -> None:
-        """x setter
+        """Sets x coordinate(s).
 
-        This method will set the x value(s) to some input value(s)
+        This method will set the x value(s) to some input value(s).
 
         Args:
-            x (Union[int, float, np.ndarray]): Either a single value or
-                                               an array of exactly the
-                                               same length as xyz.
+            x (Union[int, float, np.ndarray]): Either a single value or an array of exactly
+                the same length as xyz.
         """
         self.__set_column(v=x, idx=0)
 
     @y.setter
     def y(self, y: Union[int, float, np.ndarray]) -> None:
-        """y setter
+        """Sets y coordinate(s).
 
-        This method will set the y value(s) to some input value(s)
+        This method will set the y value(s) to some input value(s).
 
         Args:
-            y (Union[int, float, np.ndarray]): Either a single value or
-                                               an array of exactly the
-                                               same length as xyz.
+            y (Union[int, float, np.ndarray]): Either a single value or an array of exactly
+                the same length as xyz.
         """
         self.__set_column(v=y, idx=1)
 
     @z.setter
     def z(self, z: Union[int, float, np.ndarray]) -> None:
-        """z setter
+        """Sets z coordinate(s).
 
-        This method will set the z value(s) to some input value(s)
+        This method will set the z value(s) to some input value(s).
 
         Args:
-            z (Union[int, float, np.ndarray]): Either a single value or
-                                               an array of exactly the
-                                               same length as xyz.
+            z (Union[int, float, np.ndarray]): Either a single value or an array of exactly
+                the same length as xyz.
         """
         self.__set_column(v=z, idx=2)
 
     @property
     def crs(self) -> CRS:
-        """Coordinate Reference System
+        """Returns the Coordinate Reference System.
 
         Returns:
-            CRS: pyproj CRS object that represents the current
-            coordinate system
+            CRS: pyproj CRS object that represents the current coordinate system.
         """
         return None if self.epsg == 0 else CRS.from_epsg(code=self.epsg)
 
     def to_epsg(self, target_epsg: int, inplace: bool = True) -> "Positions":
-        """Performs a coordinate transformation using a target crs
+        """Performs a coordinate transformation using a target CRS.
 
-        This method will construct the required pyproj transformer and
-        applies it in order to transform the pointset to the target
-        ESPG code.
+        This method will construct the required pyproj transformer and applies it in order to
+        transform the pointset to the target EPSG code.
 
         Args:
-            target_epsg (int): EPSG code of target CRS
-            inplace (bool, optional): perform transformation in place.
-                                      Defaults to True.
+            target_epsg (int): EPSG code of target CRS.
+            inplace (bool, optional): Perform transformation in place. Defaults to True.
 
         Raises:
-
-            PointSetError: Gets raised if it is not possible to recover
-                           from a local datum since local transformer
-                           is unknown
+            PointSetError: Gets raised if it is not possible to recover from a local datum
+                since local transformer is unknown.
 
         Returns:
-            PointSet: transformed pointset
+            Positions: Transformed pointset.
         """
         pointset = self if inplace else self.copy()
 
@@ -378,31 +340,27 @@ class Positions:
         return pointset
 
     def to_local(self, inplace: bool = True) -> "Positions":
-        """Transform pointset to a local frame tangential to the
-           (grs80) ellipsoid
+        """Transform pointset to a local frame tangential to the (grs80) ellipsoid.
 
-        This is equivalent to an transformation to an EPSG of 0
+        This is equivalent to a transformation to an EPSG of 0.
 
         Args:
-            inplace (bool, optional): perform transformation in place.
-                                      Defaults to True.
+            inplace (bool, optional): Perform transformation in place. Defaults to True.
 
         Returns:
-            PointSet: 2-dimensional PointSet containing xyz of the
-                        transformed points
+            Positions: 2-dimensional PointSet containing xyz of the transformed points.
         """
         return self.to_epsg(target_epsg=0, inplace=inplace)
 
     def mean(self, inplace: bool = False) -> "Positions":
-        """Computes the mean of all points within the pointset
+        """Computes the mean of all points within the pointset.
 
         Args:
-            inplace (bool, optional): if true, the pointset gets
-                                      replaced by a single mean
-                                      position. Defaults to False.
+            inplace (bool, optional): If true, the pointset gets replaced by a single mean
+                position. Defaults to False.
 
         Returns:
-            PointSet: Contains the mean position
+            Positions: Contains the mean position.
         """
         mean_xyz = np.mean(self.xyz, axis=0)
 
@@ -411,30 +369,48 @@ class Positions:
         return Positions(xyz=mean_xyz, epsg=self.epsg, local_transformer=self.local_transformer)
 
     def round_to(self, prec: float) -> "Positions":
-        """Rounds all points to a given precision
+        """Rounds all points to a given precision.
 
         Args:
-            prec (float): desired rounding precision
+            prec (float): Desired rounding precision.
 
         Returns:
-            PointSet: Contains the rounded positions
+            Positions: Contains the rounded positions.
         """
         rounded = self.copy()
         rounded.xyz = np.round(rounded.xyz / prec) * prec
         return rounded
 
     def __add__(self, other: "Positions") -> "Positions":
-        """Plus operator"""
+        """Plus operator.
+
+        Args:
+            other (Positions): Positions to add.
+
+        Returns:
+            Positions: Sum of positions.
+        """
         xyz_add = self.xyz + other.xyz
         return Positions(xyz=xyz_add, epsg=self.epsg, local_transformer=self.local_transformer)
 
     def __sub__(self, other: "Positions") -> "Positions":
-        """Minus operator"""
+        """Minus operator.
+
+        Args:
+            other (Positions): Positions to subtract.
+
+        Returns:
+            Positions: Difference of positions.
+        """
         xyz_sub = self.xyz - other.xyz
         return Positions(xyz=xyz_sub, epsg=self.epsg, local_transformer=self.local_transformer)
 
-    def __key(self):
-        """Key generation used for hash generation"""
+    def __key(self) -> tuple:
+        """Key generation used for hash generation.
+
+        Returns:
+            tuple: Key tuple for hashing.
+        """
         return (
             self.epsg,
             self.xyz[:, 0] @ self.xyz[:, 0],
@@ -446,8 +422,18 @@ class Positions:
     def __hash__(self):
         return hash(self.__key())
 
-    def __eq__(self, other):
-        """Equality"""
+    def __eq__(self, other: "Positions") -> bool:
+        """Equality comparison.
+
+        Args:
+            other: Object to compare with.
+
+        Returns:
+            bool: True if equal, False otherwise.
+
+        Raises:
+            NotImplementedError: If comparing with incompatible type.
+        """
         if isinstance(other, Positions):
             return self.__key() == other.__key()
         raise NotImplementedError(f"Cannot compare {type(self)} with {type(other)}!")

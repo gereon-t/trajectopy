@@ -99,9 +99,12 @@ class ATEResult:
         return True
 
     def remove_ate_above(self, threshold: float) -> None:
-        """
-        Clips the ATE at a given value.
+        """Clips the ATE at a given value.
+
         This is useful to remove outliers from the ATE.
+
+        Args:
+            threshold (float): Maximum ATE value to keep.
         """
         if threshold <= 0.0:
             return
@@ -120,38 +123,49 @@ class ATEResult:
 
     @property
     def index(self) -> np.ndarray:
-        """
-        Returns the variable that currently parametrizes the trajectory.
+        """Returns the variable that currently parametrizes the trajectory.
+
         Depending on the sorting of the trajectory, this is either time or arc length.
+
+        Returns:
+            np.ndarray: Current independent variable array (time or path-length).
         """
         return self.trajectory.index
 
     @property
     def _sorted_abs_pos_dev(self) -> np.ndarray:
-        """
-        Returns absolute deviations sorted according to the trajectory's sorting index
+        """Returns absolute deviations sorted according to the trajectory's sorting index.
+
+        Returns:
+            np.ndarray: Sorted absolute position deviations.
         """
         return self.abs_dev.pos_dev[self.trajectory.sorting_index]
 
     @property
     def _sorted_directed_pos_dev(self) -> np.ndarray:
-        """
-        Returns directed absolute deviations sorted according to the trajectory's sorting index
+        """Returns directed absolute deviations sorted according to the trajectory's sorting index.
+
+        Returns:
+            np.ndarray: Sorted directed position deviations.
         """
         return self.abs_dev.directed_pos_dev[self.trajectory.sorting_index]
 
     @property
     def sorted_abs_rot_dev(self) -> Rotations:
-        """
-        Returns absolute rotation deviations sorted according to the trajectory's sorting index
+        """Returns absolute rotation deviations sorted according to the trajectory's sorting index.
+
+        Returns:
+            Rotations: Sorted absolute rotation deviations.
         """
         if self.abs_dev.rot_dev is not None:
             return Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[self.trajectory.sorting_index])
 
     @property
     def has_orientation(self) -> bool:
-        """
-        Returns True if orientation is available
+        """Returns True if orientation is available.
+
+        Returns:
+            bool: True if rotation deviations are available, False otherwise.
         """
         return self.abs_dev.rot_dev is not None
 

@@ -92,7 +92,11 @@ class RPEResult:
 
     @property
     def rot_rpe(self) -> float:
-        """Returns the average rotation drift in radians per 100 meters."""
+        """Returns the average rotation drift in radians per 100 meters.
+
+        Returns:
+            float: Average rotation drift.
+        """
         return np.mean(self.rot_dev_mean)
 
     @property
@@ -193,10 +197,12 @@ class RPEResult:
 
     @property
     def property_dict(self) -> Dict[str, str]:
-        """
-        Returns a dictionary containing the properties of the deviation set
-        relevant for time based comparisons. This is the case when pose-pairs
-        are defined by a time difference.
+        """Returns a dictionary containing the properties of the deviation set.
+
+        This is relevant for time based comparisons, when pose-pairs are defined by a time difference.
+
+        Returns:
+            Dict[str, str]: Dictionary of property names and values.
         """
         basic_dict = {
             "Name": self.name,

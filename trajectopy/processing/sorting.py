@@ -73,18 +73,18 @@ def divide_into_laps(
 
 
 def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> Tuple[np.ndarray, float]:
-    """Performs the mls approximation without iteration
+    """Performs the MLS approximation without iteration.
 
-    This method approximates the neighborhood of a point
-    using a 3d line. Neighborhoods are defined using voxels.
+    This method approximates the neighborhood of a point using a 3d line.
+    Neighborhoods are defined using voxels.
 
     Args:
-        xyz (np.ndarray): Input points that should be approximated
-        voxel_size (float): length of one voxel side
-        k_nearest (int): number of voxels that define a neighborhood
+        xyz (np.ndarray): Input points that should be approximated.
+        voxel_size (float): Length of one voxel side.
+        k_nearest (int): Number of voxels that define a neighborhood.
 
     Returns:
-        Tuple[np.ndarray, float]: Approximated positions, average point movement
+        Tuple[np.ndarray, float]: Approximated positions and average point movement.
     """
     voxelizer = Voxelizer(xyz, voxel_size=voxel_size)
     neighboring_voxels = voxelizer.k_nearest_query(xyz, k_nearest=k_nearest)
@@ -99,8 +99,8 @@ def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> Tuple[np.
 
 @lru_cache(maxsize=None)
 def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: FrozenSet[str]) -> Union[Line3D, None]:
-    """
-    Approximates a 3D line from a set of points and returns it as a Line3D object.
+    """Approximates a 3D line from a set of points and returns it as a Line3D object.
+
     If the set contains only one point, returns None.
 
     Args:
@@ -108,8 +108,8 @@ def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: FrozenSet[str]) -
         voxel_set (frozenset[str]): A set of voxel indices.
 
     Returns:
-        Union[Line3D, None]: A Line3D object representing the 3D line approximated from the points in the voxel set,
-        or None if the set contains only one point.
+        Union[Line3D, None]: A Line3D object representing the 3D line approximated from the
+            points in the voxel set, or None if the set contains only one point.
     """
     points = voxelizer.points_from_voxel_set(voxel_set)
     return Line3D.from_points(points) if len(points) > 1 else None

@@ -459,15 +459,14 @@ def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
 def plot_trajectories(
     trajectories: List[Trajectory], scatter_3d: bool = False
 ) -> Tuple[Figure, Figure, Union[Figure, None]]:
-    """
-    Plots the trajectories in 2d or 3d using matplotlib.
-
-    Args:
-        trajectories (List[Trajectory]): List of trajectories to plot.
-        dim (int, optional): Dimension of the plot. Defaults to 2.
+    """Plots the trajectories in 2d or 3d using matplotlib.
 
     This function creates one 2D or 3D plot for the xy(z) coordinates of the trajectories,
     one subplot for the xyz coordinates and one subplot for the rpy angles.
+
+    Args:
+        trajectories (List[Trajectory]): List of trajectories to plot.
+        scatter_3d (bool, optional): Whether to create a 3D scatter plot. Defaults to False.
 
     Returns:
         Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
@@ -590,18 +589,17 @@ def plot_ate_bars(
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
     mode: str = "positions",
 ) -> Figure:
-    """
-    Plots multiple ATE results as bars for different characteristics (min, max, mean, median, rms, std)
-    using matplotlib.
+    """Plots multiple ATE results as bars for different characteristics.
+
+    Shows min, max, mean, median, rms, std using matplotlib.
 
     Args:
-        ate_result (List[ATEResult]): List of ATE results.
+        ate_results (List[ATEResult]): List of ATE results.
         plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
         mode (str, optional): Mode to plot. Either 'positions' or 'rotations'. Defaults to 'positions'.
 
     Returns:
         Figure: Bar plot figure.
-
     """
     fig, ax = plt.subplots()
 
@@ -738,11 +736,12 @@ def plot_ate_dof(
     ate_result: ATEResult,
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> Figure:
-    """Plots ATE DOF (Degrees of Freedom) for the given ATEResult(s) as a line plot using matplotlib.
+    """Plots ATE DOF (Degrees of Freedom) for the given ATEResult as a line plot using matplotlib.
+
     The DOF plot shows the deviations in the x, y, and z directions for position and rotation.
 
     Args:
-        ate_results (Union[ATEResult, List[ATEResult]]): ATE result(s) to plot.
+        ate_result (ATEResult): ATE result to plot.
         plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
 
     Returns:

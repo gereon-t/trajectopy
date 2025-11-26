@@ -53,7 +53,16 @@ def float_line_handler(line: str) -> float:
 
 
 def delimiter_line_handler(line: str) -> str:
-    """This function extracts the delimiter from the file header. All characters between the first and the last quotation mark are returned."""
+    """Extracts the delimiter from the file header.
+
+    All characters between the first and the last quotation mark are returned.
+
+    Args:
+        line (str): Header line containing delimiter information.
+
+    Returns:
+        str: The delimiter character, defaults to comma.
+    """
     if delimiter_match := re.search(r"#delimiter ['\"](.)['\"]", line):
         delimiter = delimiter_match[1]
         logger.info("Detected delimiter %s", delimiter)

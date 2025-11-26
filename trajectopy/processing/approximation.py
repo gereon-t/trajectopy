@@ -19,12 +19,11 @@ def approximate_cubic(
     approximation_settings: ApproximationSettings = ApproximationSettings(),
     inplace: bool = False,
 ) -> Trajectory:
-    """
-    Approximate the trajectory using piecewise cubic polynomials based on the provided settings.
+    """Approximate the trajectory using piecewise cubic polynomials based on the provided settings.
 
     Args:
-        traj (Trajectory): The trajectory to approximate.
-        settings (ApproximationSettings): Settings for the approximation.
+        trajectory (Trajectory): The trajectory to approximate.
+        approximation_settings (ApproximationSettings): Settings for the approximation.
         inplace (bool): If True, modify the trajectory in place. Defaults to False.
 
     Returns:
@@ -54,24 +53,19 @@ def approximate_cubic(
 
 
 def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: float = 0.15) -> np.ndarray:
-    """
-    Function that averages rotations for a given
-    window size using quaternion averaging.
+    """Averages rotations for a given window size using quaternion averaging.
 
-    For each rotation, all rotations within a window centered
-    at the current rotation are averaged for the compuation of
-    the mean rotation. For this, the chordal L2 mean is used.
-
-    The average rotation for the first and last rotations are
-    computed using smaller window sizes (minimum half of the window size)
+    For each rotation, all rotations within a window centered at the current rotation
+    are averaged for the computation of the mean rotation. For this, the chordal L2 mean is used.
+    The average rotation for the first and last rotations are computed using smaller window
+    sizes (minimum half of the window size).
 
     Args:
-        index (np.ndarray): The time / path lengths describing the
-                                  "location" of the given rotations either
-                                  in time or in trajectory length.
-        quat (np.ndarray): _description_
-        win_size (float, optional): Window size used for rotation averaging
-                                    in meters. Defaults to 0.15.
+        index (np.ndarray): The time / path lengths describing the "location" of the given
+            rotations either in time or in trajectory length.
+        quat (np.ndarray): Quaternions to average.
+        win_size (float, optional): Window size used for rotation averaging in meters.
+            Defaults to 0.15.
 
     Returns:
         np.ndarray: Averaged quaternions.
@@ -106,18 +100,22 @@ def _piecewise_cubic(
     min_obs: int = 25,
     return_approx_objects: bool = False,
 ) -> Union[Tuple[np.ndarray, List[CubicApproximation]], np.ndarray]:
-    """
-    Approximates a piecewise cubic function for a given set of input values.
+    """Approximates a piecewise cubic function for a given set of input values.
 
     Args:
         index (np.ndarray): The input values to approximate the function for.
         values (np.ndarray): The output values corresponding to the input values.
-        int_size (float, optional): The interval size for the approximation. Defaults to 0.15.
-        min_obs (int, optional): The minimum number of observations required for the approximation. Defaults to 25.
-        return_approx_objects (bool, optional): Whether to return the list of CubicApproximation objects along with the approximated values. Defaults to False.
+        min_win_size (float, optional): The minimum window size for the approximation.
+            Defaults to 0.25.
+        min_obs (int, optional): The minimum number of observations required for the
+            approximation. Defaults to 25.
+        return_approx_objects (bool, optional): Whether to return the list of
+            CubicApproximation objects along with the approximated values. Defaults to False.
 
     Returns:
-        Union[np.ndarray, Tuple[list[CubicApproximation], np.ndarray]]: The approximated values. If `return_approx_objects` is True, returns a tuple containing the approximated values and the list of CubicApproximation objects.
+        Union[np.ndarray, Tuple[list[CubicApproximation], np.ndarray]]: The approximated
+            values. If `return_approx_objects` is True, returns a tuple containing the
+            approximated values and the list of CubicApproximation objects.
     """
     # Cubic spline approximation
     # least squares

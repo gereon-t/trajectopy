@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class Trajectory:
-    """
-    Class representing a trajectory containing synchronized position, orientation, and time data.
+    """Class representing a trajectory containing synchronized position, orientation, and time data.
 
     Attributes:
         positions (Positions): Container for spatial coordinates and coordinate reference system (EPSG) data.
@@ -29,17 +28,6 @@ class Trajectory:
         name (str): An identifier string for the trajectory.
         path_lengths (np.ndarray): A 1D array of cumulative path lengths starting from zero.
         sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH).
-
-    Properties:
-        velocity_xyz (np.ndarray): The 3D velocity vector $[v_x, v_y, v_z]$ for each pose.
-        absolute_velocity (np.ndarray): The scalar speed (magnitude of velocity) for each pose.
-        se3 (List[np.ndarray]): A list of $4 \\times 4$ homogeneous transformation matrices representing the full pose.
-        xyz (np.ndarray): The position coordinates sorted according to the current sorting strategy.
-        quat (np.ndarray): The orientation quaternions $[x, y, z, w]$ sorted according to the current sorting strategy.
-        rpy (np.ndarray): The Euler angles (roll, pitch, yaw) sorted according to the current sorting strategy.
-        total_length (float): The total distance covered by the trajectory in meters.
-        data_rate (float): The average sampling frequency of the trajectory in Hz.
-        index (np.ndarray): The current independent variable array (time or path-length) used for parametrization.
     """
 
     _counter = 1

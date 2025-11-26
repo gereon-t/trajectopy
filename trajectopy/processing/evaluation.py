@@ -23,25 +23,24 @@ def ate(
     return_alignment: bool = False,
     align: bool = True,
 ) -> Union[ATEResult, Tuple[ATEResult, AlignmentResult]]:
-    """
-    Computes the absolute trajectory error (ATE) between two trajectories.
+    """Computes the absolute trajectory error (ATE) between two trajectories.
+
+    The ATE is computed by first matching the estimated trajectory to the ground truth trajectory.
+    Then, the alignment between the two trajectories is estimated. The estimated trajectory is
+    aligned to the ground truth trajectory using the estimated alignment. Finally, the ATE is
+    computed by comparing the aligned estimated trajectory to the ground truth trajectory.
 
     Args:
         trajectory (Trajectory): Trajectory to be evaluated.
         other (Trajectory): Ground truth trajectory.
-        settings (ProcessingSettings, optional): Processing settings.
+        processing_settings (ProcessingSettings, optional): Processing settings.
         return_alignment (bool, optional): Whether to return the alignment result.
-
-    Description:
-
-        The ATE is computed by first matching the estimated trajectory to the ground truth trajectory.
-        Then, the alignment between the two trajectories is estimated.
-        The estimated trajectory is aligned to the ground truth trajectory using the estimated alignment.
-        Finally, the ATE is computed by comparing the aligned estimated trajectory to the ground truth trajectory.
+            Defaults to False.
+        align (bool, optional): Whether to perform alignment. Defaults to True.
 
     Returns:
-        ATEResult: Result of the ATE computation.
-
+        ATEResult: Result of the ATE computation. If return_alignment is True, returns a tuple
+            containing (ATEResult, AlignmentResult).
     """
     trajectory, other = match_trajectories(
         trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
@@ -74,18 +73,16 @@ def rpe(
     other: Trajectory,
     processing_settings: settings.ProcessingSettings = settings.ProcessingSettings(),
 ) -> RPEResult:
-    """
-    Computes the relative pose error (RPE) between two trajectories.
+    """Computes the relative pose error (RPE) between two trajectories.
+
+    The RPE is computed by comparing the relative poses between the estimated and ground truth
+    trajectories. The pose distances are either defined in meters or in seconds depending on
+    the settings.
 
     Args:
         trajectory (Trajectory): Trajectory to be evaluated.
         other (Trajectory): Ground truth trajectory.
-        settings (ProcessingSettings, optional): Processing settings.
-
-    Description:
-
-        The RPE is computed by comparing the relative poses between the estimated and ground truth trajectories.
-        The pose distances are either defined in meters or in seconds depending on the settings.
+        processing_settings (ProcessingSettings, optional): Processing settings.
 
     Returns:
         RPEResult: Result of the RPE computation.
@@ -101,12 +98,11 @@ def rpe(
 
 
 def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory) -> ATEResult:
-    """
-    Compares two trajectories in absolute terms, returning the deviations between them.
+    """Compares two trajectories in absolute terms, returning the deviations between them.
 
     Args:
-        traj_test (Trajectory): The trajectory to be tested.
-        traj_ref (Trajectory): The reference trajectory.
+        trajectory (Trajectory): The trajectory to be tested.
+        other (Trajectory): The reference trajectory.
 
     Returns:
         ATEResult: An object containing the absolute deviations between the two trajectories.

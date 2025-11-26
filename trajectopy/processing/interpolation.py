@@ -38,22 +38,20 @@ def interpolate(
 def _interpolate_linear(
     trajectory: Trajectory, timestamps: Union[list, np.ndarray], inplace: bool = True
 ) -> "Trajectory":
-    """Interpolates a trajectory to specified timestamps
+    """Interpolates a trajectory to specified timestamps.
 
-    This method removes timestamps from tstamps if they lie
-    outside of the timestamp range of the trajectory (self).
-    Since providing values for those timestamps would require
-    an extrapolation and not an interpolation, this behaviour
-    is consistent with the definition of this method.
+    This method removes timestamps from tstamps if they lie outside of the timestamp range
+    of the trajectory (self). Since providing values for those timestamps would require
+    an extrapolation and not an interpolation, this behaviour is consistent with the
+    definition of this method.
 
     Args:
-        trajectory (Trajectory): Trajectory to interpolate
-        timestamps (list): Interpolation timestamps
-        inplace (bool, optional): Perform in-place interpolation.
-                                    Defaults to True.
+        trajectory (Trajectory): Trajectory to interpolate.
+        timestamps (list | np.ndarray): Interpolation timestamps.
+        inplace (bool, optional): Perform in-place interpolation. Defaults to True.
 
     Returns:
-        Trajectory: Interpolated trajectory
+        Trajectory: Interpolated trajectory.
     """
     timestamps = np.sort(timestamps)
     trajectory = trajectory if inplace else trajectory.copy()
@@ -75,18 +73,15 @@ def _interpolate_linear(
 def _interpolate_rotations_linear(
     trajectory: Trajectory, timestamps: Union[list, np.ndarray], inplace: bool = True
 ) -> "Trajectory":
-    """Function for rotation interpolation of a trajectory
-
-    This method uses Spherical-Linear-Interpolation
-    for rotation interpolation.
+    """Performs rotation interpolation of a trajectory using Spherical-Linear-Interpolation (SLERP).
 
     Args:
-        trajectory (Trajectory): Trajectory to interpolate
-        timestamps (np.ndarray): Interpolation timestamps
-        inplace (bool, optional): Perform in-place interpolation.
+        trajectory (Trajectory): Trajectory to interpolate.
+        timestamps (list | np.ndarray): Interpolation timestamps.
+        inplace (bool, optional): Perform in-place interpolation. Defaults to True.
 
     Returns:
-        RotationSet: Interpolated Rotationset
+        Trajectory: Trajectory with interpolated rotations.
     """
     trajectory = trajectory if inplace else trajectory.copy()
 
@@ -104,14 +99,15 @@ def _interpolate_rotations_linear(
 def _interpolate_positions_linear(
     trajectory: Trajectory, timestamps: np.ndarray, inplace: bool = True
 ) -> "Trajectory":
-    """Function for position interpolation of a trajectory
+    """Performs position interpolation of a trajectory using linear interpolation.
 
     Args:
-        timestamps (np.ndarray): Interpolation timestamps
-        inplace (bool, optional): Perform in-place interpolation.
+        trajectory (Trajectory): Trajectory to interpolate.
+        timestamps (np.ndarray): Interpolation timestamps.
+        inplace (bool, optional): Perform in-place interpolation. Defaults to True.
 
     Returns:
-        np.ndarray: Interpolated positions
+        Trajectory: Trajectory with interpolated positions.
     """
     trajectory = trajectory if inplace else trajectory.copy()
 
