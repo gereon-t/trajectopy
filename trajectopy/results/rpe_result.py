@@ -11,6 +11,32 @@ from trajectopy.readers.header import HeaderData
 
 @dataclass
 class RelativeTrajectoryDeviations:
+    """Container holding relative (drift) pose deviations grouped by separation.
+
+    Relative deviations quantify drift between pose pairs separated by a
+    certain spatial distance (meters) or temporal offset (seconds). Each key
+    in the dictionaries corresponds to a separation value (bucket) and its
+    list contains per-pair drift samples for that bucket.
+
+    Attributes:
+        pos_dev (Dict[float, List[float]]): Mapping from pair distance to a
+            list of position drift magnitudes. Units depend on
+            `pair_distance_unit`; values are normalized per 100 m (expressed
+            as percentage) when distance-based.
+        rot_dev (Dict[float, List[float]]): Mapping from pair distance to a
+            list of orientation drift samples in radians.
+        pair_distance (Dict[float, List[float]]): Raw separation measurements
+            (meters or seconds) for each bucket, used for computing mean
+            bucket spacing and step size.
+        pair_distance_unit (PairDistanceUnit): Enumeration indicating whether
+            bucket keys represent spatial separation (`METER`) or temporal
+            separation (`SECOND`). Affects drift normalization and reporting
+            units in `RPEResult`.
+
+    Properties:
+        num_pairs (int): Total number of evaluated pose pairs across all buckets.
+    """
+
     pos_dev: Dict[float, List[float]]
     rot_dev: Dict[float, List[float]]
     pair_distance: Dict[float, List[float]]

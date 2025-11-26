@@ -15,6 +15,33 @@ from trajectopy.utils.definitions import Sorting
 
 @dataclass
 class AbsoluteTrajectoryDeviations:
+    """Container holding absolute pose deviations between two trajectories.
+
+    The arrays stored in this dataclass represent per-epoch deviations after
+    an optional temporal/spatial alignment of a reference (ground truth) and
+    a test trajectory. They are later aggregated by `ATEResult` to derive
+    metrics such as mean/median Absolute Trajectory Error (ATE), directional
+    bias, and RMS statistics.
+
+    Attributes:
+        pos_dev (np.ndarray): 3D array of absolute position deviation vectors
+            in meters. Shape is (N, 3) for N deviation vectors with x, y, z
+            components. These deviations are directly depending on the
+            definition of the coordinate frame of the trajectories.
+        directed_pos_dev (np.ndarray): 3D array of directed position deviation
+            vectors (e.g. along-track, horizontal/vertical cross-track) in meters.
+            Shape is (N, 3). These deviations are independent of the global
+            coordinate frame, as they are derived based on the along-track
+            direction of the trajectory.
+        rot_dev (Rotations | None): Optional orientation deviations represented
+            as a `Rotations` instance (radians). `None` if rotational evaluation
+            was not performed.
+        rotations_used (bool): Indicates whether trajectory rotation information
+            was employed to derive the direction frame for `directed_pos_dev`.
+            If False, directional decomposition has relied on positional
+            differences only.
+    """
+
     pos_dev: np.ndarray
     directed_pos_dev: np.ndarray
     rot_dev: Union[Rotations, None] = None
