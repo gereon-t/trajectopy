@@ -1,4 +1,4 @@
-"""Custom exceptions for trajectopy package."""
+"""Custom exceptions for trajectopy"""
 
 
 class TrajectopyError(Exception):

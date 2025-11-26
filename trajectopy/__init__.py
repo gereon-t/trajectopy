@@ -54,11 +54,7 @@ from trajectopy.core.settings import (
     ReportSettings,
     Settings,
 )
-
-# Core data structures
 from trajectopy.core.trajectory import Trajectory
-
-# Exceptions
 from trajectopy.exceptions import (
     AlignmentError,
     AlignmentParametersError,
@@ -68,13 +64,9 @@ from trajectopy.exceptions import (
     TrajectopyError,
     TrajectoryError,
 )
-
-# Main processing functions
 from trajectopy.processing.alignment import align, apply_alignment, estimate_alignment
 from trajectopy.processing.evaluation import ate, rpe
 from trajectopy.processing.interpolation import interpolate
-
-# Alignment parameters (used in AlignmentResult)
 from trajectopy.processing.lib.alignment.parameters import (
     AlignmentParameters,
     Parameter,
@@ -84,8 +76,6 @@ from trajectopy.processing.matching import match_trajectories
 from trajectopy.processing.merging import average_trajectories, merge_trajectories
 from trajectopy.processing.sorting import sort_spatially
 from trajectopy.results.alignment_result import AlignmentResult
-
-# Result dataclasses
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
 
