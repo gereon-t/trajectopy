@@ -202,7 +202,7 @@ class ParameterSet(ABC):
             lower_boundary=True,
         )
 
-    def __iter__(self):
+    def __iter__(self) -> iter:
         """Returns iterator over parameter fields.
 
         Returns:
