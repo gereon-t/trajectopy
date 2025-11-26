@@ -248,7 +248,7 @@ def plot_subplots_with_shared_x_axis(
                     x=x_data_item,
                     y=y_data_subitem,
                     mode=report_settings.plot_mode,
-                    name=name,
+                    name=f"{name} {y_labels[i]}",
                     marker=dict(color=color),
                     showlegend=len(y_data) > 1,
                 ),

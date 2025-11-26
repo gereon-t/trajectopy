@@ -57,14 +57,10 @@ import trajectopy as tpy
 traj_ref = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
 traj_est = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
-# 2. Align trajectories (optional but recommended)
-alignment_result = tpy.estimate_alignment(trajectory=traj_est, other=traj_ref)
-traj_est_aligned = tpy.apply_alignment(traj_est, alignment_result)
-
-# 3. Evaluate
+# 2. Evaluate (ATE already includes alignment)
 ate_result = tpy.ate(other=traj_ref, trajectory=traj_est_aligned)
 
-# 4. Print results
+# 3. Print results
 print(f"Position ATE: {ate_result.pos_ate:.3f} m")
 ```
 

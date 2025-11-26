@@ -247,7 +247,12 @@ class ATEReportData:
         sorted_comb_pos_dev = np.sort(self.comb_dev_pos)
         pos_norm_cdf = np.arange(len(sorted_comb_pos_dev)) / float(len(sorted_comb_pos_dev))
         fig.add_trace(
-            go.Scattergl(x=sorted_comb_pos_dev, y=pos_norm_cdf, mode=self.settings.plot_mode, name="position"),
+            go.Scattergl(
+                x=sorted_comb_pos_dev,
+                y=pos_norm_cdf,
+                mode=self.settings.plot_mode,
+                name=f"{self.ate_result.name} position",
+            ),
             row=1,
             col=1,
         )
@@ -256,7 +261,12 @@ class ATEReportData:
             sorted_comb_rot_dev = np.sort(self.comb_dev_rot)
             rot_norm_cdf = np.arange(len(sorted_comb_rot_dev)) / float(len(sorted_comb_rot_dev))
             fig.add_trace(
-                go.Scattergl(x=sorted_comb_rot_dev, y=rot_norm_cdf, mode=self.settings.plot_mode, name="rotation"),
+                go.Scattergl(
+                    x=sorted_comb_rot_dev,
+                    y=rot_norm_cdf,
+                    mode=self.settings.plot_mode,
+                    name=f"{self.ate_result.name} rotation",
+                ),
                 row=2,
                 col=1,
             )
@@ -809,7 +819,7 @@ class ATEReportDataCollection:
                     x=sorted_comb_pos_dev,
                     y=pos_norm_cdf,
                     mode=data.settings.plot_mode,
-                    name=f"{data.short_name}",
+                    name=f"{data.short_name} Position",
                     marker=dict(color=color),
                 ),
                 row=1,
@@ -824,7 +834,7 @@ class ATEReportDataCollection:
                         x=sorted_comb_rot_dev,
                         y=rot_norm_cdf,
                         mode=data.settings.plot_mode,
-                        name=f"{data.short_name}",
+                        name=f"{data.short_name} Rotation",
                         marker=dict(color=color),
                     ),
                     row=2,
@@ -951,7 +961,7 @@ class RPEReportDataCollection:
                     x=rpe_result.mean_pair_distances,
                     y=rpe_result.pos_dev_mean,
                     mode=data.settings.plot_mode,
-                    name=f"{data.short_name}",
+                    name=f"{data.short_name} [{data.rpe_result.pos_drift_unit}]",
                     error_y=dict(
                         type="data",
                         array=rpe_result.pos_std,
@@ -969,7 +979,7 @@ class RPEReportDataCollection:
                         x=rpe_result.mean_pair_distances,
                         y=np.rad2deg(rpe_result.rot_dev_mean),
                         mode=data.settings.plot_mode,
-                        name=f"{data.short_name}",
+                        name=f"{data.short_name} [{data.rpe_result.rot_drift_unit}]",
                         error_y=dict(
                             type="data",
                             array=np.rad2deg(rpe_result.rot_std),

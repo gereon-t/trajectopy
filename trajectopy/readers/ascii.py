@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from pyparsing import Callable
 
+from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import ComparisonMethod, PairDistanceUnit
 from trajectopy.readers.utils import get_rot_matrix
@@ -256,7 +257,7 @@ def read_string(input_str: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
     return header_data, data
 
 
-def extract_trajectory_quat(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[np.ndarray, None]:
+def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[None, Rotations]:
     """Extracts rotations from trajectory data and returns them as RotationSet
 
     Loaded rotations are converted to refer to the ENU navigation frame. For this,
@@ -268,23 +269,23 @@ def extract_trajectory_quat(header_data: HeaderData, trajectory_data: np.ndarray
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        Union[np.ndarray, None]: Rotations read from the trajectory file as quaternions
+        RotationSet | None: Rotations read from the trajectory file or None if no rotations are found
     """
     rot = None
     if all(field in header_data.fields for field in ["qx", "qy", "qz", "qw"]):
-        rot = extract_quaternions(header_data, trajectory_data)
+        rot = _extract_rotations_from_quaternions(header_data, trajectory_data)
 
     if all(field in header_data.fields for field in ["ex", "ey", "ez"]) and rot is None:
-        rot = extract_euler_angles(header_data, trajectory_data)
+        rot = _extract_rotations_from_euler_angles(header_data, trajectory_data)
 
     if rot is None:
         return rot
 
     enu_rot = Rotations.from_matrix(get_rot_matrix(header_data.nframe))
-    return (enu_rot * rot).as_quat()
+    return enu_rot * rot
 
 
-def extract_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
+def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
     """Extracts quaternions from trajectory data and returns them as RotationSet
 
     Args:
@@ -307,7 +308,7 @@ def extract_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) ->
     )
 
 
-def extract_euler_angles(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
+def _extract_rotations_from_euler_angles(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
     """Extracts euler angles from trajectory data and returns them as RotationSet
 
     Args:
@@ -349,7 +350,7 @@ def extract_trajectory_timestamps(header_data: HeaderData, trajectory_data: np.n
 
     if header_data.time_format == TimeFormat.DATETIME and time_columns:
         return (
-            parse_datetime(
+            _parse_datetime(
                 trajectory_data=trajectory_data,
                 time_columns=time_columns,
                 header_data=header_data,
@@ -359,7 +360,7 @@ def extract_trajectory_timestamps(header_data: HeaderData, trajectory_data: np.n
 
     if header_data.time_format == TimeFormat.GPS_SOW and time_columns:
         return (
-            parse_gps_sow(
+            _parse_gps_sow(
                 trajectory_data=trajectory_data,
                 time_columns=time_columns,
                 header_data=header_data,
@@ -371,7 +372,7 @@ def extract_trajectory_timestamps(header_data: HeaderData, trajectory_data: np.n
     return np.array(range(len(trajectory_data)))
 
 
-def parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
+def _parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
     """Parses datetime strings to timestamps
 
     Args:
@@ -403,7 +404,7 @@ def parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_
     return np.array([dt_i.timestamp() for dt_i in ts_datetime])
 
 
-def parse_gps_sow(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
+def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
     """Parses GPS seconds of week to timestamps
 
     Args:
@@ -459,8 +460,8 @@ def extract_trajectory_path_lengths(header_data: HeaderData, trajectory_data: np
     return None if "l" not in header_data.fields else trajectory_data[:, header_data.fields.index("l")].astype(float)
 
 
-def extract_trajectory_xyz(header_data: HeaderData, trajectory_data: np.ndarray) -> Tuple[np.ndarray, int]:
-    """Extracts positions from pandas DataFrame and returns a PointSet
+def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.ndarray) -> Positions:
+    """Extracts positions from pandas DataFrame and returns a Positions object
 
     The positions of 'px', 'py', 'pz' are used as indices to access
     the DataFrame.
@@ -470,11 +471,10 @@ def extract_trajectory_xyz(header_data: HeaderData, trajectory_data: np.ndarray)
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        xyz (np.ndarray): Positions read from the trajectory file
-        epsg (int): EPSG code of the coordinate reference system
+        Positions: Positions read from the trajectory file
     """
-    return (
-        trajectory_data[
+    return Positions(
+        xyz=trajectory_data[
             :,
             [
                 header_data.fields.index("px"),
@@ -482,5 +482,5 @@ def extract_trajectory_xyz(header_data: HeaderData, trajectory_data: np.ndarray)
                 header_data.fields.index("pz"),
             ],
         ].astype(float),
-        header_data.epsg,
+        epsg=header_data.epsg,
     )

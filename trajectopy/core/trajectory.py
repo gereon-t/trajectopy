@@ -46,11 +46,9 @@ class Trajectory:
 
     def __init__(
         self,
-        xyz: np.ndarray,
-        timestamps: np.ndarray | None = None,
-        quat: np.ndarray | None = None,
-        rpy: np.ndarray | None = None,
-        epsg: int = 0,
+        positions: Positions,
+        rotations: Union[Rotations, None] = None,
+        timestamps: Union[np.ndarray, None] = None,
         name: str = "",
         path_lengths: Union[np.ndarray, None] = None,
         velocity_xyz: Union[np.ndarray, None] = None,
@@ -60,31 +58,18 @@ class Trajectory:
         Initialize a Trajectory object.
 
         Args:
-            xyz (np.ndarray): N x 3 array of position coordinates.
+            positions (Positions): Container for spatial coordinates and coordinate reference system (EPSG) data.
+            rotations (Rotations | None, optional): Container for orientation data (quaternions). Defaults to None.
             timestamps (np.ndarray | None, optional): Array of timestamps. If None, a range index is used.
-            quat (np.ndarray | None, optional): N x 4 array of quaternions (x, y, z, w). Mutually exclusive with `rpy`.
-            rpy (np.ndarray | None, optional): N x 3 array of Roll-Pitch-Yaw angles. Mutually exclusive with `quat`.
-            epsg (int, optional): EPSG code for the coordinate system. Defaults to 0.
+
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
             path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
             velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
             sorting (Sorting, optional): Definition of the sorting logic (TIME or ARC_LENGTH). Defaults to Sorting.TIME.
 
         Raises:
-            TrajectoryError: If both `quat` and `rpy` are provided, or if array dimensions do not match.
+            TrajectoryError: If the number of positions and rotations do not match.
         """
-        if quat is not None and rpy is not None:
-            raise TrajectoryError("Provide either quaternion or roll-pitch-yaw for orientations, not both.")
-
-        if quat is not None:
-            rotations = Rotations.from_quat(quat)
-        elif rpy is not None:
-            rotations = Rotations.from_euler(seq="xyz", angles=rpy)
-        else:
-            rotations = None
-
-        positions = Positions(xyz=xyz, epsg=epsg)
-
         # check dimensions
         if rotations is not None and len(positions) != len(rotations):
             raise TrajectoryError(
@@ -117,6 +102,62 @@ class Trajectory:
         self.name = name or f"Trajectory {Trajectory._counter}"
 
         Trajectory._counter += 1
+
+    @classmethod
+    def from_file(cls, filename: str, io_stream: bool = False) -> "Trajectory":
+        """
+        Create a trajectory instance from a file.
+
+        The file is expected to be a CSV-like format. It handles extraction of
+        timestamps, xyz positions, rotations, path lengths, and velocities via `trajectory_io`.
+
+        Args:
+            filename (str): Path to the file or string content if io_stream is True.
+            io_stream (bool, optional): If True, `filename` is treated as the raw string content
+                                        of the file/stream. Defaults to False.
+
+        Returns:
+            Trajectory: The loaded trajectory object.
+        """
+        if io_stream:
+            header_data, trajectory_data = ascii.read_string(filename, dtype=object)
+        else:
+            header_data, trajectory_data = ascii.read_data(filename, dtype=object)
+
+        tstamps = ascii.extract_trajectory_timestamps(header_data=header_data, trajectory_data=trajectory_data)
+        positions = ascii.extract_trajectory_positions(header_data=header_data, trajectory_data=trajectory_data)
+        path_lengths = ascii.extract_trajectory_path_lengths(header_data=header_data, trajectory_data=trajectory_data)
+        velocity_xyz = ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
+        rotations = ascii.extract_trajectory_rotations(header_data=header_data, trajectory_data=trajectory_data)
+
+        return Trajectory(
+            timestamps=tstamps,
+            positions=positions,
+            rotations=rotations,
+            name=header_data.name,
+            path_lengths=path_lengths,
+            velocity_xyz=velocity_xyz,
+            sorting=Sorting.from_str(header_data.sorting),
+        )
+
+    @classmethod
+    def from_arrays(
+        cls, xyz: np.ndarray, quat: np.ndarray | None = None, rpy: np.ndarray | None = None, epsg: int = 0, **kwargs
+    ) -> "Trajectory":
+        """Factory: Handles creation from raw numpy arrays."""
+
+        pos_obj = Positions(xyz=xyz, epsg=epsg)
+
+        rot_obj = None
+        if quat is not None and rpy is not None:
+            raise TrajectoryError("Provide quat OR rpy, not both.")
+
+        if quat is not None:
+            rot_obj = Rotations.from_quat(quat)
+        elif rpy is not None:
+            rot_obj = Rotations.from_euler(seq="xyz", angles=rpy)
+
+        return cls(positions=pos_obj, rotations=rot_obj, **kwargs)
 
     def __str__(self) -> str:
         """
@@ -452,44 +493,6 @@ class Trajectory:
         traj_self = self if inplace else self.copy()
         traj_self.se3 = [np.dot(transformation, p) for p in traj_self.se3]
         return traj_self
-
-    @classmethod
-    def from_file(cls, filename: str, io_stream: bool = False) -> "Trajectory":
-        """
-        Create a trajectory instance from a file.
-
-        The file is expected to be a CSV-like format. It handles extraction of
-        timestamps, xyz positions, rotations, path lengths, and velocities via `trajectory_io`.
-
-        Args:
-            filename (str): Path to the file or string content if io_stream is True.
-            io_stream (bool, optional): If True, `filename` is treated as the raw string content
-                                        of the file/stream. Defaults to False.
-
-        Returns:
-            Trajectory: The loaded trajectory object.
-        """
-        if io_stream:
-            header_data, trajectory_data = ascii.read_string(filename, dtype=object)
-        else:
-            header_data, trajectory_data = ascii.read_data(filename, dtype=object)
-
-        tstamps = ascii.extract_trajectory_timestamps(header_data=header_data, trajectory_data=trajectory_data)
-        xyz, epsg = ascii.extract_trajectory_xyz(header_data=header_data, trajectory_data=trajectory_data)
-        path_lengths = ascii.extract_trajectory_path_lengths(header_data=header_data, trajectory_data=trajectory_data)
-        velocity_xyz = ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
-        quat = ascii.extract_trajectory_quat(header_data=header_data, trajectory_data=trajectory_data)
-
-        return Trajectory(
-            timestamps=tstamps,
-            xyz=xyz,
-            epsg=epsg,
-            quat=quat,
-            name=header_data.name,
-            path_lengths=path_lengths,
-            velocity_xyz=velocity_xyz,
-            sorting=Sorting.from_str(header_data.sorting),
-        )
 
     def to_dataframe(self, sort_by: str = "") -> pd.DataFrame:
         """

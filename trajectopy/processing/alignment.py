@@ -169,8 +169,8 @@ def adopt_first_pose(trajectory: Trajectory, other: Trajectory, inplace: bool = 
         Trajectory: Transformed trajectory
     """
     trajectory = trajectory if inplace else trajectory.copy()
-    trajectory.adopt_first_position(other)
-    trajectory.adopt_first_orientation(other)
+    adopt_first_position(trajectory=trajectory, other=other)
+    adopt_first_orientation(trajectory=trajectory, other=other)
     return trajectory
 
 
@@ -235,4 +235,4 @@ def align(
         alignment_settings=alignment_settings,
         matching_settings=matching_settings,
     )
-    return trajectory.apply_alignment(alignment_result=alignment, inplace=inplace)
+    return apply_alignment(trajectory=trajectory, alignment_result=alignment, inplace=inplace)

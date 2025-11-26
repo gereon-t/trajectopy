@@ -5,6 +5,7 @@ from typing import Dict, List, Union
 import numpy as np
 import pandas as pd
 
+from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.readers.header import HeaderData
@@ -466,15 +467,14 @@ class ATEResult:
         deviation_data = pd.read_csv(filename, comment="#")
 
         tstamps = deviation_data["time"].to_numpy(dtype=float)
-        arc_lengths = deviation_data["arc_lengths"].to_numpy(dtype=float)
-        xyz = deviation_data[["pos_x", "pos_y", "pos_z"]].to_numpy(dtype=float)
-        epsg = header_data.epsg
+        path_lengths = deviation_data["arc_lengths"].to_numpy(dtype=float)
+        positions = Positions(deviation_data[["pos_x", "pos_y", "pos_z"]].to_numpy(dtype=float), epsg=header_data.epsg)
 
         rot_columns = ["rot_x", "rot_y", "rot_z", "rot_w"]
         if all(column in deviation_data.columns for column in rot_columns):
-            quat = deviation_data[rot_columns].to_numpy(dtype=float)
+            rotations = Rotations.from_quat(deviation_data[rot_columns].to_numpy(dtype=float))
         else:
-            quat = None
+            rotations = None
 
         pos_dev = deviation_data[["pos_dev_x", "pos_dev_y", "pos_dev_z"]].to_numpy(dtype=float)
         directed_pos_dev = deviation_data[["pos_dev_along", "pos_dev_cross_h", "pos_dev_cross_v"]].to_numpy(
@@ -489,11 +489,10 @@ class ATEResult:
 
         trajectory = Trajectory(
             name=header_data.name,
-            xyz=xyz,
-            epsg=epsg,
-            quat=quat,
+            positions=positions,
+            rotations=rotations,
             timestamps=tstamps,
-            path_lengths=arc_lengths,
+            path_lengths=path_lengths,
             sorting=Sorting.from_str(header_data.sorting),
         )
         ate_result = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)

@@ -38,6 +38,17 @@ alignment_result = estimate_alignment(
 est_traj_aligned = apply_alignment(est_traj, alignment_result)
 ```
 
+The function `align` combines these two steps:
+
+```python
+from trajectopy import Trajectory, align
+
+gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
+est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+
+est_traj_aligned = align(trajectory=est_traj, other=gt_traj, inplace=False)
+```
+
 ## 3. Evaluation
 
 Trajectopy provides standard metrics for trajectory evaluation.

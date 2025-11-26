@@ -472,7 +472,7 @@ def plot_trajectories(
     Returns:
         Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
     """
-    fig_pos = plot_pos(trajectories=trajectories, scatter_3d=scatter_3d)
+    fig_pos = plot_positions(trajectories=trajectories, scatter_3d=scatter_3d)
     fig_xyz = plot_xyz(trajectories=trajectories)
     fig_rpy = plot_rpy(trajectories=trajectories)
     return fig_pos, fig_xyz, fig_rpy
@@ -929,7 +929,7 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
     return pos_fig, rot_fig
 
 
-def plot_pos(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure:
+def plot_positions(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure:
     """Plots xy(z) coordinates of trajectories as 2d or 3d plot"""
     x_label, y_label, z_label = get_axis_label(trajectories=trajectories)
 
