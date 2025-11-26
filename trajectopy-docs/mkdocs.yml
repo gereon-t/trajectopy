@@ -1,5 +1,5 @@
 site_name: Trajectopy
-site_description: Trajectory Evaluation in Python - A comprehensive package for trajectory analysis, alignment, and comparison
+site_description: Trajectory Evaluation in Python
 site_author: Gereon Tombrink
 site_url: https://gereon-t.github.io/trajectopy/
 
@@ -93,8 +93,8 @@ plugins:
         python:
           paths: [..]
           options:
-            docstring_style: numpy
-            docstring_section_style: table
+            docstring_style: google
+            docstring_section_style: list
             members_order: source
             show_root_heading: true
             show_root_full_path: false
