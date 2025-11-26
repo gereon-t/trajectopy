@@ -97,7 +97,7 @@ class Trajectory:
         Create a trajectory instance from a file.
 
         The file is expected to be a CSV-like format. It handles extraction of
-        timestamps, xyz positions, rotations, path lengths, and velocities via `trajectory_io`.
+        timestamps, xyz positions, rotations, path lengths, and velocities via `ascii` trajectory reader.
 
         Args:
             filename (str): Path to the file or string content if io_stream is True.
