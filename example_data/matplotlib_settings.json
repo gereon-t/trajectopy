@@ -1,0 +1,17 @@
+{
+    "colorbar_show_zero_crossing": true,
+    "colorbar_steps": 4,
+    "colorbar_max_std": 3.0,
+    "scatter_hide_axes": false,
+    "scatter_3d": false,
+    "scatter_smooth": false,
+    "scatter_smooth_window": 5,
+    "ate_unit_is_mm": false,
+    "ate_remove_above": 0.0,
+    "hist_as_stairs": false,
+    "hist_percentile": 1.0,
+    "directed_ate": false,
+    "dofs_tab": true,
+    "velocity_tab": true,
+    "height_tab": true
+}

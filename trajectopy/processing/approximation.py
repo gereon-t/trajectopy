@@ -4,7 +4,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from trajectopy.core.rotations import Rotations
-from trajectopy.core.settings import CubicApproximationSettings
+from trajectopy.core.settings import ApproximationSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.approximation.cubic_approximation import (
     CubicApproximation,
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def approximate_cubic(
     trajectory: Trajectory,
-    approximation_settings: CubicApproximationSettings = CubicApproximationSettings(),
+    approximation_settings: ApproximationSettings = ApproximationSettings(),
     inplace: bool = False,
 ) -> Trajectory:
     """

@@ -1,22 +1,24 @@
 ## Processing Settings
 
-Trajectopy offers a range of processing options that can be applied to the imported trajectories. These options are:
+The processing settings allow you to configure various processing steps that can be applied to trajectories before or during analysis. The available processing options are summarized in the table below:
 
-| Option     | Description                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Alignment  | Alignment of two trajectories using least squares adjustment. The implemented approach can handle a similarity transformation (translation, rotation, scale), a lever arm (3d vector), and a time shift (scalar). Each parameter can be included or exluded from the adjustment depending on the individual sensor modalities using the `AlignmentSettings`. In addition, preprocessing steps and stochastics can also be configured. |
-| Matching   | Matching of two trajectories to establish pose-to-pose correspondencies. After matching both trajectories will have the same number of poses. You can choose from different matching methods in the `MatchingSettings`.                                                                                                                                                                                                               |
-| Comparison | Comparison of two trajectories using absolute (ATE) and relative (RPE) metrics. The relative comparison can be configured using the `RelativeComparisonSettings`.                                                                                                                                                                                                                                                                     |
+| Setting | Description |
+| :--- | :--- |
+| `alignment` | Settings for trajectory alignment (Helmert transformation, time shift, lever arm, etc.) |
+| `matching` | Settings for matching poses between two trajectories |
+| `relative_comparison` | Settings for relative trajectory comparison (RPE) |
+| `approximation` | Settings for trajectory approximation and smoothing |
+| `sorting` | Settings for sorting and downsampling trajectory points |
 
-## Alignment Settings
+### Alignment Settings
 
-### Preprocessing Settings
+#### Preprocessing Settings
 
 - `min_speed` (float): Only poses with a speed above this threshold are considered for alignment (meters/second).
 - `time_start` (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 - `time_end` (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 
-### Estimation Settings
+#### Estimation Settings
 
 - `translation_x` (boolean): Enable or disable x-translation of the similarity transformation.
 - `translation_y` (boolean): Enable or disable y-translation of the similarity transformation.
@@ -31,7 +33,7 @@ Trajectopy offers a range of processing options that can be applied to the impor
 - `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
 - `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.
 
-### Stochastics Settings
+#### Stochastics Settings
 
 - `std_xy_from` (float): Standard deviation of XY source position components in meters.
 - `std_z_from` (float): Standard deviation of Z source position component in meters.
@@ -43,7 +45,7 @@ Trajectopy offers a range of processing options that can be applied to the impor
 - `error_probability` (float): Probability of error used for stochastic testing.
 - `variance_estimation` (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.
 
-### Threshold Settings
+#### Threshold Settings
 
 Usually, these settings can be left at their default values.
 
@@ -51,7 +53,7 @@ Usually, these settings can be left at their default values.
 - `time_threshold` (float): Iteration threshold in seconds for the least squares adjustment regarding the time shift parameter.
 
 
-## Matching Settings
+### Matching Settings
 
 - `method` (`MatchingMethod`): The method used for trajectory matching. Choices: `MatchingMethod.NEAREST_SPATIAL`, `MatchingMethod.NEAREST_TEMPORAL`, `MatchingMethod.INTERPOLATION`, `MatchingMethod.NEAREST_SPATIAL_INTERPOLATED`. The methods are described below.
 - `max_time_diff` (float): Maximum allowed time difference in seconds when matching two trajectories using their timestamps.
@@ -59,26 +61,26 @@ Usually, these settings can be left at their default values.
 - `max_gap_size` (float): Maximum allowed gap size in seconds within a trajectory during matching.
 - `k_nearest` (integer): The number of nearest neighbors to consider during spatial interpolation matching.
 
-## Matching Methods
+### Matching Methods
 
-### Nearest Spatial
+#### Nearest Spatial
 
 This method matches two trajectories by finding the nearest pose in the target trajectory for each pose in the source trajectory. The distance between two poses is computed using the Euclidean distance between their positions.
 
-### Nearest Temporal
+#### Nearest Temporal
 
 This method matches two trajectories using their timestamps by finding the nearest timestamp in the target trajectory for each timestamp in the source trajectory.
 
-### Interpolation
+#### Interpolation
 
 This method matches two trajectories by interpolating the timestamps of one trajectory to the timestamps of the other trajectory. The interpolation is linear for both positions and rotations (SLERP).
 
-### Nearest Spatial Interpolated
+#### Nearest Spatial Interpolated
 
 This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. This method does not support rotation matching.
 
 
-## Relative Comparison Settings
+### Relative Comparison Settings
 
 - `pair_min_distance` (float): Minimum pose pair distance to be considered during RPE (Relative Pose Error) computation.
 
@@ -91,7 +93,7 @@ This method matches both trajectories spatially by requesting the nearest k posi
 - `use_all_pose_pairs` (boolean): If enabled, overlapping pose pairs will be used for relative metrics calculation.
 
 
-### RPE Background
+#### RPE Background
 
 For this metric, relative pose-pair differences are compared. The distance between two poses can be specified by the user and can be either time- or distance-based. The comparison involves finding pose pairs separated by a specific distance or time interval, computing the relative translation and rotation between the reference and estimated pose pairs, and calculating the translational and rotational difference normalized by the distance or time that separated the poses.
 
@@ -124,8 +126,13 @@ Results in pose distances: [100 m, 200 m, 300 m, 400 m, 500 m, 600 m, 700 m, 800
 
 Furthermore, the user can choose to either use consecutive pose pairs (non-overlapping) or all posible pairs (overlapping).
 
+### Approximation Settings
 
-## Sorting Settings
+- `position_interval_size` (float): Size of the position intervals in meters for cubic approximation. Default value is 0.15 meters.
+- `position_min_observations` (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.
+- `rotation_window_size` (float): Size of the rotation smoothing window in meters for rotation approximation (not cubic!). Default value is 0.15 meters.
+
+### Sorting Settings
 
 - `voxel_size` (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.
 - `movement_threshold` (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.
@@ -157,6 +164,8 @@ Since version 2.2.0, you can choose between two plotting backends: `matplotlib` 
 - `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
 - `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
 - `scatter_show_individual_dofs` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
+- `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
+- `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
 
 #### ATE Frame Definition
 
@@ -227,16 +236,16 @@ To plot trajectories on a map, several requirements must be met:
 
 - `colorbar_show_zero_crossing` (bool): Indicates whether the colorbar should show zero. Default value is True.
 - `colorbar_steps` (int): The number of steps in the colorbar. Default value is 4.
+- `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
 - `scatter_hide_axes` (bool): Indicates whether the axis should be hidden. Default value is False.
+- `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
 - `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
 - `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
-- `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
 - `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
 - `hist_percentile` (float): Only show data up to this percentile in the histogram. Useful for data with outliers. Default value is 100.0.
 - `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
-- `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
 - `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
 - `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
 - `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.

@@ -173,5 +173,5 @@ traj.to_file("custom.traj")
 
 ## See Also
 
-- **[User Guide](../user_guide.md)** - GUI file import
-- **[API Reference](../api/core/trajectory.md)** - Trajectory class details
+- **[User Guide](./user_guide.md)** - GUI file import
+- **[API Reference](./api/core/trajectory.md)** - Trajectory class details

@@ -54,8 +54,6 @@ Here is a minimal example to load two trajectories, align them, and calculate th
 import trajectopy as tpy
 
 # 1. Load trajectories
-import trajectopy as tpy
-
 traj_ref = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
 traj_est = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
@@ -104,11 +102,12 @@ options:
                         Mapbox token to use Mapbox map styles in trajectory plots.
 ```
 Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report-path` option. The report settings can be customized using a JSON file.
-The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/custom.json).
+The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/report_settings.json).
+In addition, you can customize the Matplotlib plot settings using a JSON file with the `--mpl-settings` option. A sample file can be found [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/matplotlib_settings.json).
 
 Example:
 ```console
-trajectopy --report-settings -o ./persistent_report_directory
+trajectopy --report-settings ./report_settings.json -o ./persistent_report_directory
 ```
 
 ## Citation

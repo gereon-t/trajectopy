@@ -356,7 +356,7 @@ if __name__ == "__main__":
 
 
 @dataclass
-class CubicApproximationSettings(Settings):
+class ApproximationSettings(Settings):
     """Dataclass defining approximation configuration"""
 
     position_interval_size: float = 0.15
@@ -529,7 +529,7 @@ class ProcessingSettings(Settings):
     alignment: AlignmentSettings = field(default_factory=AlignmentSettings)
     matching: MatchingSettings = field(default_factory=MatchingSettings)
     relative_comparison: RelativeComparisonSettings = field(default_factory=RelativeComparisonSettings)
-    approximation: CubicApproximationSettings = field(default_factory=CubicApproximationSettings)
+    approximation: ApproximationSettings = field(default_factory=ApproximationSettings)
     sorting: SortingSettings = field(default_factory=SortingSettings)
 
 

@@ -91,6 +91,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [..]
           options:
             docstring_style: numpy
             docstring_section_style: table
