@@ -49,7 +49,6 @@ class Trajectory:
             positions (Positions): Container for spatial coordinates and coordinate reference system (EPSG) data.
             rotations (Rotations | None, optional): Container for orientation data (quaternions). Defaults to None.
             timestamps (np.ndarray | None, optional): Array of timestamps. If None, a range index is used.
-
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
             path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
             velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
@@ -209,8 +208,7 @@ class Trajectory:
     @property
     def is_unix_time(self) -> bool:
         """
-        Checks if the supplied trajectories have (likely) unix timestamps as seconds
-        and converts them to datetime objects.
+        Checks if the supplied trajectory has (likely) unix timestamps as seconds.
         """
         min_time = min(self.timestamps)
 

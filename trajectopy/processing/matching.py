@@ -326,14 +326,6 @@ def _kd_matcher(ref: np.ndarray, test: np.ndarray, max_distance: float = 0.0) ->
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: Matched indices for reference and test data.
-
-    Args:
-        ref (np.ndarray): Reference data
-        test (np.ndarray): Test data
-        max_distance (float): Maximum distance for a match
-
-    Returns:
-        Tuple[np.ndarray, np.ndarray]: Matched indices
     """
     if max_distance == 0:
         distances, closest_indices = KDTree(ref).query(test, k=1, workers=-1)

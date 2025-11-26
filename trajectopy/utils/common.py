@@ -128,11 +128,10 @@ def dict2table(
     key_value_filler: str = " : ",
     decimal_places: int = 3,
 ) -> str:
-    """
-    Converts a dictionary to a formatted table string.
+    """Converts a dictionary to a formatted table string.
 
     Args:
-        input (dict): The dictionary to be converted to a table.
+        input_dict (dict): The dictionary to be converted to a table.
         title (str): The title of the table.
         key_width (int, optional): The width of the key column. Defaults to 16.
         value_width (int, optional): The width of the value column. Defaults to 8.
@@ -306,7 +305,8 @@ def rndodd(s: float) -> int:
 def round_to_precision(
     index: np.ndarray, data: np.ndarray, resolution: float, filter_size: int = 100
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Reduces the amount of deviations using smoothing and rounding
+    """
+    Reduces the amount of deviations using smoothing and rounding
 
     It will first smooth the data using a convolution with a filter
     of size filter_size. Then, the data is rounded to the specified
@@ -319,11 +319,11 @@ def round_to_precision(
                                   corresponding to the data.
         data (np.ndarray): nx1 array that contains the data that should
                            be smoothed.
-        precision (float): Desired resolution
+        resolution (float): Desired resolution
         filter_size (int): Window / filter size for smoothing
 
     Returns:
-        downsampled index and data
+        Tuple[np.ndarray, np.ndarray]: downsampled index and data
     """
     data_smoothed = np.convolve(data, [1 / filter_size] * filter_size, "same")
     data_rounded = np.round(data_smoothed / resolution) * resolution

@@ -22,8 +22,8 @@ def interpolate(
 
     Args:
         trajectory (Trajectory): Trajectory to interpolate
-        timestamps (list): Interpolation timestamps
-        method (InterpolationMethod, optional): Interpolation method. Defaults to "linear".
+        timestamps (list | np.ndarray): Interpolation timestamps
+        method (InterpolationMethod, optional): Interpolation method. Defaults to InterpolationMethod.LINEAR.
         inplace (bool, optional): Perform in-place interpolation. Defaults to True.
 
     Returns:

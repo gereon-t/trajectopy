@@ -368,7 +368,7 @@ def extract_trajectory_timestamps(header_data: HeaderData, trajectory_data: np.n
             + header_data.time_offset
         )
 
-    logger.warning("To timestamps found.")
+    logger.warning("No timestamps found.")
     return np.array(range(len(trajectory_data)))
 
 

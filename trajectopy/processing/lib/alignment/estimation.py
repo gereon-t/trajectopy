@@ -53,14 +53,6 @@ class AlignmentEstimator:
 
         Args:
             alignment_data (AlignmentData): Stores all data required for the alignment
-            mode (AlignmentMode, optional): Indicates the desired mode, i.e. whether a
-                                            - helmert transformation
-                                            - scale estimation
-                                            - leverarm estimation
-                                            - time shift estimation
-                                            should be performed
-            error_probability (float, optional): Used for the stochastic global test.
-                                                 Defaults to 0.05.
         """
         self.funcrel = FunctionalRelationship()
         self.data = alignment_data

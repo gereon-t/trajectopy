@@ -223,13 +223,12 @@ def direct_timeshift(
         xyz_from (np.ndarray): target positions
         speed (np.ndarray): speed of the platform.
         weights (np.ndarray, optional): observation weights.
-                                        Defaults to None.
-
+                                        Defaults to np.zeros(0).
 
     Returns:
-        Tuple[np.ndarray, np.ndarray]: Tuple containing the estimated
-                                       parameters and the residuals of
-                                       the adjustment.
+        Tuple[Parameter, np.ndarray]: Tuple containing the estimated
+                                      time shift parameter and the residuals of
+                                      the adjustment.
     """
 
     if len(xyz_to) != len(xyz_from):
