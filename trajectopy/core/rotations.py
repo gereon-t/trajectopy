@@ -47,7 +47,7 @@ class Rotations(Rotation):
 
         return np.linalg.norm(rotvec, axis=1)
 
-    # def mean(self) -> "RotationSet":
+    # def mean(self) -> "Rotations":
     #     """
     #     Function that computes the chordal l2 mean of multiple
     #     rotations given in quaternion representation
@@ -57,4 +57,4 @@ class Rotations(Rotation):
     #     for i in range(len(quat)):
     #         # outer product
     #         a += np.outer(quat[i, :], quat[i, :])
-    #     return RotationSet.from_quat(np.linalg.eigh(a)[1][:, -1])
+    #     return Rotations.from_quat(np.linalg.eigh(a)[1][:, -1])

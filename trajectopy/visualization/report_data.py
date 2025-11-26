@@ -280,7 +280,7 @@ class ATEReportData:
             height = self.settings.single_plot_height
             config = self.settings.single_plot_export.to_config()
 
-        fig.update_layout(title="Cummulative Probability", height=height)
+        fig.update_layout(title="Cumulative Probability", height=height)
         fig.update_xaxes(title_text=f"[{self.ate_unit}]", row=1, col=1)
         fig.update_yaxes(title_text="CDF", row=1, col=1)
 
@@ -757,7 +757,7 @@ class ATEReportDataCollection:
             height = report_data_item.settings.single_plot_height
             config = report_data_item.settings.single_plot_export.to_config()
 
-        fig.update_layout(title="Cummulative Probability", height=height)
+        fig.update_layout(title="Cumulative Probability", height=height)
         fig.update_xaxes(title_text=f"[{report_data_item.ate_unit}]", row=1, col=1)
         fig.update_yaxes(title_text="CDF", row=1, col=1)
 

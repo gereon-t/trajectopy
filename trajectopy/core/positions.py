@@ -30,13 +30,13 @@ class Positions:
         epsg_local_cart: int = 4936,
         epsg_local_geod: int = 4937,
     ) -> None:
-        """Initialize PointSet and create local transformer.
+        """Initialize Positions and create local transformer.
 
-        If a pointset is initialized directly with an EPSG code of 0, such a local transformer
+        If a Positions instance is initialized directly with an EPSG code of 0, such a local transformer
         cannot be constructed, and a transformation into other EPSG codes is therefore not possible.
         Use this setting if you don't have any information about the datum of the passed points.
         However, if the local transformer is already known, it can be provided during the
-        initialization of the pointset using the local_transformer variable.
+        initialization of the Positions object using the local_transformer variable.
 
         Args:
             xyz (np.ndarray | list): 1- / 2- dimensional numpy array containing the coordinates
@@ -170,7 +170,7 @@ class Positions:
 
     @property
     def xyz(self) -> np.ndarray:
-        """Returns the points within the pointset.
+        """Returns the points within the Positions object.
 
         Returns:
             np.ndarray: 2-dimensional numpy array.
@@ -198,7 +198,7 @@ class Positions:
         """Returns x coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
-        float / int depending on whether there is more than one point in the pointset.
+        float / int depending on whether there is more than one point in the Positions object.
 
         Returns:
             Union[int, float, np.ndarray]: X coordinate(s).
@@ -210,7 +210,7 @@ class Positions:
         """Returns y coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
-        float / int depending on whether there is more than one point in the pointset.
+        float / int depending on whether there is more than one point in the Positions object.
 
         Returns:
             Union[int, float, np.ndarray]: Y coordinate(s).
@@ -222,7 +222,7 @@ class Positions:
         """Returns z coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
-        float / int depending on whether there is more than one point in the pointset.
+        float / int depending on whether there is more than one point in the Positions object.
 
         Returns:
             Union[int, float, np.ndarray]: Z coordinate(s).
@@ -278,7 +278,7 @@ class Positions:
         """Performs a coordinate transformation using a target CRS.
 
         This method will construct the required pyproj transformer and applies it in order to
-        transform the pointset to the target EPSG code.
+        transform the positions to the target EPSG code.
 
         Args:
             target_epsg (int): EPSG code of target CRS.
@@ -289,7 +289,7 @@ class Positions:
                 since local transformer is unknown.
 
         Returns:
-            Positions: Transformed pointset.
+            Positions: Transformed positions.
         """
         pointset = self if inplace else self.copy()
 
@@ -340,7 +340,7 @@ class Positions:
         return pointset
 
     def to_local(self, inplace: bool = True) -> "Positions":
-        """Transform pointset to a local frame tangential to the (grs80) ellipsoid.
+        """Transform positions to a local frame tangential to the (grs80) ellipsoid.
 
         This is equivalent to a transformation to an EPSG of 0.
 
@@ -348,15 +348,15 @@ class Positions:
             inplace (bool, optional): Perform transformation in place. Defaults to True.
 
         Returns:
-            Positions: 2-dimensional PointSet containing xyz of the transformed points.
+            Positions: 2-dimensional object containing xyz of the transformed points.
         """
         return self.to_epsg(target_epsg=0, inplace=inplace)
 
     def mean(self, inplace: bool = False) -> "Positions":
-        """Computes the mean of all points within the pointset.
+        """Computes the mean of all points within the Positions object.
 
         Args:
-            inplace (bool, optional): If true, the pointset gets replaced by a single mean
+            inplace (bool, optional): If true, the positions object gets replaced by a single mean
                 position. Defaults to False.
 
         Returns:

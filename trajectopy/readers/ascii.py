@@ -258,7 +258,7 @@ def read_string(input_str: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
 
 
 def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[None, Rotations]:
-    """Extracts rotations from trajectory data and returns them as RotationSet
+    """Extracts rotations from trajectory data and returns them as Rotations
 
     Loaded rotations are converted to refer to the ENU navigation frame. For this,
     the actual navigation frame must be specified in the header of the trajectory file using
@@ -269,7 +269,7 @@ def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.nd
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        RotationSet | None: Rotations read from the trajectory file or None if no rotations are found
+        Rotations | None: Rotations read from the trajectory file or None if no rotations are found
     """
     rot = None
     if all(field in header_data.fields for field in ["qx", "qy", "qz", "qw"]):
@@ -286,14 +286,14 @@ def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.nd
 
 
 def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
-    """Extracts quaternions from trajectory data and returns them as RotationSet
+    """Extracts quaternions from trajectory data and returns them as Rotations
 
     Args:
         header_data (HeaderData): Holds information about the header of the trajectory file
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        RotationSet: Rotations read from the trajectory file
+        Rotations: Rotations read from the trajectory file
     """
     return Rotations.from_quat(
         trajectory_data[
@@ -309,14 +309,14 @@ def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data
 
 
 def _extract_rotations_from_euler_angles(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
-    """Extracts euler angles from trajectory data and returns them as RotationSet
+    """Extracts euler angles from trajectory data and returns them as Rotations
 
     Args:
         header_data (HeaderData): Holds information about the header of the trajectory file
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        RotationSet: Rotations read from the trajectory file
+        Rotations: Rotations read from the trajectory file
     """
     return Rotations.from_euler(
         seq="xyz",

@@ -269,7 +269,7 @@ def plot_position_ate_edf(
 ) -> None:
     ax_pos = plt.subplot(2, 1, 1)
     ax_pos.set_xlabel(f"Deviation {plot_settings.unit_str}")
-    ax_pos.set_ylabel("Cummulative Probability")
+    ax_pos.set_ylabel("Cumulative Probability")
 
     for dev in deviation_list:
         sorted_comb_pos_dev = np.sort(dev.pos_dev_comb)
@@ -284,7 +284,7 @@ def plot_rotation_ate_edf(deviation_list: List[ATEResult]) -> None:
     ax_rot = plt.subplot(2, 1, 2)
 
     ax_rot.set_xlabel("Deviation [°]")
-    ax_rot.set_ylabel("Cummulative Probability")
+    ax_rot.set_ylabel("Cumulative Probability")
 
     for dev in deviation_list:
         if dev.abs_dev.rot_dev is None:
@@ -816,7 +816,7 @@ def plot_ate_edf(
 ) -> Figure:
     """
     Plots ATE EDF for the given ATEResult(s) as a line plot using matplotlib.
-    The EDF (Empirical Distribution Function) shows the cummulative probability of the deviations.
+    The EDF (Empirical Distribution Function) shows the cumulative probability of the deviations.
     Using this plot, one can easily see how many percent of the deviations are below a certain value.
 
     Args:
