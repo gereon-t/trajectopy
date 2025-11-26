@@ -1,0 +1,32 @@
+/* Custom styling for Trajectopy documentation */
+
+/* Improve code block appearance */
+.highlight {
+    border-radius: 0.2rem;
+}
+
+/* Better table styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+/* Admonition icons */
+.admonition {
+    border-radius: 0.2rem;
+}
+
+/* Better spacing for navigation tabs */
+.md-tabs {
+    background-color: var(--md-primary-fg-color);
+}
+
+/* Adjust heading spacing */
+h2 {
+    margin-top: 2rem;
+}
+
+/* Code annotation styling */
+.md-annotation {
+    font-size: 0.85em;
+}
