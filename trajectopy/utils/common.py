@@ -20,13 +20,14 @@ def resource_path(relative_path):
         base_path = os.path.join(sys._MEIPASS, "trajectopy")
     except Exception:
         base_path = os.path.dirname(__file__)
+        base_path = os.path.dirname(base_path)
 
     return os.path.join(base_path, relative_path)
 
 
-FULL_ICON_FILE_PATH = resource_path("../gui/resources/full-icon-poppins.png")
-ICON_FILE_PATH = resource_path("../gui/resources/icon.png")
-ICON_BG_FILE_PATH = resource_path("../gui/resources/icon-bg.png")
+FULL_ICON_FILE_PATH = resource_path("gui/resources/full-icon-poppins.png")
+ICON_FILE_PATH = resource_path("gui/resources/icon.png")
+ICON_BG_FILE_PATH = resource_path("gui/resources/icon-bg.png")
 YEAR = str(datetime.datetime.now().year)
 
 
