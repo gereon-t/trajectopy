@@ -66,6 +66,7 @@ trajectopy = "trajectopy.cli.main:main"
 
 [dependency-groups]
 dev = [
+    "black>=25.11.0",
     "mkdocs-material>=9.6.14",
     "mkdocstrings[python]>=0.24.0",
     "pillow>=11.2.1",

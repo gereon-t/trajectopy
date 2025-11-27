@@ -20,7 +20,8 @@ def sort_spatially(
     trajectory: Trajectory, sorting_settings: SortingSettings = SortingSettings(), inplace: bool = True
 ) -> Trajectory:
     """
-    Sorts the trajectory spatially.
+    Sorts the trajectory spatially. This is only useful for trajectories
+    that describe a closed loop without intersections.
 
     Args:
         trajectory (Trajectory): Trajectory to sort.
@@ -43,7 +44,8 @@ def divide_into_laps(
     trajectory: Trajectory, sorting_settings: SortingSettings = SortingSettings(), return_lap_indices: bool = False
 ) -> Union[List[Trajectory], Tuple[List[Trajectory], np.ndarray]]:
     """
-    Divides the trajectory into laps.
+    Divides the trajectory into laps. This is only useful for trajectories
+    that describe a closed loop without intersections.
 
     Args:
         trajectory (Trajectory): Trajectory to divide.

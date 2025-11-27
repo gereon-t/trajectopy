@@ -25,10 +25,10 @@ def estimate_alignment(
     alignment_settings: settings.AlignmentSettings = settings.AlignmentSettings(),
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
 ) -> AlignmentResult:
-    """Aligns two trajectories.
+    """Estimates the alignment between two trajectories.
 
     Performs Helmert, Leverarm, and Time shift estimation depending on the configuration.
-    After this, the estimated parameters are applied to the 'trajectory' trajectory.
+    This function only estimates the alignment parameters, it does not apply them to the trajectory.
 
     Args:
         trajectory (Trajectory): Trajectory to align.
