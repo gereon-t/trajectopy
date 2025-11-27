@@ -13,6 +13,9 @@ from trajectopy.processing.matching import match_timestamps
 
 
 class TestTrajectory(unittest.TestCase):
+    def setUp(self) -> None:
+        np.random.seed(42)
+
     def test_match_timestamps(self) -> None:
         trajectory_ref = open_loop_trajectory.copy()
         trajectory = open_loop_trajectory.copy()
@@ -63,11 +66,12 @@ class TestTrajectory(unittest.TestCase):
 
         trajectory.crop(t_start=tstamp_min, t_end=tstamp_max)
 
-        self.assertTrue(trajectory.timestamps[0] >= tstamp_min and trajectory.timestamps[-1] <= tstamp_max)
+        self.assertGreaterEqual(trajectory.timestamps[0], tstamp_min, "First timestamp should be >= crop start")
+        self.assertLessEqual(trajectory.timestamps[-1], tstamp_max, "Last timestamp should be <= crop end")
         self.trajectory_sanity_check(trajectory)
 
         trajectory.crop(t_start=tstamp_min, t_end=tstamp_min, inplace=True)
-        self.assertTrue(len(trajectory) == 0)
+        self.assertEqual(len(trajectory), 0, "Cropping to same start and end should result in empty trajectory")
         self.trajectory_sanity_check(trajectory)
 
     def test_intersect(self) -> None:
@@ -76,9 +80,15 @@ class TestTrajectory(unittest.TestCase):
 
         trajectory.intersect(timestamps=trajectory_ref.timestamps)
 
-        self.assertTrue(
-            trajectory.timestamps[0] >= trajectory_ref.timestamps[0]
-            and trajectory.timestamps[-1] <= trajectory_ref.timestamps[-1]
+        self.assertGreaterEqual(
+            trajectory.timestamps[0],
+            trajectory_ref.timestamps[0],
+            "First timestamp should be >= reference first timestamp after intersection",
+        )
+        self.assertLessEqual(
+            trajectory.timestamps[-1],
+            trajectory_ref.timestamps[-1],
+            "Last timestamp should be <= reference last timestamp after intersection",
         )
 
         self.trajectory_sanity_check(trajectory)
@@ -104,10 +114,9 @@ class TestTrajectory(unittest.TestCase):
         return trajectory
 
     def check_trajectory_attribute(self, attribute: Any, target_length: int, target_type: Any) -> None:
-        if target_length == 0:
-            self.assertTrue(isinstance(attribute, target_type))
-        else:
-            self.assertTrue(target_length == len(attribute) and isinstance(attribute, target_type))
+        self.assertIsInstance(attribute, target_type, f"Attribute should be of type {target_type}")
+        if target_length > 0:
+            self.assertEqual(len(attribute), target_length, f"Attribute should have length {target_length}")
 
     def trajectory_sanity_check(self, trajectory: Trajectory) -> None:
         target_length = len(trajectory)

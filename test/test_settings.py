@@ -64,7 +64,7 @@ class TestSettings(unittest.TestCase):
         super().setUp()
         Path("./test/tmp").mkdir(parents=True, exist_ok=True)
 
-    def settings_io(self) -> None:
+    def test_settings_io(self) -> None:
         settings = AllSettings()
         settings.to_file("./test/tmp/test.json")
         imported_settings = AllSettings.from_file("./test/tmp/test.json")
@@ -73,5 +73,4 @@ class TestSettings(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    TestSettings().setUp()
-    TestSettings().settings_io()
+    unittest.main()

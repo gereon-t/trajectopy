@@ -2,6 +2,8 @@ import unittest
 from pathlib import Path
 from test.testdata import generated_trajectory
 
+import numpy as np
+
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.models.entries import (
     AbsoluteDeviationEntry,
@@ -22,6 +24,86 @@ class TestIO(unittest.TestCase):
         generated_trajectory.to_file(f"./test/tmp/trajectory_{self._file}.csv")
         output_trajectory = Trajectory.from_file(f"./test/tmp/trajectory_{self._file}.csv")
         self.assertEqual(input_trajectory, output_trajectory)
+        TestIO._file += 1
+
+    def test_trajectory_write_read_with_rotations(self):
+        """Test writing and reading trajectory with rotation data."""
+        import numpy as np
+        from trajectopy.core.positions import Positions
+        from trajectopy.core.rotations import Rotations
+
+        # Create trajectory with rotations
+        xyz = np.random.rand(50, 3) * 100
+        quat = np.tile([0, 0, 0, 1], (50, 1))
+        timestamps = np.arange(50, dtype=float)
+
+        traj = Trajectory(
+            name="TestTraj",
+            positions=Positions(xyz=xyz, epsg=4326),
+            rotations=Rotations.from_quat(quat),
+            timestamps=timestamps,
+        )
+
+        filepath = f"./test/tmp/trajectory_{self._file}.csv"
+        traj.to_file(filepath)
+
+        # Read back
+        traj_read = Trajectory.from_file(filepath)
+
+        # Verify data is preserved
+        self.assertEqual(traj.name, traj_read.name)
+        self.assertEqual(len(traj), len(traj_read))
+        self.assertTrue(traj_read.has_orientation)
+        np.testing.assert_array_almost_equal(traj.positions.xyz, traj_read.positions.xyz)
+        np.testing.assert_array_almost_equal(traj.rotations.as_quat(), traj_read.rotations.as_quat())
+        np.testing.assert_array_almost_equal(traj.timestamps, traj_read.timestamps)
+
+        TestIO._file += 1
+
+    def test_trajectory_write_read_without_rotations(self):
+        """Test writing and reading trajectory without rotations."""
+        import numpy as np
+        from trajectopy.core.positions import Positions
+
+        # Create trajectory without rotations
+        xyz = np.random.rand(30, 3) * 50
+        timestamps = np.arange(30, dtype=float)
+
+        traj = Trajectory(name="NoRotTraj", positions=Positions(xyz=xyz, epsg=0), timestamps=timestamps)
+
+        filepath = f"./test/tmp/trajectory_{self._file}.csv"
+        traj.to_file(filepath)
+
+        # Read back
+        traj_read = Trajectory.from_file(filepath)
+
+        # Verify data
+        self.assertEqual(len(traj), len(traj_read))
+        np.testing.assert_array_almost_equal(traj.positions.xyz, traj_read.positions.xyz)
+        np.testing.assert_array_almost_equal(traj.timestamps, traj_read.timestamps)
+
+        TestIO._file += 1
+
+    def test_trajectory_write_read_different_epsg(self):
+        """Test writing and reading trajectory with different EPSG codes."""
+        import numpy as np
+        from trajectopy.core.positions import Positions
+
+        for epsg in [4326, 32632, 0]:
+            xyz = np.random.rand(20, 3) * 100
+            timestamps = np.arange(20, dtype=float)
+
+            traj = Trajectory(positions=Positions(xyz=xyz, epsg=epsg), timestamps=timestamps)
+
+            filepath = f"./test/tmp/trajectory_{self._file}.csv"
+            traj.to_file(filepath)
+
+            traj_read = Trajectory.from_file(filepath)
+
+            # EPSG should be preserved
+            self.assertEqual(traj.positions.epsg, traj_read.positions.epsg)
+
+            TestIO._file += 1
 
     def test_absolute_deviations(self):
         self.deviation_io_test(AbsoluteDeviationEntry, "./test/data/abs_dev.result", "./test/tmp/abs_dev_")

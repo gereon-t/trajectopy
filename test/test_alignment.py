@@ -17,6 +17,10 @@ from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 
 class TestAlignment(unittest.TestCase):
+    def setUp(self) -> None:
+        # Ensure deterministic randomness across tests
+        np.random.seed(0)
+
     def _alignment_test(
         self, similarity_enabled: bool, time_shift_enabled: bool, lever_enabled: bool, lazy: bool = False
     ) -> None:
@@ -42,34 +46,25 @@ class TestAlignment(unittest.TestCase):
             matching_settings=MatchingSettings(),
         )
 
-        print("Target:")
-        print(groundtruth)
-        print("Estimation:")
-        print(alignment_result.position_parameters)
         self._verify_alignment(target=groundtruth, estimation=alignment_result.position_parameters, lazy=lazy)
 
-    def test_similarity_alignment(self):
-        self._alignment_test(similarity_enabled=True, time_shift_enabled=False, lever_enabled=False)
-
-    def test_lever_alignment(self):
-        self._alignment_test(similarity_enabled=False, time_shift_enabled=False, lever_enabled=True)
-
-    def test_time_shift_alignment(self):
-        self._alignment_test(similarity_enabled=False, time_shift_enabled=True, lever_enabled=False)
-
-    def test_similarity_lever_alignment(self):
-        self._alignment_test(similarity_enabled=True, time_shift_enabled=False, lever_enabled=True)
-
-    def test_similarity_time_shift_alignment(self):
-        self._alignment_test(similarity_enabled=True, time_shift_enabled=True, lever_enabled=False)
-
-    def test_lever_time_shift_alignment(self):
-        self._alignment_test(similarity_enabled=False, time_shift_enabled=True, lever_enabled=True)
-
-    def test_similarity_lever_time_shift_alignment(self):
-        self._alignment_test(similarity_enabled=True, time_shift_enabled=True, lever_enabled=True)
+    def test_alignment_combinations(self):
+        """Test various combinations of alignment parameters (similarity, time shift, lever arm)."""
+        cases = [
+            (True, False, False),
+            (False, False, True),
+            (False, True, False),
+            (True, False, True),
+            (True, True, False),
+            (False, True, True),
+            (True, True, True),
+        ]
+        for similarity, time_shift, lever in cases:
+            with self.subTest(similarity=similarity, time_shift=time_shift, lever=lever):
+                self._alignment_test(similarity_enabled=similarity, time_shift_enabled=time_shift, lever_enabled=lever)
 
     def test_sensor_alignment_loop(self):
+        """Test that sensor rotation alignment can be applied and reversed correctly."""
         trajectory = open_loop_trajectory.copy()
         trajectory_rotated = trajectory.copy()
         random_rot = Rotations.from_euler(
@@ -77,7 +72,6 @@ class TestAlignment(unittest.TestCase):
             angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
             degrees=True,
         )
-        print(f"Random rotation: {random_rot.as_euler(seq='xyz', degrees=True)}")
         trajectory_rotated.rotations = random_rot * trajectory_rotated.rotations
 
         sensor_alignment = align_rotations(trajectory_rotated.rotations, trajectory.rotations)
@@ -88,10 +82,6 @@ class TestAlignment(unittest.TestCase):
         trajectory_rotated_back.rotations = sensor_alignment.rotation_set * trajectory_rotated_back.rotations
         alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rotations, trajectory.rotations)
 
-        print(
-            "Alignment between rotated back trajectory and original trajectory:"
-            f"\n{alignment_between_back_and_original}"
-        )
         np.testing.assert_allclose(
             alignment_between_back_and_original.rotation_set.rotangle,
             0,
@@ -100,6 +90,7 @@ class TestAlignment(unittest.TestCase):
         )
 
     def test_rotation_alignment(self):
+        """Test alignment of rotation sets and verification of transformation accuracy."""
         rotations_1 = Rotations.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
         rotations_2 = (
             Rotations.from_euler(

@@ -52,6 +52,9 @@ def compare_trajectories_rel(
 
 
 class TestComparison(unittest.TestCase):
+    def setUp(self) -> None:
+        np.random.seed(7)
+
     def test_body_frame_deviations(self) -> None:
         trajectory = generated_trajectory.copy()
 
