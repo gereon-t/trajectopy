@@ -1604,7 +1604,10 @@
 
 
 <a href="#trajectopy.processing.evaluation.ate" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ate</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">processing_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ProcessingSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ate</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">processing_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ProcessingSettings
 
 
   
@@ -1614,7 +1617,10 @@
 
   
       dataclass
-   (trajectopy.core.settings.ProcessingSettings)" href="../../core/settings/#trajectopy.core.settings.ProcessingSettings">ProcessingSettings</a></span><span class="p">(),</span> <span class="n">return_alignment</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">align</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
+   (trajectopy.core.settings.ProcessingSettings)" href="../../core/settings/#trajectopy.core.settings.ProcessingSettings">ProcessingSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">return_alignment</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">align</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
 
 
   
@@ -1826,7 +1832,10 @@ containing (ATEResult, AlignmentResult).</p>
 
 
 <a href="#trajectopy.processing.evaluation.rpe" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">rpe</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">processing_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ProcessingSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">rpe</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">processing_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ProcessingSettings
 
 
   
@@ -1836,7 +1845,8 @@ containing (ATEResult, AlignmentResult).</p>
 
   
       dataclass
-   (trajectopy.core.settings.ProcessingSettings)" href="../../core/settings/#trajectopy.core.settings.ProcessingSettings">ProcessingSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span>
+   (trajectopy.core.settings.ProcessingSettings)" href="../../core/settings/#trajectopy.core.settings.ProcessingSettings">ProcessingSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

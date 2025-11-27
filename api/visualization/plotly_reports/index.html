@@ -1668,12 +1668,16 @@
 
 
 <a href="#trajectopy.visualization.plotly_reports.create_alignment_report" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_alignment_report</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">alignment_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_alignment_report</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">alignment_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
 
 
   
       dataclass
-   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;Alignment&#39;</span><span class="p">,</span> <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
+   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;Alignment&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
 
 
   
@@ -1683,7 +1687,8 @@
 
   
       dataclass
-   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">()</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1831,7 +1836,10 @@
 
 
 <a href="#trajectopy.visualization.plotly_reports.create_trajectory_report" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_trajectory_report</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span> <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_trajectory_report</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="o">*</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
 
 
   
@@ -1841,7 +1849,8 @@
 
   
       dataclass
-   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">()</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1961,7 +1970,10 @@
 
 
 <a href="#trajectopy.visualization.plotly_reports.create_deviation_report" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_deviation_report</span><span class="p">(</span><span class="n">ate_result</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span> <span class="n">rpe_result</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span> <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">create_deviation_report</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">rpe_result</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">report_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ReportSettings
 
 
   
@@ -1971,7 +1983,8 @@
 
   
       dataclass
-   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
+   (trajectopy.core.settings.ReportSettings)" href="../../core/settings/#trajectopy.core.settings.ReportSettings">ReportSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="str">str</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">

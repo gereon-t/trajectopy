@@ -1868,7 +1868,9 @@
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_trajectories" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_trajectories</span><span class="p">(</span><span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span> <span class="n">scatter_3d</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_trajectories</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span> <span class="n">scatter_3d</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1966,12 +1968,15 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_correlation_heatmap" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_correlation_heatmap</span><span class="p">(</span><span class="n">estimated_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_correlation_heatmap</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">estimated_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
 
 
   
       dataclass
-   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span> <span class="n">enabled_only</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">enabled_only</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2094,12 +2099,15 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_covariance_heatmap" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_covariance_heatmap</span><span class="p">(</span><span class="n">estimated_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_covariance_heatmap</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">estimated_parameters</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentParameters
 
 
   
       dataclass
-   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span> <span class="n">enabled_only</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.processing.lib.alignment.parameters.AlignmentParameters)" href="../../processing/parameters/#trajectopy.processing.lib.alignment.parameters.AlignmentParameters">AlignmentParameters</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">enabled_only</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2214,7 +2222,9 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_ate_3d" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_3d</span><span class="p">(</span><span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">],</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_3d</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -2224,7 +2234,8 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2382,7 +2393,9 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_ate_bars" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_bars</span><span class="p">(</span><span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">],</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_bars</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -2392,7 +2405,9 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span> <span class="n">mode</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">&#39;positions&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">mode</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s2">&quot;positions&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2593,7 +2608,9 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_compact_ate_hist" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_compact_ate_hist</span><span class="p">(</span><span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_compact_ate_hist</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -2603,7 +2620,8 @@ one subplot for the xyz coordinates and one subplot for the rpy angles.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2720,7 +2738,9 @@ The plot contains histograms for the position deviations and, if available, the 
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_ate" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate</span><span class="p">(</span><span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -2730,7 +2750,8 @@ The plot contains histograms for the position deviations and, if available, the 
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2914,7 +2935,9 @@ The x-axis depends on the sorting of the trajectory.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_ate_dof" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_dof</span><span class="p">(</span><span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_dof</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -2924,7 +2947,8 @@ The x-axis depends on the sorting of the trajectory.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3145,7 +3169,9 @@ The x-axis depends on the sorting of the trajectory.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_ate_edf" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_edf</span><span class="p">(</span><span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_ate_edf</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_results</span><span class="p">:</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">]],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -3155,7 +3181,8 @@ The x-axis depends on the sorting of the trajectory.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3277,7 +3304,9 @@ Using this plot, one can easily see how many percent of the deviations are below
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_rpe" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_rpe</span><span class="p">(</span><span class="n">rpe_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_rpe</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">rpe_results</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="RPEResult (trajectopy.results.rpe_result.RPEResult)" href="../../results/rpe_result/#trajectopy.results.rpe_result.RPEResult">RPEResult</a></span><span class="p">],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3446,7 +3475,9 @@ deviations is respectively in degrees/m or degrees/second.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.scatter_ate" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">scatter_ate</span><span class="p">(</span><span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span> <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">scatter_ate</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">ate_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="ATEResult (trajectopy.results.ate_result.ATEResult)" href="../../results/ate_result/#trajectopy.results.ate_result.ATEResult">ATEResult</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">plot_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MPLPlotSettings
 
 
   
@@ -3456,7 +3487,8 @@ deviations is respectively in degrees/m or degrees/second.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">]</span>
+   (trajectopy.core.settings.MPLPlotSettings)" href="../../core/settings/#trajectopy.core.settings.MPLPlotSettings">MPLPlotSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Tuple">Tuple</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3566,7 +3598,9 @@ deviations is respectively in degrees/m or degrees/second.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_positions" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_positions</span><span class="p">(</span><span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span> <span class="n">scatter_3d</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_positions</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span> <span class="n">scatter_3d</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="matplotlib.figure.Figure">Figure</span></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3734,7 +3768,9 @@ deviations is respectively in degrees/m or degrees/second.</p>
 
 
 <a href="#trajectopy.visualization.mpl_plots.plot_rpy" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_rpy</span><span class="p">(</span><span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">plot_rpy</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectories</span><span class="p">:</span> <span class="n"><span title="typing.List">List</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">],</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="typing.Union">Union</span></span><span class="p">[</span><span class="n"><span title="matplotlib.figure.Figure">Figure</span></span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
