@@ -1691,7 +1691,7 @@
 
 
 <h1 id="user-guide">User Guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
-<p>This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation, and visualization.</p>
+<p>This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation, and visualization. All functionality is available both via the Python API and the GUI application. The examples below use the Python API.</p>
 <h2 id="1-loading-data">1. Loading Data<a class="headerlink" href="#1-loading-data" title="Permanent link">&para;</a></h2>
 <p>Trajectories are loaded using the <code>Trajectory</code> class. All ASCII text files are supported as long as they meet the requirements described in <a href="../file_formats/">File Formats</a>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trajectory</span>
@@ -1731,7 +1731,7 @@
 <h2 id="3-evaluation">3. Evaluation<a class="headerlink" href="#3-evaluation" title="Permanent link">&para;</a></h2>
 <p>Trajectopy provides standard metrics for trajectory evaluation.</p>
 <h3 id="absolute-trajectory-error-ate">Absolute Trajectory Error (ATE)<a class="headerlink" href="#absolute-trajectory-error-ate" title="Permanent link">&para;</a></h3>
-<p>ATE measures the global consistency of the trajectory.</p>
+<p>ATE measures the global consistency of the trajectory by building differences between corresponding poses. Note that <code>ate()</code> already includes alignment by default. This can be disabled by setting the function parameter <code>align=False</code>.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="n">ate</span><span class="p">,</span> <span class="n">ProcessingSettings</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">gt_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
@@ -1744,7 +1744,7 @@
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position ATE: </span><span class="si">{</span><span class="n">ate_result</span><span class="o">.</span><span class="n">pos_ate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="relative-pose-error-rpe">Relative Pose Error (RPE)<a class="headerlink" href="#relative-pose-error-rpe" title="Permanent link">&para;</a></h3>
-<p>RPE measures the local accuracy (drift) over fixed time or distance intervals.</p>
+<p>RPE measures the pose drift over fixed time or distance intervals.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="n">rpe</span><span class="p">,</span> <span class="n">ProcessingSettings</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">gt_traj</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
