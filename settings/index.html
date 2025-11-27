@@ -2035,15 +2035,14 @@
 <p>Sorting involves two steps:</p>
 <ol>
 <li>Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.</li>
-<li>
-<p>Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.</p>
-</li>
-<li>
-<p><code>voxel_size</code> (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.</p>
-</li>
+<li>Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.</li>
+</ol>
+<p>For sorting, the following settings can be adjusted:</p>
+<ul>
+<li><code>voxel_size</code> (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.</li>
 <li><code>movement_threshold</code> (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.</li>
 <li><code>k_nearest</code> (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.</li>
-</ol>
+</ul>
 <h2 id="choosing-the-plotting-backend">Choosing the Plotting Backend<a class="headerlink" href="#choosing-the-plotting-backend" title="Permanent link">&para;</a></h2>
 <p>You can choose between two plotting backends: <code>matplotlib</code> and <code>plotly</code>. By default the <code>matplotlib</code> backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the <code>plotly</code> backend by clicking "Plotting" in the menu bar and selecting the desired backend (GUI). </p>
 <h2 id="report-settings">Report Settings<a class="headerlink" href="#report-settings" title="Permanent link">&para;</a></h2>
