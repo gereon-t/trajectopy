@@ -4,11 +4,11 @@ The processing settings allow you to configure various processing steps that can
 
 | Setting | Description |
 | :--- | :--- |
-| `alignment` | Settings for trajectory alignment (Helmert transformation, time shift, lever arm, etc.) |
+| `alignment` | Settings for trajectory alignment (Similarity transformation (helmert), time shift, lever arm, etc.) |
 | `matching` | Settings for matching poses between two trajectories |
 | `relative_comparison` | Settings for relative trajectory comparison (RPE) |
 | `approximation` | Settings for trajectory approximation and smoothing |
-| `sorting` | Settings for sorting and downsampling trajectory points |
+| `sorting` | Settings for spatially sorting trajectories |
 
 ### Alignment Settings
 
@@ -77,7 +77,7 @@ This method matches two trajectories by interpolating the timestamps of one traj
 
 #### Nearest Spatial Interpolated
 
-This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. This method does not support rotation matching.
+This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. The matched rotations are computed by averaging the quaternions of the k nearest neighbors using the chordal L2 mean.
 
 
 ### Relative Comparison Settings
@@ -128,11 +128,18 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 
 ### Approximation Settings
 
+Trajectopy currently supports piece-wise cubic approximation for position components and moving average for rotation components. Piece-wise cubic means that the trajectory is divided into intervals of a specified size, and within each interval, a cubic polynomial is fitted to the position data. The fitted polynomial is then used to approximate the position values within that interval.
+
 - `position_interval_size` (float): Size of the position intervals in meters for cubic approximation. Default value is 0.15 meters.
 - `position_min_observations` (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.
 - `rotation_window_size` (float): Size of the rotation smoothing window in meters for rotation approximation (not cubic!). Default value is 0.15 meters.
 
 ### Sorting Settings
+
+Sorting involves two steps:
+
+1. Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.
+2. Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.
 
 - `voxel_size` (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.
 - `movement_threshold` (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.
@@ -141,7 +148,7 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 
 ## Choosing the Plotting Backend
 
-Since version 2.2.0, you can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend.
+You can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend (GUI). 
 
 ## Report Settings
 
@@ -153,7 +160,7 @@ Since version 2.2.0, you can choose between two plotting backends: `matplotlib` 
 - `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.
 - `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
 - `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
-- `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.
+- `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
 - `histogram_opacity` (float): The opacity of the histogram bars. Default value is 0.7.
 - `histogram_bargap` (float): The gap between histogram bars. Default value is 0.1.
 - `histogram_barmode` (str): The mode of displaying histogram bars. Default value is "overlay".
@@ -167,15 +174,13 @@ Since version 2.2.0, you can choose between two plotting backends: `matplotlib` 
 - `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
 - `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
 
-#### ATE Frame Definition
+#### ATE Frame Definition (regarding `directed_ate`)
 
-By default, the ATE is split into along-, horizontal-cross- and vertical-cross-track directions. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
+The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
 
 <img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/>
 
 ### Mapbox Settings
-
-These settings currently only apply to trajectory only plots without deviations.
 
 - `scatter_plot_on_map` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
 - `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".

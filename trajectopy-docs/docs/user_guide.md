@@ -1,6 +1,6 @@
 # User Guide
 
-This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation, and visualization.
+This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation, and visualization. All functionality is available both via the Python API and the GUI application. The examples below use the Python API.
 
 ## 1. Loading Data
 
@@ -55,7 +55,7 @@ Trajectopy provides standard metrics for trajectory evaluation.
 
 ### Absolute Trajectory Error (ATE)
 
-ATE measures the global consistency of the trajectory.
+ATE measures the global consistency of the trajectory by building differences between corresponding poses. Note that `ate()` already includes alignment by default. This can be disabled by setting the function parameter `align=False`.
 
 ```python
 from trajectopy import Trajectory, ate, ProcessingSettings
@@ -72,7 +72,7 @@ print(f"Position ATE: {ate_result.pos_ate}")
 
 ### Relative Pose Error (RPE)
 
-RPE measures the local accuracy (drift) over fixed time or distance intervals.
+RPE measures the pose drift over fixed time or distance intervals.
 
 ```python
 from trajectopy import Trajectory, rpe, ProcessingSettings

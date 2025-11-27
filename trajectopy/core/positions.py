@@ -34,7 +34,7 @@ class Positions:
 
         If a Positions instance is initialized directly with an EPSG code of 0, such a local transformer
         cannot be constructed, and a transformation into other EPSG codes is therefore not possible.
-        Use this setting if you don't have any information about the datum of the passed points.
+        Use this setting if you don't have any information about the geodetic datum of the passed points.
         However, if the local transformer is already known, it can be provided during the
         initialization of the Positions object using the local_transformer variable.
 

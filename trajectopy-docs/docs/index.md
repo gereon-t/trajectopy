@@ -58,7 +58,7 @@ traj_ref = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
 traj_est = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
 # 2. Evaluate (ATE already includes alignment)
-ate_result = tpy.ate(other=traj_ref, trajectory=traj_est_aligned)
+ate_result = tpy.ate(other=traj_ref, trajectory=traj_est)
 
 # 3. Print results
 print(f"Position ATE: {ate_result.pos_ate:.3f} m")

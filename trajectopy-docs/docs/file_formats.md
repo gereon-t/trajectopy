@@ -57,7 +57,7 @@ Headers start with `#` and configure how data is interpreted:
 
 | Field | Description | Type | Can repeat? |
 |-------|-------------|------|-------------|
-| `t` | Time/timestamp | float | Yes |
+| `t` | Time/timestamp | str / float | Yes |
 | `l` | Arc length | float | No |
 | `px` | Position X / Latitude | float | No |
 | `py` | Position Y / Longitude | float | No |
