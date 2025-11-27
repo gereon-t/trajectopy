@@ -1896,7 +1896,7 @@
 <tbody>
 <tr>
 <td style="text-align: left;"><code>alignment</code></td>
-<td style="text-align: left;">Settings for trajectory alignment (Helmert transformation, time shift, lever arm, etc.)</td>
+<td style="text-align: left;">Settings for trajectory alignment (Similarity transformation (helmert), time shift, lever arm, etc.)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>matching</code></td>
@@ -1912,7 +1912,7 @@
 </tr>
 <tr>
 <td style="text-align: left;"><code>sorting</code></td>
-<td style="text-align: left;">Settings for sorting and downsampling trajectory points</td>
+<td style="text-align: left;">Settings for spatially sorting trajectories</td>
 </tr>
 </tbody>
 </table>
@@ -1972,7 +1972,7 @@
 <h4 id="interpolation">Interpolation<a class="headerlink" href="#interpolation" title="Permanent link">&para;</a></h4>
 <p>This method matches two trajectories by interpolating the timestamps of one trajectory to the timestamps of the other trajectory. The interpolation is linear for both positions and rotations (SLERP).</p>
 <h4 id="nearest-spatial-interpolated">Nearest Spatial Interpolated<a class="headerlink" href="#nearest-spatial-interpolated" title="Permanent link">&para;</a></h4>
-<p>This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. This method does not support rotation matching.</p>
+<p>This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. The matched rotations are computed by averaging the quaternions of the k nearest neighbors using the chordal L2 mean.</p>
 <h3 id="relative-comparison-settings">Relative Comparison Settings<a class="headerlink" href="#relative-comparison-settings" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
@@ -2025,19 +2025,27 @@
 <p>Results in pose distances: [100 m, 200 m, 300 m, 400 m, 500 m, 600 m, 700 m, 800 m]</p>
 <p>Furthermore, the user can choose to either use consecutive pose pairs (non-overlapping) or all posible pairs (overlapping).</p>
 <h3 id="approximation-settings">Approximation Settings<a class="headerlink" href="#approximation-settings" title="Permanent link">&para;</a></h3>
+<p>Trajectopy currently supports piece-wise cubic approximation for position components and moving average for rotation components. Piece-wise cubic means that the trajectory is divided into intervals of a specified size, and within each interval, a cubic polynomial is fitted to the position data. The fitted polynomial is then used to approximate the position values within that interval.</p>
 <ul>
 <li><code>position_interval_size</code> (float): Size of the position intervals in meters for cubic approximation. Default value is 0.15 meters.</li>
 <li><code>position_min_observations</code> (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.</li>
 <li><code>rotation_window_size</code> (float): Size of the rotation smoothing window in meters for rotation approximation (not cubic!). Default value is 0.15 meters.</li>
 </ul>
 <h3 id="sorting-settings">Sorting Settings<a class="headerlink" href="#sorting-settings" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>voxel_size</code> (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.</li>
+<p>Sorting involves two steps:</p>
+<ol>
+<li>Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.</li>
+<li>
+<p>Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.</p>
+</li>
+<li>
+<p><code>voxel_size</code> (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.</p>
+</li>
 <li><code>movement_threshold</code> (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.</li>
 <li><code>k_nearest</code> (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.</li>
-</ul>
+</ol>
 <h2 id="choosing-the-plotting-backend">Choosing the Plotting Backend<a class="headerlink" href="#choosing-the-plotting-backend" title="Permanent link">&para;</a></h2>
-<p>Since version 2.2.0, you can choose between two plotting backends: <code>matplotlib</code> and <code>plotly</code>. By default the <code>matplotlib</code> backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the <code>plotly</code> backend by clicking "Plotting" in the menu bar and selecting the desired backend.</p>
+<p>You can choose between two plotting backends: <code>matplotlib</code> and <code>plotly</code>. By default the <code>matplotlib</code> backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the <code>plotly</code> backend by clicking "Plotting" in the menu bar and selecting the desired backend (GUI). </p>
 <h2 id="report-settings">Report Settings<a class="headerlink" href="#report-settings" title="Permanent link">&para;</a></h2>
 <h3 id="visualization-settings">Visualization Settings<a class="headerlink" href="#visualization-settings" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2047,7 +2055,7 @@
 <li><code>scatter_max_std</code> (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.</li>
 <li><code>ate_unit_is_mm</code> (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.</li>
 <li><code>ate_remove_above</code> (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.</li>
-<li><code>directed_ate</code> (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is True.</li>
+<li><code>directed_ate</code> (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.</li>
 <li><code>histogram_opacity</code> (float): The opacity of the histogram bars. Default value is 0.7.</li>
 <li><code>histogram_bargap</code> (float): The gap between histogram bars. Default value is 0.1.</li>
 <li><code>histogram_barmode</code> (str): The mode of displaying histogram bars. Default value is "overlay".</li>
@@ -2061,11 +2069,10 @@
 <li><code>scatter_smooth</code> (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.</li>
 <li><code>scatter_smooth_window</code> (int): The window size for smoothing the scatter plot. Default value is 5.</li>
 </ul>
-<h4 id="ate-frame-definition">ATE Frame Definition<a class="headerlink" href="#ate-frame-definition" title="Permanent link">&para;</a></h4>
-<p>By default, the ATE is split into along-, horizontal-cross- and vertical-cross-track directions. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.</p>
+<h4 id="ate-frame-definition-regarding-directed_ate">ATE Frame Definition (regarding <code>directed_ate</code>)<a class="headerlink" href="#ate-frame-definition-regarding-directed_ate" title="Permanent link">&para;</a></h4>
+<p>The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting <code>directed_ate</code> to <code>True</code>. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.</p>
 <p><img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/></p>
 <h3 id="mapbox-settings">Mapbox Settings<a class="headerlink" href="#mapbox-settings" title="Permanent link">&para;</a></h3>
-<p>These settings currently only apply to trajectory only plots without deviations.</p>
 <ul>
 <li><code>scatter_plot_on_map</code> (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.</li>
 <li><code>scatter_mapbox_style</code> (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".</li>
