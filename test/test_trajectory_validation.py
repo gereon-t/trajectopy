@@ -81,6 +81,15 @@ class TestTrajectoryValidation(unittest.TestCase):
         traj2 = Trajectory(positions=positions2)
         self.assertNotEqual(traj1, traj2)
 
+    def test_single_point_trajectory(self):
+        """Test that single point trajectory is handled correctly."""
+        positions = Positions(xyz=np.array([[1.0, 2.0, 3.0]]), epsg=0)
+        traj = Trajectory(positions=positions)
+        self.assertEqual(len(traj), 1)
+        self.assertEqual(traj.total_length, 0.0)
+        # Single point should have zero velocity
+        self.assertEqual(traj.absolute_velocity[0], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

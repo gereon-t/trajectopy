@@ -136,8 +136,12 @@ class TestApproximation(unittest.TestCase):
         original_ang_vel = np.abs(np.diff(original_angles, axis=0))
         approx_ang_vel = np.abs(np.diff(approx_angles, axis=0))
 
-        # Smoothed trajectory should have less rapid changes
-        self.assertLessEqual(np.max(approx_ang_vel), np.max(original_ang_vel))
+        # Smoothed trajectory should have less or equal rapid changes
+        self.assertLessEqual(
+            np.max(approx_ang_vel),
+            np.max(original_ang_vel),
+            "Approximation should not increase maximum angular velocity changes",
+        )
 
 
 if __name__ == "__main__":

@@ -71,6 +71,19 @@ class TestPositionsRotations(unittest.TestCase):
         with self.assertRaises((ValueError, PointSetError)):
             Positions(xyz=xyz)
 
+    def test_rotations_invalid_quat_shape_raises(self):
+        """Test that invalid quaternion shape raises error."""
+        quat_invalid = np.random.rand(10, 3)  # Should be (N, 4)
+        with self.assertRaises(ValueError):
+            Rotations.from_quat(quat_invalid)
+
+    def test_rotations_mismatched_multiplication_raises(self):
+        """Test that multiplication of rotations with different lengths raises error."""
+        rot1 = Rotations.from_quat(np.tile([0, 0, 0, 1], (10, 1)))
+        rot2 = Rotations.from_quat(np.tile([0, 0, 0, 1], (5, 1)))
+        with self.assertRaises((ValueError, IndexError)):
+            _ = rot1 * rot2
+
 
 if __name__ == "__main__":
     unittest.main()

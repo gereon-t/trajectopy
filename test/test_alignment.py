@@ -18,7 +18,6 @@ from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 class TestAlignment(unittest.TestCase):
     def setUp(self) -> None:
-        # Ensure deterministic randomness across tests
         np.random.seed(0)
 
     def _alignment_test(

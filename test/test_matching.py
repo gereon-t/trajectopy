@@ -70,7 +70,7 @@ class TestMatching(unittest.TestCase):
 
     def test_match_trajectories_nearest_temporal_tight_threshold(self):
         """Test temporal matching with tight time threshold."""
-        settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=0.01)  # Very strict
+        settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=0.01)
 
         test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
@@ -198,6 +198,8 @@ class TestMatching(unittest.TestCase):
         # Should return trajectories but with no or very few matches
         self.assertIsNotNone(test_matched)
         self.assertIsNotNone(ref_matched)
+        # Both should have same length
+        self.assertEqual(len(test_matched), len(ref_matched))
         # With no overlap and strict threshold, should have 0 or 1 match at most
         self.assertLessEqual(
             len(test_matched), 1, "Non-overlapping trajectories with strict threshold should produce no matches"

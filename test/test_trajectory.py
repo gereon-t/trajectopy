@@ -135,3 +135,21 @@ class TestTrajectory(unittest.TestCase):
         self.check_trajectory_attribute(trajectory.se3, target_length=target_length, target_type=list)
         self.check_trajectory_attribute(trajectory.data_rate, target_length=0, target_type=float)
         self.check_trajectory_attribute(trajectory.total_length, target_length=0, target_type=float)
+
+    def test_empty_trajectory_operations(self) -> None:
+        """Test operations on minimal trajectory after cropping."""
+        trajectory = open_loop_trajectory.copy()
+        t_start = trajectory.timestamps[0]
+        t_end = trajectory.timestamps[0]
+        trajectory.crop(t_start=t_start, t_end=t_end, inplace=True)
+
+        # Cropping to same start and end timestamp keeps one point
+        self.assertLessEqual(len(trajectory), 1, "Cropping to single timestamp should result in 0 or 1 points")
+
+        if len(trajectory) == 0:
+            self.assertEqual(trajectory.total_length, 0.0)
+            # data_rate may be nan or inf for empty trajectory
+            self.assertTrue(np.isnan(trajectory.data_rate) or np.isinf(trajectory.data_rate))
+        else:
+            # Single point has zero length
+            self.assertEqual(trajectory.total_length, 0.0)

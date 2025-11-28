@@ -187,7 +187,7 @@ class TestMerging(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             average_trajectories([self.traj1, traj_short])
 
-        self.assertIn("same length", str(context.exception))
+        self.assertIn("same length", str(context.exception).lower(), "Error message should mention length mismatch")
 
     def test_average_trajectories_preserves_timestamps(self):
         """Test that averaging preserves timestamps from first trajectory."""

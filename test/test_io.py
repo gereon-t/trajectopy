@@ -2,8 +2,6 @@ import unittest
 from pathlib import Path
 from test.testdata import generated_trajectory
 
-import numpy as np
-
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.models.entries import (
     AbsoluteDeviationEntry,
@@ -29,6 +27,7 @@ class TestIO(unittest.TestCase):
     def test_trajectory_write_read_with_rotations(self):
         """Test writing and reading trajectory with rotation data."""
         import numpy as np
+
         from trajectopy.core.positions import Positions
         from trajectopy.core.rotations import Rotations
 
@@ -63,6 +62,7 @@ class TestIO(unittest.TestCase):
     def test_trajectory_write_read_without_rotations(self):
         """Test writing and reading trajectory without rotations."""
         import numpy as np
+
         from trajectopy.core.positions import Positions
 
         # Create trajectory without rotations
@@ -87,6 +87,7 @@ class TestIO(unittest.TestCase):
     def test_trajectory_write_read_different_epsg(self):
         """Test writing and reading trajectory with different EPSG codes."""
         import numpy as np
+
         from trajectopy.core.positions import Positions
 
         for epsg in [4326, 32632, 0]:

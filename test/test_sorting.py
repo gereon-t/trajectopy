@@ -87,7 +87,22 @@ class TestSorting(unittest.TestCase):
         # Path lengths should be valid numbers
         self.assertTrue(np.all(np.isfinite(result.path_lengths)))
 
-        # Path lengths should have meaningful range\n        self.assertGreater(np.max(result.path_lengths), 0)\n        self.assertGreaterEqual(np.min(result.path_lengths), 0)\n        \n        # Test that sorting actually improves spatial coherence\n        # Maximum jump distance should be smaller after sorting\n        sorted_dists = np.linalg.norm(np.diff(result.positions.xyz, axis=0), axis=1)\n        unsorted_dists = np.linalg.norm(np.diff(self.unsorted_trajectory.positions.xyz, axis=0), axis=1)\n        \n        # Maximum distance between adjacent points should be smaller after sorting\n        # (sorting reduces the largest jumps)\n        self.assertLess(np.max(sorted_dists), np.max(unsorted_dists),\n                       \"Sorting should reduce maximum jumps between adjacent points\")"}
+        # Path lengths should have meaningful range
+        self.assertGreater(np.max(result.path_lengths), 0)
+        self.assertGreaterEqual(np.min(result.path_lengths), 0)
+
+        # Test that sorting actually improves spatial coherence
+        # Maximum jump distance should be smaller or equal after sorting
+        sorted_dists = np.linalg.norm(np.diff(result.positions.xyz, axis=0), axis=1)
+        unsorted_dists = np.linalg.norm(np.diff(self.unsorted_trajectory.positions.xyz, axis=0), axis=1)
+
+        # Maximum distance between adjacent points should not increase after sorting
+        # (sorting reduces or maintains the largest jumps)
+        self.assertLessEqual(
+            np.max(sorted_dists),
+            np.max(unsorted_dists),
+            "Sorting should not increase maximum jumps between adjacent points",
+        )
 
     def test_sort_spatially_preserves_trajectory_properties(self):
         """Test that sorting preserves trajectory properties."""
