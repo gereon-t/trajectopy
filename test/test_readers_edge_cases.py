@@ -3,7 +3,11 @@ import unittest
 import numpy as np
 
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.readers.ascii import HeaderData, read_string, extract_trajectory_rotations
+from trajectopy.readers.ascii import (
+    HeaderData,
+    extract_trajectory_rotations,
+    read_string,
+)
 
 
 class TestReadersEdgeCases(unittest.TestCase):

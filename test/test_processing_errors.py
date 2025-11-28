@@ -1,14 +1,15 @@
 import unittest
+from test.testdata import open_loop_trajectory
+
 import numpy as np
 
-from trajectopy.processing.alignment import estimate_alignment
 from trajectopy.core.settings import (
     AlignmentEstimationSettings,
     AlignmentSettings,
     AlignmentStochastics,
     MatchingSettings,
 )
-from test.testdata import open_loop_trajectory
+from trajectopy.processing.alignment import estimate_alignment
 
 
 class TestProcessingErrors(unittest.TestCase):

@@ -1,13 +1,13 @@
 import unittest
+from test.testdata import open_loop_trajectory
 
 import numpy as np
 
-from trajectopy.core.trajectory import Trajectory
 from trajectopy.core.positions import Positions
-from trajectopy.processing.matching import match_trajectories
+from trajectopy.core.settings import MatchingMethod, MatchingSettings
+from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
-from trajectopy.core.settings import MatchingSettings, MatchingMethod
-from test.testdata import open_loop_trajectory
+from trajectopy.processing.matching import match_trajectories
 
 
 class TestProcessingEdgeCases(unittest.TestCase):

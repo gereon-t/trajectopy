@@ -18,3 +18,13 @@ repos:
     hooks:
       - id: uv-lock
       - id: uv-export
+
+  - repo: local
+    hooks:
+      - id: unittest
+        name: Run unit tests
+        entry: python -m unittest discover -s test -p "test_*.py"
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+        always_run: true
