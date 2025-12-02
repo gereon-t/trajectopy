@@ -119,9 +119,7 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
         lever_z,
     ) = _prepare_alignment_application(trajectory, alignment_result.position_parameters)
 
-    speed_3d = trajectory.velocity_xyz
-    speed_x, speed_y, speed_z = speed_3d[:, 0], speed_3d[:, 1], speed_3d[:, 2]
-
+    # do not use velocities for time shift application
     trafo_x, trafo_y, trafo_z = leverarm_time_component(
         euler_x=euler_x,
         euler_y=euler_y,
@@ -129,12 +127,18 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
         lever_x=lever_x,
         lever_y=lever_y,
         lever_z=lever_z,
-        time_shift=alignment_result.position_parameters.time_shift.value,
-        speed_x=speed_x,
-        speed_y=speed_y,
-        speed_z=speed_z,
+        time_shift=0,
+        speed_x=0,
+        speed_y=0,
+        speed_z=0,
     )
     trajectory.positions.xyz += np.c_[trafo_x, trafo_y, trafo_z]
+
+    # instead, apply time shift as a simple shift of the timestamps
+    trajectory.timestamps -= alignment_result.position_parameters.time_shift.value
+    logger.info(
+        f"Applied time shift of {alignment_result.position_parameters.time_shift.value*1000:.1f} ms to timestamps."
+    )
 
     # similiarity transformation
     trajectory.transform(alignment_result.position_parameters.sim3_matrix)

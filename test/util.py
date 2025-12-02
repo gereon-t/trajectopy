@@ -5,7 +5,7 @@ import numpy as np
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.alignment import apply_alignment
+from trajectopy.processing.lib.alignment.equations import leverarm_time_component
 from trajectopy.processing.lib.alignment.parameters import (
     AlignmentParameters,
     Parameter,
@@ -122,6 +122,83 @@ def generate_transformation(
     )
 
 
+def apply_alignment_using_velocities(
+    trajectory: Trajectory, alignment_result: AlignmentResult, inplace: bool = True
+) -> "Trajectory":
+    """Transforms trajectory using alignment parameters.
+
+    After computing the alignment parameters needed to align two trajectories, they can be
+    applied to arbitrary trajectories.
+
+    Args:
+        trajectory (Trajectory): Trajectory to apply alignment to.
+        alignment_result (AlignmentResult): Alignment result containing transformation parameters.
+        inplace (bool, optional): Perform in-place. Defaults to True.
+
+    Returns:
+        Trajectory: Aligned trajectory.
+    """
+
+    def _prepare_alignment_application(
+        trajectory: Trajectory, alignment_parameters: AlignmentParameters
+    ) -> Tuple[float, ...]:
+        if trajectory.rotations is not None:
+            rpy = trajectory.rotations.as_euler("xyz", degrees=False)
+            euler_x, euler_y, euler_z = rpy[:, 0], rpy[:, 1], rpy[:, 2]
+            lever_x, lever_y, lever_z = (
+                alignment_parameters.lever_x.value,
+                alignment_parameters.lever_y.value,
+                alignment_parameters.lever_z.value,
+            )
+        else:
+            euler_x, euler_y, euler_z = 0, 0, 0
+            lever_x, lever_y, lever_z = 0, 0, 0
+
+        return euler_x, euler_y, euler_z, lever_x, lever_y, lever_z
+
+    trajectory = trajectory if inplace else trajectory.copy()
+    has_orientations = trajectory.has_orientation
+
+    # leverarm and time
+    (
+        euler_x,
+        euler_y,
+        euler_z,
+        lever_x,
+        lever_y,
+        lever_z,
+    ) = _prepare_alignment_application(trajectory, alignment_result.position_parameters)
+
+    speed_3d = trajectory.velocity_xyz
+    speed_x, speed_y, speed_z = speed_3d[:, 0], speed_3d[:, 1], speed_3d[:, 2]
+
+    trafo_x, trafo_y, trafo_z = leverarm_time_component(
+        euler_x=euler_x,
+        euler_y=euler_y,
+        euler_z=euler_z,
+        lever_x=lever_x,
+        lever_y=lever_y,
+        lever_z=lever_z,
+        time_shift=alignment_result.position_parameters.time_shift.value,
+        speed_x=speed_x,
+        speed_y=speed_y,
+        speed_z=speed_z,
+    )
+    trajectory.positions.xyz += np.c_[trafo_x, trafo_y, trafo_z]
+
+    # similiarity transformation
+    trajectory.transform(alignment_result.position_parameters.sim3_matrix)
+
+    # sensor orientation
+    if trajectory.rotations is not None:
+        trajectory.rotations = alignment_result.rotation_parameters.rotation_set * trajectory.rotations
+
+    if not has_orientations:
+        trajectory.rotations = None
+
+    return trajectory
+
+
 def transform_randomly(
     trajectory: Trajectory,
     similarity_enabled: bool = True,
@@ -131,7 +208,13 @@ def transform_randomly(
     parameters = generate_transformation(
         similarity_enabled=similarity_enabled, time_shift_enabled=time_shift_enabled, lever_enabled=lever_enabled
     )
-    transformed = apply_alignment(
+
+    # for testing, apply the time shift using the velocities, because this
+    # matches the functional relationship of the alignment computation.
+    # In real applications, the time shift should be applied as a simple
+    # shift of the timestamps, because the velocities may not be known with
+    # sufficient accuracy.
+    transformed = apply_alignment_using_velocities(
         trajectory, alignment_result=AlignmentResult(position_parameters=parameters), inplace=False
     )
     return transformed, parameters
