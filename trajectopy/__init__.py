@@ -49,11 +49,24 @@ from trajectopy.__version__ import __version__
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
+    AlignmentEstimationSettings,
+    AlignmentPreprocessing,
     AlignmentSettings,
+    AlignmentStochastics,
+    ApproximationSettings,
+    ComparisonMethod,
+    ExportSettings,
+    InterpolationMethod,
+    MatchingMethod,
     MatchingSettings,
+    MPLPlotSettings,
+    PairDistanceUnit,
+    PlotBackend,
     ProcessingSettings,
+    RelativeComparisonSettings,
     ReportSettings,
     Settings,
+    SortingSettings,
 )
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.exceptions import (
@@ -91,8 +104,21 @@ __all__ = [
     "Settings",
     "ProcessingSettings",
     "AlignmentSettings",
+    "AlignmentEstimationSettings",
+    "AlignmentPreprocessing",
+    "AlignmentStochastics",
     "MatchingSettings",
     "ReportSettings",
+    "ApproximationSettings",
+    "RelativeComparisonSettings",
+    "MPLPlotSettings",
+    "SortingSettings",
+    "ExportSettings",
+    "PairDistanceUnit",
+    "ComparisonMethod",
+    "MatchingMethod",
+    "InterpolationMethod",
+    "PlotBackend",
     # Results
     "ATEResult",
     "RPEResult",

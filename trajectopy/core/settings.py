@@ -636,10 +636,10 @@ class ComparisonMethod(Enum):
         Returns:
             ComparisonMethod: Parsed comparison method
         """
-        return comparison_method_from_string(string)
+        return _comparison_method_from_string(string)
 
 
-def comparison_method_from_string(string: str) -> ComparisonMethod:
+def _comparison_method_from_string(string: str) -> ComparisonMethod:
     """Converts string to ComparisonMethod.
 
     Args:
