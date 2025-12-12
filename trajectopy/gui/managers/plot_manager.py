@@ -91,7 +91,8 @@ class PlotManager(QObject):
             )
             show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
         elif self.plot_backend == PlotBackend.MPL:
-            plot_tabs = PlotTabs(parent=self.parent())
+            name = "Trajectopy Viewer" if len(trajectory_list) > 1 else trajectory_list[0].name
+            plot_tabs = PlotTabs(parent=self.parent(), window_title=name)
             plot_tabs.show_trajectories(trajectory_list, mpl_plot_settings=request.mpl_plot_settings)
 
     def plot_single_deviations(self, request: PlotRequest) -> None:
@@ -108,6 +109,8 @@ class PlotManager(QObject):
 
         ate_result = ate_results[0] if ate_results else None
         rpe_result = rpe_results[0] if rpe_results else None
+
+        name = ate_result.name if ate_result else rpe_result.name
 
         if ate_result:
             ate_result.remove_ate_above(
@@ -127,7 +130,7 @@ class PlotManager(QObject):
                 filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name),
             )
         elif self.plot_backend == PlotBackend.MPL:
-            plot_tabs = PlotTabs(parent=self.parent())
+            plot_tabs = PlotTabs(parent=self.parent(), window_title=name)
             plot_tabs.show_single_deviations(
                 ate_result=ate_result, rpe_result=rpe_result, mpl_plot_settings=request.mpl_plot_settings
             )

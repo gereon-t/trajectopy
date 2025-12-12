@@ -19,6 +19,7 @@ Key Components
     - interpolate: Temporal interpolation of trajectories
     - merge_trajectories, average_trajectories: Combine multiple trajectories
     - sort_spatially: Spatial sorting of trajectory poses
+    - approximate_cubic: Cubic approximation of trajectory data
 
 **Result Classes:**
     - ATEResult: Absolute Trajectory Error results
@@ -65,6 +66,7 @@ from trajectopy.exceptions import (
     TrajectoryError,
 )
 from trajectopy.processing.alignment import align, apply_alignment, estimate_alignment
+from trajectopy.processing.approximation import approximate_cubic
 from trajectopy.processing.evaluation import ate, rpe
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.lib.alignment.parameters import (
@@ -103,6 +105,7 @@ __all__ = [
     "estimate_alignment",
     "apply_alignment",
     "align",
+    "approximate_cubic",
     "ate",
     "rpe",
     "interpolate",
