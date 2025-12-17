@@ -4,7 +4,6 @@ import os
 import sys
 import uuid
 import webbrowser
-from typing import List, Optional, Union
 
 import jinja2
 import numpy as np

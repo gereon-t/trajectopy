@@ -2,7 +2,6 @@ import logging
 import threading
 from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 

@@ -3,7 +3,7 @@ import json
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 

@@ -2,7 +2,6 @@ import itertools
 import logging
 from dataclasses import dataclass, field
 from functools import cached_property
-from typing import List, Tuple
 
 import numpy as np
 import pandas as pd

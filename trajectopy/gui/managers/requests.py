@@ -2,7 +2,7 @@ import copy
 import logging
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, List, Protocol
+from typing import Any, Protocol
 
 from PyQt6.QtCore import pyqtSignal
 

@@ -3,7 +3,6 @@ import os
 import shutil
 from collections.abc import Callable
 from tempfile import mkdtemp
-from typing import Dict, Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot

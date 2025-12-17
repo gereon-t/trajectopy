@@ -1,7 +1,6 @@
 import logging
 import os
 from collections.abc import Callable
-from typing import Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 

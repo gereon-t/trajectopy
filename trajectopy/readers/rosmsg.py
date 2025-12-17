@@ -5,7 +5,7 @@ Gereon Tombrink, 2025
 tombrink@igg.uni-bonn.de
 """
 
-from typing import Any, Dict, Protocol
+from typing import Any, Protocol
 
 
 class Stamp(Protocol):

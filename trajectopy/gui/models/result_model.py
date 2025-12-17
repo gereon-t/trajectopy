@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import List
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QInputDialog

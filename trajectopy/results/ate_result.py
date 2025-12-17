@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd

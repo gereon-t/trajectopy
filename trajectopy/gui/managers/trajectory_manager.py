@@ -3,7 +3,7 @@ import logging
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot

@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple, Union
 
 import numpy as np
 from scipy.sparse import spdiags

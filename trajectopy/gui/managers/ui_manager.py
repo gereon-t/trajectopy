@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot

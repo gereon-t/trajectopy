@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional, Union
 
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal

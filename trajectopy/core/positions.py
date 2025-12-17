@@ -1,5 +1,4 @@
 import copy
-from typing import Union
 
 import numpy as np
 from pyproj import CRS, Transformer

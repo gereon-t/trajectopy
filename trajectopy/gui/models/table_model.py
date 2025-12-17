@@ -2,7 +2,7 @@ import copy
 import logging
 from collections.abc import Callable
 from enum import Enum
-from typing import Dict, Generic, List, TypeVar, Union
+from typing import Generic, TypeVar
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant, pyqtSignal, pyqtSlot
 

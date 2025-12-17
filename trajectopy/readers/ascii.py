@@ -3,7 +3,6 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from io import StringIO
-from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd

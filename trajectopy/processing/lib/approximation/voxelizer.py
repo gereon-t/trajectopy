@@ -7,7 +7,6 @@ tombrink@igg.uni-bonn.de
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Dict, FrozenSet, List
 
 import numpy as np
 from scipy.spatial import KDTree

@@ -1,5 +1,3 @@
-from typing import Dict
-
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QGuiApplication
 

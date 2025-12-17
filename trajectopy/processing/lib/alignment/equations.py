@@ -1,5 +1,3 @@
-from typing import Tuple, Union
-
 import autograd.numpy as np
 
 

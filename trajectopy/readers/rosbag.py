@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Protocol
+from typing import Any, Protocol
 
 import numpy as np
 from rosbags.highlevel import AnyReader

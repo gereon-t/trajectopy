@@ -7,7 +7,6 @@ mail@gtombrink.de
 
 import logging
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas

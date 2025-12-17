@@ -3,7 +3,6 @@ import io
 import logging
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from typing import List, Union
 
 import numpy as np
 import pandas as pd

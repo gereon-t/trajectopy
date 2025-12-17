@@ -1,6 +1,5 @@
 import copy
 import logging
-from typing import Tuple
 
 import numpy as np
 from scipy.spatial import KDTree

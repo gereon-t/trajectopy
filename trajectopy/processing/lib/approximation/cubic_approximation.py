@@ -7,7 +7,6 @@ tombrink@igg.uni-bonn.de
 
 import logging
 from dataclasses import dataclass, field
-from typing import List, Tuple, Union
 
 import numpy as np
 from scipy.sparse import csr_matrix, lil_matrix

@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum, auto
-from typing import Dict, Tuple
 
 import matplotlib.dates as mdates
 import numpy as np

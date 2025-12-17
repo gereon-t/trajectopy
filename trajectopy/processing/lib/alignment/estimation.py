@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 import numpy as np
 from numpy import matlib

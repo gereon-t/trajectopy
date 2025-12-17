@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 import sys
-from typing import List, Tuple, Union
 
 import numpy as np
 from scipy.linalg import solve
