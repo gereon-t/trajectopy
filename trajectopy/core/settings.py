@@ -1,3 +1,4 @@
+import inspect
 import json
 from abc import ABC
 from dataclasses import dataclass, field
@@ -122,7 +123,8 @@ class Settings(ABC):
         Raises:
             ValueError: If required attribute is missing from dictionary
         """
-        for attribute_name, attribute_type in self.__annotations__.items():
+        annotations = inspect.get_annotations(type(self))
+        for attribute_name, attribute_type in annotations.items():
             if attribute_name not in dct:
                 raise ValueError(f"Attribute {attribute_name} not found in input data")
 

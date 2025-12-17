@@ -13,7 +13,7 @@ include = [
 
 [project]
 name = "trajectopy"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 description = "Trajectory Evaluation in Python"
 authors = [
   {name = "Gereon Tombrink", email = "tombrink@igg.uni-bonn.de"}
@@ -27,7 +27,6 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

@@ -8,16 +8,15 @@ from PyQt6 import QtGui
 from PyQt6.QtWidgets import QApplication
 from rich.logging import RichHandler
 
-from trajectopy.__version__ import __version__ as VERSION
-from trajectopy.gui.views.main_window import TrajectopyGUI
-from trajectopy.utils.common import ICON_BG_FILE_PATH
-
 logging.basicConfig(
     format="%(message)s",
     level=logging.INFO,
     handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
 )
 
+from trajectopy.__version__ import __version__ as VERSION
+from trajectopy.gui.views.main_window import TrajectopyGUI
+from trajectopy.utils.common import ICON_BG_FILE_PATH
 
 if os.name == "nt":
     myappid = f"gereont.trajectopy.main.{VERSION}"

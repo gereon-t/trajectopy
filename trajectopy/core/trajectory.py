@@ -129,7 +129,12 @@ class Trajectory:
 
     @classmethod
     def from_arrays(
-        cls, xyz: np.ndarray, quat: np.ndarray | None = None, rpy: np.ndarray | None = None, epsg: int = 0, **kwargs
+        cls,
+        xyz: np.ndarray,
+        quat: Union[np.ndarray, None] = None,
+        rpy: Union[np.ndarray, None] = None,
+        epsg: int = 0,
+        **kwargs,
     ) -> "Trajectory":
         """Factory: Handles creation from raw numpy arrays."""
 
