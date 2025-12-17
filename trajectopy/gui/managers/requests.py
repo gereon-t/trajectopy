@@ -127,10 +127,10 @@ class DeepCopyRequest:
 @dataclass
 class FileRequest(DeepCopyRequest):
     type: FileRequestType
-    file_list: List[str] = field(default_factory=list)
+    file_list: list[str] = field(default_factory=list)
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
-    id_list: List[str] = field(default_factory=list)
+    id_list: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -155,7 +155,7 @@ class ResultModelRequest:
     selection: ResultSelection = field(default_factory=ResultSelection)
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
-    index_list: List[str] = field(default_factory=list)
+    index_list: list[str] = field(default_factory=list)
     file_path: str = ""
 
 
@@ -175,7 +175,7 @@ class PlotSettingsRequest:
 class TrajectoryModelRequest:
     type: TrajectoryModelRequestType
     selection: TrajectorySelection = field(default_factory=TrajectorySelection)
-    index_list: List[str] = field(default_factory=list)
+    index_list: list[str] = field(default_factory=list)
     file_path: str = ""
 
 

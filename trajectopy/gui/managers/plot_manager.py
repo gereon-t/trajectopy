@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Callable, Dict, List
+from collections.abc import Callable
+from typing import Dict, List
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -56,7 +57,7 @@ class PlotManager(QObject):
         self.cnt = 0
         self.plot_backend = plot_backend
         super().__init__(parent)
-        self.REQUEST_MAPPING: Dict[PlotRequestType, Callable[[PlotRequest], None]] = {
+        self.REQUEST_MAPPING: dict[PlotRequestType, Callable[[PlotRequest], None]] = {
             PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
             PlotRequestType.SINGLE_DEVIATIONS: self.plot_single_deviations,
             PlotRequestType.MULTI_DEVIATIONS: self.plot_multi_deviations,
@@ -184,11 +185,11 @@ class PlotManager(QObject):
             plot_tabs.show_alignment_parameters(entry.estimated_parameters)
 
 
-def get_ate_results(entries: List[ResultEntry]) -> List[ATEResult]:
+def get_ate_results(entries: list[ResultEntry]) -> list[ATEResult]:
     """Return a list of ate results."""
     return [entry.deviations for entry in entries if isinstance(entry, AbsoluteDeviationEntry)]
 
 
-def get_rpe_results(entries: List[ResultEntry]) -> List[RPEResult]:
+def get_rpe_results(entries: list[ResultEntry]) -> list[RPEResult]:
     """Return a list of rpe results."""
     return [entry.deviations for entry in entries if isinstance(entry, RelativeDeviationEntry)]

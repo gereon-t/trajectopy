@@ -24,7 +24,7 @@ class ResultTableModel(RequestTableModel):
     """Class representing the result table model."""
 
     file_request = pyqtSignal(FileRequest)
-    items: List[ResultEntry]
+    items: list[ResultEntry]
     request: ResultModelRequest
 
     def __init__(self):
@@ -77,7 +77,7 @@ class ResultTableModel(RequestTableModel):
         self.layoutChanged.emit()
 
     @property
-    def alignment_entries(self) -> List[AlignmentEntry]:
+    def alignment_entries(self) -> list[AlignmentEntry]:
         return [entry for entry in self.items if isinstance(entry, AlignmentEntry)]
 
     def pass_alignments_to_ui(self) -> None:

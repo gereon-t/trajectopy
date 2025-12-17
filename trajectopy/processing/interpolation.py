@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def interpolate(
     trajectory: Trajectory,
-    timestamps: Union[list, np.ndarray],
+    timestamps: list | np.ndarray,
     method: InterpolationMethod = InterpolationMethod.LINEAR,
     inplace: bool = True,
 ) -> "Trajectory":
@@ -35,9 +35,7 @@ def interpolate(
         raise ValueError(f"Interpolation method '{method}' is not supported.")
 
 
-def _interpolate_linear(
-    trajectory: Trajectory, timestamps: Union[list, np.ndarray], inplace: bool = True
-) -> "Trajectory":
+def _interpolate_linear(trajectory: Trajectory, timestamps: list | np.ndarray, inplace: bool = True) -> "Trajectory":
     """Interpolates a trajectory to specified timestamps.
 
     This method removes timestamps from tstamps if they lie outside of the timestamp range
@@ -71,7 +69,7 @@ def _interpolate_linear(
 
 
 def _interpolate_rotations_linear(
-    trajectory: Trajectory, timestamps: Union[list, np.ndarray], inplace: bool = True
+    trajectory: Trajectory, timestamps: list | np.ndarray, inplace: bool = True
 ) -> "Trajectory":
     """Performs rotation interpolation of a trajectory using Spherical-Linear-Interpolation (SLERP).
 

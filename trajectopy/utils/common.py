@@ -31,7 +31,7 @@ ICON_BG_FILE_PATH = resource_path("gui/resources/icon-bg.png")
 YEAR = str(datetime.datetime.now().year)
 
 
-def rms(x: Union[np.ndarray, float]) -> float:
+def rms(x: np.ndarray | float) -> float:
     """
     Calculates the root mean square of an array.
 
@@ -44,7 +44,7 @@ def rms(x: Union[np.ndarray, float]) -> float:
     return np.sqrt(np.mean(np.square(x)))
 
 
-def nearest_point(*, p: np.ndarray, line_pts: list) -> Tuple[np.ndarray, float]:
+def nearest_point(*, p: np.ndarray, line_pts: list) -> tuple[np.ndarray, float]:
     """
     Finds the nearest point on a 3D line to a given point.
 
@@ -254,7 +254,7 @@ def list2box(
     return table_str
 
 
-def common_time_span(tstamps1: np.ndarray, tstamps2: np.ndarray) -> Union[Tuple[float, float], None]:
+def common_time_span(tstamps1: np.ndarray, tstamps2: np.ndarray) -> tuple[float, float] | None:
     """
     Computes the common time span between two arrays of timestamps.
 
@@ -305,7 +305,7 @@ def rndodd(s: float) -> int:
 
 def round_to_precision(
     index: np.ndarray, data: np.ndarray, resolution: float, filter_size: int = 100
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Reduces the amount of deviations using smoothing and rounding
 
@@ -353,7 +353,7 @@ def fit_line_3d(xyz: np.ndarray) -> np.ndarray:
 
 def fit_line_2d(
     x: np.ndarray, y: np.ndarray, weights: np.ndarray = np.array([])
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fits a 2D line using least-squares
 
@@ -381,7 +381,7 @@ def fit_line_2d(
 
 def sparse_least_squares(
     design_matrix: csr_matrix, observations: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Solves a least squares problem with a sparse matrix A and a dense vector l.
 
@@ -408,7 +408,7 @@ def least_squares(
     design_matrix: np.ndarray,
     observations: np.ndarray,
     sigma_ll: np.ndarray = np.array([]),
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Solves a least squares problem with a dense matrix A and a dense vector l.
 
@@ -493,7 +493,7 @@ def shrink_data(data: np.ndarray, max_size: int = 1000) -> np.ndarray:
     return np.nanmean(reshaped_data, 1)
 
 
-def get_sorting(sort_by_list: List[str]) -> TrajectoriesSorting:
+def get_sorting(sort_by_list: list[str]) -> TrajectoriesSorting:
     if all(sorting == Sorting.PATH_LENGTH for sorting in sort_by_list):
         return TrajectoriesSorting.ALL_SPATIAL
 
@@ -515,7 +515,7 @@ def derive_xlabel_from_sortings(trajectories_sorting: TrajectoriesSorting, all_u
     return "time [s] / trajectory length [m]"
 
 
-def get_axis_label(trajectories: List) -> Tuple[str, str, str]:
+def get_axis_label(trajectories: list) -> tuple[str, str, str]:
     """Returns the unit of the axis"""
     if all(traj.positions.epsg == 0 for traj in trajectories):
         return "x [m]", "y [m]", "z [m]"

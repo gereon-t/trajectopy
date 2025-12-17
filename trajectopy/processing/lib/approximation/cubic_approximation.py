@@ -18,7 +18,7 @@ from trajectopy.utils.common import sparse_least_squares
 logger = logging.getLogger(__name__)
 
 
-def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, float, float, float]:
+def _compute_c(relative_length: float, interval_length: float) -> tuple[float, float, float, float]:
     """
     Helper function to compute the coefficients for cubic approximation
     """
@@ -36,7 +36,7 @@ def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, f
 class Interval:
     start: float
     end: float
-    values: List[float] = field(default_factory=list)
+    values: list[float] = field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self.values)
@@ -46,7 +46,7 @@ class Interval:
         return self.end - self.start
 
     @property
-    def coefficients(self) -> List[np.ndarray]:
+    def coefficients(self) -> list[np.ndarray]:
         return [np.array(_compute_c(v - self.start, self.end - self.start)) for v in self.values]
 
 
@@ -70,10 +70,10 @@ class CubicApproximation:
         self.min_obs = max(3, min_obs)
 
         # fit results
-        self.parameters: Union[np.ndarray, None] = None
-        self.est_obs: Union[np.ndarray, None] = None
-        self.residuals: Union[np.ndarray, None] = None
-        self.interval_steps: Union[np.ndarray, None] = None
+        self.parameters: np.ndarray | None = None
+        self.est_obs: np.ndarray | None = None
+        self.residuals: np.ndarray | None = None
+        self.interval_steps: np.ndarray | None = None
 
         # compute approximation
         self._cubic_approx()
@@ -162,7 +162,7 @@ class CubicApproximation:
         self.interval_steps = t_final + self.index[0]
 
     @staticmethod
-    def _compute_c(relative_length: float, interval_length: float) -> Tuple[float, float, float, float]:
+    def _compute_c(relative_length: float, interval_length: float) -> tuple[float, float, float, float]:
         """
         Helper function to compute the coefficients for cubic approximation
         """
@@ -175,7 +175,7 @@ class CubicApproximation:
 
         return c0, c1, c2, c3
 
-    def _design_matrix(self, intervals: List[Interval]) -> lil_matrix:
+    def _design_matrix(self, intervals: list[Interval]) -> lil_matrix:
         rows = len(self.index)
         columns = 2 * len(intervals) + 2
 

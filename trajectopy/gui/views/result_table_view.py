@@ -39,7 +39,7 @@ class ResultTableView(QtWidgets.QTableView):
     def __init__(
         self,
         result_table_model: ResultTableModel,
-        parent: Optional[QtWidgets.QWidget],
+        parent: QtWidgets.QWidget | None,
     ) -> None:
         QtWidgets.QTableView.__init__(self, parent)
 
@@ -73,7 +73,7 @@ class ResultTableView(QtWidgets.QTableView):
         return ResultSelection(entries=self.selected_entries)
 
     @property
-    def selected_entries(self) -> List[ResultEntry]:
+    def selected_entries(self) -> list[ResultEntry]:
         if (selection_model := self.selectionModel()) is None:
             return []
 
@@ -82,7 +82,7 @@ class ResultTableView(QtWidgets.QTableView):
             for row_index in [row.row() for row in selection_model.selectedRows()]
         ]
 
-    def dragEnterEvent(self, event: Union[QtGui.QDragEnterEvent, None]):
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent | None):
         """Drag enter event handler."""
         if event is None:
             return
@@ -95,7 +95,7 @@ class ResultTableView(QtWidgets.QTableView):
         else:
             event.ignore()
 
-    def dragMoveEvent(self, event: Union[QtGui.QDragMoveEvent, None]):
+    def dragMoveEvent(self, event: QtGui.QDragMoveEvent | None):
         """Drag move event handler."""
         if event is None:
             return
@@ -109,7 +109,7 @@ class ResultTableView(QtWidgets.QTableView):
         else:
             event.ignore()
 
-    def dropEvent(self, event: Union[QtGui.QDropEvent, None]):
+    def dropEvent(self, event: QtGui.QDropEvent | None):
         """Drop event handler."""
         if event is None:
             return
@@ -125,7 +125,7 @@ class ResultTableView(QtWidgets.QTableView):
         else:
             event.ignore()
 
-    def keyPressEvent(self, e: Union[QtGui.QKeyEvent, None]) -> None:
+    def keyPressEvent(self, e: QtGui.QKeyEvent | None) -> None:
         """Key press event handler."""
         if e is None:
             return

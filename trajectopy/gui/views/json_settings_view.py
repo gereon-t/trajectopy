@@ -118,7 +118,7 @@ class JSONViewer(QtWidgets.QMainWindow):
     def load_json_file(self, filename):
         self.remove_items()
         try:
-            with open(filename, "r", encoding="utf-8") as file:
+            with open(filename, encoding="utf-8") as file:
                 json_content = file.read()
                 self.populate_form("root", json.loads(json_content))
         except Exception as e:
@@ -157,12 +157,12 @@ class JSONViewer(QtWidgets.QMainWindow):
     def populate_json(self) -> str:
         """Populate the JSON with the values from the form."""
 
-        def init_dict(json_dict: Dict[str, Any], keys: List[str]) -> None:
+        def init_dict(json_dict: dict[str, Any], keys: list[str]) -> None:
             local_reference = json_dict
             for key in keys:
                 local_reference = local_reference.setdefault(key, {})
 
-        def setval(json_dict: Dict[str, Any], keys: List[str], val: Any) -> None:
+        def setval(json_dict: dict[str, Any], keys: list[str], val: Any) -> None:
             local_reference = json_dict
 
             lastkey = keys[-1]
@@ -199,7 +199,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
         return json.dumps(json_content, indent=4)
 
-    def populate_form(self, parent_name: str, json_content: Dict[str, Any]):
+    def populate_form(self, parent_name: str, json_content: dict[str, Any]):
         def format_key(key: str) -> str:
             key_words = key.split("_")
             formatted_words = []

@@ -1,4 +1,4 @@
-from typing import Callable
+from collections.abc import Callable
 
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad

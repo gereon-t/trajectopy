@@ -184,7 +184,7 @@ class AlignmentEstimator:
         return self._est_params
 
     @property
-    def group_redundancies(self) -> Dict[str, bool]:
+    def group_redundancies(self) -> dict[str, bool]:
         return self._group_redundancies
 
     @property

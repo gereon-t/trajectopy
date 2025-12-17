@@ -23,7 +23,7 @@ class TrajectoryTableModel(RequestTableModel):
     """Class representing the trajectory table model."""
 
     file_request = pyqtSignal(FileRequest)
-    items: List[TrajectoryEntry]
+    items: list[TrajectoryEntry]
     request: TrajectoryModelRequest
 
     def __init__(self):
@@ -83,7 +83,7 @@ class TrajectoryTableModel(RequestTableModel):
         )
 
     @property
-    def reference_entry(self) -> Union[TrajectoryEntry, None]:
+    def reference_entry(self) -> TrajectoryEntry | None:
         return next((item for item in self.items if item.set_as_reference), None)
 
     def rename_trajectories(self) -> None:

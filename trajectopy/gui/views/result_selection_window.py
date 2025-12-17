@@ -9,7 +9,7 @@ from trajectopy.gui.models.entries import AlignmentEntry
 class AlignmentSelector(QtWidgets.QMainWindow):
     selection_made = QtCore.pyqtSignal(AlignmentEntry)
 
-    def __init__(self, alignments: List[AlignmentEntry], parent=None) -> None:
+    def __init__(self, alignments: list[AlignmentEntry], parent=None) -> None:
         super().__init__(parent=parent)
         self.setupUi()
         self.alignments = alignments
@@ -99,6 +99,6 @@ class AlignmentSelector(QtWidgets.QMainWindow):
         self.selection_made.emit(self.alignments[self.comboBox.currentIndex()])
         self.close()
 
-    def set_options(self, options: List[str]) -> None:
+    def set_options(self, options: list[str]) -> None:
         self.comboBox.clear()
         self.comboBox.addItems(options)

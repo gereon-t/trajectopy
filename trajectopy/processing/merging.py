@@ -10,7 +10,7 @@ from trajectopy.core.trajectory import Trajectory
 logger = logging.getLogger(__name__)
 
 
-def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
+def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     """Merges a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and merges the trajectories based on their timestamps.
@@ -52,7 +52,7 @@ def merge_trajectories(trajectories: List[Trajectory]) -> Trajectory:
     return merged
 
 
-def average_trajectories(trajectories: List[Trajectory]) -> Trajectory:
+def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     """Averages a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and averages trajectories.

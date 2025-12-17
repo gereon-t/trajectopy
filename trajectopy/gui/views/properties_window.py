@@ -95,7 +95,7 @@ class PropertiesGUI(QtWidgets.QMainWindow):
         self.property_table_model.items.append(entry)
         self.refresh()
 
-    def add_from_dict(self, input_dict: Dict[str, str]) -> None:
+    def add_from_dict(self, input_dict: dict[str, str]) -> None:
         for key, values in input_dict.items():
             self.property_table_model.items.append(PropertyEntry(name=key, values=tuple(values)))
         self.refresh()

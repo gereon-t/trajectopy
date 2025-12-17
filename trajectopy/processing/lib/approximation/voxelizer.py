@@ -61,7 +61,7 @@ class Voxelizer:
         self.voxels = self._create_voxels(xyz, voxel_size)
         self.kd_tree = KDTree(self.mean_points)
 
-    def _create_voxels(self, xyz: np.ndarray, voxel_size: float) -> Dict[str, Voxel]:
+    def _create_voxels(self, xyz: np.ndarray, voxel_size: float) -> dict[str, Voxel]:
         """Divides points into voxels of size voxel_size
 
         Args:
@@ -79,7 +79,7 @@ class Voxelizer:
         y_bin_ids = np.searchsorted(grid_y, xyz[:, 1])
         z_bin_ids = np.searchsorted(grid_z, xyz[:, 2])
 
-        voxels: Dict[str, Voxel] = {}
+        voxels: dict[str, Voxel] = {}
         for i, (x_id, y_id, z_id) in enumerate(zip(x_bin_ids, y_bin_ids, z_bin_ids)):
             voxel_id = f"{x_id}{y_id}{z_id}"
             if voxel_id not in voxels:
@@ -93,13 +93,13 @@ class Voxelizer:
         return np.array([voxel.mean_point for _, voxel in self.voxels.items()])
 
     @cached_property
-    def voxel_ids(self) -> List[str]:
+    def voxel_ids(self) -> list[str]:
         return [voxel.id for _, voxel in self.voxels.items()]
 
     def index_to_id(self, index: int) -> str:
         return self.voxel_ids[index]
 
-    def ball_query(self, xyz: np.ndarray, r: float) -> List[FrozenSet[str]]:
+    def ball_query(self, xyz: np.ndarray, r: float) -> list[frozenset[str]]:
         """Performs a kd-ball-query within the voxels
 
         Returns a list of frozensets containing the
@@ -115,7 +115,7 @@ class Voxelizer:
         neighbor_voxels = self.kd_tree.query_ball_point(xyz, r=r)
         return [frozenset(self.index_to_id(index) for index in voxel_list) for voxel_list in neighbor_voxels]
 
-    def k_nearest_query(self, xyz: np.ndarray, k_nearest: int) -> List[FrozenSet[str]]:
+    def k_nearest_query(self, xyz: np.ndarray, k_nearest: int) -> list[frozenset[str]]:
         """Performs a k-nearest-query within the voxels
 
         Returns a list of frozensets containing the
@@ -131,7 +131,7 @@ class Voxelizer:
         _, neighbor_voxels = self.kd_tree.query(xyz, k=k_nearest)
         return [frozenset(self.index_to_id(index) for index in voxel_list) for voxel_list in neighbor_voxels]
 
-    def points_from_voxel_set(self, voxel_set: FrozenSet[str]) -> np.ndarray:
+    def points_from_voxel_set(self, voxel_set: frozenset[str]) -> np.ndarray:
         return (
             np.row_stack([self.voxels[voxel].points for voxel in voxel_set])
             if voxel_set

@@ -69,7 +69,7 @@ class Unit(Enum):
 
 
 # [multiply with , unit string, number of decimals]
-UNIT_FORMAT_RULES: Dict[Unit, Dict[str, Tuple[float, str, int]]] = {
+UNIT_FORMAT_RULES: dict[Unit, dict[str, tuple[float, str, int]]] = {
     Unit.METER: {"normal": (1, "m", 3), "precise": (1000, "mm", 1)},
     Unit.RADIAN: {"normal": (180 / np.pi, "°", 3)},
     Unit.DEGREE: {"normal": (1, "°", 3)},

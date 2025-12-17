@@ -79,9 +79,9 @@ def direct_leverarm(
     xyz_to: np.ndarray,
     xyz_from: np.ndarray,
     rpy_body: np.ndarray,
-    weights: Union[np.ndarray, None] = None,
-    speed: Union[np.ndarray, None] = None,
-) -> Tuple[Leverarm, Parameter, np.ndarray]:
+    weights: np.ndarray | None = None,
+    speed: np.ndarray | None = None,
+) -> tuple[Leverarm, Parameter, np.ndarray]:
     """Leverarm (+time) estimation
 
     Estimates the leverarm and the time offset
@@ -155,7 +155,7 @@ def direct_leverarm(
     )
 
 
-def _leverarm_design_matrix(rpy: np.ndarray, speed: Union[np.ndarray, None] = None) -> np.ndarray:
+def _leverarm_design_matrix(rpy: np.ndarray, speed: np.ndarray | None = None) -> np.ndarray:
     """Builds design matrix for leverarm (+ time) estimation
 
     Contains the derivation of the observation equations with respect
@@ -208,7 +208,7 @@ def direct_timeshift(
     xyz_from: np.ndarray,
     speed: np.ndarray,
     weights: np.ndarray = np.zeros(0),
-) -> Tuple[Parameter, np.ndarray]:
+) -> tuple[Parameter, np.ndarray]:
     """Time shift estimation
 
     Estimates the time offset between two trajectories using a gauß-markov model.

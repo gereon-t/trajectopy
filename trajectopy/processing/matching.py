@@ -57,7 +57,7 @@ def match_trajectories(
     other: Trajectory,
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
     inplace: bool = True,
-) -> Tuple[Trajectory, Trajectory]:
+) -> tuple[Trajectory, Trajectory]:
     """Matches two trajectories using the specified method.
 
     Supported methods:
@@ -127,7 +127,7 @@ def match_trajectories(
 
 def _match_trajectories_interpolation(
     trajectory: Trajectory, other: Trajectory, max_gap_size: float = 10.0
-) -> Tuple[Trajectory, Trajectory]:
+) -> tuple[Trajectory, Trajectory]:
     """Ensures that both trajectories are sampled in the same way.
 
     This method will intersect both trajectories with each other and then approximate
@@ -164,7 +164,7 @@ def _match_trajectories_interpolation(
 
 def _match_trajectories_temporal(
     trajectory: Trajectory, other: Trajectory, max_distance: float = 0.01
-) -> Tuple[Trajectory, Trajectory]:
+) -> tuple[Trajectory, Trajectory]:
     """Matches both trajectories temporally.
 
     After this operation, both trajectories will have the length of the test trajectory.
@@ -188,7 +188,7 @@ def _match_trajectories_temporal(
 
 def _match_trajectories_spatial(
     trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0
-) -> Tuple[Trajectory, Trajectory]:
+) -> tuple[Trajectory, Trajectory]:
     """Matches both trajectories spatially.
 
     After this operation, both trajectories will have the length of the test trajectory.
@@ -234,7 +234,7 @@ def _determine_mean_arc_length(arc_lengths: np.ndarray) -> float:
 
 def _match_trajectories_spatial_interpolation(
     trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0, k_nearest: int = 10
-) -> Tuple[Trajectory, Trajectory]:
+) -> tuple[Trajectory, Trajectory]:
     """This method matches both trajectories spatially by requesting
     the nearest two poses from the reference trajectory for each pose in the
     test trajectory. Then, an interpolation is performed between the two
@@ -316,7 +316,7 @@ def _match_trajectories_spatial_interpolation(
     return trajectory, other
 
 
-def _kd_matcher(ref: np.ndarray, test: np.ndarray, max_distance: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
+def _kd_matcher(ref: np.ndarray, test: np.ndarray, max_distance: float = 0.0) -> tuple[np.ndarray, np.ndarray]:
     """Matches data using a KDTree.
 
     Args:

@@ -1,8 +1,9 @@
 import copy
 import logging
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -44,7 +45,7 @@ logger = logging.getLogger(__name__)
 class TrajectoryEntryPair:
     entry: TrajectoryEntry
     request: TrajectoryManagerRequest
-    reference_entry: Union[TrajectoryEntry, None] = None
+    reference_entry: TrajectoryEntry | None = None
 
     def __post_init__(self) -> None:
         if self.request.type in [
@@ -99,7 +100,7 @@ class TrajectoryManager(QObject):
         """
         super().__init__()
         self.request: TrajectoryManagerRequest
-        self.REQUEST_MAPPING: Dict[TrajectoryManagerRequestType, Any] = {
+        self.REQUEST_MAPPING: dict[TrajectoryManagerRequestType, Any] = {
             TrajectoryManagerRequestType.EDIT_EPSG: lambda: self.handle_trajectory_operation(
                 operation=self.operation_epsg_edit,
                 inplace=True,
@@ -170,7 +171,7 @@ class TrajectoryManager(QObject):
             ),
         }
 
-    def selected_trajectory_entries(self, return_reference: bool = True) -> List[TrajectoryEntry]:
+    def selected_trajectory_entries(self, return_reference: bool = True) -> list[TrajectoryEntry]:
         """
         Returns a list of selected trajectory entries.
 
@@ -183,7 +184,7 @@ class TrajectoryManager(QObject):
         return [entry for entry in self.request.selection.entries if return_reference or not entry.set_as_reference]
 
     @property
-    def reference_entry(self) -> Union[TrajectoryEntry, None]:
+    def reference_entry(self) -> TrajectoryEntry | None:
         """
         Returns the reference trajectory entry of the current trajectory manager request.
 
@@ -263,7 +264,7 @@ class TrajectoryManager(QObject):
 
     def handle_trajectory_operation(
         self,
-        operation: Callable[[TrajectoryEntryPair], Union[tuple, None]],
+        operation: Callable[[TrajectoryEntryPair], tuple | None],
         inplace: bool = False,
         apply_to_reference: bool = True,
     ) -> None:
@@ -330,7 +331,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_switch_sorting(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Changes the sorting of the trajectory.
 
@@ -346,7 +347,7 @@ class TrajectoryManager(QObject):
         return (entry_pair.entry,)
 
     @staticmethod
-    def operation_sort(entry_pair: TrajectoryEntryPair) -> Tuple[TrajectoryEntry]:
+    def operation_sort(entry_pair: TrajectoryEntryPair) -> tuple[TrajectoryEntry]:
         """
         Sorts the selected trajectory using the settings specified in the entry.
 
@@ -372,7 +373,7 @@ class TrajectoryManager(QObject):
             ),
         )
 
-    def operation_divide_into_laps(self) -> Tuple[TrajectoryEntry]:
+    def operation_divide_into_laps(self) -> tuple[TrajectoryEntry]:
         """
         Divides the trajectory into laps based on spatial sorting
 
@@ -407,7 +408,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_approximate(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Approximates the selected trajectory using the settings specified in the entry.
 
@@ -458,7 +459,7 @@ class TrajectoryManager(QObject):
         self.emit_add_trajectory_signal(new_trajectory_entry)
 
     @staticmethod
-    def operation_compare_abs(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+    def operation_compare_abs(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
         """
         Compares the selected trajectory to the reference trajectory.
 
@@ -485,7 +486,7 @@ class TrajectoryManager(QObject):
         return (AbsoluteDeviationEntry(deviations=comparison_result),)
 
     @staticmethod
-    def operation_compare_rel(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+    def operation_compare_rel(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
         """
         Compares the selected trajectory to the reference trajectory using relative comparison.
 
@@ -518,7 +519,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_epsg_edit(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Edits the EPSG of the selected trajectory to the specified EPSG code.
         No transformation is applied, only the metadata is changed.
@@ -536,7 +537,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_epsg_change(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Changes the datum of the selected trajectory to the specified EPSG code.
 
@@ -552,7 +553,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_rearange_dof(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Rearranges the degrees of freedom (DOF) of the selected trajectory according to the specified request.
 
@@ -600,7 +601,7 @@ class TrajectoryManager(QObject):
         return (entry_pair.entry,)
 
     @staticmethod
-    def operation_ref_epsg(entry_pair: TrajectoryEntryPair) -> Tuple[TrajectoryEntry]:
+    def operation_ref_epsg(entry_pair: TrajectoryEntryPair) -> tuple[TrajectoryEntry]:
         """
         Adapt the datum of the reference trajectory to the selected trajectory.
 
@@ -627,7 +628,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_align(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry, AlignmentEntry]:
+    ) -> tuple[TrajectoryEntry, AlignmentEntry]:
         """
         Aligns the selected trajectory to a reference trajectory.
 
@@ -667,7 +668,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_apply_alignment(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry]:
+    ) -> tuple[TrajectoryEntry]:
         """
         Applies the selected alignment to the trajectory of the given entry pair.
 
@@ -698,7 +699,7 @@ class TrajectoryManager(QObject):
     @staticmethod
     def operation_adopt_first_pose(
         entry_pair: TrajectoryEntryPair,
-    ) -> Tuple[TrajectoryEntry, ...]:
+    ) -> tuple[TrajectoryEntry, ...]:
         """
         Adopts the position and orientation of the first pose of the current trajectory to the reference trajectory.
 
@@ -736,7 +737,7 @@ class TrajectoryManager(QObject):
         )
 
     @staticmethod
-    def operation_match(entry_pair: TrajectoryEntryPair) -> Tuple[TrajectoryEntry, ...]:
+    def operation_match(entry_pair: TrajectoryEntryPair) -> tuple[TrajectoryEntry, ...]:
         """
         Matches the current trajectory to the reference trajectory.
 
@@ -777,7 +778,7 @@ class TrajectoryManager(QObject):
         )
 
     @staticmethod
-    def operation_ate(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+    def operation_ate(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
         """
         Computes the absolute trajectory error (ATE) by aligning the selected
         trajectory to the reference trajectory and computing the pose differences.
@@ -801,7 +802,7 @@ class TrajectoryManager(QObject):
         return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
 
     @staticmethod
-    def operation_rpe(entry_pair: TrajectoryEntryPair) -> Tuple[ResultEntry]:
+    def operation_rpe(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
         """
         Computes the relative pose error (RPE)
 

@@ -42,7 +42,7 @@ def sort_spatially(
 
 def divide_into_laps(
     trajectory: Trajectory, sorting_settings: SortingSettings = SortingSettings(), return_lap_indices: bool = False
-) -> Union[List[Trajectory], Tuple[List[Trajectory], np.ndarray]]:
+) -> list[Trajectory] | tuple[list[Trajectory], np.ndarray]:
     """
     Divides the trajectory into laps. This is only useful for trajectories
     that describe a closed loop without intersections.
@@ -74,7 +74,7 @@ def divide_into_laps(
     return laps if (not return_lap_indices) else (laps, lap_indices)
 
 
-def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> Tuple[np.ndarray, float]:
+def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> tuple[np.ndarray, float]:
     """Performs the MLS approximation without iteration.
 
     This method approximates the neighborhood of a point using a 3d line.
@@ -100,7 +100,7 @@ def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> Tuple[np.
 
 
 @lru_cache(maxsize=None)
-def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: FrozenSet[str]) -> Union[Line3D, None]:
+def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: frozenset[str]) -> Line3D | None:
     """Approximates a 3D line from a set of points and returns it as a Line3D object.
 
     If the set contains only one point, returns None.
@@ -157,7 +157,7 @@ def _moving_least_squares(
     return xyz
 
 
-def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) -> Tuple[List[int], np.ndarray]:
+def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) -> tuple[list[int], np.ndarray]:
     """Reconstructs the spatial sorting of the given points
 
     Spatially sorts the positions by constructing the
@@ -192,7 +192,7 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) ->
     return sort_index, lengths_from_xyz(mls_sorted)
 
 
-def _create_sorting_index(xyz_unsorted: np.ndarray) -> List[int]:
+def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
     idx_sort = _mst_sorting(xyz=xyz_unsorted)
 
     # Set start position of lap as the position with the maximum z-value
@@ -207,7 +207,7 @@ def _create_sorting_index(xyz_unsorted: np.ndarray) -> List[int]:
     return idx_sort
 
 
-def _mst_sorting(xyz: np.ndarray) -> Tuple[list, list]:
+def _mst_sorting(xyz: np.ndarray) -> tuple[list, list]:
     """Reconstruct the spatial sorting
 
     Given a set of points inside a numpy array,

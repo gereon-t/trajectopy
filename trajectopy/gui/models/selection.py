@@ -8,8 +8,8 @@ from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 class TrajectorySelection:
     """Dataclass for storing the selected trajectories."""
 
-    entries: List[TrajectoryEntry] = field(default_factory=list)
-    reference_entry: Union[TrajectoryEntry, None] = None
+    entries: list[TrajectoryEntry] = field(default_factory=list)
+    reference_entry: TrajectoryEntry | None = None
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -26,7 +26,7 @@ class TrajectorySelection:
 class ResultSelection:
     """Dataclass for storing the selected results."""
 
-    entries: List[ResultEntry] = field(default_factory=list)
+    entries: list[ResultEntry] = field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self.entries)

@@ -59,7 +59,7 @@ def _build_correlation_dataframe(estimated_parameters: AlignmentParameters, enab
 
 def _render_one_line_alignment_plots(
     alignment_parameters: AlignmentParameters, report_settings: ReportSettings = ReportSettings()
-) -> List[str]:
+) -> list[str]:
     dataframe = _build_correlation_dataframe(alignment_parameters, enabled_only=True)
 
     one_line_plots = [plotly_plots.plot_alignment_table(alignment_parameters, report_settings)]
@@ -69,9 +69,9 @@ def _render_one_line_alignment_plots(
 
 
 def _render_one_line_deviation_collection_plots(
-    ate_report_data_collection: Optional[ATEReportDataCollection] = None,
-    rpe_report_data_collection: Optional[RPEReportDataCollection] = None,
-) -> List[str]:
+    ate_report_data_collection: ATEReportDataCollection | None = None,
+    rpe_report_data_collection: RPEReportDataCollection | None = None,
+) -> list[str]:
     if ate_report_data_collection is None and rpe_report_data_collection is not None:
         return [rpe_report_data_collection.plot()]
 
@@ -98,8 +98,8 @@ def _render_one_line_deviation_collection_plots(
 
 def _render_multi_deviations_report(
     *,
-    ate_results: Optional[List[ATEResult]] = None,
-    rpe_results: Optional[List[RPEResult]] = None,
+    ate_results: list[ATEResult] | None = None,
+    rpe_results: list[RPEResult] | None = None,
     report_settings: ReportSettings = ReportSettings(),
 ) -> str:
     """
@@ -149,7 +149,7 @@ def _render_multi_deviations_report(
     return template.render(context)
 
 
-def _render_side_by_side_deviations_plots(ate_report_data: ATEReportData) -> List[str]:
+def _render_side_by_side_deviations_plots(ate_report_data: ATEReportData) -> list[str]:
     side_by_side_plots = [ate_report_data.scatter_comb_pos_dev()]
 
     if not ate_report_data.has_ate_rot:
@@ -161,8 +161,8 @@ def _render_side_by_side_deviations_plots(ate_report_data: ATEReportData) -> Lis
 
 
 def _render_one_line_deviations_plots(
-    ate_report_data: Optional[ATEReportData] = None, rpe_report_data: Optional[RPEReportData] = None
-) -> List[str]:
+    ate_report_data: ATEReportData | None = None, rpe_report_data: RPEReportData | None = None
+) -> list[str]:
     one_line_plots = []
 
     if rpe_report_data is not None:
@@ -210,8 +210,8 @@ def _render_one_line_deviations_plots(
 
 def _render_single_deviations_report(
     *,
-    ate_result: Optional[ATEResult] = None,
-    rpe_result: Optional[RPEResult] = None,
+    ate_result: ATEResult | None = None,
+    rpe_result: RPEResult | None = None,
     report_settings: ReportSettings = ReportSettings(),
 ) -> str:
     """
@@ -267,8 +267,8 @@ def _render_single_deviations_report(
 
 
 def _render_one_line_trajectory_plots(
-    trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()
-) -> List[str]:
+    trajectories: list[Trajectory], report_settings: ReportSettings = ReportSettings()
+) -> list[str]:
     one_line_plots = [
         (
             plotly_plots.scatter_trajectories_mapbox(trajectories, report_settings)
@@ -319,7 +319,7 @@ def create_alignment_report(
 
 
 def create_trajectory_report(
-    *, trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()
+    *, trajectories: list[Trajectory], report_settings: ReportSettings = ReportSettings()
 ) -> str:
     """
     Render a HTML report containing trajectory plots.
@@ -347,8 +347,8 @@ def create_trajectory_report(
 
 
 def create_deviation_report(
-    ate_result: Union[ATEResult, List[ATEResult]],
-    rpe_result: Union[RPEResult, List[RPEResult], None],
+    ate_result: ATEResult | list[ATEResult],
+    rpe_result: RPEResult | list[RPEResult] | None,
     report_settings: ReportSettings = ReportSettings(),
 ) -> str:
     """Create a HTML deviation report containing the absolute trajectory error and relative pose error results.

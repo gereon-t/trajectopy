@@ -41,7 +41,7 @@ class PoseMessage(Protocol):
     pose: Pose
 
 
-def geometry_pose_stamped_handler(msg: PoseMessage) -> Dict[str, Any]:
+def geometry_pose_stamped_handler(msg: PoseMessage) -> dict[str, Any]:
     """Handler for geometry_msgs/msg/PoseStamped messages
 
     Args:

@@ -40,7 +40,7 @@ class Line3D:
         mean = np.mean(points, axis=0)
         return cls(mean=mean, direction=direction)
 
-    def evaluate_at(self, location: np.ndarray) -> List[float]:
+    def evaluate_at(self, location: np.ndarray) -> list[float]:
         """Evaluates the 3D line at a given location.
 
         This method calculates the projection of the input location

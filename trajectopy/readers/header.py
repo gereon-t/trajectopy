@@ -7,9 +7,10 @@ tombrink@igg.uni-bonn.de
 
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable, Dict, List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 
@@ -71,7 +72,7 @@ def delimiter_line_handler(line: str) -> str:
     return ","
 
 
-HANDLER_MAPPING: Dict[str, Callable[[str], Union[str, int, float]]] = {
+HANDLER_MAPPING: dict[str, Callable[[str], str | int | float]] = {
     "default": default_line_handler,
     "epsg": integer_line_handler,
     "delimiter": delimiter_line_handler,
@@ -84,7 +85,7 @@ HANDLER_MAPPING: Dict[str, Callable[[str], Union[str, int, float]]] = {
 class HeaderData:
     """Class to store the header data of a trajectopy file."""
 
-    data: Dict[str, Union[str, int, float]]
+    data: dict[str, str | int | float]
 
     @property
     def id(self) -> str:
@@ -103,7 +104,7 @@ class HeaderData:
         return str(self.data.get("rot_unit", "rad"))
 
     @property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         return str(self.data.get("fields", "t,px,py,pz,qx,qy,qz,qw")).split(",")
 
     @property
@@ -135,7 +136,7 @@ class HeaderData:
         return PairDistanceUnit.from_str(str(self.data.get("relative_dist_unit", "meter")))
 
     @property
-    def num_pairs(self) -> List[int]:
+    def num_pairs(self) -> list[int]:
         return [int(item) for item in str(self.data.get("num_pairs", "0")).split(",")]
 
     @property
@@ -159,7 +160,7 @@ class HeaderData:
         return str(self.data.get("datetime_timezone", "UTC"))
 
     @staticmethod
-    def handle_line(metadata: Dict[str, Union[str, int, float]], line: str) -> None:
+    def handle_line(metadata: dict[str, str | int | float], line: str) -> None:
         if not line.startswith("#"):
             return
 
@@ -179,8 +180,8 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
-        metadata: Dict[str, Union[str, int, float]] = {}
-        with open(filename, "r", encoding="utf-8") as file:
+        metadata: dict[str, str | int | float] = {}
+        with open(filename, encoding="utf-8") as file:
             for line in file:
                 cls.handle_line(metadata, line)
 
@@ -197,7 +198,7 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
-        metadata: Dict[str, Union[str, int, float]] = {}
+        metadata: dict[str, str | int | float] = {}
         for line in input_str.splitlines():
             cls.handle_line(metadata, line)
 

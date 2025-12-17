@@ -23,7 +23,7 @@ class Positions:
 
     def __init__(
         self,
-        xyz: Union[np.ndarray, list],
+        xyz: np.ndarray | list,
         epsg: int = 0,
         local_transformer: Transformer = None,
         init_local_transformer: bool = True,
@@ -137,7 +137,7 @@ class Positions:
         """Deep copy"""
         return copy.deepcopy(self)
 
-    def __get_column(self, idx: int) -> Union[int, float, np.ndarray]:
+    def __get_column(self, idx: int) -> int | float | np.ndarray:
         """Internal method to extract a column from xyz
 
         This method will return one column specified by idx from the
@@ -153,7 +153,7 @@ class Positions:
         """
         return self.xyz[:, idx] if len(self.xyz) > 1 else self.xyz[0][idx]
 
-    def __set_column(self, v: Union[int, float, np.ndarray], idx: int) -> None:
+    def __set_column(self, v: int | float | np.ndarray, idx: int) -> None:
         """Internal method to change a column of xyz
 
         This method will set a column of xyz to v.
@@ -194,7 +194,7 @@ class Positions:
         self.__xyz = xyz if xyz.ndim > 1 else xyz[None, :]
 
     @property
-    def x(self) -> Union[int, float, np.ndarray]:
+    def x(self) -> int | float | np.ndarray:
         """Returns x coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
@@ -206,7 +206,7 @@ class Positions:
         return self.__get_column(idx=0)
 
     @property
-    def y(self) -> Union[int, float, np.ndarray]:
+    def y(self) -> int | float | np.ndarray:
         """Returns y coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
@@ -218,7 +218,7 @@ class Positions:
         return self.__get_column(idx=1)
 
     @property
-    def z(self) -> Union[int, float, np.ndarray]:
+    def z(self) -> int | float | np.ndarray:
         """Returns z coordinate(s).
 
         The x/y/z properties will either return a one-dimensional numpy array or a single
@@ -230,7 +230,7 @@ class Positions:
         return self.__get_column(idx=2)
 
     @x.setter
-    def x(self, x: Union[int, float, np.ndarray]) -> None:
+    def x(self, x: int | float | np.ndarray) -> None:
         """Sets x coordinate(s).
 
         This method will set the x value(s) to some input value(s).
@@ -242,7 +242,7 @@ class Positions:
         self.__set_column(v=x, idx=0)
 
     @y.setter
-    def y(self, y: Union[int, float, np.ndarray]) -> None:
+    def y(self, y: int | float | np.ndarray) -> None:
         """Sets y coordinate(s).
 
         This method will set the y value(s) to some input value(s).
@@ -254,7 +254,7 @@ class Positions:
         self.__set_column(v=y, idx=1)
 
     @z.setter
-    def z(self, z: Union[int, float, np.ndarray]) -> None:
+    def z(self, z: int | float | np.ndarray) -> None:
         """Sets z coordinate(s).
 
         This method will set the z value(s) to some input value(s).

@@ -35,11 +35,11 @@ class Trajectory:
     def __init__(
         self,
         positions: Positions,
-        rotations: Union[Rotations, None] = None,
-        timestamps: Union[np.ndarray, None] = None,
+        rotations: Rotations | None = None,
+        timestamps: np.ndarray | None = None,
         name: str = "",
-        path_lengths: Union[np.ndarray, None] = None,
-        velocity_xyz: Union[np.ndarray, None] = None,
+        path_lengths: np.ndarray | None = None,
+        velocity_xyz: np.ndarray | None = None,
         sorting: Sorting = Sorting.TIME,
     ) -> None:
         """
@@ -131,8 +131,8 @@ class Trajectory:
     def from_arrays(
         cls,
         xyz: np.ndarray,
-        quat: Union[np.ndarray, None] = None,
-        rpy: Union[np.ndarray, None] = None,
+        quat: np.ndarray | None = None,
+        rpy: np.ndarray | None = None,
         epsg: int = 0,
         **kwargs,
     ) -> "Trajectory":
@@ -326,11 +326,11 @@ class Trajectory:
         return Rotations.from_quat(self.quat).as_euler(seq="xyz")
 
     @property
-    def se3(self) -> List[np.ndarray]:
+    def se3(self) -> list[np.ndarray]:
         """
         Returns a list of SE3 poses (4x4 homogeneous transformation matrices).
         """
-        se3_list: List[np.ndarray] = []
+        se3_list: list[np.ndarray] = []
         xyz = self.positions.xyz
 
         if len(xyz) == 0:
@@ -345,7 +345,7 @@ class Trajectory:
         return se3_list
 
     @se3.setter
-    def se3(self, se3_list: List[np.ndarray]) -> None:
+    def se3(self, se3_list: list[np.ndarray]) -> None:
         """
         Sets the position and rotation of the trajectory from a list of SE3 poses (4x4 matrices).
         """
@@ -441,7 +441,7 @@ class Trajectory:
 
         return traj_self
 
-    def mask(self, mask: Union[list, np.ndarray], inplace: bool = True) -> "Trajectory":
+    def mask(self, mask: list | np.ndarray, inplace: bool = True) -> "Trajectory":
         """
         Applies a boolean mask or index array to filter all trajectory components.
 

@@ -1,8 +1,9 @@
 import logging
 import os
 import shutil
+from collections.abc import Callable
 from tempfile import mkdtemp
-from typing import Callable, Dict, Union
+from typing import Dict, Union
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
@@ -58,7 +59,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
-        self.REQUEST_MAPPING: Dict[PlotSettingsRequestType, Callable[[PlotSettingsRequest], None]] = {
+        self.REQUEST_MAPPING: dict[PlotSettingsRequestType, Callable[[PlotSettingsRequest], None]] = {
             PlotSettingsRequestType.EXPORT: self.handle_plot_settings_export,
             PlotSettingsRequestType.IMPORT: self.handle_plot_settings_import,
             PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
@@ -145,7 +146,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         mapbox_token_file = os.path.join(os.getcwd(), ".mapbox_token")
         if os.path.isfile(mapbox_token_file):
-            with open(mapbox_token_file, "r", encoding="utf-8") as f:
+            with open(mapbox_token_file, encoding="utf-8") as f:
                 mapbox_token = f.read()
                 logger.info("Using mapbox token from file")
                 return mapbox_token
@@ -216,7 +217,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.menuBar().actions()[1].setVisible(False)
         self.menuBar().actions()[2].setVisible(True)
 
-    def closeEvent(self, a0: Union[QCloseEvent, None]) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
         self.computation_thread.quit()
         self.computation_thread.wait()
 

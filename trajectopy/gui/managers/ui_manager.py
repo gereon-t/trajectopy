@@ -33,7 +33,7 @@ from trajectopy.gui.views.result_selection_window import AlignmentSelector
 logger = logging.getLogger(__name__)
 
 
-def merge_dicts(dicts: Tuple[Dict[str, str], ...]):
+def merge_dicts(dicts: tuple[dict[str, str], ...]):
     """
     Merges multiple dictionaries into a single dictionary, where each key in the merged dictionary
     corresponds to a list of values from each input dictionary.
@@ -44,7 +44,7 @@ def merge_dicts(dicts: Tuple[Dict[str, str], ...]):
     Returns:
         dict: A dictionary containing the merged key-value pairs.
     """
-    merged_dict: Dict[Any, Any] = {}
+    merged_dict: dict[Any, Any] = {}
     for i, d in enumerate(dicts):
         for k, v in d.items():
             if k not in merged_dict:

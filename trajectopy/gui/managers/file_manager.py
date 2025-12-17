@@ -1,7 +1,8 @@
 import logging
 import threading
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -46,7 +47,7 @@ class FileManager(QObject):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.REQUEST_MAPPING: Dict[FileRequestType, Callable[[FileRequest], None]] = {
+        self.REQUEST_MAPPING: dict[FileRequestType, Callable[[FileRequest], None]] = {
             FileRequestType.READ_TRAJ: self.read_trajectory_files,
             FileRequestType.WRITE_TRAJ: self.write_trajectory,
             FileRequestType.READ_RES: self.read_result_files,
@@ -98,7 +99,7 @@ class FileManager(QObject):
         )
 
     @staticmethod
-    def _get_traj_filenames(file: str) -> Tuple[Path, Path]:
+    def _get_traj_filenames(file: str) -> tuple[Path, Path]:
         file_path = Path(file)
         file_name = file_path.stem
         file_directory = file_path.parent
@@ -134,12 +135,12 @@ class FileManager(QObject):
             f.write("\n".join(request.id_list))
             f.write("\n")
 
-    def read_list(self, request: FileRequest) -> Union[None, List[str]]:
+    def read_list(self, request: FileRequest) -> None | list[str]:
         if not Path(request.file_list[0]).is_file():
             logger.warning("No order file found.")
             return None
 
-        with open(request.file_list[0], "r", encoding="utf-8") as f:
+        with open(request.file_list[0], encoding="utf-8") as f:
             file_list = [line.strip() for line in f.readlines()]
         return file_list
 

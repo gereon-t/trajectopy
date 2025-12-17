@@ -4,26 +4,26 @@ import autograd.numpy as np
 
 
 def functional_relationship_x(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    x_to: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_z: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    x_to: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_x: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_rot_z: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     """Evaluates the observation equations of the Gauß-Helmert-Model
 
     This method puts together the individual building blocks of the
@@ -57,26 +57,26 @@ def functional_relationship_x(
 
 
 def functional_relationship_y(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    y_to: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_z: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    y_to: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_y: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_rot_z: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     """Evaluates the observation equations of the Gauß-Helmert-Model
 
     Returns:
@@ -105,25 +105,25 @@ def functional_relationship_y(
 
 
 def functional_relationship_z(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    z_to: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_z: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    z_to: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_z: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     """Evaluates the observation equations of the Gauß-Helmert-Model
 
     Returns:
@@ -151,17 +151,17 @@ def functional_relationship_z(
 
 
 def leverarm_time_component(
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Tuple[Union[float, np.ndarray], Union[float, np.ndarray], Union[float, np.ndarray]]:
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> tuple[float | np.ndarray, float | np.ndarray, float | np.ndarray]:
     return (
         functional_leverarm_time_component_x(
             euler_x=euler_x,
@@ -196,25 +196,25 @@ def leverarm_time_component(
 
 
 def transformed_x_from(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_z: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_x: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_rot_z: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     x_lt, y_lt, z_lt = leverarm_time_component(
         euler_x=euler_x,
         euler_y=euler_y,
@@ -240,25 +240,25 @@ def transformed_x_from(
 
 
 def transformed_y_from(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_rot_z: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_y: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_rot_z: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     x_lt, y_lt, z_lt = leverarm_time_component(
         euler_x=euler_x,
         euler_y=euler_y,
@@ -284,24 +284,24 @@ def transformed_y_from(
 
 
 def transformed_z_from(
-    x_from: Union[float, np.ndarray] = 0.0,
-    y_from: Union[float, np.ndarray] = 0.0,
-    z_from: Union[float, np.ndarray] = 0.0,
-    euler_x: Union[float, np.ndarray] = 0.0,
-    euler_y: Union[float, np.ndarray] = 0.0,
-    euler_z: Union[float, np.ndarray] = 0.0,
-    speed_x: Union[float, np.ndarray] = 0.0,
-    speed_y: Union[float, np.ndarray] = 0.0,
-    speed_z: Union[float, np.ndarray] = 0.0,
-    sim_trans_z: Union[float, np.ndarray] = 0.0,
-    sim_rot_x: Union[float, np.ndarray] = 0.0,
-    sim_rot_y: Union[float, np.ndarray] = 0.0,
-    sim_scale: Union[float, np.ndarray] = 1.0,
-    time_shift: Union[float, np.ndarray] = 0.0,
-    lever_x: Union[float, np.ndarray] = 0.0,
-    lever_y: Union[float, np.ndarray] = 0.0,
-    lever_z: Union[float, np.ndarray] = 0.0,
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray = 0.0,
+    y_from: float | np.ndarray = 0.0,
+    z_from: float | np.ndarray = 0.0,
+    euler_x: float | np.ndarray = 0.0,
+    euler_y: float | np.ndarray = 0.0,
+    euler_z: float | np.ndarray = 0.0,
+    speed_x: float | np.ndarray = 0.0,
+    speed_y: float | np.ndarray = 0.0,
+    speed_z: float | np.ndarray = 0.0,
+    sim_trans_z: float | np.ndarray = 0.0,
+    sim_rot_x: float | np.ndarray = 0.0,
+    sim_rot_y: float | np.ndarray = 0.0,
+    sim_scale: float | np.ndarray = 1.0,
+    time_shift: float | np.ndarray = 0.0,
+    lever_x: float | np.ndarray = 0.0,
+    lever_y: float | np.ndarray = 0.0,
+    lever_z: float | np.ndarray = 0.0,
+) -> float | np.ndarray:
     x_lt, y_lt, z_lt = leverarm_time_component(
         euler_x=euler_x,
         euler_y=euler_y,
@@ -326,15 +326,15 @@ def transformed_z_from(
 
 
 def functional_helmert_component_x(
-    x_from: Union[float, np.ndarray],
-    y_from: Union[float, np.ndarray],
-    z_from: Union[float, np.ndarray],
-    sim_trans_x: Union[float, np.ndarray],
-    sim_rot_x: Union[float, np.ndarray],
-    sim_rot_y: Union[float, np.ndarray],
-    sim_rot_z: Union[float, np.ndarray],
-    sim_scale: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray,
+    y_from: float | np.ndarray,
+    z_from: float | np.ndarray,
+    sim_trans_x: float | np.ndarray,
+    sim_rot_x: float | np.ndarray,
+    sim_rot_y: float | np.ndarray,
+    sim_rot_z: float | np.ndarray,
+    sim_scale: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:
@@ -349,15 +349,15 @@ def functional_helmert_component_x(
 
 
 def functional_helmert_component_y(
-    x_from: Union[float, np.ndarray],
-    y_from: Union[float, np.ndarray],
-    z_from: Union[float, np.ndarray],
-    sim_trans_y: Union[float, np.ndarray],
-    sim_rot_x: Union[float, np.ndarray],
-    sim_rot_y: Union[float, np.ndarray],
-    sim_rot_z: Union[float, np.ndarray],
-    sim_scale: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray,
+    y_from: float | np.ndarray,
+    z_from: float | np.ndarray,
+    sim_trans_y: float | np.ndarray,
+    sim_rot_x: float | np.ndarray,
+    sim_rot_y: float | np.ndarray,
+    sim_rot_z: float | np.ndarray,
+    sim_scale: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:
@@ -371,14 +371,14 @@ def functional_helmert_component_y(
 
 
 def functional_helmert_component_z(
-    x_from: Union[float, np.ndarray],
-    y_from: Union[float, np.ndarray],
-    z_from: Union[float, np.ndarray],
-    sim_trans_z: Union[float, np.ndarray],
-    sim_rot_x: Union[float, np.ndarray],
-    sim_rot_y: Union[float, np.ndarray],
-    sim_scale: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    x_from: float | np.ndarray,
+    y_from: float | np.ndarray,
+    z_from: float | np.ndarray,
+    sim_trans_z: float | np.ndarray,
+    sim_rot_x: float | np.ndarray,
+    sim_rot_y: float | np.ndarray,
+    sim_scale: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:
@@ -392,15 +392,15 @@ def functional_helmert_component_z(
 
 
 def functional_leverarm_time_component_x(
-    euler_x: Union[float, np.ndarray],
-    euler_y: Union[float, np.ndarray],
-    euler_z: Union[float, np.ndarray],
-    lever_x: Union[float, np.ndarray],
-    lever_y: Union[float, np.ndarray],
-    lever_z: Union[float, np.ndarray],
-    time_shift: Union[float, np.ndarray],
-    speed_x: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    euler_x: float | np.ndarray,
+    euler_y: float | np.ndarray,
+    euler_z: float | np.ndarray,
+    lever_x: float | np.ndarray,
+    lever_y: float | np.ndarray,
+    lever_z: float | np.ndarray,
+    time_shift: float | np.ndarray,
+    speed_x: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:
@@ -414,15 +414,15 @@ def functional_leverarm_time_component_x(
 
 
 def functional_leverarm_time_component_y(
-    euler_x: Union[float, np.ndarray],
-    euler_y: Union[float, np.ndarray],
-    euler_z: Union[float, np.ndarray],
-    lever_x: Union[float, np.ndarray],
-    lever_y: Union[float, np.ndarray],
-    lever_z: Union[float, np.ndarray],
-    time_shift: Union[float, np.ndarray],
-    speed_y: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    euler_x: float | np.ndarray,
+    euler_y: float | np.ndarray,
+    euler_z: float | np.ndarray,
+    lever_x: float | np.ndarray,
+    lever_y: float | np.ndarray,
+    lever_z: float | np.ndarray,
+    time_shift: float | np.ndarray,
+    speed_y: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:
@@ -436,14 +436,14 @@ def functional_leverarm_time_component_y(
 
 
 def functional_leverarm_time_component_z(
-    euler_x: Union[float, np.ndarray],
-    euler_y: Union[float, np.ndarray],
-    lever_x: Union[float, np.ndarray],
-    lever_y: Union[float, np.ndarray],
-    lever_z: Union[float, np.ndarray],
-    time_shift: Union[float, np.ndarray],
-    speed_z: Union[float, np.ndarray],
-) -> Union[float, np.ndarray]:
+    euler_x: float | np.ndarray,
+    euler_y: float | np.ndarray,
+    lever_x: float | np.ndarray,
+    lever_y: float | np.ndarray,
+    lever_z: float | np.ndarray,
+    time_shift: float | np.ndarray,
+    speed_z: float | np.ndarray,
+) -> float | np.ndarray:
     """Helper function returning the helmert component of the functional relationship
 
     Returns:

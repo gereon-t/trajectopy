@@ -264,7 +264,7 @@ def plot_position_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPL
 
 
 def plot_position_ate_edf(
-    deviation_list: List[ATEResult],
+    deviation_list: list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> None:
     ax_pos = plt.subplot(2, 1, 1)
@@ -277,7 +277,7 @@ def plot_position_ate_edf(
         ax_pos.plot(sorted_comb_pos_dev * plot_settings.unit_multiplier, pos_norm_cdf)
 
 
-def plot_rotation_ate_edf(deviation_list: List[ATEResult]) -> None:
+def plot_rotation_ate_edf(deviation_list: list[ATEResult]) -> None:
     if all(dev.abs_dev.rot_dev is None for dev in deviation_list):
         return
 
@@ -294,7 +294,7 @@ def plot_rotation_ate_edf(deviation_list: List[ATEResult]) -> None:
         ax_rot.plot(sorted_comb_rot_dev, rot_norm_cdf)
 
 
-def plot_rpe_pos(figure_dict: Dict[PairDistanceUnit, Axes], devs: List[RPEResult]) -> None:
+def plot_rpe_pos(figure_dict: dict[PairDistanceUnit, Axes], devs: list[RPEResult]) -> None:
     for dev in devs:
         line_plot = figure_dict[dev.rpe_dev.pair_distance_unit].plot(
             dev.mean_pair_distances, dev.pos_dev_mean, label=dev.name
@@ -316,7 +316,7 @@ def plot_rpe_pos(figure_dict: Dict[PairDistanceUnit, Axes], devs: List[RPEResult
         _set_violin_color(violin_plot, line_plot[0].get_color())
 
 
-def plot_rpe_rot(figure_dict: Dict[PairDistanceUnit, Axes], devs: List[RPEResult]) -> None:
+def plot_rpe_rot(figure_dict: dict[PairDistanceUnit, Axes], devs: list[RPEResult]) -> None:
     plot_sum = 0
     for dev in devs:
         if not dev.has_rot_dev:
@@ -362,7 +362,7 @@ def _set_violin_color(violin_dict: dict, color: str) -> None:
                 collection.set_edgecolor(color)
 
 
-def add_rpy_legend(figure_dict: Dict[str, Dict[PairDistanceUnit, Axes]]):
+def add_rpy_legend(figure_dict: dict[str, dict[PairDistanceUnit, Axes]]):
     for d in figure_dict.values():
         for ax in d.values():
             if ax.lines:
@@ -457,8 +457,8 @@ def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
 
 
 def plot_trajectories(
-    trajectories: List[Trajectory], scatter_3d: bool = False
-) -> Tuple[Figure, Figure, Union[Figure, None]]:
+    trajectories: list[Trajectory], scatter_3d: bool = False
+) -> tuple[Figure, Figure, Figure | None]:
     """Plots the trajectories in 2d or 3d using matplotlib.
 
     This function creates one 2D or 3D plot for the xy(z) coordinates of the trajectories,
@@ -537,7 +537,7 @@ def plot_covariance_heatmap(estimated_parameters: AlignmentParameters, enabled_o
     return fig
 
 
-def plot_ate_3d(ate_results: List[ATEResult], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
+def plot_ate_3d(ate_results: list[ATEResult], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """
     Plots the ATE results in 2D using matplotlib.
 
@@ -585,7 +585,7 @@ def plot_ate_3d(ate_results: List[ATEResult], plot_settings: MPLPlotSettings = M
 
 
 def plot_ate_bars(
-    ate_results: List[ATEResult],
+    ate_results: list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
     mode: str = "positions",
 ) -> Figure:
@@ -674,7 +674,7 @@ def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings 
 
 
 def plot_ate(
-    ate_results: Union[ATEResult, List[ATEResult]],
+    ate_results: ATEResult | list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> Figure:
     """
@@ -811,7 +811,7 @@ def plot_ate_dof(
 
 
 def plot_ate_edf(
-    ate_results: Union[ATEResult, List[ATEResult]],
+    ate_results: ATEResult | list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> Figure:
     """
@@ -838,7 +838,7 @@ def plot_ate_edf(
     return fig
 
 
-def plot_rpe(rpe_results: List[RPEResult]) -> Tuple[Figure, Figure]:
+def plot_rpe(rpe_results: list[RPEResult]) -> tuple[Figure, Figure]:
     """Plots the RPE results as a line plot with violin plots for the position and rotation deviations.
 
     Depending on the pair distance unit, the unit of the position deviations
@@ -869,7 +869,7 @@ def plot_rpe(rpe_results: List[RPEResult]) -> Tuple[Figure, Figure]:
     fig_rot_metric.set_xlabel("pair distance [m]")
     fig_rot_time.set_xlabel("pair distance [s]")
 
-    figure_dict: Dict[str, Dict[PairDistanceUnit, Axes]] = {
+    figure_dict: dict[str, dict[PairDistanceUnit, Axes]] = {
         "pos": {
             PairDistanceUnit.METER: fig_pos_metric,
             PairDistanceUnit.SECOND: fig_pos_time,
@@ -899,7 +899,7 @@ def plot_rpe(rpe_results: List[RPEResult]) -> Tuple[Figure, Figure]:
     }[ret_sum]
 
 
-def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Tuple[Figure, Figure]:
+def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> tuple[Figure, Figure]:
     """
     Plots the ATE results as a scatter plot with color-coded deviations.
 
@@ -928,7 +928,7 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
     return pos_fig, rot_fig
 
 
-def plot_positions(trajectories: List[Trajectory], scatter_3d: bool = False) -> Figure:
+def plot_positions(trajectories: list[Trajectory], scatter_3d: bool = False) -> Figure:
     """Plots xy(z) coordinates of trajectories as 2d or 3d plot"""
     x_label, y_label, z_label = get_axis_label(trajectories=trajectories)
 
@@ -961,7 +961,7 @@ def plot_positions(trajectories: List[Trajectory], scatter_3d: bool = False) -> 
     return fig_pos
 
 
-def plot_xyz(trajectories: List[Trajectory]) -> Figure:
+def plot_xyz(trajectories: list[Trajectory]) -> Figure:
     """Plots xyz coordinates of trajectories as subplots"""
     fig_xyz, axs_xyz = plt.subplots(3, 1, sharex=True)
 
@@ -993,7 +993,7 @@ def plot_xyz(trajectories: List[Trajectory]) -> Figure:
     return fig_xyz
 
 
-def plot_rpy(trajectories: List[Trajectory]) -> Union[Figure, None]:
+def plot_rpy(trajectories: list[Trajectory]) -> Figure | None:
     """Plots rpy coordinates of trajectories as subplots"""
     fig_rpy, axs_rpy = plt.subplots(3, 1, sharex=True)
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])

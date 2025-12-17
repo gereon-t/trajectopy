@@ -22,7 +22,7 @@ def ate(
     processing_settings: settings.ProcessingSettings = settings.ProcessingSettings(),
     return_alignment: bool = False,
     align: bool = True,
-) -> Union[ATEResult, Tuple[ATEResult, AlignmentResult]]:
+) -> ATEResult | tuple[ATEResult, AlignmentResult]:
     """Computes the absolute trajectory error (ATE) between two trajectories.
 
     The ATE is computed by first matching the estimated trajectory to the ground truth trajectory.
@@ -183,9 +183,9 @@ def _compare_trajectories_relative(
         relative_comparison_settings.pair_distance_step,
     )
 
-    pos_dev: Dict[float, List[float]] = {}
-    rot_dev: Dict[float, List[float]] = {}
-    pair_distance: Dict[float, List[float]] = {}
+    pos_dev: dict[float, list[float]] = {}
+    rot_dev: dict[float, list[float]] = {}
+    pair_distance: dict[float, list[float]] = {}
 
     se3_other = other.se3
     se3_test = trajectory.se3
@@ -277,9 +277,7 @@ def _translation_error(pose_error: np.ndarray) -> float:
     return np.sqrt(dx * dx + dy * dy + dz * dz)
 
 
-def _get_directed_deviations(
-    *, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Union[Rotations, None] = None
-) -> np.ndarray:
+def _get_directed_deviations(*, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Rotations | None = None) -> np.ndarray:
     if rot is None:
         return _derive_dev_directions_no_rot(xyz_ref=xyz_ref, xyz_test=xyz_test)
 
@@ -335,7 +333,7 @@ def _derive_dev_directions_with_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray
     return devs
 
 
-def _along_track_dev(*, p: np.ndarray, line_pts: List, is_last: bool) -> float:
+def _along_track_dev(*, p: np.ndarray, line_pts: list, is_last: bool) -> float:
     """
     Helper function that computes the along track deviation
     """
@@ -353,7 +351,7 @@ def _along_track_dev(*, p: np.ndarray, line_pts: List, is_last: bool) -> float:
     return np.sign(t) * np.linalg.norm(p_nearest - a)
 
 
-def _cross_track_dev(*, p: np.ndarray, line_pts: List) -> Tuple[float, float]:
+def _cross_track_dev(*, p: np.ndarray, line_pts: list) -> tuple[float, float]:
     """
     Helper function that computes the cross track deviation
     """

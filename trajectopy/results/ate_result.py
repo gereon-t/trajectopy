@@ -44,7 +44,7 @@ class AbsoluteTrajectoryDeviations:
 
     pos_dev: np.ndarray
     directed_pos_dev: np.ndarray
-    rot_dev: Union[Rotations, None] = None
+    rot_dev: Rotations | None = None
     rotations_used: bool = False
 
 
@@ -73,7 +73,7 @@ class ATEResult:
         self.abs_dev = abs_dev
 
     @property
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         return {
             "Name": self.name,
             "Type": self.__class__.__name__,
@@ -474,7 +474,7 @@ class ATEResult:
         return rms(self.rot_dev_z)
 
     @property
-    def columns(self) -> List[str]:
+    def columns(self) -> list[str]:
         """Returns the column names of the dataframe"""
         trajectory_columns = [
             "time",

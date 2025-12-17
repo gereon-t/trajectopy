@@ -49,7 +49,7 @@ class PoseMessage(Protocol):
     pose: Pose
 
 
-def geometry_pose_stamped_handler(msg: PoseMessage) -> Dict[str, Any]:
+def geometry_pose_stamped_handler(msg: PoseMessage) -> dict[str, Any]:
     """Handler for geometry_msgs/msg/PoseStamped messages
 
     Args:
@@ -70,7 +70,7 @@ def geometry_pose_stamped_handler(msg: PoseMessage) -> Dict[str, Any]:
     }
 
 
-def trajectories_from_rosbag(filename: str) -> List[Trajectory]:
+def trajectories_from_rosbag(filename: str) -> list[Trajectory]:
     """Creates a trajectory from a ROS bag file
 
     Args:
@@ -100,7 +100,7 @@ def trajectories_from_rosbag(filename: str) -> List[Trajectory]:
     return trajectories
 
 
-def read_ros_bag(filename: str) -> Dict[str, Dict[str, List[Any]]]:
+def read_ros_bag(filename: str) -> dict[str, dict[str, list[Any]]]:
     """Reads a ROS bag file and returns the header and the data
 
     Args:
@@ -110,7 +110,7 @@ def read_ros_bag(filename: str) -> Dict[str, Dict[str, List[Any]]]:
         Tuple[HeaderData, np.ndarray]: Header data and data
     """
     ROS_MESSAGE_HANDLERS = {"geometry_msgs/msg/PoseStamped": geometry_pose_stamped_handler}
-    data: Dict[str, Dict[str, List[Any]]] = {}
+    data: dict[str, dict[str, list[Any]]] = {}
     with AnyReader([Path(filename)], default_typestore=typestore) as reader:
         for connection, _, rawdata in reader.messages(connections=reader.connections):
             msg = reader.deserialize(rawdata, connection.msgtype)
@@ -126,7 +126,7 @@ def read_ros_bag(filename: str) -> Dict[str, Dict[str, List[Any]]]:
     return data
 
 
-def add_to_dict(data: Dict[str, Dict[str, List[Any]]], key: str, sub_key: str, value: Any) -> None:
+def add_to_dict(data: dict[str, dict[str, list[Any]]], key: str, sub_key: str, value: Any) -> None:
     """Adds a value to a dictionary
 
     Args:

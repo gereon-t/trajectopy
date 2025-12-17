@@ -80,7 +80,7 @@ class Entry(ABC):
 
     @property
     @abstractmethod
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         pass
 
     def to_file(self, filename: str) -> None:
@@ -149,7 +149,7 @@ class TrajectoryEntry(Entry):
         self.trajectory.name = name
 
     @property
-    def column(self) -> Tuple[str, str, int, str, str, str]:
+    def column(self) -> tuple[str, str, int, str, str, str]:
         return (
             self.name,
             bool_to_str(self.set_as_reference),
@@ -168,7 +168,7 @@ class TrajectoryEntry(Entry):
         return os.path.basename(self.full_filename)
 
     @property
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         """Shows a new window with trajectory properties"""
         return {
             "Name": self.trajectory.name,
@@ -217,7 +217,7 @@ class ResultEntry(Entry, ABC):
         pass
 
     @property
-    def column(self) -> Tuple[str, str, int, str]:
+    def column(self) -> tuple[str, str, int, str]:
         return self.name, self.type, len(self), self.entry_id
 
     @classmethod
@@ -255,7 +255,7 @@ class ResultEntry(Entry, ABC):
 class DeviationsEntry(ResultEntry, ABC):
     """Abstract base class for deviation entries in the result model."""
 
-    deviations: Union[ATEResult, RPEResult]
+    deviations: ATEResult | RPEResult
 
     @property
     def name(self) -> str:
@@ -266,7 +266,7 @@ class DeviationsEntry(ResultEntry, ABC):
         self.deviations.name = name
 
     @property
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         return self.deviations.property_dict
 
 
@@ -353,7 +353,7 @@ class AlignmentEntry(ResultEntry):
         self.alignment_result.name = name
 
     @property
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         if self.alignment_result.position_parameters is None:
             return {}
 
@@ -394,8 +394,8 @@ class AlignmentEntry(ResultEntry):
 @dataclass
 class PropertyEntry:
     name: str
-    values: Tuple[str, ...]
+    values: tuple[str, ...]
 
     @property
-    def column(self) -> Tuple[str, ...]:
+    def column(self) -> tuple[str, ...]:
         return (self.name, *self.values)

@@ -1,7 +1,8 @@
 import copy
 import logging
+from collections.abc import Callable
 from enum import Enum
-from typing import Callable, Dict, Generic, List, TypeVar, Union
+from typing import Dict, Generic, List, TypeVar, Union
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant, pyqtSignal, pyqtSlot
 
@@ -22,9 +23,9 @@ T = TypeVar("T", bound=Entry)
 class BaseTableModel(QAbstractTableModel, Generic[T]):
     """Base class for all table models."""
 
-    def __init__(self, headers: Union[List[str], None] = None):
+    def __init__(self, headers: list[str] | None = None):
         super().__init__()
-        self.items: List[T] = []
+        self.items: list[T] = []
         self._headers = [""] if headers is None else headers
 
     def rowCount(self, _):
@@ -46,7 +47,7 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
 
         return QVariant()
 
-    def get(self, item_id: str) -> Union[None, T]:
+    def get(self, item_id: str) -> None | T:
         return next((item for item in self.items if item.entry_id == item_id), None)
 
     def set(self, item_id: str, entry: T) -> None:
@@ -60,7 +61,7 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
         self.items.append(entry)
         self.layoutChanged.emit()
 
-    def remove(self, ids: List[str]) -> None:
+    def remove(self, ids: list[str]) -> None:
         self.items = [item for item in self.items if item.entry_id not in ids]
         self.layoutChanged.emit()
 
@@ -73,17 +74,17 @@ class RequestTableModel(BaseTableModel):
 
     def __init__(
         self,
-        headers: List[str],
-        REQUEST_MAPPING: Union[None, Dict[Enum, Callable]] = None,
+        headers: list[str],
+        REQUEST_MAPPING: None | dict[Enum, Callable] = None,
     ):
         if REQUEST_MAPPING is None:
             REQUEST_MAPPING = {}
         super().__init__(headers)
         self.REQUEST_MAPPING = REQUEST_MAPPING
-        self.request: Union[TrajectoryModelRequest, ResultModelRequest]
+        self.request: TrajectoryModelRequest | ResultModelRequest
 
     @pyqtSlot(Request)
-    def handle_request(self, request: Union[TrajectoryModelRequest, ResultModelRequest]) -> None:
+    def handle_request(self, request: TrajectoryModelRequest | ResultModelRequest) -> None:
         self.request = request
         generic_request_handler(self, request, passthrough_request=False)
 

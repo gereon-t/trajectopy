@@ -295,7 +295,7 @@ class ParameterSet(ABC):
         self.enabled = False
 
     @property
-    def enabled_bool_list(self) -> List[bool]:
+    def enabled_bool_list(self) -> list[bool]:
         """Gets the enabled state of all parameters as a boolean list.
 
         Returns:
@@ -304,7 +304,7 @@ class ParameterSet(ABC):
         return [param.enabled for param in self.__parameter_fields]
 
     @enabled_bool_list.setter
-    def enabled_bool_list(self, enabled_list: List[bool]) -> None:
+    def enabled_bool_list(self, enabled_list: list[bool]) -> None:
         """Sets the enabled state of parameters from a boolean list.
 
         Args:
@@ -314,7 +314,7 @@ class ParameterSet(ABC):
             param.enabled = enabled
 
     @property
-    def enabled_indices(self) -> List[int]:
+    def enabled_indices(self) -> list[int]:
         """Gets indices of enabled parameters.
 
         Useful for extracting values or variances of only enabled parameters
@@ -325,7 +325,7 @@ class ParameterSet(ABC):
         """
         return [i for i, value in enumerate(self.enabled_bool_list) if value]
 
-    def to_string_list(self, enabled_only: bool = True) -> List[str]:
+    def to_string_list(self, enabled_only: bool = True) -> list[str]:
         """Returns a list of all parameter strings of the class
 
         Args:
@@ -336,7 +336,7 @@ class ParameterSet(ABC):
         """
         return [str(param) for param in self.__parameter_fields if param.enabled or not enabled_only]
 
-    def to_name_list(self, enabled_only: bool = True, lower_case: bool = True) -> List[str]:
+    def to_name_list(self, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
         """Returns a list of all parameter names of the class
 
         Args:
@@ -352,7 +352,7 @@ class ParameterSet(ABC):
             if param.enabled or not enabled_only
         ]
 
-    def to_dict(self, enabled_only: bool = True) -> Dict[str, List[float]]:
+    def to_dict(self, enabled_only: bool = True) -> dict[str, list[float]]:
         """Returns a dictionary of all parameters of the class
 
         Args:
@@ -368,7 +368,7 @@ class ParameterSet(ABC):
         }
 
     @property
-    def __parameter_fields(self) -> List[Parameter]:
+    def __parameter_fields(self) -> list[Parameter]:
         """Gets all Parameter instances from dataclass fields.
 
         Returns:
@@ -645,7 +645,7 @@ class Leverarm(ParameterSet):
         if len(xyz) != len(quat_body):
             raise ValueError("Dimension mismatch between positions and orientations.")
 
-        xyz_red = np.zeros((xyz.shape))
+        xyz_red = np.zeros(xyz.shape)
         rot_matrices = Rotations.from_quat(quat_body).as_matrix()
 
         for i in range(len(xyz_red)):
@@ -732,7 +732,7 @@ class AlignmentParameters(ParameterSet):
         """
         return self.values - other.values
 
-    def params_labels(self, enabled_only: bool = True, lower_case: bool = True) -> List[str]:
+    def params_labels(self, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
         """Gets parameter labels/names.
 
         Args:

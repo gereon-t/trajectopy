@@ -17,9 +17,9 @@ from trajectopy.utils.common import gradient_3d
 logger = logging.getLogger(__name__)
 
 
-POSITION_VARIANCE_GROUPS: List[str] = ["XY_FROM", "Z_FROM", "XY_TO", "Z_TO"]
-ORIENTATION_VARIANCE_GROUPS: List[str] = ["ROLL_PITCH", "YAW"]
-SPEED_VARIANCE_GROUP: List[str] = ["SPEED"]
+POSITION_VARIANCE_GROUPS: list[str] = ["XY_FROM", "Z_FROM", "XY_TO", "Z_TO"]
+ORIENTATION_VARIANCE_GROUPS: list[str] = ["ROLL_PITCH", "YAW"]
+SPEED_VARIANCE_GROUP: list[str] = ["SPEED"]
 
 
 @dataclass
@@ -96,9 +96,9 @@ class AlignmentData:
     @cached_property
     def observation_groups(
         self,
-    ) -> Dict[str, Tuple[Union[int, None], Union[int, None]]]:
+    ) -> dict[str, tuple[int | None, int | None]]:
         """Returns the observation groups depending on the settings"""
-        speed_indices: Tuple[Union[int, None], Union[int, None]] = (None, None)
+        speed_indices: tuple[int | None, int | None] = (None, None)
 
         if not self.alignment_settings.estimation_settings.time_shift_enabled:
             speed_indices = (None, None)
@@ -122,7 +122,7 @@ class AlignmentData:
         }
 
     @cached_property
-    def variance_groups(self) -> List[str]:
+    def variance_groups(self) -> list[str]:
         """Returns the variance groups depending on the settings"""
         variance_groups = copy.deepcopy(POSITION_VARIANCE_GROUPS)
 
@@ -183,7 +183,7 @@ class AlignmentData:
         return self.traj_from.timestamps
 
     @cached_property
-    def rpy_to(self) -> Union[np.ndarray, None]:
+    def rpy_to(self) -> np.ndarray | None:
         return self.traj_to.rotations.as_euler(seq="xyz") if self.traj_to.rotations is not None else None
 
     @property
@@ -210,8 +210,8 @@ class AlignmentData:
         self,
         xyz_from: np.ndarray,
         xyz_to: np.ndarray,
-        rot_from: Union[Rotations, None],
-        speed: Union[np.ndarray, None],
+        rot_from: Rotations | None,
+        speed: np.ndarray | None,
     ) -> np.ndarray:
         """
         Creates the observation vector required for the alignment adjustment.
@@ -291,28 +291,28 @@ class AlignmentData:
     def build_res_vector(self) -> np.ndarray:
         return np.zeros_like(self._obs_vector)
 
-    def get_obs_group(self, key: str) -> Tuple[np.ndarray, ...]:
+    def get_obs_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self._obs_vector, key=key)
 
-    def get_est_obs_group(self, key: str) -> Tuple[np.ndarray, ...]:
+    def get_est_obs_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self.est_obs_vector, key=key)
 
     def set_obs_group(self, key: str, values: np.ndarray) -> None:
         self._set_vector_components(vector=self._obs_vector, values=values, key=key)
 
-    def get_var_group(self, key: str) -> Tuple[np.ndarray, ...]:
+    def get_var_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self._var_vector, key=key)
 
     def set_var_group(self, key: str, values: np.ndarray) -> None:
         self._set_vector_components(vector=self._var_vector, values=values, key=key)
 
-    def get_res_group(self, key: str) -> Tuple[np.ndarray, ...]:
+    def get_res_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self._res_vector, key=key)
 
     def set_res_group(self, key: str, values: np.ndarray) -> None:
         self._set_vector_components(vector=self._res_vector, values=values, key=key)
 
-    def _extract_from_vector(self, vector: np.ndarray, key: str) -> Tuple[np.ndarray, ...]:
+    def _extract_from_vector(self, vector: np.ndarray, key: str) -> tuple[np.ndarray, ...]:
         group_indices = self.observation_groups[key]
         if group_indices[0] is None or group_indices[1] is None:
             raise ValueError("Tried to access observation group that is not defined")
@@ -333,7 +333,7 @@ class AlignmentData:
             vector[i :: self.num_obs_per_epoch] = values[:, col_index]
 
     @property
-    def group_stds(self) -> Dict[str, float]:
+    def group_stds(self) -> dict[str, float]:
         """Returns the mean standard deviation for each group"""
         return {group_key: np.mean(np.sqrt(self.get_var_group(key=group_key))) for group_key in self.variance_groups}
 

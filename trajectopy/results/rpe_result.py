@@ -1,6 +1,7 @@
 import csv
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -37,9 +38,9 @@ class RelativeTrajectoryDeviations:
         num_pairs (int): Total number of evaluated pose pairs across all buckets.
     """
 
-    pos_dev: Dict[float, List[float]]
-    rot_dev: Dict[float, List[float]]
-    pair_distance: Dict[float, List[float]]
+    pos_dev: dict[float, list[float]]
+    rot_dev: dict[float, list[float]]
+    pair_distance: dict[float, list[float]]
     pair_distance_unit: PairDistanceUnit = PairDistanceUnit.METER
 
     @property
@@ -101,15 +102,15 @@ class RPEResult:
     def drift_factor(self) -> float:
         return 100.0 if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else 1.0
 
-    def compute_metric(self, key: str, func: Callable[[Any], float], factor: float = 1.0) -> List[float]:
+    def compute_metric(self, key: str, func: Callable[[Any], float], factor: float = 1.0) -> list[float]:
         return [float(func(values) * factor) for values in self.rpe_dev.__dict__[key].values() if values]
 
     @property
-    def num_pairs(self) -> List[int]:
+    def num_pairs(self) -> list[int]:
         return [len(values) for values in self.rpe_dev.pair_distance.values() if values]
 
     @property
-    def mean_pair_distances(self) -> List[float]:
+    def mean_pair_distances(self) -> list[float]:
         return self.compute_metric(key="pair_distance", func=np.mean)
 
     @property
@@ -126,62 +127,62 @@ class RPEResult:
         return np.mean(self.rot_dev_mean)
 
     @property
-    def pos_std(self) -> List[float]:
+    def pos_std(self) -> list[float]:
         return self.compute_metric(key="pos_dev", func=np.std, factor=self.drift_factor)
 
     @property
-    def rot_std(self) -> List[float]:
+    def rot_std(self) -> list[float]:
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.std, factor=self.drift_factor)
 
     @property
-    def pos_dev_mean(self) -> List[float]:
+    def pos_dev_mean(self) -> list[float]:
         return self.compute_metric(key="pos_dev", func=np.mean, factor=self.drift_factor)
 
     @property
-    def pos_dev_min(self) -> List[float]:
+    def pos_dev_min(self) -> list[float]:
         return self.compute_metric(key="pos_dev", func=np.min, factor=self.drift_factor)
 
     @property
-    def pos_dev_max(self) -> List[float]:
+    def pos_dev_max(self) -> list[float]:
         return self.compute_metric(key="pos_dev", func=np.max, factor=self.drift_factor)
 
     @property
-    def pos_dev_median(self) -> List[float]:
+    def pos_dev_median(self) -> list[float]:
         return self.compute_metric(key="pos_dev", func=np.median, factor=self.drift_factor)
 
     @property
-    def rot_dev_mean(self) -> List[float]:
+    def rot_dev_mean(self) -> list[float]:
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.mean, factor=self.drift_factor)
 
     @property
-    def rot_dev_min(self) -> List[float]:
+    def rot_dev_min(self) -> list[float]:
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.min, factor=self.drift_factor)
 
     @property
-    def rot_dev_max(self) -> List[float]:
+    def rot_dev_max(self) -> list[float]:
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.max, factor=self.drift_factor)
 
     @property
-    def rot_dev_median(self) -> List[float]:
+    def rot_dev_median(self) -> list[float]:
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.median, factor=self.drift_factor)
 
-    def get_all(self, key: str) -> List[float]:
-        ret_list: List[float] = []
+    def get_all(self, key: str) -> list[float]:
+        ret_list: list[float] = []
         model_dict = self.rpe_dev.__dict__
 
         if key not in model_dict:
@@ -193,26 +194,26 @@ class RPEResult:
         return ret_list
 
     @property
-    def all_pair_distances(self) -> List[float]:
+    def all_pair_distances(self) -> list[float]:
         return self.get_all(key="pair_distance")
 
     @property
-    def pos_dev_all(self) -> List[float]:
+    def pos_dev_all(self) -> list[float]:
         return self.get_all(key="pos_dev")
 
     @property
-    def all_rot_devs(self) -> List[float]:
+    def all_rot_devs(self) -> list[float]:
         return self.get_all(key="rot_dev")
 
     @property
-    def dynamic_pos_dict(self) -> Dict[str, str]:
+    def dynamic_pos_dict(self) -> dict[str, str]:
         return {
             f"Average position drift at {dist:.3f} (avg) {self.pair_distance_unit}": f"{dev:.3f} {self.pos_drift_unit}"
             for dist, dev in zip(self.mean_pair_distances, self.pos_dev_mean)
         }
 
     @property
-    def dynamic_rot_dict(self) -> Dict[str, str]:
+    def dynamic_rot_dict(self) -> dict[str, str]:
         if not self.has_rot_dev:
             return {}
 
@@ -222,7 +223,7 @@ class RPEResult:
         }
 
     @property
-    def property_dict(self) -> Dict[str, str]:
+    def property_dict(self) -> dict[str, str]:
         """Returns a dictionary containing the properties of the deviation set.
 
         This is relevant for time based comparisons, when pose-pairs are defined by a time difference.
@@ -262,7 +263,7 @@ class RPEResult:
         return pos_dict
 
     @property
-    def columns(self) -> List[str]:
+    def columns(self) -> list[str]:
         if self.has_rot_dev:
             return ["pair_distance", "pos_dev", "rot_dev"]
 
@@ -292,9 +293,9 @@ class RPEResult:
         header_data = HeaderData.from_file(filename)
         deviation_data = pd.read_csv(filename, comment="#")
 
-        pos_dev: Dict[float, List[float]] = {}
-        rot_dev: Dict[float, List[float]] = {}
-        pair_distance: Dict[float, List[float]] = {}
+        pos_dev: dict[float, list[float]] = {}
+        rot_dev: dict[float, list[float]] = {}
+        pair_distance: dict[float, list[float]] = {}
 
         last_index = 0
         for index in header_data.num_pairs:

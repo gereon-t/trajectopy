@@ -22,7 +22,7 @@ from trajectopy.utils.definitions import TrajectoriesSorting
 logger = logging.getLogger(__name__)
 
 
-def _setup_pos_axis_indices(report_settings: ReportSettings) -> Tuple[List[str], List[int]]:
+def _setup_pos_axis_indices(report_settings: ReportSettings) -> tuple[list[str], list[int]]:
     pos_axis_labels = [
         f"{report_settings.pos_x_name} [{report_settings.pos_x_unit}]",
         f"{report_settings.pos_y_name} [{report_settings.pos_y_unit}]",
@@ -34,7 +34,7 @@ def _setup_pos_axis_indices(report_settings: ReportSettings) -> Tuple[List[str],
 
 
 def _get_marker_dict(
-    report_settings: ReportSettings, colorbar_title: str = "", colors: Union[np.ndarray, None] = None
+    report_settings: ReportSettings, colorbar_title: str = "", colors: np.ndarray | None = None
 ) -> dict:
     if colors is None:
         return dict(size=report_settings.scatter_marker_size)
@@ -61,7 +61,7 @@ def scatter(
     report_settings: ReportSettings,
     figure_title: str,
     colorbar_title: str,
-    colors: Union[np.ndarray, None] = None,
+    colors: np.ndarray | None = None,
 ) -> str:
     marker_dict = _get_marker_dict(report_settings, colorbar_title, colors)
     pos_axis_labels, axes_indices = _setup_pos_axis_indices(report_settings)
@@ -175,7 +175,7 @@ def plot_heatmap(dataframe: pd.DataFrame, report_settings: ReportSettings = Repo
     return plot(fig, output_type="div", config=report_settings.single_plot_export.to_config())
 
 
-def plot_trajectories_xyz(trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
+def plot_trajectories_xyz(trajectories: list[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
     pos_x_label, pos_y_label, pos_z_label = get_axis_label(trajectories=trajectories)
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
     all_unix = all(traj.is_unix_time for traj in trajectories)
@@ -194,7 +194,7 @@ def plot_trajectories_xyz(trajectories: List[Trajectory], report_settings: Repor
     )
 
 
-def plot_trajectories_rpy(trajectories: List[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
+def plot_trajectories_rpy(trajectories: list[Trajectory], report_settings: ReportSettings = ReportSettings()) -> str:
     rot_x_label, rot_y_label, rot_z_label = ("roll [°]", "pitch [°]", "yaw [°]")
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
     all_unix = all(traj.is_unix_time for traj in trajectories)
@@ -215,11 +215,11 @@ def plot_trajectories_rpy(trajectories: List[Trajectory], report_settings: Repor
 
 
 def plot_subplots_with_shared_x_axis(
-    x_data: List[np.ndarray],
-    y_data: List[List[Union[np.ndarray, None]]],
-    names: List[str],
+    x_data: list[np.ndarray],
+    y_data: list[list[np.ndarray | None]],
+    names: list[str],
     x_label: str,
-    y_labels: List[str],
+    y_labels: list[str],
     title: str,
     report_settings: ReportSettings = ReportSettings(),
 ) -> str:
@@ -265,7 +265,7 @@ def plot_subplots_with_shared_x_axis(
     return plot(fig, output_type="div", config=config_dicts[len(y_labels)])
 
 
-def scatter_trajectories_mapbox(trajectories: List[Trajectory], report_settings: ReportSettings) -> str:
+def scatter_trajectories_mapbox(trajectories: list[Trajectory], report_settings: ReportSettings) -> str:
     plotable_trajectories = [
         trajectory for trajectory in trajectories if trajectory.positions.local_transformer is not None
     ]
@@ -322,7 +322,7 @@ def scatter_trajectories_mapbox(trajectories: List[Trajectory], report_settings:
     return plot(fig, output_type="div", config=report_settings.single_plot_export.to_config())
 
 
-def scatter_trajectories(trajectories: List[Trajectory], report_settings: ReportSettings) -> str:
+def scatter_trajectories(trajectories: list[Trajectory], report_settings: ReportSettings) -> str:
     x_label, y_label, z_label = get_axis_label(trajectories=trajectories)
     pos_axis_labels = [x_label, y_label, z_label]
 

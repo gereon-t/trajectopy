@@ -109,7 +109,7 @@ class Settings(ABC):
         Returns:
             Settings: Settings instance loaded from file
         """
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
 
         return cls.from_dict(data)
@@ -257,7 +257,7 @@ class AlignmentEstimationSettings(Settings):
         )
 
     @classmethod
-    def from_bool_list(cls, bool_list: List[bool]) -> "AlignmentEstimationSettings":
+    def from_bool_list(cls, bool_list: list[bool]) -> "AlignmentEstimationSettings":
         """Creates settings from a list of boolean values.
 
         Args:
@@ -376,7 +376,7 @@ class AlignmentEstimationSettings(Settings):
         return settings_str
 
     @property
-    def time_shift_filter(self) -> List[bool]:
+    def time_shift_filter(self) -> list[bool]:
         """Gets time shift parameter filter.
 
         Returns:
@@ -385,7 +385,7 @@ class AlignmentEstimationSettings(Settings):
         return [True] * 3 if self.time_shift else [False] * 3
 
     @property
-    def helmert_filter(self) -> List[bool]:
+    def helmert_filter(self) -> list[bool]:
         """Gets Helmert parameter filter.
 
         Returns:
@@ -405,7 +405,7 @@ class AlignmentEstimationSettings(Settings):
         ]
 
     @property
-    def leverarm_filter(self) -> List[bool]:
+    def leverarm_filter(self) -> list[bool]:
         """Gets leverarm parameter filter.
 
         Returns:
@@ -417,7 +417,7 @@ class AlignmentEstimationSettings(Settings):
         return [self.leverarm_x, self.leverarm_y, self.leverarm_z]
 
     @property
-    def enabled_lq_parameter_filter(self) -> List[bool]:
+    def enabled_lq_parameter_filter(self) -> list[bool]:
         """Gets filter for enabled least-squares parameters only.
 
         Returns:
@@ -437,7 +437,7 @@ class AlignmentEstimationSettings(Settings):
         return full_filter
 
     @property
-    def lq_parameter_filter(self) -> List[bool]:
+    def lq_parameter_filter(self) -> list[bool]:
         """Gets complete least-squares parameter filter.
 
         Returns:

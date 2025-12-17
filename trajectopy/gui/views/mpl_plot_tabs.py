@@ -100,7 +100,7 @@ class PlotTabs(QtWidgets.QMainWindow):
         self.figure_handles.append(figure)
         self.tab_handles.append(new_tab)
 
-    def add_dropdown_plot(self, name: str, dropdown_items: List[PlotableDropdownItem]):
+    def add_dropdown_plot(self, name: str, dropdown_items: list[PlotableDropdownItem]):
         """
         Adds a tab with a scatter plot and a dropdown to choose coloring.
 
@@ -172,7 +172,7 @@ class PlotTabs(QtWidgets.QMainWindow):
         update_plot(dropdown.currentText())
 
     def show_trajectories(
-        self, trajectories: List[Trajectory], mpl_plot_settings: MPLPlotSettings = MPLPlotSettings()
+        self, trajectories: list[Trajectory], mpl_plot_settings: MPLPlotSettings = MPLPlotSettings()
     ) -> None:
         """
         Plots Trajectories
@@ -384,8 +384,8 @@ class PlotTabs(QtWidgets.QMainWindow):
 
     def show_multiple_deviations(
         self,
-        ate_results: List[ATEResult],
-        rpe_results: List[RPEResult],
+        ate_results: list[ATEResult],
+        rpe_results: list[RPEResult],
         mpl_plot_settings: MPLPlotSettings = MPLPlotSettings(),
         title: str = "",
     ) -> None:

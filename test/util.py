@@ -141,7 +141,7 @@ def apply_alignment_using_velocities(
 
     def _prepare_alignment_application(
         trajectory: Trajectory, alignment_parameters: AlignmentParameters
-    ) -> Tuple[float, ...]:
+    ) -> tuple[float, ...]:
         if trajectory.rotations is not None:
             rpy = trajectory.rotations.as_euler("xyz", degrees=False)
             euler_x, euler_y, euler_z = rpy[:, 0], rpy[:, 1], rpy[:, 2]
@@ -204,7 +204,7 @@ def transform_randomly(
     similarity_enabled: bool = True,
     time_shift_enabled: bool = True,
     lever_enabled: bool = True,
-) -> Tuple[Trajectory, AlignmentParameters]:
+) -> tuple[Trajectory, AlignmentParameters]:
     parameters = generate_transformation(
         similarity_enabled=similarity_enabled, time_shift_enabled=time_shift_enabled, lever_enabled=lever_enabled
     )

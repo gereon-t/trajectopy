@@ -686,13 +686,13 @@ class ATEReportDataCollection:
     Class to store multiple ReportData objects in a list
     """
 
-    items: List[ATEReportData]
+    items: list[ATEReportData]
 
     @property
     def has_ate_rot(self) -> bool:
         return any(item.has_ate_rot for item in self.items)
 
-    def get_ate_results(self, rot_required: bool = False) -> List[ATEResult]:
+    def get_ate_results(self, rot_required: bool = False) -> list[ATEResult]:
         return [item.ate_result for item in self.items if not rot_required or item.has_ate_rot]
 
     def _to_pos_metrics_df(self) -> pd.DataFrame:
@@ -743,7 +743,7 @@ class ATEReportDataCollection:
 
         return pd.DataFrame(metrics)
 
-    def _setup_edf_axis(self) -> Tuple[go.Figure, dict]:
+    def _setup_edf_axis(self) -> tuple[go.Figure, dict]:
         report_data_item = self.items[0]
         if self.has_ate_rot:
             fig = make_subplots(rows=2, cols=1)
@@ -763,7 +763,7 @@ class ATEReportDataCollection:
 
         return fig, config
 
-    def _setup_dev_comb_axis(self) -> Tuple[go.Figure, dict]:
+    def _setup_dev_comb_axis(self) -> tuple[go.Figure, dict]:
         report_data_item = self.items[0]
         if self.has_ate_rot:
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
@@ -910,7 +910,7 @@ class RPEReportDataCollection:
     Class to store multiple ReportData objects in a list
     """
 
-    items: List[RPEReportData]
+    items: list[RPEReportData]
 
     @property
     def has_rpe(self) -> bool:
@@ -924,10 +924,10 @@ class RPEReportDataCollection:
         rpe_results = [item.rpe_result for item in self.items]
         return any(result.has_rot_dev for result in rpe_results)
 
-    def get_rpe_results(self, rot_required: bool = False) -> List[RPEResult]:
+    def get_rpe_results(self, rot_required: bool = False) -> list[RPEResult]:
         return [item.rpe_result for item in self.items if not rot_required or item.rpe_result.has_rot_dev]
 
-    def _setup_rpe_axis(self) -> Tuple[go.Figure, dict]:
+    def _setup_rpe_axis(self) -> tuple[go.Figure, dict]:
         report_data_item = self.items[0]
         if self.has_rpe_rot:
             rpe_rot_item = self.get_rpe_results(rot_required=True)[0]

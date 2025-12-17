@@ -90,7 +90,7 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
 
     def _prepare_alignment_application(
         trajectory: Trajectory, alignment_parameters: AlignmentParameters
-    ) -> Tuple[float, ...]:
+    ) -> tuple[float, ...]:
         if trajectory.rotations is not None:
             rpy = trajectory.rotations.as_euler("xyz", degrees=False)
             euler_x, euler_y, euler_z = rpy[:, 0], rpy[:, 1], rpy[:, 2]

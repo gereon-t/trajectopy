@@ -99,7 +99,7 @@ def _piecewise_cubic(
     min_win_size: float = 0.25,
     min_obs: int = 25,
     return_approx_objects: bool = False,
-) -> Union[Tuple[np.ndarray, List[CubicApproximation]], np.ndarray]:
+) -> tuple[np.ndarray, list[CubicApproximation]] | np.ndarray:
     """Approximates a piecewise cubic function for a given set of input values.
 
     Args:

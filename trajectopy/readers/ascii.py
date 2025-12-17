@@ -66,7 +66,7 @@ def delimiter_line_handler(line: str) -> str:
     return ","
 
 
-HANDLER_MAPPING: Dict[str, Callable[[str], Union[str, int, float]]] = {
+HANDLER_MAPPING: dict[str, Callable[[str], str | int | float]] = {
     "default": default_line_handler,
     "epsg": integer_line_handler,
     "delimiter": delimiter_line_handler,
@@ -79,7 +79,7 @@ HANDLER_MAPPING: Dict[str, Callable[[str], Union[str, int, float]]] = {
 class HeaderData:
     """Class to store the header data of a trajectopy file."""
 
-    data: Dict[str, Union[str, int, float]]
+    data: dict[str, str | int | float]
 
     @property
     def id(self) -> str:
@@ -98,7 +98,7 @@ class HeaderData:
         return str(self.data.get("rot_unit", "rad"))
 
     @property
-    def fields(self) -> List[str]:
+    def fields(self) -> list[str]:
         return str(self.data.get("fields", "t,px,py,pz,qx,qy,qz,qw")).split(",")
 
     @property
@@ -130,7 +130,7 @@ class HeaderData:
         return PairDistanceUnit.from_str(str(self.data.get("relative_dist_unit", "meter")))
 
     @property
-    def num_pairs(self) -> List[int]:
+    def num_pairs(self) -> list[int]:
         return [int(item) for item in str(self.data.get("num_pairs", "0")).split(",")]
 
     @property
@@ -154,7 +154,7 @@ class HeaderData:
         return str(self.data.get("datetime_timezone", "UTC"))
 
     @staticmethod
-    def handle_line(metadata: Dict[str, Union[str, int, float]], line: str) -> None:
+    def handle_line(metadata: dict[str, str | int | float], line: str) -> None:
         if not line.startswith("#"):
             return
 
@@ -174,8 +174,8 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
-        metadata: Dict[str, Union[str, int, float]] = {}
-        with open(filename, "r", encoding="utf-8") as file:
+        metadata: dict[str, str | int | float] = {}
+        with open(filename, encoding="utf-8") as file:
             for line in file:
                 cls.handle_line(metadata, line)
 
@@ -192,7 +192,7 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
-        metadata: Dict[str, Union[str, int, float]] = {}
+        metadata: dict[str, str | int | float] = {}
         for line in input_str.splitlines():
             cls.handle_line(metadata, line)
 
@@ -200,7 +200,7 @@ class HeaderData:
         return cls(metadata)
 
 
-def read_data(filename: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
+def read_data(filename: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
     """Reads the header and the data from a file
 
     By default, the trajectory data is read using pandas. If this fails,
@@ -228,7 +228,7 @@ def read_data(filename: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
     return header_data, data
 
 
-def read_string(input_str: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
+def read_string(input_str: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
     """Reads the header and the data from a string
 
     By default, the trajectory data is read using pandas. If this fails,
@@ -257,7 +257,7 @@ def read_string(input_str: str, dtype=float) -> Tuple[HeaderData, np.ndarray]:
     return header_data, data
 
 
-def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[None, Rotations]:
+def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> None | Rotations:
     """Extracts rotations from trajectory data and returns them as Rotations
 
     Loaded rotations are converted to refer to the ENU navigation frame. For this,
@@ -372,7 +372,7 @@ def extract_trajectory_timestamps(header_data: HeaderData, trajectory_data: np.n
     return np.array(range(len(trajectory_data)))
 
 
-def _parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
+def _parse_datetime(trajectory_data: np.ndarray, time_columns: list[int], header_data: HeaderData) -> np.ndarray:
     """Parses datetime strings to timestamps
 
     Args:
@@ -404,7 +404,7 @@ def _parse_datetime(trajectory_data: np.ndarray, time_columns: List[int], header
     return np.array([dt_i.timestamp() for dt_i in ts_datetime])
 
 
-def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: List[int], header_data: HeaderData) -> np.ndarray:
+def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: list[int], header_data: HeaderData) -> np.ndarray:
     """Parses GPS seconds of week to timestamps
 
     Args:
@@ -423,7 +423,7 @@ def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: List[int], header_
     )
 
 
-def extract_trajectory_velocity_xyz(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[None, np.ndarray]:
+def extract_trajectory_velocity_xyz(header_data: HeaderData, trajectory_data: np.ndarray) -> None | np.ndarray:
     """Extracts speed from trajectory data and returns them as numpy array
 
     Args:
@@ -447,7 +447,7 @@ def extract_trajectory_velocity_xyz(header_data: HeaderData, trajectory_data: np
     )
 
 
-def extract_trajectory_path_lengths(header_data: HeaderData, trajectory_data: np.ndarray) -> Union[None, np.ndarray]:
+def extract_trajectory_path_lengths(header_data: HeaderData, trajectory_data: np.ndarray) -> None | np.ndarray:
     """Extracts arc lengths from trajectory data and returns them as numpy array
 
     Args:
