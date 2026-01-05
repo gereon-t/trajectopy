@@ -138,7 +138,9 @@ class HeaderData:
 
     @property
     def gps_week(self) -> int:
-        return int(self.data.get("gps_week", np.floor((datetime.now() - GPS_WEEK_ZERO).days / 7)))
+        return int(
+            self.data.get("gps_week", np.floor((datetime.now(tz=datetime.timezone.utc) - GPS_WEEK_ZERO).days / 7))
+        )
 
     @property
     def time_offset(self) -> float:
