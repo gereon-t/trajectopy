@@ -11,7 +11,7 @@ import numpy as np
 from trajectopy.core.settings import AlignmentEstimationSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
-from trajectopy.readers.header import HeaderData
+from trajectopy.readers.ascii import HeaderData
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult

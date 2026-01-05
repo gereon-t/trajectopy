@@ -7,7 +7,7 @@ import pandas as pd
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.readers.header import HeaderData
+from trajectopy.readers.ascii import HeaderData
 from trajectopy.utils.common import rms
 from trajectopy.utils.definitions import Sorting
 

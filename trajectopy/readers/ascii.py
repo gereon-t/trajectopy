@@ -1,7 +1,7 @@
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from io import StringIO
 
 import numpy as np
@@ -138,9 +138,7 @@ class HeaderData:
 
     @property
     def gps_week(self) -> int:
-        return int(
-            self.data.get("gps_week", np.floor((datetime.now(tz=datetime.timezone.utc) - GPS_WEEK_ZERO).days / 7))
-        )
+        return int(self.data.get("gps_week", np.floor((datetime.now(tz=timezone.utc) - GPS_WEEK_ZERO).days / 7)))
 
     @property
     def time_offset(self) -> float:

@@ -3,8 +3,7 @@ import unittest
 import numpy as np
 
 from trajectopy.readers import ascii as ascii_reader
-from trajectopy.readers import header as header_reader
-from trajectopy.readers.ascii import extract_trajectory_rotations
+from trajectopy.readers.ascii import extract_trajectory_rotations, HeaderData
 
 
 class TestReadersErrors(unittest.TestCase):
@@ -13,7 +12,7 @@ class TestReadersErrors(unittest.TestCase):
 
     def test_header_from_string_defaults(self):
         content = "#name Test\n#fields t,px,py,pz\n"
-        hd = header_reader.HeaderData.from_string(content)
+        hd = HeaderData.from_string(content)
         self.assertEqual(hd.name, "Test")
         self.assertEqual(hd.fields, ["t", "px", "py", "pz"])
 

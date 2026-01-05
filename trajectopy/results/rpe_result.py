@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from trajectopy.core.settings import PairDistanceUnit
-from trajectopy.readers.header import HeaderData
+from trajectopy.readers.ascii import HeaderData
 
 
 @dataclass

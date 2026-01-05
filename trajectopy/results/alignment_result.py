@@ -7,7 +7,7 @@ from trajectopy.processing.lib.alignment.parameters import (
     AlignmentParameters,
     SensorRotationParameters,
 )
-from trajectopy.readers.header import HeaderData
+from trajectopy.readers.ascii import HeaderData
 
 
 @dataclass
