@@ -412,7 +412,7 @@ def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: list[int], header_
         header_data (HeaderData): Holds information about the header of the trajectory file
 
     Returns:
-        np.ndarray: GPS seconds of week (SOW) read from the trajectory file
+        np.ndarray: Unix timestamps converted from GPS seconds of week
     """
     return (
         trajectory_data[:, time_columns].astype(float).flatten()

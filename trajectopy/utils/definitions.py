@@ -79,7 +79,7 @@ UNIT_FORMAT_RULES: dict[Unit, dict[str, tuple[float, str, int]]] = {
 
 
 GPS_LEAP_SECONDS = 18
-GPS_WEEK_ZERO = datetime.datetime(1980, 1, 6, 0, 0, 0)
+GPS_WEEK_ZERO = datetime.datetime(1980, 1, 6, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 
 class TimeFormat(Enum):
