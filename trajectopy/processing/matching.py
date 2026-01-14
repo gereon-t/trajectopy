@@ -3,6 +3,7 @@ import logging
 
 import numpy as np
 from scipy.spatial import KDTree
+from scipy.spatial.transform import Slerp
 
 from trajectopy.core import settings
 from trajectopy.core.positions import Positions
@@ -158,6 +159,40 @@ def _match_trajectories_interpolation(
     interpolate(trajectory, other.timestamps)
     trajectory.path_lengths = copy.deepcopy(other.path_lengths)
 
+    return trajectory, other
+
+
+def _match_trajectories_path_length_interpolation(
+    trajectory: Trajectory, other: Trajectory
+) -> tuple[Trajectory, Trajectory]:
+    """Matches both trajectories based on their path lengths.
+
+    After this operation, both trajectories will have the length of the test trajectory.
+    This means that the reference trajectory may be modified.
+
+    Args:
+        trajectory (Trajectory): Trajectory to match.
+        other (Trajectory): Other trajectory to match against.
+
+    Returns:
+        Tuple[Trajectory, Trajectory]: Matched trajectories.
+    """
+    x_i = np.interp(other.timestamps, trajectory.timestamps, trajectory.positions.x)
+    y_i = np.interp(other.timestamps, trajectory.timestamps, trajectory.positions.y)
+    z_i = np.interp(other.timestamps, trajectory.timestamps, trajectory.positions.z)
+
+    if trajectory.has_orientation:
+        slerp = Slerp(trajectory.timestamps, trajectory.rotations)
+        r_i = slerp(other.timestamps)
+        rotations = Rotations.from_quat(r_i.as_quat())
+
+    trajectory = Trajectory(
+        name=trajectory.name,
+        positions=Positions(np.c_[x_i, y_i, z_i], local_transformer=trajectory.positions.local_transformer),
+        rotations=rotations if trajectory.has_orientation else None,
+        sorting=trajectory.sorting,
+        path_lengths=np.interp(other.timestamps, trajectory.timestamps, trajectory.path_lengths),
+    )
     return trajectory, other
 
 

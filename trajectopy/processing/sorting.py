@@ -194,6 +194,19 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) ->
 def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
     idx_sort = _mst_sorting(xyz=xyz_unsorted)
 
+    if len(idx_sort) < len(xyz_unsorted):
+        logger.warning(
+            "Some points were missing during sorting! This can happen if points are very close to each other."
+        )
+        missing_idx = list(set(range(len(xyz_unsorted))) - set(idx_sort))
+        logger.info("Inserting %i missing points back into sorted trajectory.", len(missing_idx))
+        for miss_idx in missing_idx:
+            # find nearest neighbor in sorted indices
+            dists = np.linalg.norm(xyz_unsorted[idx_sort, :] - xyz_unsorted[miss_idx, :], axis=1)
+            nn_idx = np.argmin(dists)
+            # insert missing index after nearest neighbor
+            idx_sort.insert(nn_idx + 1, miss_idx)
+
     # Set start position of lap as the position with the maximum z-value
     idx_sort = _begin_with(idx=idx_sort, begin=int(np.argmax(xyz_unsorted[:, 2])))
 
