@@ -36,7 +36,7 @@ def approximate_cubic(
     )
 
     traj_approx = trajectory if inplace else trajectory.copy()
-    traj_approx.positions.xyz = xyz_approx[trajectory.sort_switching_index, :]
+    traj_approx.positions.xyz = xyz_approx
 
     if not traj_approx.has_orientation:
         return traj_approx
@@ -46,7 +46,7 @@ def approximate_cubic(
         quat=trajectory.quat,
         win_size=approximation_settings.rotation_window_size,
     )
-    traj_approx.rotations = Rotations.from_quat(quat_approx[trajectory.sort_switching_index, :])
+    traj_approx.rotations = Rotations.from_quat(quat_approx)
 
     return traj_approx
 

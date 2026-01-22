@@ -341,9 +341,10 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        entry_pair.entry.trajectory.sorting = (
+        new_sorting = (
             Sorting.TIME if entry_pair.entry.trajectory.sorting == Sorting.PATH_LENGTH else Sorting.PATH_LENGTH
         )
+        entry_pair.entry.trajectory.set_sorting(new_sorting)
         return (entry_pair.entry,)
 
     @staticmethod

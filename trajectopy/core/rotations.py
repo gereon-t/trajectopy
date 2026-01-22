@@ -18,17 +18,53 @@ class Rotations(Rotation):
 
     @classmethod
     def from_euler(cls, seq: str, angles: np.ndarray, degrees: bool = False) -> "Rotations":
-        return super().from_euler(seq, angles, degrees)
+        rot = Rotation.from_euler(seq, angles, degrees)
+        return cls.from_quat(rot.as_quat())
 
     @classmethod
     def from_quat(cls, quat: np.ndarray) -> "Rotations":
-        return super().from_quat(quat)
+        # Use object.__new__ to create instance, then initialize via Rotation
+        instance = super().from_quat(quat)
+        instance.__class__ = cls
+        return instance
+
+    @classmethod
+    def from_matrix(cls, matrix: np.ndarray) -> "Rotations":
+        instance = super().from_matrix(matrix)
+        instance.__class__ = cls
+        return instance
+
+    @classmethod
+    def from_rotvec(cls, rotvec: np.ndarray) -> "Rotations":
+        instance = super().from_rotvec(rotvec)
+        instance.__class__ = cls
+        return instance
+
+    @classmethod
+    def identity(cls, num: int = 1) -> "Rotations":
+        instance = super().identity(num)
+        instance.__class__ = cls
+        return instance
+
+    def __mul__(self, other: "Rotation") -> "Rotations":
+        result = super().__mul__(other)
+        return Rotations.from_quat(result.as_quat())
 
     def __sub__(self, other: "Rotations") -> "Rotations":
-        return self * other.inv()
+        result = self * other.inv()
+        return Rotations.from_quat(result.as_quat())
 
     def __add__(self, other: "Rotations") -> "Rotations":
-        return self * other
+        result = self * other
+        return Rotations.from_quat(result.as_quat())
+
+    def inv(self) -> "Rotations":
+        result = super().inv()
+        return Rotations.from_quat(result.as_quat())
+
+    def mean(self, weights: np.ndarray | None = None) -> "Rotations":
+        result = super().mean(weights)
+        return Rotations.from_quat(result.as_quat())
 
     def copy(self) -> "Rotations":
         return copy.deepcopy(self)

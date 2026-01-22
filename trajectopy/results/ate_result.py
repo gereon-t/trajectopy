@@ -160,31 +160,31 @@ class ATEResult:
 
     @property
     def _sorted_abs_pos_dev(self) -> np.ndarray:
-        """Returns absolute deviations sorted according to the trajectory's sorting index.
+        """Returns absolute deviations (trajectory data is always stored sorted).
 
         Returns:
-            np.ndarray: Sorted absolute position deviations.
+            np.ndarray: Position deviations.
         """
-        return self.abs_dev.pos_dev[self.trajectory.sorting_index]
+        return self.abs_dev.pos_dev
 
     @property
     def _sorted_directed_pos_dev(self) -> np.ndarray:
-        """Returns directed absolute deviations sorted according to the trajectory's sorting index.
+        """Returns directed absolute deviations (trajectory data is always stored sorted).
 
         Returns:
-            np.ndarray: Sorted directed position deviations.
+            np.ndarray: Directed position deviations.
         """
-        return self.abs_dev.directed_pos_dev[self.trajectory.sorting_index]
+        return self.abs_dev.directed_pos_dev
 
     @property
     def sorted_abs_rot_dev(self) -> Rotations:
-        """Returns absolute rotation deviations sorted according to the trajectory's sorting index.
+        """Returns absolute rotation deviations (trajectory data is always stored sorted).
 
         Returns:
-            Rotations: Sorted absolute rotation deviations.
+            Rotations: Rotation deviations.
         """
         if self.abs_dev.rot_dev is not None:
-            return Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[self.trajectory.sorting_index])
+            return self.abs_dev.rot_dev
 
     @property
     def has_orientation(self) -> bool:

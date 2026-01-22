@@ -35,7 +35,7 @@ def sort_spatially(
     arg_sort_sort_idx = np.argsort(sort_idx)
     trajectory = trajectory.mask(sorted(sort_idx), inplace=inplace)
     trajectory.path_lengths = arc_lengths[arg_sort_sort_idx]
-    trajectory.sorting = Sorting.PATH_LENGTH
+    trajectory.set_sorting(Sorting.PATH_LENGTH)
     return trajectory
 
 

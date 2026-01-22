@@ -176,10 +176,10 @@ class TestSorting(unittest.TestCase):
         """Test lap division on already sorted trajectory."""
         # Create a trajectory that's already sorted
         sorted_traj = self.sorted_trajectory.copy()
-        sorted_traj.sorting = Sorting.PATH_LENGTH
         sorted_traj.path_lengths = np.cumsum(
             np.r_[0, np.sqrt(np.sum(np.diff(sorted_traj.positions.xyz, axis=0) ** 2, axis=1))]
         )
+        sorted_traj.set_sorting(Sorting.PATH_LENGTH)
 
         laps = divide_into_laps(trajectory=sorted_traj, sorting_settings=SortingSettings(), return_lap_indices=False)
 

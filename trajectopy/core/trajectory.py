@@ -62,7 +62,7 @@ class Trajectory:
                 f"Number of positions ({len(positions)}) and rotations ({len(rotations)}) do not match!"
             )
 
-        self.sorting = sorting
+        self._sorting = sorting
 
         # pose
         self.positions = positions
@@ -86,6 +86,9 @@ class Trajectory:
             logger.info("Path lengths were not provided or had wrong dimensions. Path lengths were computed instead.")
 
         self.name = name or f"Trajectory {Trajectory._counter}"
+
+        # Sort data according to initial sorting strategy
+        self._apply_sorting()
 
         Trajectory._counter += 1
 
@@ -236,14 +239,48 @@ class Trajectory:
         return 0.0 if len(self.path_lengths) == 0 else self.path_lengths[-1]
 
     @property
-    def sort_switching_index(self) -> np.ndarray:
-        """Returns an array of indices that would switch the current sorting (e.g., unsort the data)."""
-        return np.argsort(self.sorting_index)
+    def sorting(self) -> Sorting:
+        """Returns the current sorting strategy (read-only).
 
-    @property
-    def sorting_index(self) -> np.ndarray:
-        """Returns the indices used to sort the trajectory based on the current `sorting` attribute (Time or Path Length)."""
-        return np.argsort(self.timestamps) if self.sorting == Sorting.TIME else np.argsort(self.path_lengths)
+        To change sorting, use `set_sorting()` which physically reorders the data.
+        """
+        return self._sorting
+
+    def set_sorting(self, sorting: Sorting) -> None:
+        """Changes the sorting strategy and physically reorders all trajectory data.
+
+        After calling this method, all data arrays (positions, rotations, timestamps,
+        path_lengths, velocities) will be reordered according to the new sorting.
+
+        Args:
+            sorting (Sorting): The new sorting strategy (TIME or ARC_LENGTH).
+        """
+        if sorting == self._sorting:
+            return
+
+        self._sorting = sorting
+        self._apply_sorting()
+
+    def _apply_sorting(self) -> None:
+        """Internal method to physically reorder all data according to current sorting."""
+        if len(self) == 0:
+            return
+
+        sort_index = np.argsort(self.timestamps) if self._sorting == Sorting.TIME else np.argsort(self.path_lengths)
+
+        # Check if already sorted
+        if np.array_equal(sort_index, np.arange(len(self))):
+            return
+
+        self.timestamps = self.timestamps[sort_index]
+        self.path_lengths = self.path_lengths[sort_index]
+        self.positions.xyz = self.positions.xyz[sort_index, :]
+
+        if self.rotations is not None:
+            self.rotations = Rotations.from_quat(self.rotations.as_quat()[sort_index, :])
+
+        if self._velocity_xyz is not None:
+            self._velocity_xyz = self._velocity_xyz[sort_index, :]
 
     @property
     def index(self) -> np.ndarray:
@@ -251,16 +288,12 @@ class Trajectory:
         Returns the independent variable currently parameterizing the trajectory.
         This is either the Timestamp vector or the Path Length vector, depending on `self.sorting`.
         """
-        return (
-            self.timestamps[self.sorting_index]
-            if self.sorting == Sorting.TIME
-            else self.path_lengths[self.sorting_index]
-        )
+        return self.timestamps if self._sorting == Sorting.TIME else self.path_lengths
 
     @property
     def datetimes(self) -> np.ndarray:
         """Returns the timestamps converted to Pandas datetime objects (unit='s')."""
-        return pd.to_datetime(self.timestamps[self.sorting_index], unit="s")
+        return pd.to_datetime(self.timestamps, unit="s")
 
     @property
     def index_unit(self) -> str:
@@ -306,26 +339,27 @@ class Trajectory:
     @property
     def xyz(self) -> np.ndarray:
         """
-        Returns the XYZ coordinates sorted according to the current `sorting` strategy.
-        Note: This differs from `self.positions.xyz`, which retains the original order.
+        Returns the XYZ coordinates.
+
+        Since trajectory data is always stored in sorted order (by time or arc length),
+        this is equivalent to `self.positions.xyz`.
         """
-        return self.positions.xyz[self.sorting_index]
+        return self.positions.xyz
 
     @property
     def quat(self) -> np.ndarray:
         """
-        Returns the quaternions sorted according to the current `sorting` strategy.
-        Returns zeros if no rotations are present.
+        Returns the quaternions. Returns zeros if no rotations are present.
         """
         if self.rotations is None:
             return np.zeros((len(self), 4))
 
-        return self.rotations.as_quat()[self.sorting_index]
+        return self.rotations.as_quat()
 
     @property
     def rpy(self) -> np.ndarray:
         """
-        Returns the Roll-Pitch-Yaw angles sorted according to the current `sorting` strategy.
+        Returns the Roll-Pitch-Yaw angles (in radians).
         """
         return Rotations.from_quat(self.quat).as_euler(seq="xyz")
 
@@ -363,6 +397,16 @@ class Trajectory:
         self.positions.xyz = xyz
         self.rotations = Rotations.from_matrix(matrices)
 
+    @property
+    def time_start(self) -> float:
+        """Returns the minimum timestamp of the trajectory."""
+        return float(np.min(self.timestamps)) if len(self.timestamps) > 0 else 0.0
+
+    @property
+    def time_end(self) -> float:
+        """Returns the maximum timestamp of the trajectory."""
+        return float(np.max(self.timestamps)) if len(self.timestamps) > 0 else 0.0
+
     def overlaps_with(self, other: "Trajectory") -> bool:
         """
         Checks if the time span of this trajectory overlaps with another.
@@ -373,12 +417,10 @@ class Trajectory:
         Returns:
             bool: True if the time ranges overlap, False otherwise.
         """
-        start_test = self.timestamps[0]
-        end_test = self.timestamps[-1]
-        start_ref = other.timestamps[0]
-        end_ref = other.timestamps[-1]
+        if len(self) == 0 or len(other) == 0:
+            return False
 
-        return (start_test <= end_ref and end_test >= start_ref) or (start_ref <= end_test and end_ref >= start_test)
+        return self.time_start <= other.time_end and self.time_end >= other.time_start
 
     def crop(self, t_start: float, t_end: float, inverse: bool = False, inplace: bool = True) -> "Trajectory":
         """
