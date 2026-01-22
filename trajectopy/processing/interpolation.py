@@ -49,18 +49,35 @@ def _interpolate_linear(trajectory: Trajectory, timestamps: list | np.ndarray, i
 
     Returns:
         Trajectory: Interpolated trajectory.
+
+    Raises:
+        ValueError: If no valid timestamps remain after cropping to trajectory range.
     """
     timestamps = np.sort(timestamps)
     trajectory = trajectory if inplace else trajectory.copy()
+
+    if len(trajectory.timestamps) == 0:
+        raise ValueError("Cannot interpolate trajectory with no timestamps")
+
     tstamps_cropped = np.array(
         [tstamp for tstamp in timestamps if trajectory.timestamps[0] <= tstamp <= trajectory.timestamps[-1]]
     )
 
+    if len(tstamps_cropped) == 0:
+        raise ValueError(
+            f"No valid timestamps for interpolation. Target timestamps [{timestamps[0]:.3f}, {timestamps[-1]:.3f}] "
+            f"do not overlap with trajectory timestamps [{trajectory.timestamps[0]:.3f}, {trajectory.timestamps[-1]:.3f}]"
+        )
+
+    # Store original timestamps before modifying positions
+    original_timestamps = trajectory.timestamps.copy()
+    original_path_lengths = trajectory.path_lengths.copy()
+
     _interpolate_positions_linear(trajectory, tstamps_cropped)
     _interpolate_rotations_linear(trajectory, tstamps_cropped)
-    trajectory.velocity_xyz = gradient_3d(xyz=trajectory.positions.xyz, tstamps=tstamps_cropped)
-    trajectory.path_lengths = np.interp(tstamps_cropped, trajectory.timestamps, trajectory.path_lengths)
+    trajectory.path_lengths = np.interp(tstamps_cropped, original_timestamps, original_path_lengths)
     trajectory.timestamps = tstamps_cropped
+    trajectory.velocity_xyz = gradient_3d(xyz=trajectory.positions.xyz, tstamps=trajectory.timestamps)
 
     logger.info("Interpolated %s", trajectory.name)
 

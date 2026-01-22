@@ -132,7 +132,5 @@ class Voxelizer:
 
     def points_from_voxel_set(self, voxel_set: frozenset[str]) -> np.ndarray:
         return (
-            np.row_stack([self.voxels[voxel].points for voxel in voxel_set])
-            if voxel_set
-            else np.array([], dtype=float)
+            np.vstack([self.voxels[voxel].points for voxel in voxel_set]) if voxel_set else np.array([], dtype=float)
         )

@@ -71,8 +71,15 @@ def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: 
     """
     logger.info("Using window technique for rotation averaging.")
 
+    if len(index) == 0:
+        return quat
+
     # define window
-    steps = rndodd(len(index) / len(np.unique(np.round(index / (win_size)))))
+    unique_bins = np.unique(np.round(index / win_size))
+    if len(unique_bins) == 0:
+        return quat
+
+    steps = rndodd(len(index) / len(unique_bins))
     ext = int(np.floor(steps / 2))
 
     if ext == 0:

@@ -410,11 +410,14 @@ class Positions:
         Returns:
             tuple: Key tuple for hashing.
         """
+        if len(self.xyz) == 0:
+            return (self.epsg, 0.0, 0.0, 0.0, self.pipeline_str)
+
         return (
             self.epsg,
-            self.xyz[:, 0] @ self.xyz[:, 0],
-            self.xyz[:, 1] @ self.xyz[:, 1],
-            self.xyz[:, 2] @ self.xyz[:, 2],
+            float(self.xyz[:, 0] @ self.xyz[:, 0]),
+            float(self.xyz[:, 1] @ self.xyz[:, 1]),
+            float(self.xyz[:, 2] @ self.xyz[:, 2]),
             self.pipeline_str,
         )
 

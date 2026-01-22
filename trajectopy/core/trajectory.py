@@ -275,7 +275,12 @@ class Trajectory:
     @property
     def data_rate(self) -> float:
         """Calculates the average data rate (frequency in Hz) based on timestamp differences."""
-        return 1 / np.mean(np.diff(np.sort(self.timestamps)))
+        if len(self.timestamps) < 2:
+            return 0.0
+        mean_diff = np.mean(np.diff(np.sort(self.timestamps)))
+        if mean_diff == 0:
+            return float("inf")
+        return 1 / mean_diff
 
     @property
     def velocity_xyz(self) -> np.ndarray:

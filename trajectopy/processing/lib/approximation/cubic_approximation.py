@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy.sparse import csr_matrix, lil_matrix
 
+from trajectopy.exceptions import ApproximationError
 from trajectopy.utils.common import sparse_least_squares
 
 # logger configuration
@@ -139,6 +140,12 @@ class CubicApproximation:
             ):
                 intervals[-1].end = current_interval_obj.end
                 intervals[-1].values.extend(current_interval_obj.values)
+
+        if not intervals:
+            raise ApproximationError(
+                "No intervals could be created for approximation. Consider increasing the number of "
+                "observations or reducing the minimum window size / observation count."
+            )
 
         logger.info(
             "Average observation count per interval: %.2f",

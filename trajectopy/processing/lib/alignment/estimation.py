@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from numpy import matlib
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve
 from scipy.stats.distributions import chi2
@@ -481,10 +480,9 @@ class AlignmentEstimator:
 
         # column indices [0,1,2,3,4,5; 6,7,8,9,10,11; 12,13,14,15,16,17; ...]
         col_idx_matrix = (
-            matlib.repmat(
+            np.tile(
                 np.arange(0, self.data.num_obs_per_epoch),
-                self.num_of_equations,
-                1,
+                (self.num_of_equations, 1),
             )
             + np.repeat(
                 np.arange(

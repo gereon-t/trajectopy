@@ -240,19 +240,22 @@ def read_string(input_str: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
         Tuple[HeaderData, np.ndarray]: Header data and data
     """
     header_data = HeaderData.from_string(input_str)
-    input_str = StringIO(input_str)
     try:
-        data = pd.read_csv(input_str, comment="#", header=None, sep=header_data.delimiter).to_numpy(dtype=dtype)
+        string_io = StringIO(input_str)
+        data = pd.read_csv(string_io, comment="#", header=None, sep=header_data.delimiter).to_numpy(dtype=dtype)
 
         if data.shape[1] == 1:
             logger.info("Assuming whitespaces as delimiter since imported data has only one column.")
-            data = pd.read_csv(input_str, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
+            string_io = StringIO(input_str)  # Create fresh StringIO for re-reading
+            data = pd.read_csv(string_io, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
     except Exception:
         try:
-            data = pd.read_csv(input_str, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
+            string_io = StringIO(input_str)
+            data = pd.read_csv(string_io, comment="#", header=None, sep="\\s+").to_numpy(dtype=dtype)
         except Exception:
             logger.warning("Could not read string using pandas. Trying numpy instead.")
-            data = np.loadtxt(input_str, comments="#")
+            string_io = StringIO(input_str)
+            data = np.loadtxt(string_io, comments="#")
     return header_data, data
 
 
@@ -471,7 +474,18 @@ def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.nd
 
     Returns:
         Positions: Positions read from the trajectory file
+
+    Raises:
+        ValueError: If required position fields (px, py, pz) are not found in header
     """
+    required_fields = ["px", "py", "pz"]
+    missing_fields = [f for f in required_fields if f not in header_data.fields]
+    if missing_fields:
+        raise ValueError(
+            f"Required position fields {missing_fields} not found in header. "
+            f"Available fields: {header_data.fields}"
+        )
+
     return Positions(
         xyz=trajectory_data[
             :,

@@ -20,7 +20,13 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
 
     Returns:
         Trajectory: Merged trajectory.
+
+    Raises:
+        ValueError: If no trajectories are provided.
     """
+    if not trajectories:
+        raise ValueError("Cannot merge empty list of trajectories")
+
     epsg_set = {t.positions.epsg for t in trajectories}
 
     if len(epsg_set) > 1:
@@ -63,8 +69,11 @@ def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
         Trajectory: Averaged trajectory.
 
     Raises:
-        ValueError: If trajectories have different lengths.
+        ValueError: If trajectories have different lengths or no trajectories provided.
     """
+    if not trajectories:
+        raise ValueError("Cannot average empty list of trajectories")
+
     lengths = {len(t) for t in trajectories}
 
     if len(lengths) != 1:

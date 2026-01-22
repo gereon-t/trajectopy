@@ -186,7 +186,7 @@ def adopt_first_position(trajectory: Trajectory, other: Trajectory, inplace: boo
     trajectory = trajectory if inplace else trajectory.copy()
     position_difference = other.positions.xyz[0, :] - trajectory.positions.xyz[0, :]
     trajectory.positions.xyz += position_difference
-    return other
+    return trajectory
 
 
 def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
@@ -207,7 +207,7 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: 
 
         trajectory.rotations = Rotations.from_euler(seq="xyz", angles=rpy + rotation_difference)
 
-    return other
+    return trajectory
 
 
 def align(

@@ -92,6 +92,12 @@ def lengths_from_xyz(xyz: np.ndarray) -> np.ndarray:
         logger.error("Invalid data type %s", type(xyz))
         return np.array([])
 
+    if len(xyz) == 0:
+        return np.array([])
+
+    if len(xyz) == 1:
+        return np.array([0.0])
+
     xyz_1 = xyz[0:-1, :]
     xyz_2 = xyz[1:, :]
 
@@ -112,9 +118,15 @@ def gradient_3d(xyz: np.ndarray, tstamps: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: Gradient of the trajectory [nx3].
     """
+    if len(xyz) <= 1:
+        return np.zeros((len(xyz), 3))
+
     # gradient (use target positions for this as they are probably more precise)
     diff = xyz[1:, :] - xyz[0:-1, :]
     t_diff = tstamps[1:] - tstamps[:-1]
+
+    # Protect against zero time differences (duplicate timestamps)
+    t_diff = np.where(t_diff == 0, np.finfo(float).eps, t_diff)
 
     # no gradient for last position
     return np.r_[diff / t_diff[:, None], np.zeros((1, 3))]
@@ -516,12 +528,19 @@ def derive_xlabel_from_sortings(trajectories_sorting: TrajectoriesSorting, all_u
 
 def get_axis_label(trajectories: list) -> tuple[str, str, str]:
     """Returns the unit of the axis"""
+    if not trajectories:
+        return "x [m]", "y [m]", "z [m]"
+
     if all(traj.positions.epsg == 0 for traj in trajectories):
         return "x [m]", "y [m]", "z [m]"
 
     unit_set = {
         traj.positions.crs.axis_info[0].unit_name if traj.positions.crs else "unknown" for traj in trajectories
     }
+
+    if not unit_set:
+        return "x [m]", "y [m]", "z [m]"
+
     unit_name = unit_set.pop().replace("metre", "m").replace("degree", "°")
 
     # there are multiple units

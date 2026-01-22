@@ -207,6 +207,9 @@ def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5, percentile: floa
     percentile_value = np.percentile(np.abs(l), percentile * 100)
     l = l[np.abs(l) <= percentile_value]
 
+    if len(l) == 0:
+        return 0.0
+
     auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
     num_bins = min(len(auto_bin_edges) - 1, 300)
     hist, bin_edges = np.histogram(l, bins=num_bins)
@@ -215,7 +218,7 @@ def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5, percentile: floa
     if mm:
         bin_edges *= 1000
     plt.stairs(hist, bin_edges, linewidth=linewidth)
-    return max(n_hist)
+    return max(n_hist) if len(n_hist) > 0 else 0.0
 
 
 def plot_rotation_ate_hist(devs: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> None:
@@ -601,6 +604,9 @@ def plot_ate_bars(
         Figure: Bar plot figure.
     """
     fig, ax = plt.subplots()
+
+    if not ate_results:
+        return fig
 
     bar_width = 0.9 / len(ate_results)
     characteristics = ["Min", "Max", "Mean", "Median", "RMS", "STD"]

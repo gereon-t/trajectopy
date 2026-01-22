@@ -375,10 +375,20 @@ def _cross_track_dev(*, p: np.ndarray, line_pts: list) -> tuple[float, float]:
     z_diff = diff[2]
 
     cross_track_direction = np.array([b[1] - a[1], -(b[0] - a[0])])
-    d_cross_h = (diff[:2] @ cross_track_direction[:2]) / np.linalg.norm(cross_track_direction[:2])
+    cross_track_norm = np.linalg.norm(cross_track_direction[:2])
+    # Protect against zero norm (coincident points)
+    if cross_track_norm < np.finfo(float).eps:
+        d_cross_h = 0.0
+    else:
+        d_cross_h = (diff[:2] @ cross_track_direction[:2]) / cross_track_norm
 
     line_direction = b - a
-    xy_diff_in_line_direction = (diff[:2] @ line_direction[:2]) / np.linalg.norm(line_direction[:2])
+    line_direction_norm = np.linalg.norm(line_direction[:2])
+    # Protect against zero norm (coincident points)
+    if line_direction_norm < np.finfo(float).eps:
+        xy_diff_in_line_direction = 0.0
+    else:
+        xy_diff_in_line_direction = (diff[:2] @ line_direction[:2]) / line_direction_norm
     d_cross_v = -np.sign(z_diff) * np.sqrt(z_diff**2 + xy_diff_in_line_direction**2)
 
     return d_cross_h, d_cross_v

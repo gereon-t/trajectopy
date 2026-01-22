@@ -31,11 +31,20 @@ def direct_helmert_transformation(
     Computes helmert transformation between two point sets
 
     Foerstner-Wrobel (2016) Photogrammetric Computer Vision pp. 406 - 411
+
+    Raises:
+        ValueError: If point sets are empty or have insufficient points.
     """
+    if len(xyz_from) == 0 or len(xyz_to) == 0:
+        raise ValueError("Cannot compute Helmert transformation with empty point sets")
+
     if len(weights) == 0:
         weights = np.ones((len(xyz_from),))
 
     sum_of_weights = np.sum(weights)
+    if sum_of_weights == 0:
+        raise ValueError("Sum of weights cannot be zero")
+
     weighted_centroid_from = np.sum(xyz_from * weights[:, None], axis=0) / sum_of_weights
 
     weighted_centroid_to = np.sum(xyz_to * weights[:, None], axis=0) / sum_of_weights
@@ -47,6 +56,10 @@ def direct_helmert_transformation(
 
     distances_from = np.linalg.norm(centered_from, axis=1)
     weighted_sum_of_squared_distances_from = (weights * distances_from) @ distances_from
+
+    # Protect against all points being coincident (zero distances)
+    if weighted_sum_of_squared_distances_from < np.finfo(float).eps:
+        raise ValueError("Cannot compute Helmert transformation: all source points are coincident")
 
     u, _, v = np.linalg.svd(moment_matrix, full_matrices=True)
 
