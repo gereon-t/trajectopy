@@ -194,7 +194,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                 dropdown_items=[
                     PlotableDropdownItem(
                         name=f"{traj.name} Velocity",
-                        data=traj.positions.xyz,  # unsorted here
+                        data=traj.positions.xyz,
                         color_data=traj.absolute_velocity,
                         colorbar_label="Velocity [m/s]",
                         x_label=x_label,

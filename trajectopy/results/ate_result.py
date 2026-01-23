@@ -159,34 +159,6 @@ class ATEResult:
         return self.trajectory.index
 
     @property
-    def _sorted_abs_pos_dev(self) -> np.ndarray:
-        """Returns absolute deviations (trajectory data is always stored sorted).
-
-        Returns:
-            np.ndarray: Position deviations.
-        """
-        return self.abs_dev.pos_dev
-
-    @property
-    def _sorted_directed_pos_dev(self) -> np.ndarray:
-        """Returns directed absolute deviations (trajectory data is always stored sorted).
-
-        Returns:
-            np.ndarray: Directed position deviations.
-        """
-        return self.abs_dev.directed_pos_dev
-
-    @property
-    def sorted_abs_rot_dev(self) -> Rotations:
-        """Returns absolute rotation deviations (trajectory data is always stored sorted).
-
-        Returns:
-            Rotations: Rotation deviations.
-        """
-        if self.abs_dev.rot_dev is not None:
-            return self.abs_dev.rot_dev
-
-    @property
     def has_orientation(self) -> bool:
         """Returns True if orientation is available.
 
@@ -198,17 +170,17 @@ class ATEResult:
     @property
     def pos_dev_x(self) -> np.ndarray:
         """Returns x deviations"""
-        return self._sorted_abs_pos_dev[:, 0]
+        return self.abs_dev.pos_dev[:, 0]
 
     @property
     def pos_dev_y(self) -> np.ndarray:
         """Returns y deviations"""
-        return self._sorted_abs_pos_dev[:, 1]
+        return self.abs_dev.pos_dev[:, 1]
 
     @property
     def pos_dev_z(self) -> np.ndarray:
         """Returns z deviations"""
-        return self._sorted_abs_pos_dev[:, 2]
+        return self.abs_dev.pos_dev[:, 2]
 
     @property
     def pos_bias_x(self) -> float:
@@ -258,7 +230,7 @@ class ATEResult:
     @cached_property
     def rot_bias_xyz(self) -> np.ndarray:
         """Returns roll, pitch and yaw bias"""
-        return self.sorted_abs_rot_dev.mean().as_euler(seq="xyz") if self.abs_dev.rot_dev is not None else np.zeros(3)
+        return self.abs_dev.rot_dev.mean().as_euler(seq="xyz") if self.abs_dev.rot_dev is not None else np.zeros(3)
 
     @property
     def rot_bias_x(self) -> np.ndarray:
@@ -280,21 +252,21 @@ class ATEResult:
         """
         Returns deviations of along track deviations
         """
-        return self._sorted_directed_pos_dev[:, 0]
+        return self.abs_dev.directed_pos_dev[:, 0]
 
     @property
     def pos_dev_cross_h(self) -> np.ndarray:
         """
         Returns deviations of horizontal cross track deviations
         """
-        return self._sorted_directed_pos_dev[:, 1]
+        return self.abs_dev.directed_pos_dev[:, 1]
 
     @property
     def pos_dev_cross_v(self) -> np.ndarray:
         """
         Returns deviations of vertical cross track deviations
         """
-        return self._sorted_directed_pos_dev[:, 2]
+        return self.abs_dev.directed_pos_dev[:, 2]
 
     @cached_property
     def rot_dev_xyz(self) -> np.ndarray:
@@ -302,7 +274,7 @@ class ATEResult:
         Returns rpy deviations
         """
         return (
-            self.sorted_abs_rot_dev.as_euler(seq="xyz")
+            self.abs_dev.rot_dev.as_euler(seq="xyz")
             if self.abs_dev.rot_dev is not None
             else np.zeros_like(self.abs_dev.pos_dev)
         )
@@ -312,7 +284,7 @@ class ATEResult:
         """
         Returns position deviations combined using the L2 norm
         """
-        return np.linalg.norm(self._sorted_abs_pos_dev, axis=1)
+        return np.linalg.norm(self.abs_dev.pos_dev, axis=1)
 
     @property
     def rot_dev_comb(self) -> np.ndarray:
@@ -320,9 +292,7 @@ class ATEResult:
         Returns rotation deviations as single rotation angles
         """
         return (
-            self.sorted_abs_rot_dev.rotangle
-            if self.abs_dev.rot_dev is not None
-            else np.zeros_like(self.abs_dev.pos_dev)
+            self.abs_dev.rot_dev.rotangle if self.abs_dev.rot_dev is not None else np.zeros_like(self.abs_dev.pos_dev)
         )
 
     @property
