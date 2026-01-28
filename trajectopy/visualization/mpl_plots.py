@@ -172,11 +172,11 @@ def _norm_hist(*, l, mm: bool = False, alpha: float = 0.5, norm: bool = True, pe
     """
     l = l[np.abs(l) > 1e-6]
 
-    percentile_value = np.percentile(np.abs(l), percentile * 100)
-    l = l[np.abs(l) <= percentile_value]
-
     if len(l) == 0:
         return 0.0
+
+    percentile_value = np.percentile(np.abs(l), percentile * 100)
+    l = l[np.abs(l) <= percentile_value]
 
     auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
     auto_num_bins = len(auto_bin_edges) - 1
@@ -204,11 +204,11 @@ def _stair_hist(*, l, mm: bool = False, linewidth: float = 1.5, percentile: floa
     """
     l = l[np.abs(l) > 1e-6]
 
-    percentile_value = np.percentile(np.abs(l), percentile * 100)
-    l = l[np.abs(l) <= percentile_value]
-
     if len(l) == 0:
         return 0.0
+
+    percentile_value = np.percentile(np.abs(l), percentile * 100)
+    l = l[np.abs(l) <= percentile_value]
 
     auto_bin_edges = np.histogram_bin_edges(l, bins="auto")
     num_bins = min(len(auto_bin_edges) - 1, 300)
