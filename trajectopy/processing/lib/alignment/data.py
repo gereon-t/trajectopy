@@ -10,7 +10,7 @@ from scipy.sparse import spdiags
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentSettings, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.matching import match_trajectories
+from trajectopy.processing.matching import match_all_trajectories_to_ref
 from trajectopy.utils.common import gradient_3d
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,9 @@ class AlignmentData:
         if len(self.traj_from) == 0 or len(self.traj_to) == 0:
             raise ValueError("At least one trajectory is empty after preprocessing!")
 
-        match_trajectories(trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings)
+        match_all_trajectories_to_ref(
+            trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings
+        )
 
         logger.info(
             "Using timespan of %.3f seconds between %.3f and %.3f.",
