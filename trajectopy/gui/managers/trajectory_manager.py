@@ -390,7 +390,7 @@ class TrajectoryManager(QObject):
             return
 
         for selected_entry in selected_entries:
-            logger.info(f"Dividing trajectory {selected_entry.trajectory.name} into laps ...")
+            logger.info("Dividing trajectory %s into laps ...", selected_entry.trajectory.name)
             laps = sorting.divide_into_laps(
                 trajectory=selected_entry.trajectory, sorting_settings=selected_entry.settings.sorting
             )

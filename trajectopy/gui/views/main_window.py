@@ -67,8 +67,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
-
-        self.computation_thread = QtCore.QThread(parent=self)
+        self.computation_thread: QtCore.QThread | None = None
 
         self.trajectory_manager = TrajectoryManager()
         self.ui_manager = UIManager(parent=self)
@@ -88,6 +87,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         )
 
         if not single_thread:
+            self.computation_thread = QtCore.QThread(parent=self)
             self.trajectory_manager.moveToThread(self.computation_thread)
             self.file_manager.moveToThread(self.computation_thread)
             logger.info("Multithreading enabled")
@@ -103,7 +103,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_progress_connections()
         self.setup_menu_bar()
 
-        self.computation_thread.start()
+        if self.computation_thread is not None:
+            self.computation_thread.start()
         self.show()
 
     def get_report_directory(self, report_output_path) -> str:
@@ -112,7 +113,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             return mkdtemp(prefix="trajectopy_reports_")
         else:
             self.temp_dir = False
-            return report_output_path
+            target_dir = os.path.abspath(report_output_path)
+            os.makedirs(target_dir, exist_ok=True)
+            return target_dir
 
     def get_report_settings(self, report_settings_path: str = "") -> ReportSettings:
         if report_settings_path:
@@ -174,15 +177,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         session_menu.addAction(save_session_action)
         menubar.addMenu(session_menu)
 
-        report_settings_action = QAction("Report Settings", parent=self)
-        report_settings_action.triggered.connect(self.handle_show_report_settings)
-        report_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
-        menubar.addAction(report_settings_action)
+        self.report_settings_action = QAction("Report Settings", parent=self)
+        self.report_settings_action.triggered.connect(self.handle_show_report_settings)
+        self.report_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
+        menubar.addAction(self.report_settings_action)
 
-        plot_settings_action = QAction("Plot Settings", parent=self)
-        plot_settings_action.triggered.connect(self.handle_show_mpl_settings)
-        plot_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.MPL)
-        menubar.addAction(plot_settings_action)
+        self.plot_settings_action = QAction("Plot Settings", parent=self)
+        self.plot_settings_action.triggered.connect(self.handle_show_mpl_settings)
+        self.plot_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.MPL)
+        menubar.addAction(self.plot_settings_action)
 
         plot_backend_menu = QtWidgets.QMenu("Plotting Backend", parent=self)
         self.plotly_action = QAction("Plotly (HTML)", parent=self, checkable=True)
@@ -208,17 +211,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def set_plotly_backend(self):
         self.plot_manager.set_plot_backend(PlotBackend.PLOTLY)
-        self.menuBar().actions()[1].setVisible(True)
-        self.menuBar().actions()[2].setVisible(False)
+        self.report_settings_action.setVisible(True)
+        self.plot_settings_action.setVisible(False)
 
     def set_matplotlib_backend(self):
         self.plot_manager.set_plot_backend(PlotBackend.MPL)
-        self.menuBar().actions()[1].setVisible(False)
-        self.menuBar().actions()[2].setVisible(True)
+        self.report_settings_action.setVisible(False)
+        self.plot_settings_action.setVisible(True)
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
-        self.computation_thread.quit()
-        self.computation_thread.wait()
+        if self.computation_thread and self.computation_thread.isRunning():
+            self.computation_thread.quit()
+            self.computation_thread.wait()
 
         if self.temp_dir:
             shutil.rmtree(self.report_output_path)

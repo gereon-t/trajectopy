@@ -66,7 +66,7 @@ class PlotManager(QObject):
 
     def set_plot_backend(self, plot_backend: PlotBackend) -> None:
         """Set the plot backend."""
-        logger.info(f"Setting plot backend to {plot_backend}")
+        logger.info("Setting plot backend to %s", plot_backend)
         self.plot_backend = plot_backend
 
     @show_progress

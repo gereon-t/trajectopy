@@ -69,13 +69,14 @@ from trajectopy.core.settings import (
     SortingSettings,
 )
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.exceptions import IOError  # Deprecated: use TrajectopyIOError
 from trajectopy.exceptions import (
     AlignmentError,
     AlignmentParametersError,
     ApproximationError,
-    IOError,
     PointSetError,
     TrajectopyError,
+    TrajectopyIOError,
     TrajectoryError,
 )
 from trajectopy.processing.alignment import align, apply_alignment, estimate_alignment
@@ -144,7 +145,8 @@ __all__ = [
     "TrajectoryError",
     "AlignmentError",
     "AlignmentParametersError",
-    "IOError",
+    "TrajectopyIOError",
+    "IOError",  # Deprecated: use TrajectopyIOError
     "ApproximationError",
     "PointSetError",
 ]

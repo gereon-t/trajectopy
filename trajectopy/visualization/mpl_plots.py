@@ -729,8 +729,10 @@ def plot_ate(
         )
 
         ax_pos.plot(index, dev.pos_dev_comb * plot_settings.unit_multiplier)
+        ax_pos.set_xlim(index[0], index[-1])
         if ax_rot is not None:
             ax_rot.plot(index, np.rad2deg(dev.rot_dev_comb))
+            ax_rot.set_xlim(index[0], index[-1])
 
     fig.legend([dev.name for dev in deviation_list], ncol=3, loc="upper center")
     plt.tight_layout()
@@ -803,11 +805,13 @@ def plot_ate_dof(
         label="Vertical Cross-Track" if plot_settings.directed_ate else "Z",
     )
     ax_pos.legend()
+    ax_pos.set_xlim(index[0], index[-1])
 
     if ax_rot is not None:
         ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_x), label="Roll")
         ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_y), label="Pitch")
         ax_rot.plot(index, np.rad2deg(ate_result.rot_dev_z), label="Yaw")
+        ax_rot.set_xlim(index[0], index[-1])
         ax_rot.legend()
 
     ax_pos.set_title(f"{ate_result.name}")
@@ -989,10 +993,9 @@ def plot_xyz(trajectories: list[Trajectory]) -> Figure:
 
         # xyz fig
         for j, ax in enumerate(axs_xyz):
-            ax.plot(
-                (traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.index),
-                xyz[:, j],
-            )
+            index = traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.index
+            ax.plot(index, xyz[:, j])
+            ax.set_xlim(index[0], index[-1])
 
     fig_xyz.legend(legend_names, ncol=4, loc="upper center")
     return fig_xyz
@@ -1019,15 +1022,12 @@ def plot_rpy(trajectories: list[Trajectory]) -> Figure | None:
             rpy = traj.rpy
             ylabels = ["roll [°]", "pitch [°]", "yaw [°]"]
             for j, (ax, yl) in enumerate(zip(axs_rpy, ylabels)):
-                ax.plot(
-                    (
-                        traj.datetimes
-                        if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
-                        else traj.index
-                    ),
-                    np.rad2deg(rpy[:, j]),
+                index = (
+                    traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.index
                 )
+                ax.plot(index, np.rad2deg(rpy[:, j]))
                 ax.set_ylabel(yl)
+                ax.set_xlim(index[0], index[-1])
             not_empty = True
 
     fig_rpy.legend(legend_names, ncol=4, loc="upper center")

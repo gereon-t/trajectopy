@@ -34,6 +34,7 @@ HEADER_KEYS = [
     "relative_dist_unit",
     "num_pairs",
     "rot_unit",
+    "euler_rot_seq",
     "time_format",
     "datetime_format",
     "datetime_timezone",
@@ -137,6 +138,10 @@ class HeaderData:
         return TIME_FORMAT_DICT[str(self.data.get("time_format", "unix")).lower()]
 
     @property
+    def euler_rot_seq(self) -> str:
+        return str(self.data.get("euler_rot_seq", "xyz"))
+
+    @property
     def gps_week(self) -> int:
         return int(self.data.get("gps_week", np.floor((datetime.now(tz=timezone.utc) - GPS_WEEK_ZERO).days / 7)))
 
@@ -212,6 +217,13 @@ def read_data(filename: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
         Tuple[HeaderData, np.ndarray]: Header data and data
     """
     header_data = HeaderData.from_file(filename)
+
+    with open(filename, encoding="utf-8") as handle:
+        has_data = any(line.strip() and not line.lstrip().startswith("#") for line in handle)
+    if not has_data:
+        logger.info("No trajectory data found in %s", filename)
+        return header_data, np.empty((0, len(header_data.fields)))
+
     try:
         data = pd.read_csv(filename, comment="#", header=None, sep=header_data.delimiter).to_numpy(dtype=dtype)
 
@@ -240,6 +252,12 @@ def read_string(input_str: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
         Tuple[HeaderData, np.ndarray]: Header data and data
     """
     header_data = HeaderData.from_string(input_str)
+
+    has_data = any(line.strip() and not line.lstrip().startswith("#") for line in input_str.splitlines())
+    if not has_data:
+        logger.info("No trajectory samples found in provided string input")
+        return header_data, np.empty((0, len(header_data.fields)))
+
     try:
         string_io = StringIO(input_str)
         data = pd.read_csv(string_io, comment="#", header=None, sep=header_data.delimiter).to_numpy(dtype=dtype)
@@ -320,8 +338,13 @@ def _extract_rotations_from_euler_angles(header_data: HeaderData, trajectory_dat
     Returns:
         Rotations: Rotations read from the trajectory file
     """
+    logger.info(
+        "Extracting rotations from euler angles with sequence '%s' and unit '%s'.",
+        header_data.euler_rot_seq,
+        header_data.rot_unit,
+    )
     return Rotations.from_euler(
-        seq="xyz",
+        seq=header_data.euler_rot_seq,
         angles=trajectory_data[
             :,
             [
@@ -435,18 +458,22 @@ def extract_trajectory_velocity_xyz(header_data: HeaderData, trajectory_data: np
     Returns:
         np.ndarray: Speeds read from the trajectory file
     """
-    return (
-        None
-        if any(item not in header_data.fields for item in ["vx", "vy", "vz"])
-        else trajectory_data[
-            :,
-            [
-                header_data.fields.index("vx"),
-                header_data.fields.index("vy"),
-                header_data.fields.index("vz"),
-            ],
-        ].astype(float)
-    )
+    if any(item not in header_data.fields for item in ["vx", "vy", "vz"]):
+        return None
+
+    velocity = trajectory_data[
+        :,
+        [
+            header_data.fields.index("vx"),
+            header_data.fields.index("vy"),
+            header_data.fields.index("vz"),
+        ],
+    ].astype(float)
+
+    rot_mat = get_rot_matrix(header_data.nframe)
+    velocity = (rot_mat @ velocity.T).T
+    logger.info("Applied nframe '%s' to velocity (converted to ENU).", header_data.nframe)
+    return velocity
 
 
 def extract_trajectory_path_lengths(header_data: HeaderData, trajectory_data: np.ndarray) -> None | np.ndarray:
@@ -486,14 +513,27 @@ def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.nd
             f"Available fields: {header_data.fields}"
         )
 
+    xyz = trajectory_data[
+        :,
+        [
+            header_data.fields.index("px"),
+            header_data.fields.index("py"),
+            header_data.fields.index("pz"),
+        ],
+    ].astype(float)
+
+    if header_data.epsg == 0:
+        rot_mat = get_rot_matrix(header_data.nframe)
+        xyz = (rot_mat @ xyz.T).T
+        logger.info("Applied nframe '%s' to positions (EPSG=0, converted to ENU).", header_data.nframe)
+    else:
+        logger.info(
+            "Skipped nframe '%s' for positions (EPSG=%s, CRS-defined coordinates).",
+            header_data.nframe,
+            header_data.epsg,
+        )
+
     return Positions(
-        xyz=trajectory_data[
-            :,
-            [
-                header_data.fields.index("px"),
-                header_data.fields.index("py"),
-                header_data.fields.index("pz"),
-            ],
-        ].astype(float),
+        xyz=xyz,
         epsg=header_data.epsg,
     )

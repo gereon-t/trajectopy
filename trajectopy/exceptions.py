@@ -25,10 +25,14 @@ class AlignmentParametersError(TrajectopyError):
     pass
 
 
-class IOError(TrajectopyError):
+class TrajectopyIOError(TrajectopyError):
     """I/O errors."""
 
     pass
+
+
+# Deprecated alias for backwards compatibility
+IOError = TrajectopyIOError  # noqa: A001
 
 
 class ApproximationError(TrajectopyError):

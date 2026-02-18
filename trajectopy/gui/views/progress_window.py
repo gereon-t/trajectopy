@@ -2,8 +2,11 @@ from PyQt6 import QtCore, QtWidgets
 
 
 class ProgressWindow(QtWidgets.QMainWindow):
+    """A modal-like progress window that shows during long operations."""
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
+        self._show_count = 0  # Track nested show requests
         self.setupUi()
 
     def center(self):
@@ -62,8 +65,12 @@ class ProgressWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def handle_show_request(self) -> None:
-        self.show()
+        self._show_count += 1
+        if self._show_count == 1:
+            self.show()
 
     @QtCore.pyqtSlot()
     def handle_close_request(self) -> None:
-        self.close()
+        self._show_count = max(0, self._show_count - 1)
+        if self._show_count == 0:
+            self.close()

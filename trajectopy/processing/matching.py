@@ -3,7 +3,6 @@ import logging
 
 import numpy as np
 from scipy.spatial import KDTree
-from scipy.spatial.transform import Slerp
 
 from trajectopy.core import settings
 from trajectopy.core.positions import Positions

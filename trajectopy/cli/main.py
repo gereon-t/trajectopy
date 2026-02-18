@@ -54,13 +54,15 @@ def main():
     try:
         from trajectopy.gui.app import main as gui_main
 
-        gui_main(
+        exit_code = gui_main(
             single_thread=args.single_thread,
             report_output_path=args.report_path,
             report_settings_path=args.report_settings,
             mpl_plot_settings_path=args.mpl_settings,
             mapbox_token=args.mapbox_token,
         )
+        if exit_code is not None:
+            sys.exit(exit_code)
     except ImportError:
         print("GUI dependencies not installed. Install with: pip install 'trajectopy[gui]'")
         sys.exit(1)

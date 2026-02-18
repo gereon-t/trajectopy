@@ -46,6 +46,7 @@ Headers start with `#` and configure how data is interpreted:
 | `#delimiter` | Column separator | `,` | Any character |
 | `#nframe` | Navigation frame | `enu` | `enu`, `ned` |
 | `#rot_unit` | Rotation unit | `rad` | `rad`, `deg` |
+| `#euler_rot_seq` | Sequence of axed for Euler angles | `xyz` |  Up to 3 characters belonging to the set {`X`, `Y`, `Z`} for intrinsic rotations, or {`x`, `y`, `z`} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call. |
 | `#time_format` | Time format | `unix` | `unix`, `datetime`, `gps_sow` |
 | `#time_offset` | Time offset (seconds) | `0.0` | Any float |
 | `#datetime_format` | Datetime string format | `%Y-%m-%d %H:%M:%S.%f` | strftime format |
