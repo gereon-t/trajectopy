@@ -12,7 +12,7 @@ axes.labelsize: 14
 axes.titlesize: 14
 axes.grid: True
 axes.axisbelow: True
-axes.prop_cycle: cycler("color", ["#1E88E5", "#FFC107", "#004D40", "#D81B60", "#2bd2bb", "#a3bbf1", "#3c41fd", "#cc5510", "#3b0732", "#88122b", "#bccb70", "#dc9c54"])
+axes.prop_cycle: cycler("color", ["#004e9f", "#fcba00", "#004D40", "#D81B60", "#2bd2bb", "#a3bbf1", "#3c41fd", "#cc5510", "#3b0732", "#88122b", "#bccb70", "#dc9c54"])
 
 grid.color: gray
 grid.alpha: 0.3
