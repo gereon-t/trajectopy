@@ -7,6 +7,7 @@ from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import InterpolationMethod
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.utils.common import gradient_3d
+from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,9 @@ def _interpolate_linear(trajectory: Trajectory, timestamps: list | np.ndarray, i
     timestamps = np.sort(timestamps)
     trajectory = trajectory if inplace else trajectory.copy()
 
+    initial_sorting = trajectory.sorting
+    trajectory.set_sorting(Sorting.TIME)
+
     if len(trajectory.timestamps) == 0:
         raise ValueError("Cannot interpolate trajectory with no timestamps")
 
@@ -81,6 +85,7 @@ def _interpolate_linear(trajectory: Trajectory, timestamps: list | np.ndarray, i
 
     logger.info("Interpolated %s", trajectory.name)
 
+    trajectory.set_sorting(initial_sorting)
     return trajectory
 
 
