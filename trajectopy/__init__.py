@@ -94,6 +94,7 @@ from trajectopy.processing.sorting import sort_spatially
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
+from trajectopy.utils.common import Sorting
 
 __all__ = [
     # Version
@@ -149,4 +150,6 @@ __all__ = [
     "IOError",  # Deprecated: use TrajectopyIOError
     "ApproximationError",
     "PointSetError",
+    # Sorting
+    "Sorting",
 ]
