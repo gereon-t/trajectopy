@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 
 from trajectopy.core.positions import Positions

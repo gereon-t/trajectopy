@@ -6,7 +6,7 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import MatchingMethod, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.matching import match_all_trajectories_to_ref
+from trajectopy.processing.matching import match_trajectories
 
 
 class TestMatching(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestMatching(unittest.TestCase):
         """Test basic temporal matching."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=0.5)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -72,7 +72,7 @@ class TestMatching(unittest.TestCase):
         """Test temporal matching with tight time threshold."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=0.01)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -88,7 +88,7 @@ class TestMatching(unittest.TestCase):
         """Test basic spatial matching."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL, max_distance=5.0)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -104,7 +104,7 @@ class TestMatching(unittest.TestCase):
         """Test spatial matching respects distance constraint."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL, max_distance=1.0)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -118,7 +118,7 @@ class TestMatching(unittest.TestCase):
         """Test interpolation-based matching."""
         settings = MatchingSettings(method=MatchingMethod.INTERPOLATION, max_gap_size=1.0)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -136,7 +136,7 @@ class TestMatching(unittest.TestCase):
         """Test spatial interpolation-based matching."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED, max_distance=5.0, k_nearest=5)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -150,7 +150,7 @@ class TestMatching(unittest.TestCase):
         """Test that matching preserves rotation data."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=self.traj_test, other=self.traj_ref, matching_settings=settings
         )
 
@@ -172,7 +172,7 @@ class TestMatching(unittest.TestCase):
 
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=traj_test_no_rot, other=traj_ref_no_rot, matching_settings=settings
         )
 
@@ -191,7 +191,7 @@ class TestMatching(unittest.TestCase):
 
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=0.1)
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=traj_future, other=self.traj_ref, matching_settings=settings
         )
 
@@ -210,11 +210,11 @@ class TestMatching(unittest.TestCase):
         settings_temporal = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL)
         settings_spatial = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL)
 
-        test_temp, ref_temp = match_all_trajectories_to_ref(
+        test_temp, ref_temp = match_trajectories(
             trajectory=self.traj_test.copy(), other=self.traj_ref.copy(), matching_settings=settings_temporal
         )
 
-        test_spat, ref_spat = match_all_trajectories_to_ref(
+        test_spat, ref_spat = match_trajectories(
             trajectory=self.traj_test.copy(), other=self.traj_ref.copy(), matching_settings=settings_spatial
         )
 
@@ -234,7 +234,7 @@ class TestMatching(unittest.TestCase):
 
         traj_copy = self.traj_ref.copy()
 
-        test_matched, ref_matched = match_all_trajectories_to_ref(
+        test_matched, ref_matched = match_trajectories(
             trajectory=traj_copy, other=self.traj_ref, matching_settings=settings
         )
 

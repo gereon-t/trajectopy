@@ -7,7 +7,7 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.settings import MatchingMethod, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
-from trajectopy.processing.matching import match_all_trajectories_to_ref
+from trajectopy.processing.matching import match_trajectories
 
 
 class TestProcessingEdgeCases(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
         traj2.timestamps += 0.5
 
         settings = MatchingSettings(method=MatchingMethod.INTERPOLATION)
-        matched1, matched2 = match_all_trajectories_to_ref(trajectory=traj1, other=traj2, matching_settings=settings)
+        matched1, matched2 = match_trajectories(trajectory=traj1, other=traj2, matching_settings=settings)
 
         self.assertIsInstance(matched1, Trajectory)
         self.assertIsInstance(matched2, Trajectory)
@@ -32,7 +32,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
         traj2 = open_loop_trajectory.copy()
 
         settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL, max_time_diff=1.0)
-        matched1, matched2 = match_all_trajectories_to_ref(trajectory=traj1, other=traj2, matching_settings=settings)
+        matched1, matched2 = match_trajectories(trajectory=traj1, other=traj2, matching_settings=settings)
 
         self.assertEqual(len(matched1), len(matched2))
 

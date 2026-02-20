@@ -6,7 +6,7 @@ from trajectopy.core import settings
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.alignment import apply_alignment, estimate_alignment
-from trajectopy.processing.matching import match_all_trajectories_to_ref
+from trajectopy.processing.matching import match_trajectories
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
@@ -41,7 +41,7 @@ def ate(
         ATEResult: Result of the ATE computation. If return_alignment is True, returns a tuple
             containing (ATEResult, AlignmentResult).
     """
-    trajectory, other = match_all_trajectories_to_ref(
+    trajectory, other = match_trajectories(
         trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
     )
 
@@ -86,7 +86,7 @@ def rpe(
     Returns:
         RPEResult: Result of the RPE computation.
     """
-    trajectory, other = match_all_trajectories_to_ref(
+    trajectory, other = match_trajectories(
         trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
     )
     return _compare_trajectories_relative(

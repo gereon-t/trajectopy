@@ -160,10 +160,9 @@ class TrajectoryManager(QObject):
                 inplace=True,
                 apply_to_reference=True,
             ),
-            # TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
-            #     operation=self.operation_match, inplace=False, apply_to_reference=False
-            # ),
-            TrajectoryManagerRequestType.MATCH: self.operation_match_all,
+            TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
+                operation=self.operation_match, inplace=False, apply_to_reference=False
+            ),
             TrajectoryManagerRequestType.ATE: lambda: self.handle_trajectory_operation(
                 operation=self.operation_ate, inplace=False, apply_to_reference=False
             ),
@@ -474,7 +473,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = matching.match_all_trajectories_to_ref(
+        traj_test, traj_ref = matching.match_trajectories(
             trajectory=entry_pair.entry.trajectory,
             other=reference_entry.trajectory,
             matching_settings=entry_pair.entry.settings.matching,
@@ -501,7 +500,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = matching.match_all_trajectories_to_ref(
+        traj_test, traj_ref = matching.match_trajectories(
             trajectory=entry_pair.entry.trajectory,
             other=reference_entry.trajectory,
             matching_settings=entry_pair.entry.settings.matching,
@@ -715,7 +714,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = matching.match_all_trajectories_to_ref(
+        traj_test, traj_ref = matching.match_trajectories(
             trajectory=entry_pair.entry.trajectory,
             other=reference_entry.trajectory,
             matching_settings=entry_pair.entry.settings.matching,
@@ -738,49 +737,6 @@ class TrajectoryManager(QObject):
             group_id=reference_entry.group_id,
         )
 
-    def operation_match_all(self) -> None:
-        """
-        Matches all selected trajectories to the reference trajectory.
-
-        Args:
-            None.
-
-        Returns:
-            None.
-        """
-        if (selected_entries := self.selected_trajectory_entries()) is None:
-            return
-
-        matched_trajectories, matched_reference = matching.match_trajectories(
-            trajectories=[entry.trajectory for entry in selected_entries],
-            reference=self.reference_entry.trajectory,
-            matching_settings=self.reference_entry.settings.matching,
-            inplace=False,
-        )
-
-        matched_reference.name += " (matched)"
-        new_reference_entry = TrajectoryEntry(
-            full_filename=self.reference_entry.full_filename,
-            trajectory=matched_reference,
-            settings=self.reference_entry.settings,
-            group_id=self.reference_entry.group_id,
-            state=self.reference_entry.state,
-        )
-        self.emit_add_trajectory_signal(new_reference_entry)
-
-        for i, matched_trajectory in enumerate(matched_trajectories):
-            selected_entry = selected_entries[i]
-            matched_trajectory.name += " (matched)"
-            selected_entry.state.matched = True
-            new_trajectory_entry = TrajectoryEntry(
-                full_filename=selected_entry.full_filename,
-                trajectory=matched_trajectory,
-                settings=selected_entry.settings,
-                group_id=selected_entry.group_id,
-                state=selected_entry.state,
-            )
-            self.emit_add_trajectory_signal(new_trajectory_entry)
-
     @staticmethod
     def operation_match(entry_pair: TrajectoryEntryPair) -> tuple[TrajectoryEntry, ...]:
         """
@@ -797,7 +753,7 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        traj_test, traj_ref = matching.match_all_trajectories_to_ref(
+        traj_test, traj_ref = matching.match_trajectories(
             trajectory=entry_pair.entry.trajectory,
             other=reference_entry.trajectory,
             matching_settings=entry_pair.entry.settings.matching,
