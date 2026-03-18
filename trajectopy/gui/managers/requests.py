@@ -238,5 +238,4 @@ def generic_request_handler(manager: RequestHandler, request: Request, passthrou
             )
         )
     finally:
-        manager.operation_finished.emit()
         logger.debug("%s: Handled request of type %s", manager.__class__.__name__, request.type)

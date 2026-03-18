@@ -480,7 +480,10 @@ class Trajectory:
             for idx, (tstamp, lower_neighbor) in enumerate(zip(traj_self.timestamps, lower_neighbor_list))
             if (
                 tstamps_sorted[lower_neighbor] == tstamp
-                or (tstamps_sorted[lower_neighbor + 1] - tstamps_sorted[lower_neighbor]) <= max_gap_size
+                or (
+                    lower_neighbor + 1 < len(tstamps_sorted)
+                    and (tstamps_sorted[lower_neighbor + 1] - tstamps_sorted[lower_neighbor]) <= max_gap_size
+                )
             )
         ]
         traj_self.mask(np.array(filter_index, dtype=int))

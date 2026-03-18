@@ -296,6 +296,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
 
+        self.session_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.session_manager.operation_finished.connect(self.progress_window.handle_close_request)
+
         self.plot_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
 

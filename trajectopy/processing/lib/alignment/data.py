@@ -244,7 +244,7 @@ class AlignmentData:
                     "Failed to create observation vector: Please provide platform speed for time shift alignment!"
                 )
 
-            speed[:, not self.alignment_settings.estimation_settings.time_shift_filter] = 0
+            speed[:, ~np.array(self.alignment_settings.estimation_settings.time_shift_filter)] = 0
             obs_init = np.c_[obs_init, speed]
 
         return np.reshape(obs_init, (obs_init.size,))

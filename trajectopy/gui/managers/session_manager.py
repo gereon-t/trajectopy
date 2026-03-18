@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import threading
 from collections.abc import Callable
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -20,6 +19,7 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
+from trajectopy.gui.utils import show_progress
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,7 @@ class SessionManager(QObject):
     result_model_request = pyqtSignal(ResultModelRequest)
     ui_request = pyqtSignal(UIRequest)
     file_request = pyqtSignal(FileRequest)
+    operation_started = pyqtSignal()
     operation_finished = pyqtSignal()
     report_settings_request = pyqtSignal(PlotSettingsRequest)
 
@@ -50,11 +51,10 @@ class SessionManager(QObject):
             SessionManagerRequestType.IMPORT: self.import_session,
         }
 
+    @show_progress
     @pyqtSlot(SessionManagerRequest)
     def handle_request(self, request: SessionManagerRequest) -> None:
-        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
-        request_thread.start()
-        request_thread.join()
+        generic_request_handler(self, request, passthrough_request=True)
 
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
