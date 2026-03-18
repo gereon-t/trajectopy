@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtGui import QGuiApplication
 
 from trajectopy.gui.models.selection import TrajectorySelection
+from trajectopy.gui.utils import center_window
 
 
 class DOFOrganizer(QtWidgets.QMainWindow):
@@ -65,9 +65,7 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         )
         self.setSizePolicy(sizePolicy)
         self.setMinimumSize(QtCore.QSize(600, 280))
-        screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
-        desired_pos = QtCore.QPoint(screen_geometry.center().x() - 300, screen_geometry.center().y() - 140)
-        self.move(desired_pos)
+        center_window(self)
 
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")

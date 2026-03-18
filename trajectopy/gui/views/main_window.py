@@ -292,16 +292,24 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def setup_progress_connections(self):
         self.trajectory_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
         self.trajectory_manager.operation_finished.connect(self.progress_window.handle_close_request)
+        self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
         self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
         self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
+        self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
         self.session_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.session_manager.operation_started.connect(lambda: self.statusBar().showMessage("Session operation..."))
         self.session_manager.operation_finished.connect(self.progress_window.handle_close_request)
+        self.session_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
         self.plot_manager.operation_started.connect(self.progress_window.handle_show_request)
+        self.plot_manager.operation_started.connect(lambda: self.statusBar().showMessage("Generating plot..."))
         self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
+        self.plot_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
     def setup_plottings_connections(self):
         self.resultTableView.plot_request.connect(self.inject_plot_settings)
@@ -380,7 +388,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setupUi(self):
         """This method sets up the GUI"""
         self.setObjectName("MainWindow")
-        self.resize(640, 480)
+        self.resize(800, 600)
         self.center()
 
         sizePolicy = QtWidgets.QSizePolicy(
@@ -392,85 +400,60 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(sizePolicy)
         self.setMinimumSize(QtCore.QSize(640, 480))
+
+        # --- Central widget with splitter ---
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(10, 10, 10, 10)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.centralwidget.setLayout(self.verticalLayout)
+        main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
+        main_layout.setContentsMargins(10, 10, 10, 10)
 
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label.setObjectName("label")
-        self.horizontalLayout_2.addWidget(self.label)
-        spacerItem = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout_2.addItem(spacerItem)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical, self.centralwidget)
+
+        # --- Trajectories group ---
+        traj_group = QtWidgets.QGroupBox("Trajectories")
+        traj_layout = QtWidgets.QVBoxLayout(traj_group)
+        traj_layout.setContentsMargins(6, 6, 6, 6)
+
         self.trajectoryTableView = TrajectoryTableView(
-            parent=self.verticalLayoutWidget,
+            parent=traj_group,
             trajectory_table_model=self.trajectory_table_model,
         )
-        # span over whole table width
         header = self.trajectoryTableView.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        traj_layout.addWidget(self.trajectoryTableView)
 
-        self.verticalLayout.addWidget(self.trajectoryTableView)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setContentsMargins(-1, -1, -1, 0)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem1 = QtWidgets.QSpacerItem(
-            0,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout_3.addItem(spacerItem1)
-        self.addTrajectoryButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        traj_button_layout = QtWidgets.QHBoxLayout()
+        traj_button_layout.addStretch()
+        self.addTrajectoryButton = QtWidgets.QPushButton("Add")
         self.addTrajectoryButton.setObjectName("addTrajectoryButton")
-        self.horizontalLayout_3.addWidget(self.addTrajectoryButton)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_4.setContentsMargins(-1, -1, -1, 10)
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.label_2 = QtWidgets.QLabel(self.verticalLayoutWidget)
-        self.label_2.setObjectName("label_2")
-        self.horizontalLayout_4.addWidget(self.label_2)
-        spacerItem2 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout_4.addItem(spacerItem2)
-        self.verticalLayout.addLayout(self.horizontalLayout_4)
-        self.resultTableView = ResultTableView(
-            parent=self.verticalLayoutWidget, result_table_model=self.result_table_model
-        )
-        self.verticalLayout.addWidget(self.resultTableView)
-        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_5.setContentsMargins(-1, -1, -1, 10)
-        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        spacerItem3 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout_5.addItem(spacerItem3)
-        self.addResultButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        traj_button_layout.addWidget(self.addTrajectoryButton)
+        traj_layout.addLayout(traj_button_layout)
+
+        self.splitter.addWidget(traj_group)
+
+        # --- Results group ---
+        result_group = QtWidgets.QGroupBox("Results")
+        result_layout = QtWidgets.QVBoxLayout(result_group)
+        result_layout.setContentsMargins(6, 6, 6, 6)
+
+        self.resultTableView = ResultTableView(parent=result_group, result_table_model=self.result_table_model)
+        result_layout.addWidget(self.resultTableView)
+
+        result_button_layout = QtWidgets.QHBoxLayout()
+        result_button_layout.addStretch()
+        self.addResultButton = QtWidgets.QPushButton("Add")
         self.addResultButton.setObjectName("addResultButton")
-        self.horizontalLayout_5.addWidget(self.addResultButton)
-        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        result_button_layout.addWidget(self.addResultButton)
+        result_layout.addLayout(result_button_layout)
+
+        self.splitter.addWidget(result_group)
+
+        main_layout.addWidget(self.splitter)
         self.setCentralWidget(self.centralwidget)
+
+        # --- Status bar ---
+        self.statusBar().showMessage("Ready")
 
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -478,7 +461,3 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Trajectopy"))
-        self.label.setText(_translate("MainWindow", "Trajectories:"))
-        self.addTrajectoryButton.setText(_translate("MainWindow", "Add"))
-        self.label_2.setText(_translate("MainWindow", "Results:"))
-        self.addResultButton.setText(_translate("MainWindow", "Add"))

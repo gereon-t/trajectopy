@@ -1,6 +1,6 @@
 import logging
 
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtWidgets
 
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.utils import center_window
@@ -28,117 +28,68 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
 
     def setupUi(self):
         self.setObjectName("Form")
-        self.resize(250, 400)
+        self.resize(280, 480)
         center_window(self)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(sizePolicy)
-        self.setMinimumSize(QtCore.QSize(250, 400))
-        self.setMaximumSize(QtCore.QSize(250, 400))
-        self.verticalLayoutWidget = QtWidgets.QWidget(self)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 250, 400))
-        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.verticalLayout.setContentsMargins(10, 10, 10, 10)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(self.verticalLayoutWidget)
-        font = QtGui.QFont()
-        font.setBold(True)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
-        self.trans_x = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.trans_x.setObjectName("checkBox_2")
-        self.verticalLayout.addWidget(self.trans_x)
-        self.trans_y = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.trans_y.setObjectName("checkBox_3")
-        self.verticalLayout.addWidget(self.trans_y)
-        self.trans_z = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.trans_z.setObjectName("checkBox_4")
-        self.verticalLayout.addWidget(self.trans_z)
-        self.rot_x = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.rot_x.setObjectName("checkBox_5")
-        self.verticalLayout.addWidget(self.rot_x)
-        self.rot_y = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.rot_y.setObjectName("checkBox_6")
-        self.verticalLayout.addWidget(self.rot_y)
-        self.rot_z = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.rot_z.setObjectName("checkBox_7")
-        self.verticalLayout.addWidget(self.rot_z)
-        self.scale = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.scale.setObjectName("checkBox_8")
-        self.verticalLayout.addWidget(self.scale)
-        spacerItem = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.verticalLayout.addItem(spacerItem)
-        self.time_shift = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.time_shift.setObjectName("checkBox_9")
-        self.verticalLayout.addWidget(self.time_shift)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.verticalLayout.addItem(spacerItem1)
-        self.lever_x = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.lever_x.setObjectName("checkBox_11")
-        self.verticalLayout.addWidget(self.lever_x)
-        self.lever_y = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.lever_y.setObjectName("checkBox_12")
-        self.verticalLayout.addWidget(self.lever_y)
-        self.lever_z = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.lever_z.setObjectName("checkBox_13")
-        self.verticalLayout.addWidget(self.lever_z)
+        self.setMinimumSize(QtCore.QSize(280, 480))
+        self.setMaximumSize(QtCore.QSize(280, 480))
 
-        spacerItem2 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.verticalLayout.addItem(spacerItem2)
-        self.sensorRot = QtWidgets.QCheckBox(self.verticalLayoutWidget)
-        self.sensorRot.setObjectName("checkBox_14")
-        self.verticalLayout.addWidget(self.sensorRot)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(-1, -1, -1, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.cancelButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
-        self.cancelButton.setObjectName("cancelButton")
-        self.horizontalLayout.addWidget(self.cancelButton)
-        self.okButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
-        self.okButton.setObjectName("okButton")
-        self.horizontalLayout.addWidget(self.okButton)
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        central = QtWidgets.QWidget(self)
+        self.setCentralWidget(central)
+        main_layout = QtWidgets.QVBoxLayout(central)
+        main_layout.setContentsMargins(10, 10, 10, 10)
 
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
+        # --- Helmert group ---
+        helmert_group = QtWidgets.QGroupBox("Helmert Parameters")
+        helmert_layout = QtWidgets.QVBoxLayout(helmert_group)
+
+        self.trans_x = QtWidgets.QCheckBox("x translation")
+        self.trans_y = QtWidgets.QCheckBox("y translation")
+        self.trans_z = QtWidgets.QCheckBox("z translation")
+        self.rot_x = QtWidgets.QCheckBox("x rotation")
+        self.rot_y = QtWidgets.QCheckBox("y rotation")
+        self.rot_z = QtWidgets.QCheckBox("z rotation")
+        self.scale = QtWidgets.QCheckBox("scale")
+
+        for cb in (self.trans_x, self.trans_y, self.trans_z, self.rot_x, self.rot_y, self.rot_z, self.scale):
+            helmert_layout.addWidget(cb)
+
+        main_layout.addWidget(helmert_group)
+
+        # --- Time shift group ---
+        time_group = QtWidgets.QGroupBox("Temporal")
+        time_layout = QtWidgets.QVBoxLayout(time_group)
+        self.time_shift = QtWidgets.QCheckBox("Time shift")
+        time_layout.addWidget(self.time_shift)
+        main_layout.addWidget(time_group)
+
+        # --- Lever arm group ---
+        lever_group = QtWidgets.QGroupBox("Lever Arm")
+        lever_layout = QtWidgets.QVBoxLayout(lever_group)
+        self.lever_x = QtWidgets.QCheckBox("x lever")
+        self.lever_y = QtWidgets.QCheckBox("y lever")
+        self.lever_z = QtWidgets.QCheckBox("z lever")
+        for cb in (self.lever_x, self.lever_y, self.lever_z):
+            lever_layout.addWidget(cb)
+        main_layout.addWidget(lever_group)
+
+        # --- Sensor rotation group ---
+        sensor_group = QtWidgets.QGroupBox("Sensor")
+        sensor_layout = QtWidgets.QVBoxLayout(sensor_group)
+        self.sensorRot = QtWidgets.QCheckBox("Sensor rotation")
+        sensor_layout.addWidget(self.sensorRot)
+        main_layout.addWidget(sensor_group)
+
+        # --- Buttons ---
+        main_layout.addStretch()
+        button_layout = QtWidgets.QHBoxLayout()
+        self.cancelButton = QtWidgets.QPushButton("Cancel")
+        self.okButton = QtWidgets.QPushButton("OK")
+        button_layout.addWidget(self.cancelButton)
+        button_layout.addWidget(self.okButton)
+        main_layout.addLayout(button_layout)
 
     def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("Form", "Form"))
-        self.label.setText(_translate("Form", "Enabled Parameters:"))
-        self.trans_x.setText(_translate("Form", "x translation"))
-        self.trans_y.setText(_translate("Form", "y translation"))
-        self.trans_z.setText(_translate("Form", "z translation"))
-        self.rot_x.setText(_translate("Form", "x rotation"))
-        self.rot_y.setText(_translate("Form", "y rotation"))
-        self.rot_z.setText(_translate("Form", "z rotation"))
-        self.scale.setText(_translate("Form", "scale"))
-        self.time_shift.setText(_translate("Form", "Time shift"))
-        self.lever_x.setText(_translate("Form", "x lever"))
-        self.lever_y.setText(_translate("Form", "y lever"))
-        self.lever_z.setText(_translate("Form", "z lever"))
-        self.sensorRot.setText(_translate("Form", "Sensor rotation"))
-        self.cancelButton.setText(_translate("Form", "Cancel"))
-        self.okButton.setText(_translate("Form", "OK"))
+        pass
 
     def update_view(self) -> None:
         helmert_enabled = self.alignment_entry.estimation_of.helmert_enabled

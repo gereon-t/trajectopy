@@ -46,7 +46,7 @@ class ResultTableView(QtWidgets.QTableView):
         self.result_table_model = result_table_model
         self.setModel(self.result_table_model)
 
-        self.setAlternatingRowColors(False)
+        self.setAlternatingRowColors(True)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -132,3 +132,5 @@ class ResultTableView(QtWidgets.QTableView):
             )
         elif e.key() == Qt.Key.Key_E:
             self.ui_request.emit(UIRequest(type=UIRequestType.EXPORT_RES, result_selection=self.selection))
+        else:
+            super().keyPressEvent(e)

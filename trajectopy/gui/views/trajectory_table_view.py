@@ -51,7 +51,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         self.trajectory_table_model = trajectory_table_model
         self.setModel(self.trajectory_table_model)
 
-        self.setAlternatingRowColors(False)
+        self.setAlternatingRowColors(True)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -178,3 +178,5 @@ class TrajectoryTableView(QtWidgets.QTableView):
             )
         elif e.key() == Qt.Key.Key_E:
             self.ui_request.emit(UIRequest(type=UIRequestType.EXPORT_TRAJ, trajectory_selection=self.selection))
+        else:
+            super().keyPressEvent(e)
