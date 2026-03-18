@@ -25,6 +25,7 @@ from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
+from trajectopy.gui.utils import center_window
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
@@ -374,11 +375,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.CONFIRM_RESET))
 
     def center(self):
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        center_window(self)
 
     def setupUi(self):
         """This method sets up the GUI"""

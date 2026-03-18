@@ -19,6 +19,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
+from trajectopy.gui.utils import handle_drag_enter, handle_drag_move
 from trajectopy.gui.views.trajectory_context_menu import TrajectoryContextMenu
 
 logger = logging.getLogger(__name__)
@@ -89,30 +90,11 @@ class TrajectoryTableView(QtWidgets.QTableView):
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent | None):
         """Drag enter event handler."""
-        if event is None:
-            return
-
-        if (mime_data := event.mimeData()) is None:
-            return
-
-        if mime_data.hasUrls():
-            event.accept()
-        else:
-            event.ignore()
+        handle_drag_enter(event)
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent | None):
         """Drag move event handler."""
-        if event is None:
-            return
-
-        if (mime_data := event.mimeData()) is None:
-            return
-
-        if mime_data.hasUrls():
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.accept()
-        else:
-            event.ignore()
+        handle_drag_move(event)
 
     def dropEvent(self, event: QtGui.QDropEvent | None):
         """Drop event handler."""
@@ -142,29 +124,25 @@ class TrajectoryTableView(QtWidgets.QTableView):
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(type=TrajectoryModelRequestType.REMOVE, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_T:
+        elif e.key() == Qt.Key.Key_T:
             self.ui_request.emit(
                 UIRequest(
                     type=UIRequestType.EPSG_TRANSFORMATION,
                     trajectory_selection=self.selection,
                 )
             )
-
-        if e.key() == Qt.Key.Key_C and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
+        elif e.key() == Qt.Key.Key_C and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(type=TrajectoryModelRequestType.COPY, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_P:
+        elif e.key() == Qt.Key.Key_P:
             self.ui_request.emit(
                 UIRequest(
                     type=UIRequestType.TRAJ_PROPERTIES,
                     trajectory_selection=self.selection,
                 )
             )
-
-        if e.key() == Qt.Key.Key_V:
+        elif e.key() == Qt.Key.Key_V:
             self.plot_request.emit(
                 PlotRequest(
                     type=PlotRequestType.TRAJECTORIES,
@@ -172,38 +150,31 @@ class TrajectoryTableView(QtWidgets.QTableView):
                     dimension=2,
                 )
             )
-
-        if e.key() == Qt.Key.Key_M:
+        elif e.key() == Qt.Key.Key_M:
             self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(type=TrajectoryManagerRequestType.MERGE, selection=self.selection)
             )
-
-        if len(self.selected_entries) > 1:
+        elif len(self.selected_entries) > 1:
             return
-
-        if e.key() == Qt.Key.Key_R:
+        elif e.key() == Qt.Key.Key_R and e.modifiers() == Qt.KeyboardModifier.ShiftModifier:
+            self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.UNSET_REFERENCE))
+        elif e.key() == Qt.Key.Key_R:
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(
                     type=TrajectoryModelRequestType.SET_REFERENCE,
                     selection=self.selection,
                 )
             )
-
-        if e.key() == Qt.Key.Key_R and e.modifiers() == Qt.KeyboardModifier.ShiftModifier:
-            self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.UNSET_REFERENCE))
-
-        if e.key() == Qt.Key.Key_S:
+        elif e.key() == Qt.Key.Key_S:
             self.ui_request.emit(
                 UIRequest(
                     type=UIRequestType.TRAJ_SETTINGS,
                     trajectory_selection=self.selection,
                 )
             )
-
-        if e.key() == Qt.Key.Key_U:
+        elif e.key() == Qt.Key.Key_U:
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(type=TrajectoryModelRequestType.RENAME, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_E:
+        elif e.key() == Qt.Key.Key_E:
             self.ui_request.emit(UIRequest(type=UIRequestType.EXPORT_TRAJ, trajectory_selection=self.selection))

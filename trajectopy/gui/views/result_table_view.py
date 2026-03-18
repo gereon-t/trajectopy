@@ -15,6 +15,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import ResultEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.selection import ResultSelection
+from trajectopy.gui.utils import handle_drag_enter, handle_drag_move
 from trajectopy.gui.views.result_context_menu import ResultContextMenu
 
 logger = logging.getLogger(__name__)
@@ -83,30 +84,11 @@ class ResultTableView(QtWidgets.QTableView):
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent | None):
         """Drag enter event handler."""
-        if event is None:
-            return
-
-        if (mime_data := event.mimeData()) is None:
-            return
-
-        if mime_data.hasUrls():
-            event.accept()
-        else:
-            event.ignore()
+        handle_drag_enter(event)
 
     def dragMoveEvent(self, event: QtGui.QDragMoveEvent | None):
         """Drag move event handler."""
-        if event is None:
-            return
-
-        if (mime_data := event.mimeData()) is None:
-            return
-
-        if mime_data.hasUrls():
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.accept()
-        else:
-            event.ignore()
+        handle_drag_move(event)
 
     def dropEvent(self, event: QtGui.QDropEvent | None):
         """Drop event handler."""
@@ -136,22 +118,17 @@ class ResultTableView(QtWidgets.QTableView):
             self.result_model_request.emit(
                 ResultModelRequest(type=ResultModelRequestType.REMOVE, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_C and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
+        elif e.key() == Qt.Key.Key_C and e.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.result_model_request.emit(
                 ResultModelRequest(type=ResultModelRequestType.COPY, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_P:
+        elif e.key() == Qt.Key.Key_P:
             self.ui_request.emit(UIRequest(type=UIRequestType.RES_PROPERTIES, result_selection=self.selection))
-
-        if len(self.selected_entries) > 1:
+        elif len(self.selected_entries) > 1:
             return
-
-        if e.key() == Qt.Key.Key_U:
+        elif e.key() == Qt.Key.Key_U:
             self.result_model_request.emit(
                 ResultModelRequest(type=ResultModelRequestType.RENAME, selection=self.selection)
             )
-
-        if e.key() == Qt.Key.Key_E:
+        elif e.key() == Qt.Key.Key_E:
             self.ui_request.emit(UIRequest(type=UIRequestType.EXPORT_RES, result_selection=self.selection))

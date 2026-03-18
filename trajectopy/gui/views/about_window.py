@@ -1,5 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
+from trajectopy.gui.utils import center_window
 from trajectopy.utils.common import FULL_ICON_FILE_PATH
 
 
@@ -19,17 +20,10 @@ class AboutGUI(QtWidgets.QMainWindow):
     def link(self, linkStr):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
     def setupUi(self):
         self.setObjectName("MainWindow")
         self.resize(320, 300)
-        self.center()
+        center_window(self)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

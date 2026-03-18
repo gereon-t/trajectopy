@@ -16,6 +16,7 @@ from PyQt6 import QtGui, QtWidgets
 
 from trajectopy.core.settings import MPLPlotSettings
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.gui.utils import center_window
 from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
@@ -66,20 +67,13 @@ class PlotTabs(QtWidgets.QMainWindow):
         else:
             logger.warning("Could not determine screen size. Using default size.")
 
-        self.center()
+        center_window(self)
 
         self.canvases: list = []
         self.figure_handles: list = []
         self.toolbar_handles: list = []
         self.tab_handles: list = []
         self.current_window = -1
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
 
     def add_plot(self, title: str, figure: Figure):
         """Adds a new tab with a plot"""

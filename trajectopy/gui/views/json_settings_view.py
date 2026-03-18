@@ -7,7 +7,7 @@ from PyQt6.QtCore import QCoreApplication, Qt
 from PyQt6.QtGui import QFont
 
 from trajectopy.core.settings import Settings
-from trajectopy.gui.utils import save_file_dialog, show_msg_box
+from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
 
 logger = logging.getLogger(__name__)
 
@@ -43,16 +43,9 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.setup_ui()
         self.update_view()
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
     def setup_ui(self):
         self.resize(400, 400)
-        self.center()
+        center_window(self)
 
         self.central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)

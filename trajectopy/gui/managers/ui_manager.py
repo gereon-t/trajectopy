@@ -85,6 +85,7 @@ class UIManager(QObject):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        self._sub_windows: list[QtWidgets.QWidget] = []
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
             UIRequestType.EPSG_EDIT: self.epsg_input_edit,
@@ -112,16 +113,25 @@ class UIManager(QObject):
     def message_box(self, request: UIRequest) -> None:
         show_msg_box(request.message)
 
+    def _track_window(self, window: QtWidgets.QWidget) -> None:
+        """Close any previously tracked sub-windows and track the new one."""
+        for w in self._sub_windows:
+            w.close()
+        self._sub_windows.clear()
+        self._sub_windows.append(window)
+
     def show_trajectory_properties(self, request: UIRequest) -> None:
         property_window = PropertiesGUI(parent=self.parent(), num_cols=len(request.trajectory_selection.entries) + 1)
         property_window.reset()
         merged_properties = merge_dicts(tuple(entry.property_dict for entry in request.trajectory_selection.entries))
         property_window.add_from_dict(merged_properties)
+        self._track_window(property_window)
         property_window.show()
 
     def show_dof_organizer(self, request: UIRequest) -> None:
         dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
         dof_organizer.selection_made.connect(self.handle_dof_selection)
+        self._track_window(dof_organizer)
         dof_organizer.show()
 
     def show_result_properties(self, request: UIRequest) -> None:
@@ -129,6 +139,7 @@ class UIManager(QObject):
         property_window.reset()
         merged_properties = merge_dicts(tuple(entry.property_dict for entry in request.result_selection.entries))
         property_window.add_from_dict(merged_properties)
+        self._track_window(property_window)
         property_window.show()
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
@@ -136,12 +147,14 @@ class UIManager(QObject):
             parent=self.parent(),
             settings=request.trajectory_selection.entries[0].settings,
         )
+        self._track_window(settings_window)
         settings_window.show()
 
     def alignment_selection(self, request: UIRequest) -> None:
         alignment_entries = [entry for entry in request.result_selection.entries if isinstance(entry, AlignmentEntry)]
         result_selection = AlignmentSelector(parent=self.parent(), alignments=alignment_entries)
         result_selection.selection_made.connect(self.handle_alignment_selection)
+        self._track_window(result_selection)
         result_selection.show()
 
     @pyqtSlot(AlignmentEntry)
@@ -274,4 +287,5 @@ class UIManager(QObject):
                 )
             )
         )
+        self._track_window(alignment_window)
         alignment_window.show()

@@ -1,6 +1,40 @@
 from functools import wraps
 
-from PyQt6 import QtWidgets
+from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtCore import Qt
+
+
+def center_window(window: QtWidgets.QWidget) -> None:
+    """Center a window on its screen."""
+    qr = window.frameGeometry()
+    cp = window.screen().availableGeometry().center()
+    qr.moveCenter(cp)
+    window.move(qr.topLeft())
+
+
+def handle_drag_enter(event: QtGui.QDragEnterEvent | None) -> None:
+    """Shared drag enter handler for table views accepting file drops."""
+    if event is None:
+        return
+    if (mime_data := event.mimeData()) is None:
+        return
+    if mime_data.hasUrls():
+        event.accept()
+    else:
+        event.ignore()
+
+
+def handle_drag_move(event: QtGui.QDragMoveEvent | None) -> None:
+    """Shared drag move handler for table views accepting file drops."""
+    if event is None:
+        return
+    if (mime_data := event.mimeData()) is None:
+        return
+    if mime_data.hasUrls():
+        event.setDropAction(Qt.DropAction.CopyAction)
+        event.accept()
+    else:
+        event.ignore()
 
 
 def show_progress(func):

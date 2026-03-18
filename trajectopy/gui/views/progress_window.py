@@ -1,5 +1,7 @@
 from PyQt6 import QtCore, QtWidgets
 
+from trajectopy.gui.utils import center_window
+
 
 class ProgressWindow(QtWidgets.QMainWindow):
     """A modal-like progress window that shows during long operations."""
@@ -9,17 +11,10 @@ class ProgressWindow(QtWidgets.QMainWindow):
         self._show_count = 0  # Track nested show requests
         self.setupUi()
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
     def setupUi(self):
         self.setObjectName("Form")
         self.resize(410, 70)
-        self.center()
+        center_window(self)
         self.setMinimumSize(QtCore.QSize(410, 70))
         self.setMaximumSize(QtCore.QSize(410, 70))
         self.verticalLayoutWidget = QtWidgets.QWidget(self)
