@@ -45,12 +45,14 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     )
     has_rot = [t.has_orientation for t in trajectories]
     merged_timestamps = np.concatenate([t.timestamps for t in trajectories], axis=0)
+    merged_velocities = np.concatenate([t.velocity_xyz for t in trajectories], axis=0)
 
     merged = Trajectory(
         name="Merged",
         timestamps=merged_timestamps,
         positions=Positions(xyz=merged_xyz, epsg=epsg),
         rotations=Rotations.from_quat(merged_quat) if any(has_rot) else None,
+        velocity_xyz=merged_velocities,
     )
 
     merged.mask(np.argsort(merged.timestamps), inplace=True)
