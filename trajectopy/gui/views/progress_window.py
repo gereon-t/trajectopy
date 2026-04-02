@@ -1,4 +1,4 @@
-from PyQt6 import QtCore, QtWidgets
+﻿from PySide6 import QtCore, QtWidgets
 
 from trajectopy.gui.utils import center_window
 
@@ -58,13 +58,13 @@ class ProgressWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(_translate("Form", "Please Wait"))
         self.label.setText(_translate("Form", "Please Wait ..."))
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def handle_show_request(self) -> None:
         self._show_count += 1
         if self._show_count == 1:
             self.show()
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def handle_close_request(self) -> None:
         self._show_count = max(0, self._show_count - 1)
         if self._show_count == 0:

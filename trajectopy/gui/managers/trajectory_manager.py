@@ -1,4 +1,4 @@
-import copy
+﻿import copy
 import logging
 import threading
 from collections.abc import Callable
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.core.rotations import Rotations
 from trajectopy.gui.managers.requests import (
@@ -62,9 +62,9 @@ class TrajectoryManager(QObject):
     A class that manages trajectories and provides methods for various operations such as alignment, approximation, and comparison.
 
     Attributes:
-        trajectory_model_request (pyqtSignal): A signal emitted when a request for the trajectory model is made.
-        result_model_request (pyqtSignal): A signal emitted when a request for the result model is made.
-        update_view (pyqtSignal): A signal emitted when the view needs to be updated.
+        trajectory_model_request (Signal): A signal emitted when a request for the trajectory model is made.
+        result_model_request (Signal): A signal emitted when a request for the result model is made.
+        update_view (Signal): A signal emitted when the view needs to be updated.
 
     Possible Requests:
         TrajectoryManagerRequestType.EDIT_EPSG: Edits the EPSG code of the selected trajectory without transformation (only metadata).
@@ -87,12 +87,12 @@ class TrajectoryManager(QObject):
         __init__(): Initializes the TrajectoryManager object.
     """
 
-    trajectory_model_request = pyqtSignal(TrajectoryModelRequest)
-    result_model_request = pyqtSignal(ResultModelRequest)
-    update_view = pyqtSignal()
-    operation_started = pyqtSignal()
-    operation_finished = pyqtSignal()
-    ui_request = pyqtSignal(UIRequest)
+    trajectory_model_request = Signal(TrajectoryModelRequest)
+    result_model_request = Signal(ResultModelRequest)
+    update_view = Signal()
+    operation_started = Signal()
+    operation_finished = Signal()
+    ui_request = Signal(UIRequest)
 
     def __init__(self) -> None:
         """
@@ -194,7 +194,7 @@ class TrajectoryManager(QObject):
         return self.request.selection.reference_entry
 
     @show_progress
-    @pyqtSlot(TrajectoryManagerRequest)
+    @Slot(TrajectoryManagerRequest)
     def handle_request(self, request: TrajectoryManagerRequest) -> None:
         """
         Handles a trajectory manager request and emits a signal to update the view.
@@ -568,13 +568,13 @@ class TrajectoryManager(QObject):
 
         # rearrange the DOF of the trajectory
         index_mapping = {
-            "X": 0,
-            "Y": 1,
-            "Z": 2,
-            "Roll": 3,
-            "Pitch": 4,
-            "Yaw": 5,
-            "Time": 6,
+            "x": 0,
+            "y": 1,
+            "z": 2,
+            "roll": 3,
+            "pitch": 4,
+            "yaw": 5,
+            "time": 6,
         }
 
         xyz = entry_pair.entry.trajectory.positions.xyz
@@ -586,11 +586,11 @@ class TrajectoryManager(QObject):
 
         xyz_rpy_t = np.hstack((xyz, rpy, entry_pair.entry.trajectory.timestamps[:, None]))
         new_xyz_rpy_t = np.zeros_like(xyz_rpy_t)
-        for i, mapping in enumerate(dof_mapping.values()):
-            new_column = (xyz_rpy_t[:, index_mapping[mapping["target"]]] + mapping["bias"]) * (
-                1.0 if mapping["sign"] == "+" else -1.0
-            )
-            new_xyz_rpy_t[:, i] = new_column
+        for key, mapping in dof_mapping.items():
+            source_col_index = index_mapping[key.lower()]
+            target_col_index = index_mapping[mapping["target"].lower()]
+            new_column = (xyz_rpy_t[:, source_col_index] + mapping["bias"]) * (1.0 if mapping["sign"] == "+" else -1.0)
+            new_xyz_rpy_t[:, target_col_index] = new_column
 
         entry_pair.entry.trajectory.timestamps = new_xyz_rpy_t[:, 6]
         entry_pair.entry.trajectory.positions.xyz = new_xyz_rpy_t[:, :3]

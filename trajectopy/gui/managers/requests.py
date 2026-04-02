@@ -1,10 +1,10 @@
-import copy
+﻿import copy
 import logging
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Protocol
 
-from PyQt6.QtCore import pyqtSignal
+from PySide6.QtCore import Signal
 
 from trajectopy.core.settings import MatchingMethod, MPLPlotSettings, ReportSettings
 from trajectopy.gui.models.entries import AlignmentEntry
@@ -213,8 +213,8 @@ class Request(Protocol):
 class RequestHandler(Protocol):
     """Interface for request handlers."""
 
-    operation_finished: pyqtSignal
-    ui_request: pyqtSignal
+    operation_finished: Signal
+    ui_request: Signal
     REQUEST_MAPPING: dict
 
 

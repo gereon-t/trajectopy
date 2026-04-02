@@ -1,7 +1,7 @@
-import logging
+﻿import logging
 
-from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import Qt, Signal
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -31,10 +31,10 @@ class ResultTableView(QtWidgets.QTableView):
 
     """
 
-    result_model_request = pyqtSignal(ResultModelRequest)
-    ui_request = pyqtSignal(UIRequest)
-    file_request = pyqtSignal(FileRequest)
-    plot_request = pyqtSignal(PlotRequest)
+    result_model_request = Signal(ResultModelRequest)
+    ui_request = Signal(UIRequest)
+    file_request = Signal(FileRequest)
+    plot_request = Signal(PlotRequest)
 
     def __init__(
         self,
@@ -54,6 +54,7 @@ class ResultTableView(QtWidgets.QTableView):
         self.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.setSortingEnabled(False)
         self.setObjectName("resultTableView")
+        self.verticalHeader().setVisible(False)
 
         if (header := self.horizontalHeader()) is not None:
             header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)

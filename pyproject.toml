@@ -45,6 +45,7 @@ dependencies = [
     "pandas>=2.2.3",
     "plotly>=6.1.0",
     "pyproj>=3.6.1",
+    "pyside6>=6.11.0",
     "rich>=14.0.0",
     "rosbags>=0.9.23",
     "scipy>=1.13.1",
@@ -52,7 +53,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-gui = ["PyQt6"]
+gui = ["PySide6"]
 
 [project.urls]
 Homepage = "https://gereon-t.github.io/trajectopy/"

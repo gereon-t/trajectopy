@@ -1,4 +1,4 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
+﻿from PySide6 import QtCore, QtGui, QtWidgets
 
 from trajectopy.gui.utils import center_window
 from trajectopy.utils.common import FULL_ICON_FILE_PATH

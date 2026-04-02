@@ -1,9 +1,9 @@
-import copy
+﻿import copy
 import logging
 import os
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QInputDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class TrajectoryTableModel(RequestTableModel):
     """Class representing the trajectory table model."""
 
-    file_request = pyqtSignal(FileRequest)
+    file_request = Signal(FileRequest)
     items: list[TrajectoryEntry]
     request: TrajectoryModelRequest
 

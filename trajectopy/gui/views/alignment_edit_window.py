@@ -1,6 +1,6 @@
-import logging
+﻿import logging
 
-from PyQt6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.utils import center_window
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class AlignmentEditWindow(QtWidgets.QMainWindow):
-    update_signal = QtCore.pyqtSignal()
+    update_signal = QtCore.Signal()
 
     def __init__(self, parent, alignment_entry: AlignmentEntry) -> None:
         super().__init__(parent=parent)

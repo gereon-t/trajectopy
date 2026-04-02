@@ -1,7 +1,7 @@
-import logging
+﻿import logging
 
-from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtCore import Qt, pyqtSignal
+from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import Qt, Signal
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -34,12 +34,12 @@ class TrajectoryTableView(QtWidgets.QTableView):
     the right click.
     """
 
-    trajectory_model_request = pyqtSignal(TrajectoryModelRequest)
-    trajectory_manager_request = pyqtSignal(TrajectoryManagerRequest)
-    result_model_request = pyqtSignal(ResultModelRequest)
-    ui_request = pyqtSignal(UIRequest)
-    file_request = pyqtSignal(FileRequest)
-    plot_request = pyqtSignal(PlotRequest)
+    trajectory_model_request = Signal(TrajectoryModelRequest)
+    trajectory_manager_request = Signal(TrajectoryManagerRequest)
+    result_model_request = Signal(ResultModelRequest)
+    ui_request = Signal(UIRequest)
+    file_request = Signal(FileRequest)
+    plot_request = Signal(PlotRequest)
 
     def __init__(
         self,
@@ -59,6 +59,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         self.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.setSortingEnabled(False)
         self.setObjectName("trajectoryTableView")
+        self.verticalHeader().setVisible(False)
 
         self.trajectory_context_menu = TrajectoryContextMenu(parent=self)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)

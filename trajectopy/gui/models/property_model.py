@@ -1,6 +1,6 @@
-import numpy as np
+﻿import numpy as np
 import pandas as pd
-from PyQt6.QtCore import pyqtSignal, pyqtSlot
+from PySide6.QtCore import Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     PropertyModelRequest,
@@ -17,8 +17,8 @@ class PropertyTableModel(BaseTableModel):
     Class for the property table model.
     """
 
-    ui_request = pyqtSignal(UIRequest)
-    operation_finished = pyqtSignal()
+    ui_request = Signal(UIRequest)
+    operation_finished = Signal()
 
     def __init__(self, num_cols: int = 2):
         self.REQUEST_MAPPING = {
@@ -30,7 +30,7 @@ class PropertyTableModel(BaseTableModel):
         super().__init__(headers=header_list)
         self.items: list[PropertyEntry] = []
 
-    @pyqtSlot(PropertyModelRequest)
+    @Slot(PropertyModelRequest)
     def handle_request(self, request: PropertyModelRequest) -> None:
         generic_request_handler(self, request, passthrough_request=True)
 

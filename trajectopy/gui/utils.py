@@ -1,7 +1,7 @@
-from functools import wraps
+﻿from functools import wraps
 
-from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtCore import Qt
+from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import Qt
 
 
 def center_window(window: QtWidgets.QWidget) -> None:
@@ -71,18 +71,18 @@ def read_file_dialog(
 ):
     file_dialog = QtWidgets.QFileDialog(parent=parent)
     file_dialog.setFileMode(mode)
-    fileName, _ = file_dialog.getOpenFileNames(caption="Open File", directory="", filter=file_filter)
+    fileName, _ = file_dialog.getOpenFileNames(caption="Open File", dir="", filter=file_filter)
     return fileName
 
 
 def save_file_dialog(parent, file_filter: str = "All (*.*)"):
     file_dialog = QtWidgets.QFileDialog()
     file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
-    fileName, _ = file_dialog.getSaveFileName(parent, caption="Select Output File", directory="", filter=file_filter)
+    fileName, _ = file_dialog.getSaveFileName(parent, caption="Select Output File", dir="", filter=file_filter)
     return fileName
 
 
 def browse_dir_dialog(parent) -> str:
     file_dialog = QtWidgets.QFileDialog()
     file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.Directory)
-    return file_dialog.getExistingDirectory(parent, caption="Select Directory", directory="")
+    return file_dialog.getExistingDirectory(parent, caption="Select Directory", dir="")

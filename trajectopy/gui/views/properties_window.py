@@ -1,5 +1,5 @@
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtGui import QGuiApplication
+﻿from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QGuiApplication
 
 from trajectopy.gui.managers.requests import (
     PropertyModelRequest,
@@ -54,6 +54,7 @@ class PropertiesGUI(QtWidgets.QMainWindow):
         self.tableView = QtWidgets.QTableView(self.centralwidget)
         self.tableView.setGeometry(QtCore.QRect(10, 10, 580, 220))
         self.tableView.setObjectName("tableView")
+        self.tableView.verticalHeader().setVisible(False)
 
         self.menubar = QtWidgets.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 600, 20))

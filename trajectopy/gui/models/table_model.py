@@ -1,10 +1,10 @@
-import copy
+﻿import copy
 import logging
 from collections.abc import Callable
 from enum import Enum
 from typing import Generic, TypeVar
 
-from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QAbstractTableModel, Qt, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     Request,
@@ -45,7 +45,7 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
         if role == Qt.ItemDataRole.DisplayRole:
             return self.items[index.row()].column[index.column()]
 
-        return QVariant()
+        return None
 
     def get(self, item_id: str) -> None | T:
         return next((item for item in self.items if item.entry_id == item_id), None)
@@ -69,8 +69,8 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
 class RequestTableModel(BaseTableModel):
     """Base class for all table models that handle requests."""
 
-    operation_finished = pyqtSignal()
-    ui_request = pyqtSignal(UIRequest)
+    operation_finished = Signal()
+    ui_request = Signal(UIRequest)
 
     def __init__(
         self,
@@ -83,7 +83,7 @@ class RequestTableModel(BaseTableModel):
         self.REQUEST_MAPPING = REQUEST_MAPPING
         self.request: TrajectoryModelRequest | ResultModelRequest
 
-    @pyqtSlot(Request)
+    @Slot(Request)
     def handle_request(self, request: TrajectoryModelRequest | ResultModelRequest) -> None:
         self.request = request
         generic_request_handler(self, request, passthrough_request=False)

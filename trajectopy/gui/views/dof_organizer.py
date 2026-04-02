@@ -1,11 +1,11 @@
-from PyQt6 import QtCore, QtWidgets
+﻿from PySide6 import QtCore, QtWidgets
 
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.utils import center_window
 
 
 class DOFOrganizer(QtWidgets.QMainWindow):
-    selection_made = QtCore.pyqtSignal(dict)
+    selection_made = QtCore.Signal(dict)
 
     def __init__(self, parent, selection: TrajectorySelection) -> None:
         super().__init__(parent=parent)

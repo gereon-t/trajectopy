@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+﻿from dataclasses import dataclass, field
 
 from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 

@@ -1,6 +1,6 @@
-from PyQt6 import QtWidgets
-from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QAction, QCursor
+﻿from PySide6 import QtWidgets
+from PySide6.QtCore import Signal, Slot
+from PySide6.QtGui import QAction, QCursor
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -20,10 +20,10 @@ from trajectopy.gui.models.selection import ResultSelection
 
 
 class ResultContextMenu(QtWidgets.QMenu):
-    result_model_request = pyqtSignal(ResultModelRequest)
-    ui_request = pyqtSignal(UIRequest)
-    file_request = pyqtSignal(FileRequest)
-    plot_request = pyqtSignal(PlotRequest)
+    result_model_request = Signal(ResultModelRequest)
+    ui_request = Signal(UIRequest)
+    file_request = Signal(FileRequest)
+    plot_request = Signal(PlotRequest)
 
     def __init__(self, parent) -> None:
         super().__init__(parent=parent)
@@ -40,7 +40,7 @@ class ResultContextMenu(QtWidgets.QMenu):
     def get_selection(self) -> ResultSelection:
         return self._selection
 
-    @pyqtSlot(ResultSelection)
+    @Slot(ResultSelection)
     def show_context_menu(self, selection: ResultSelection):
         if not selection:
             return

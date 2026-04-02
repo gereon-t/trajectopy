@@ -1,9 +1,9 @@
-import logging
+﻿import logging
 import threading
 from collections.abc import Callable
 from pathlib import Path
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -38,11 +38,11 @@ class FileManager(QObject):
 
     """
 
-    ui_request = pyqtSignal(UIRequest)
-    trajectory_model_request = pyqtSignal(TrajectoryModelRequest)
-    result_model_request = pyqtSignal(ResultModelRequest)
-    operation_started = pyqtSignal()
-    operation_finished = pyqtSignal()
+    ui_request = Signal(UIRequest)
+    trajectory_model_request = Signal(TrajectoryModelRequest)
+    result_model_request = Signal(ResultModelRequest)
+    operation_started = Signal()
+    operation_finished = Signal()
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -57,7 +57,7 @@ class FileManager(QObject):
         }
 
     @show_progress
-    @pyqtSlot(FileRequest)
+    @Slot(FileRequest)
     def handle_request(self, request: FileRequest) -> None:
         """Logic for handling a request."""
         request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))

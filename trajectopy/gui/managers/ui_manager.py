@@ -1,8 +1,8 @@
-import logging
+﻿import logging
 from typing import Any
 
-from PyQt6 import QtWidgets
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PySide6 import QtWidgets
+from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -75,12 +75,12 @@ class UIManager(QObject):
 
     """
 
-    trajectory_manager_request = pyqtSignal(TrajectoryManagerRequest)
-    result_model_request = pyqtSignal(ResultModelRequest)
-    file_request = pyqtSignal(FileRequest)
-    session_manager_request = pyqtSignal(SessionManagerRequest)
-    operation_finished = pyqtSignal()
-    ui_request = pyqtSignal(UIRequest)
+    trajectory_manager_request = Signal(TrajectoryManagerRequest)
+    result_model_request = Signal(ResultModelRequest)
+    file_request = Signal(FileRequest)
+    session_manager_request = Signal(SessionManagerRequest)
+    operation_finished = Signal()
+    ui_request = Signal(UIRequest)
     request: UIRequest
 
     def __init__(self, parent=None) -> None:
@@ -105,7 +105,7 @@ class UIManager(QObject):
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
         }
 
-    @pyqtSlot(UIRequest)
+    @Slot(UIRequest)
     def handle_request(self, request: UIRequest) -> None:
         self.request = request
         generic_request_handler(self, request, passthrough_request=True)
@@ -157,7 +157,7 @@ class UIManager(QObject):
         self._track_window(result_selection)
         result_selection.show()
 
-    @pyqtSlot(AlignmentEntry)
+    @Slot(AlignmentEntry)
     def handle_alignment_selection(self, selected_alignment: AlignmentEntry) -> None:
         self.trajectory_manager_request.emit(
             TrajectoryManagerRequest(
@@ -167,7 +167,7 @@ class UIManager(QObject):
             )
         )
 
-    @pyqtSlot(dict)
+    @Slot(dict)
     def handle_dof_selection(self, dof_mapping: dict) -> None:
         self.trajectory_manager_request.emit(
             TrajectoryManagerRequest(

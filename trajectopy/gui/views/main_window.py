@@ -1,12 +1,18 @@
-import logging
+﻿import logging
 import os
 import shutil
 from collections.abc import Callable
 from tempfile import mkdtemp
 
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QAction, QActionGroup, QCloseEvent
+import matplotlib
+import numpy as np
+
+matplotlib.use("QtAgg")
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Signal, Slot
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
 from trajectopy.core.settings import MPLPlotSettings, PlotBackend, ReportSettings
@@ -25,6 +31,7 @@ from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
+from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET, MPL_COLORS
 from trajectopy.gui.utils import center_window
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
@@ -45,9 +52,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     and results as well as the menu bar.
     """
 
-    operation_started = pyqtSignal()
-    operation_finished = pyqtSignal()
-    ui_request = pyqtSignal(UIRequest)
+    operation_started = Signal()
+    operation_finished = Signal()
+    ui_request = Signal(UIRequest)
 
     def __init__(
         self,
@@ -65,6 +72,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
         }
 
+        self._dark_theme = True
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
@@ -210,6 +218,37 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
 
+        theme_menu = QtWidgets.QMenu("Theme", parent=self)
+        self._dark_theme_action = QAction("Dark", parent=self, checkable=True)
+        self._dark_theme_action.setChecked(True)
+        self._light_theme_action = QAction("Light", parent=self, checkable=True)
+        theme_group = QActionGroup(self)
+        theme_group.addAction(self._dark_theme_action)
+        theme_group.addAction(self._light_theme_action)
+        self._dark_theme_action.triggered.connect(lambda: self._apply_theme(dark=True))
+        self._light_theme_action.triggered.connect(lambda: self._apply_theme(dark=False))
+        theme_menu.addAction(self._dark_theme_action)
+        theme_menu.addAction(self._light_theme_action)
+        menubar.addMenu(theme_menu)
+
+    def _apply_theme(self, dark: bool) -> None:
+        self._dark_theme = dark
+        self._dark_theme_action.setChecked(dark)
+        self._light_theme_action.setChecked(not dark)
+        QtWidgets.QApplication.instance().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
+        self._update_preview_colors()
+        self._preview_canvas.draw_idle()
+
+    def _update_preview_colors(self) -> None:
+        colors = MPL_COLORS["dark" if self._dark_theme else "light"]
+        self._preview_fig.patch.set_facecolor(colors["bg"])
+        self._preview_ax.set_facecolor(colors["bg"])
+        for spine in self._preview_ax.spines.values():
+            spine.set_edgecolor(colors["spine"])
+        self._preview_ax.tick_params(colors=colors["tick"], labelsize=7)
+        self._preview_ax.xaxis.label.set_color(colors["tick"])
+        self._preview_ax.yaxis.label.set_color(colors["tick"])
+
     def set_plotly_backend(self):
         self.plot_manager.set_plot_backend(PlotBackend.PLOTLY)
         self.report_settings_action.setVisible(True)
@@ -324,12 +363,92 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             lambda: self.ui_manager.handle_request(UIRequest(type=UIRequestType.IMPORT_RES))
         )
 
-    @QtCore.pyqtSlot()
+        # Update details panel on selection change
+        self.trajectoryTableView.selectionModel().selectionChanged.connect(self._on_trajectory_selection_changed)
+        self.resultTableView.selectionModel().selectionChanged.connect(self._on_result_selection_changed)
+        # Also refresh details whenever layout changes (e.g., new items loaded)
+        self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_selection_changed)
+        self.result_table_model.layoutChanged.connect(self._on_result_selection_changed)
+
+    @QtCore.Slot()
+    def _on_trajectory_selection_changed(self) -> None:
+        entries = self.trajectoryTableView.selected_entries
+        self._preview_ax.clear()
+        if not entries:
+            self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
+            self.details_text.clear()
+            self._preview_ax.set_visible(False)
+            self._preview_canvas.draw_idle()
+            return
+
+        lines = []
+        for entry in entries:
+            t = entry.trajectory
+            lines.append(f"Name:              {t.name}")
+            lines.append(f"Poses:             {len(t)}")
+            lines.append(f"Length [m]:        {t.total_length:.3f}")
+            lines.append(f"Data rate [Hz]:    {t.data_rate:.3f}")
+            lines.append(f"EPSG:              {t.positions.epsg}")
+            lines.append(f"Orientation:       {'yes' if t.has_orientation else 'no'}")
+            lines.append(f"Function of:       {t.index_label}")
+            lines.append(f"Reference:         {'yes' if entry.set_as_reference else 'no'}")
+            if len(entries) > 1:
+                lines.append("\u2500" * 36)
+        self.details_text.setPlainText("\n".join(lines))
+
+        # Draw 2D XY preview
+        self._preview_ax.set_visible(True)
+        _MAX_PREVIEW_POINTS = 2000
+        for entry in entries:
+            t = entry.trajectory
+            local_xyz = t.positions.to_local(inplace=False).xyz
+            if len(local_xyz) > _MAX_PREVIEW_POINTS:
+                idx = np.linspace(0, len(local_xyz) - 1, _MAX_PREVIEW_POINTS, dtype=int)
+                local_xyz = local_xyz[idx]
+            self._preview_ax.plot(local_xyz[:, 0], local_xyz[:, 1], linewidth=1.0, label=t.name)
+        self._preview_ax.set_aspect("equal", adjustable="datalim")
+        self._preview_ax.set_xlabel("X [m]")
+        self._preview_ax.set_ylabel("Y [m]")
+        if len(entries) > 1:
+            self._preview_ax.legend(fontsize=7)
+        self._update_preview_colors()
+        self._preview_canvas.draw_idle()
+
+    @QtCore.Slot()
+    def _on_result_selection_changed(self) -> None:
+        if (sel := self.resultTableView.selectionModel()) is None or not sel.selectedRows():
+            return
+        rows = [r.row() for r in sel.selectedRows()]
+        items = [self.result_table_model.items[r] for r in rows if r < len(self.result_table_model.items)]
+        if not items:
+            return
+
+        # Clear the trajectory 2D preview
+        self._preview_ax.clear()
+        self._preview_ax.set_visible(False)
+        self._update_preview_colors()
+        self._preview_canvas.draw_idle()
+
+        lines = []
+        for item in items:
+            prop = getattr(item, "property_dict", {})
+            if prop:
+                longest_key = max((len(k) for k in prop), default=0)
+                for k, v in prop.items():
+                    lines.append(f"{k:<{longest_key}}  {v}")
+            else:
+                lines.append(f"Name:  {item.name}")
+                lines.append(f"Type:  {type(item).__name__}")
+            if len(items) > 1:
+                lines.append("─" * 48)
+        self.details_text.setPlainText("\n".join(lines))
+
+    @QtCore.Slot()
     def refresh(self) -> None:
         self.trajectory_table_model.layoutChanged.emit()
         self.result_table_model.layoutChanged.emit()
 
-    @pyqtSlot(PlotSettingsRequest)
+    @Slot(PlotSettingsRequest)
     def handle_report_settings_request(self, request: PlotSettingsRequest) -> None:
         """Logic for handling a request."""
         generic_request_handler(self, request, passthrough_request=True)
@@ -363,22 +482,22 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.report_settings = ReportSettings()
         self.mpl_plot_settings = MPLPlotSettings()
 
-    @QtCore.pyqtSlot(PlotRequest)
+    @QtCore.Slot(PlotRequest)
     def inject_plot_settings(self, plot_request: PlotRequest) -> None:
         logger.debug("Injecting plotting settings into plot request of type %s", plot_request.type)
         plot_request.report_settings = self.report_settings
         plot_request.mpl_plot_settings = self.mpl_plot_settings
         self.plot_manager.handle_request(plot_request)
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def handle_import_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.IMPORT_SESSION))
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def handle_export_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.EXPORT_SESSION))
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def handle_new_session(self) -> None:
         self.ui_manager.handle_request(UIRequest(type=UIRequestType.CONFIRM_RESET))
 
@@ -388,28 +507,28 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setupUi(self):
         """This method sets up the GUI"""
         self.setObjectName("MainWindow")
-        self.resize(800, 600)
+        self.resize(1150, 700)
         self.center()
+        self.setMinimumSize(QtCore.QSize(800, 500))
 
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(sizePolicy)
-        self.setMinimumSize(QtCore.QSize(640, 480))
-
-        # --- Central widget with splitter ---
+        # --- Central widget ---
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
-        main_layout = QtWidgets.QVBoxLayout(self.centralwidget)
-        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout = QtWidgets.QHBoxLayout(self.centralwidget)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+        main_layout.setSpacing(8)
 
-        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical, self.centralwidget)
+        # Horizontal splitter: left (tables) | right (details panel)
+        self.h_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal, self.centralwidget)
 
-        # --- Trajectories group ---
+        # --- LEFT PANE: vertical splitter with Trajectories + Results ---
+        left_widget = QtWidgets.QWidget()
+        left_layout = QtWidgets.QVBoxLayout(left_widget)
+        left_layout.setContentsMargins(0, 0, 8, 0)
+        left_layout.setSpacing(0)
+
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical, left_widget)
+
         traj_group = QtWidgets.QGroupBox("Trajectories")
         traj_layout = QtWidgets.QVBoxLayout(traj_group)
         traj_layout.setContentsMargins(6, 6, 6, 6)
@@ -429,10 +548,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.addTrajectoryButton.setObjectName("addTrajectoryButton")
         traj_button_layout.addWidget(self.addTrajectoryButton)
         traj_layout.addLayout(traj_button_layout)
-
         self.splitter.addWidget(traj_group)
 
-        # --- Results group ---
         result_group = QtWidgets.QGroupBox("Results")
         result_layout = QtWidgets.QVBoxLayout(result_group)
         result_layout.setContentsMargins(6, 6, 6, 6)
@@ -446,14 +563,49 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.addResultButton.setObjectName("addResultButton")
         result_button_layout.addWidget(self.addResultButton)
         result_layout.addLayout(result_button_layout)
-
         self.splitter.addWidget(result_group)
 
-        main_layout.addWidget(self.splitter)
-        self.setCentralWidget(self.centralwidget)
+        left_layout.addWidget(self.splitter)
+        self.h_splitter.addWidget(left_widget)
 
-        # --- Status bar ---
+        # --- RIGHT PANE: details panel (text + 2D preview) ---
+        details_widget = QtWidgets.QWidget()
+        details_widget.setMinimumWidth(200)
+        details_layout = QtWidgets.QVBoxLayout(details_widget)
+        details_layout.setContentsMargins(8, 0, 0, 0)
+        details_layout.setSpacing(4)
+
+        details_header = QtWidgets.QLabel("Details")
+        details_header.setStyleSheet("font-weight: bold; font-size: 11pt; padding: 4px;")
+        details_layout.addWidget(details_header)
+
+        details_v_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
+
+        self.details_text = QtWidgets.QTextEdit()
+        self.details_text.setReadOnly(True)
+        self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
+        self.details_text.setFont(QtWidgets.QApplication.font())
+        details_v_splitter.addWidget(self.details_text)
+
+        # Matplotlib 2D preview canvas
+        self._preview_fig = Figure(figsize=(4, 3), tight_layout=True, facecolor="#1e1e1e")
+        self._preview_ax = self._preview_fig.add_subplot(111)
+        self._preview_ax.set_visible(False)
+        self._preview_canvas = FigureCanvas(self._preview_fig)
+        self._preview_canvas.setMinimumHeight(150)
+        details_v_splitter.addWidget(self._preview_canvas)
+        details_v_splitter.setStretchFactor(0, 1)
+        details_v_splitter.setStretchFactor(1, 2)
+
+        details_layout.addWidget(details_v_splitter)
+        self.h_splitter.addWidget(details_widget)
+        self.h_splitter.setStretchFactor(0, 3)
+        self.h_splitter.setStretchFactor(1, 1)
+
+        main_layout.addWidget(self.h_splitter)
+        self.setCentralWidget(self.centralwidget)
         self.statusBar().showMessage("Ready")
+        self.statusBar().setSizeGripEnabled(False)
 
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)

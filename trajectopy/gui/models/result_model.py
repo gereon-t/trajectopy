@@ -1,8 +1,8 @@
-import logging
+﻿import logging
 import os
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QInputDialog
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class ResultTableModel(RequestTableModel):
     """Class representing the result table model."""
 
-    file_request = pyqtSignal(FileRequest)
+    file_request = Signal(FileRequest)
     items: list[ResultEntry]
     request: ResultModelRequest
 

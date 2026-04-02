@@ -1,12 +1,15 @@
-"""GUI entry point for trajectopy."""
+﻿"""GUI entry point for trajectopy."""
 
 import ctypes
 import logging
 import os
 
-from PyQt6 import QtGui
-from PyQt6.QtWidgets import QApplication
+from PySide6 import QtGui
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication
 from rich.logging import RichHandler
+
+from trajectopy.gui.themes import DARK_STYLESHEET
 
 logging.basicConfig(
     format="%(message)s",
@@ -40,6 +43,10 @@ def main(
         mapbox_token: Mapbox token for map styles
     """
     app = QApplication([])
+    font = QFont("Segoe UI", 9)
+    app.setFont(font)
+    app.setStyleSheet(DARK_STYLESHEET)
+
     _ = TrajectopyGUI(
         single_thread=single_thread,
         report_output_path=report_output_path,

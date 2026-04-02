@@ -1,4 +1,4 @@
-"""
+﻿"""
 Trajectopy - Trajectory Evaluation in Python
 
 Gereon Tombrink, 2023
@@ -12,7 +12,7 @@ import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PyQt6 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 from trajectopy.core.settings import MPLPlotSettings
 from trajectopy.core.trajectory import Trajectory

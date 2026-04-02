@@ -1,8 +1,8 @@
-import logging
+﻿import logging
 import os
 from collections.abc import Callable
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.core.settings import PlotBackend
 from trajectopy.gui.managers.requests import (
@@ -43,9 +43,9 @@ class PlotManager(QObject):
 
     """
 
-    ui_request = pyqtSignal(UIRequest)
-    operation_started = pyqtSignal()
-    operation_finished = pyqtSignal()
+    ui_request = Signal(UIRequest)
+    operation_started = Signal()
+    operation_finished = Signal()
 
     def __init__(
         self,
@@ -70,7 +70,7 @@ class PlotManager(QObject):
         self.plot_backend = plot_backend
 
     @show_progress
-    @pyqtSlot(PlotRequest)
+    @Slot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
         generic_request_handler(self, request, True)

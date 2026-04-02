@@ -1,7 +1,7 @@
-import logging
+﻿import logging
 
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtGui import QAction, QCursor
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QAction, QCursor
 
 from trajectopy.core.settings import MatchingMethod
 from trajectopy.gui.managers.requests import (
@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 class TrajectoryContextMenu(QtWidgets.QMenu):
-    trajectory_manager_request = QtCore.pyqtSignal(TrajectoryManagerRequest)
-    trajectory_model_request = QtCore.pyqtSignal(TrajectoryModelRequest)
-    result_model_request = QtCore.pyqtSignal(ResultModelRequest)
-    ui_request = QtCore.pyqtSignal(UIRequest)
-    plot_request = QtCore.pyqtSignal(PlotRequest)
+    trajectory_manager_request = QtCore.Signal(TrajectoryManagerRequest)
+    trajectory_model_request = QtCore.Signal(TrajectoryModelRequest)
+    result_model_request = QtCore.Signal(ResultModelRequest)
+    ui_request = QtCore.Signal(UIRequest)
+    plot_request = QtCore.Signal(PlotRequest)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -50,7 +50,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
     def get_selection(self) -> TrajectorySelection:
         return self._selection
 
-    @QtCore.pyqtSlot(TrajectorySelection)
+    @QtCore.Slot(TrajectorySelection)
     def show_context_menu(self, selection: TrajectorySelection):
         if not selection:
             return

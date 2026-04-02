@@ -1,11 +1,11 @@
-from PyQt6 import QtCore, QtWidgets
-from PyQt6.QtGui import QGuiApplication
+﻿from PySide6 import QtCore, QtWidgets
+from PySide6.QtGui import QGuiApplication
 
 from trajectopy.gui.models.entries import AlignmentEntry
 
 
 class AlignmentSelector(QtWidgets.QMainWindow):
-    selection_made = QtCore.pyqtSignal(AlignmentEntry)
+    selection_made = QtCore.Signal(AlignmentEntry)
 
     def __init__(self, alignments: list[AlignmentEntry], parent=None) -> None:
         super().__init__(parent=parent)
