@@ -3,6 +3,7 @@
 import ctypes
 import logging
 import os
+import sys
 
 from PySide6 import QtGui
 from PySide6.QtGui import QFont
@@ -43,7 +44,12 @@ def main(
         mapbox_token: Mapbox token for map styles
     """
     app = QApplication([])
-    font = QFont("Segoe UI", 9)
+    if sys.platform == "darwin":
+        font = QFont(".AppleSystemUIFont", 13)
+    elif os.name == "nt":
+        font = QFont("Segoe UI", 10)
+    else:
+        font = QFont("Ubuntu", 11)
     app.setFont(font)
     app.setStyleSheet(DARK_STYLESHEET)
 
