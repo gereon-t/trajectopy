@@ -37,6 +37,7 @@ from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
+from trajectopy.gui.views.timeline_widget import TimelineDialog, TimelineWidget
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
 from trajectopy.utils.common import YEAR
 
@@ -218,6 +219,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
 
+        self._timeline_dialog = TimelineDialog(parent=self)
+
         theme_menu = QtWidgets.QMenu("Theme", parent=self)
         self._dark_theme_action = QAction("Dark", parent=self, checkable=True)
         self._dark_theme_action.setChecked(True)
@@ -238,6 +241,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
         self._update_preview_colors()
         self._preview_canvas.draw_idle()
+        self._timeline_dialog.apply_theme(dark)
 
     def _update_preview_colors(self) -> None:
         colors = MPL_COLORS["dark" if self._dark_theme else "light"]
@@ -328,6 +332,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.ui_request.connect(self.ui_manager.handle_request)
         self.trajectoryTableView.file_request.connect(self.file_manager.handle_request)
         self.trajectoryTableView.result_model_request.connect(self.result_table_model.handle_request)
+        self.trajectoryTableView.show_timeline.connect(self._show_timeline)
 
     def setup_progress_connections(self):
         self.trajectory_manager.operation_started.connect(self.progress_window.handle_show_request)
@@ -369,6 +374,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # Also refresh details whenever layout changes (e.g., new items loaded)
         self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_selection_changed)
         self.result_table_model.layoutChanged.connect(self._on_result_selection_changed)
+        # Keep timeline in sync with trajectory model
+        self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_model_changed)
 
     @QtCore.Slot()
     def _on_trajectory_selection_changed(self) -> None:
@@ -442,6 +449,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             if len(items) > 1:
                 lines.append("─" * 48)
         self.details_text.setPlainText("\n".join(lines))
+
+    @QtCore.Slot()
+    def _on_trajectory_model_changed(self) -> None:
+        pass  # timeline is now driven by context menu selection
+
+    @QtCore.Slot(object)
+    def _show_timeline(self, entries) -> None:
+        self._timeline_dialog.set_entries(entries)
+        self._timeline_dialog.show()
+        self._timeline_dialog.raise_()
 
     @QtCore.Slot()
     def refresh(self) -> None:

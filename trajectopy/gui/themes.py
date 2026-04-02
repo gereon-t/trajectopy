@@ -227,7 +227,7 @@ DARK_STYLESHEET = """
             color: #cccccc;
             border: 1px solid #3c3c3c;
             selection-background-color: #264f78;
-            font-family: "Cascadia Code", "Courier New", monospace;
+            font-family: "Menlo", "Courier New", monospace;
             font-size: 11pt;
         }
         QLabel {
@@ -338,7 +338,7 @@ LIGHT_STYLESHEET = """
             color: #333333;
             border: 1px solid #e0e0e0;
             selection-background-color: #add6ff;
-            font-family: "Cascadia Code", "Courier New", monospace;
+            font-family: "Menlo", "Courier New", monospace;
             font-size: 11pt;
         }
         QLabel {

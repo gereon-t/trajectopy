@@ -40,6 +40,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
     ui_request = Signal(UIRequest)
     file_request = Signal(FileRequest)
     plot_request = Signal(PlotRequest)
+    show_timeline = Signal(object)  # emits list[TrajectoryEntry]
 
     def __init__(
         self,
@@ -71,6 +72,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         self.trajectory_context_menu.ui_request.connect(self.ui_request.emit)
         self.trajectory_context_menu.plot_request.connect(self.plot_request.emit)
         self.trajectory_context_menu.result_model_request.connect(self.result_model_request.emit)
+        self.trajectory_context_menu.show_timeline.connect(self.show_timeline.emit)
 
     @property
     def selection(self) -> TrajectorySelection:
