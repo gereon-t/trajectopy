@@ -103,6 +103,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
+            UIRequestType.GRID_SELECTION: self.grid_selection,
         }
 
     @Slot(UIRequest)
@@ -256,6 +257,28 @@ class UIManager(QObject):
                 type=TrajectoryManagerRequestType.CHANGE_ESPG,
                 selection=request.trajectory_selection,
                 target_epsg=epsg,
+            )
+        )
+
+    def grid_selection(self, request: UIRequest) -> None:
+        step, ok = QtWidgets.QInputDialog.getDouble(
+            None,
+            "Interpolate to Grid",
+            "Enter the grid step size (seconds):",
+            0.1,
+            1e-6,
+            3600.0,
+            6,
+        )
+
+        if not ok or step <= 0:
+            return
+
+        self.trajectory_manager_request.emit(
+            TrajectoryManagerRequest(
+                type=TrajectoryManagerRequestType.INTERPOLATE_TO_GRID,
+                selection=request.trajectory_selection,
+                grid=step,
             )
         )
 

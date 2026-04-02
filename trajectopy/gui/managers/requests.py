@@ -72,6 +72,7 @@ class TrajectoryManagerRequestType(Enum):
     MATCH = auto()
     ATE = auto()
     RPE = auto()
+    INTERPOLATE_TO_GRID = auto()
 
 
 class TrajectoryModelRequestType(Enum):

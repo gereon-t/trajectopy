@@ -36,6 +36,7 @@ from trajectopy.processing import (
     merging,
     sorting,
 )
+from trajectopy.processing.interpolation import interpolate
 from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
@@ -168,6 +169,11 @@ class TrajectoryManager(QObject):
             ),
             TrajectoryManagerRequestType.RPE: lambda: self.handle_trajectory_operation(
                 operation=self.operation_rpe, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.INTERPOLATE_TO_GRID: lambda: self.handle_trajectory_operation(
+                operation=self.operation_interpolate_to_grid,
+                inplace=False,
+                apply_to_reference=False,
             ),
         }
 
@@ -516,6 +522,26 @@ class TrajectoryManager(QObject):
         )
 
         return (RelativeDeviationEntry(deviations=comparison_result),)
+
+    @staticmethod
+    def operation_interpolate_to_grid(
+        entry_pair: TrajectoryEntryPair,
+    ) -> tuple[TrajectoryEntry]:
+        """Resamples the trajectory to a uniform time grid with the given step size."""
+        t = entry_pair.entry.trajectory.timestamps
+        step = entry_pair.request.grid
+        new_timestamps = np.arange(t[0], t[-1] + step, step)
+        interpolate(entry_pair.entry.trajectory, timestamps=new_timestamps, inplace=True)
+        entry_pair.entry.trajectory.name += f" (grid {step:.4g}s)"
+        return (
+            TrajectoryEntry(
+                full_filename=entry_pair.entry.full_filename,
+                trajectory=entry_pair.entry.trajectory,
+                settings=entry_pair.entry.settings,
+                group_id=entry_pair.entry.group_id,
+                state=entry_pair.entry.state,
+            ),
+        )
 
     @staticmethod
     def operation_epsg_edit(

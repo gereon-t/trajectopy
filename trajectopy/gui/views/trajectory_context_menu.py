@@ -279,6 +279,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.action_context_menu.addAction(approximate_action)
 
+        interpolate_to_grid_action = QAction("Interpolate to Grid", self)
+        interpolate_to_grid_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.GRID_SELECTION,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.action_context_menu.addAction(interpolate_to_grid_action)
+
         apply_alignment_action = QAction("Apply Alignment", self)
         # -> ResultModelRequest(selection=selected_trajectories) -> ResultModel
         # -> UIRequest(result_selection=Alignments, trajectory_selection=selected_trajectories)
