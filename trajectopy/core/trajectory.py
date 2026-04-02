@@ -473,19 +473,22 @@ class Trajectory:
         traj_self.crop(t_start=time_span[0], t_end=time_span[1])
 
         tstamps_sorted = np.sort(timestamps)
-        lower_neighbor_list = np.searchsorted(tstamps_sorted, traj_self.timestamps, side="right") - 1
+        filter_mask = np.ones(len(traj_self.timestamps), dtype=bool)
 
-        filter_index = [
-            idx
-            for idx, (tstamp, lower_neighbor) in enumerate(zip(traj_self.timestamps, lower_neighbor_list))
-            if (
-                tstamps_sorted[lower_neighbor] == tstamp
-                or (
-                    lower_neighbor + 1 < len(tstamps_sorted)
-                    and (tstamps_sorted[lower_neighbor + 1] - tstamps_sorted[lower_neighbor]) <= max_gap_size
-                )
-            )
-        ]
+        # find where gaps are too large
+        gaps = np.diff(tstamps_sorted) > max_gap_size
+        gap_starts = tstamps_sorted[:-1][gaps]
+        gap_ends = tstamps_sorted[1:][gaps]
+
+        for g_start, g_end in zip(gap_starts, gap_ends):
+            idx_start = np.searchsorted(traj_self.timestamps, g_start, side="right")
+            idx_end = np.searchsorted(traj_self.timestamps, g_end, side="left")
+
+            # keep one point after gap start and one point before gap end for interpolation
+            if idx_end - 1 > idx_start:
+                filter_mask[idx_start + 1 : idx_end - 1] = False
+
+        filter_index = np.where(filter_mask)[0]
         traj_self.mask(np.array(filter_index, dtype=int))
 
         return traj_self

@@ -94,6 +94,31 @@ class TestTrajectory(unittest.TestCase):
         self.trajectory_sanity_check(trajectory)
         self.trajectory_sanity_check(trajectory_ref)
 
+    def test_intersect_with_gaps(self) -> None:
+        t_ref = np.arange(0, 100, 1.0)
+        # Introduce a gap > 10s between t=40 and t=60
+        t_ref = np.setdiff1d(t_ref, np.arange(41, 60))
+
+        t_test = np.arange(0, 100, 1.0) + 0.2
+
+        xyz_ref = np.column_stack([t_ref, np.zeros_like(t_ref), np.zeros_like(t_ref)])
+        xyz_test = np.column_stack([t_test, np.ones_like(t_test), np.zeros_like(t_test)])
+
+        traj_ref = Trajectory(positions=Positions(xyz_ref, epsg=0), timestamps=t_ref, name="Ref")
+        traj_test = Trajectory(positions=Positions(xyz_test, epsg=0), timestamps=t_test, name="Test")
+
+        traj_test.intersect(traj_ref.timestamps, max_gap_size=10.0)
+
+        # Test original timestamps inside the gap were 41.2, 42.2 ... 59.2
+        # For the boundary interpolation of g_start=40.0 and g_end=60.0
+        # the points 40.2 and 59.2 should be kept, and anything between them (41.2 to 58.2) removed.
+        self.assertIn(40.2, traj_test.timestamps, "Lower boundary point inside gap was not kept")
+        self.assertIn(59.2, traj_test.timestamps, "Upper boundary point inside gap was not kept")
+        self.assertNotIn(41.2, traj_test.timestamps, "Excess inner point was not deleted")
+        self.assertNotIn(58.2, traj_test.timestamps, "Excess inner point was not deleted")
+
+        self.trajectory_sanity_check(traj_test)
+
     def generate_altered_trajectory(self) -> Trajectory:
         trajectory = open_loop_trajectory.copy()
 
