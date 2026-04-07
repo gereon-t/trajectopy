@@ -49,11 +49,12 @@ def show_progress(func):
         # emit signal to show progress bar
         args[0].operation_started.emit()
 
-        # execute the function
-        func(*args, **kwargs)
-
-        # emit signal to hide progress bar
-        args[0].operation_finished.emit()
+        try:
+            # execute the function
+            return func(*args, **kwargs)
+        finally:
+            # emit signal to hide progress bar
+            args[0].operation_finished.emit()
 
     return wrapper
 
