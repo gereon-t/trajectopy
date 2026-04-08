@@ -1,6 +1,5 @@
 ﻿import copy
 import logging
-import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -212,9 +211,7 @@ class TrajectoryManager(QObject):
             None.
         """
         self.request = request
-        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, False))
-        request_thread.start()
-        request_thread.join()
+        generic_request_handler(self, request, False)
         self.update_view.emit()
 
     def emit_add_trajectory_signal(self, new_trajectory_entry: TrajectoryEntry):

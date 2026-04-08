@@ -148,7 +148,7 @@ class PlotTabs(QtWidgets.QMainWindow):
                     label=selected_item.colorbar_label,
                 )
 
-            canvas.draw()
+            canvas.draw_idle()
 
         dropdown.currentTextChanged.connect(update_plot)
 
