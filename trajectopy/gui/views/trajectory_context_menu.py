@@ -228,6 +228,8 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
+        self.addMenu(self.view_context_menu)
+
         property_action = QAction("Properties", self)
         property_action.triggered.connect(
             lambda: self.ui_request.emit(
@@ -237,11 +239,11 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.addAction(property_action)
+        self.view_context_menu.addAction(property_action)
 
         timeline_action = QAction("Timeline", self)
         timeline_action.triggered.connect(lambda: self.show_timeline.emit(self.get_selection().entries))
-        self.addAction(timeline_action)
+        self.view_context_menu.addAction(timeline_action)
 
         plot_2d_action = QAction("Plot", self)
         plot_2d_action.triggered.connect(
@@ -253,7 +255,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.addAction(plot_2d_action)
+        self.view_context_menu.addAction(plot_2d_action)
 
         playback_action = QAction("Playback", self)
         playback_action.triggered.connect(
@@ -264,7 +266,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.addAction(playback_action)
+        self.view_context_menu.addAction(playback_action)
 
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)
