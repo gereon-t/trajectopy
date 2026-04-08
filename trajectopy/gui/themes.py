@@ -30,10 +30,6 @@ _BASE = """
             border-radius: 3px;
             margin-top: 10px;
             padding-top: 6px;
-            font-size: 10pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         QGroupBox::title {
             subcontrol-origin: margin;
@@ -53,10 +49,6 @@ _BASE = """
             border: none;
             border-right: 1px solid %(border)s;
             border-bottom: 1px solid %(border)s;
-            font-size: 10pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
         QHeaderView::section:hover {
             background-color: %(header_hover)s;
@@ -188,7 +180,6 @@ DARK_STYLESHEET = """
         QStatusBar {
             background-color: #2d2d30;
             color: #bbbbbb;
-            font-size: 10pt;
             border-top: 1px solid #3c3c3c;
         }
         QStatusBar::item {
@@ -200,7 +191,6 @@ DARK_STYLESHEET = """
             border: none;
             padding: 6px 16px;
             border-radius: 2px;
-            font-size: 11pt;
         }
         QPushButton:hover {
             background-color: #1177bb;
@@ -227,8 +217,7 @@ DARK_STYLESHEET = """
             color: #cccccc;
             border: 1px solid #3c3c3c;
             selection-background-color: #264f78;
-            font-family: "Menlo", "Courier New", monospace;
-            font-size: 11pt;
+            font-family: "Consolas", "Menlo", "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
         }
         QLabel {
             color: #cccccc;
@@ -299,7 +288,6 @@ LIGHT_STYLESHEET = """
         QStatusBar {
             background-color: #f3f3f3;
             color: #666666;
-            font-size: 10pt;
             border-top: 1px solid #e0e0e0;
         }
         QStatusBar::item {
@@ -311,7 +299,6 @@ LIGHT_STYLESHEET = """
             border: none;
             padding: 6px 16px;
             border-radius: 2px;
-            font-size: 11pt;
         }
         QPushButton:hover {
             background-color: #106ebe;
@@ -338,8 +325,7 @@ LIGHT_STYLESHEET = """
             color: #333333;
             border: 1px solid #e0e0e0;
             selection-background-color: #add6ff;
-            font-family: "Menlo", "Courier New", monospace;
-            font-size: 11pt;
+            font-family: "Consolas", "Menlo", "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
         }
         QLabel {
             color: #333333;

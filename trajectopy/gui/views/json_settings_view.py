@@ -4,7 +4,6 @@ from typing import Any
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import QCoreApplication, Qt
-from PySide6.QtGui import QFont
 
 from trajectopy.core.settings import Settings
 from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
@@ -213,10 +212,8 @@ class JSONViewer(QtWidgets.QMainWindow):
         for key, value in json_content.items():
             if isinstance(value, dict):
                 group_label = QtWidgets.QLabel(self.scroll_area_widget_contents)
-                font = QFont()
-                font.setBold(True)
+                group_label.setStyleSheet("color: #888888;")
 
-                group_label.setFont(font)
                 group_label.setObjectName(f"label-{parent_name}-{key}")
                 group_label.setText(_translate("MainWindow", format_key(key)))
                 self.form_layout.setWidget(self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, group_label)

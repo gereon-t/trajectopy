@@ -6,6 +6,7 @@ import os
 import sys
 
 from PySide6 import QtGui
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 from rich.logging import RichHandler
@@ -43,13 +44,22 @@ def main(
         mpl_plot_settings_path: Path to JSON matplotlib plot settings file
         mapbox_token: Mapbox token for map styles
     """
+    # On Windows with fractional DPI (125%, 150%) Qt rounds the scale factor
+    # by default, causing blurry UI. PassThrough keeps the exact scale factor.
+    if os.name == "nt":
+        QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+
     app = QApplication([])
+
     if sys.platform == "darwin":
         font = QFont(".AppleSystemUIFont", 13)
     elif os.name == "nt":
         font = QFont("Segoe UI", 10)
     else:
-        font = QFont("Ubuntu", 11)
+        # Don't assume a specific family on Linux — let Qt use whatever
+        # the desktop environment provides (Cantarell, Noto Sans, etc.)
+        font = app.font()
+        font.setPointSize(10)
     app.setFont(font)
     app.setStyleSheet(DARK_STYLESHEET)
 

@@ -37,7 +37,7 @@ from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
-from trajectopy.gui.views.timeline_widget import TimelineDialog, TimelineWidget
+from trajectopy.gui.views.timeline_widget import TimelineDialog
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
 from trajectopy.utils.common import YEAR
 
@@ -608,7 +608,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         details_layout.setSpacing(4)
 
         details_header = QtWidgets.QLabel("Details")
-        details_header.setStyleSheet("font-weight: bold; font-size: 11pt; padding: 4px;")
+        details_header.setStyleSheet("color: {muted}; padding: 4px;".format(muted="#888888"))
         details_layout.addWidget(details_header)
 
         details_v_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
@@ -616,7 +616,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.details_text = QtWidgets.QTextEdit()
         self.details_text.setReadOnly(True)
         self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
-        self.details_text.setFont(QtWidgets.QApplication.font())
         details_v_splitter.addWidget(self.details_text)
 
         # Matplotlib 2D preview canvas
