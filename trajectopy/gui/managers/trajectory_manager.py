@@ -173,7 +173,7 @@ class TrajectoryManager(QObject):
             TrajectoryManagerRequestType.INTERPOLATE_TO_GRID: lambda: self.handle_trajectory_operation(
                 operation=self.operation_interpolate_to_grid,
                 inplace=False,
-                apply_to_reference=False,
+                apply_to_reference=True,
             ),
         }
 
