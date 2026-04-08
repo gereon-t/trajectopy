@@ -27,7 +27,8 @@ class PropertiesGUI(QtWidgets.QMainWindow):
         self.property_table_model = PropertyTableModel(num_cols=num_cols)
         self.tableView.setModel(self.property_table_model)
         header = self.tableView.horizontalHeader()
-        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+        header.setStretchLastSection(True)
 
         self.exportButton.clicked.connect(self.prepare_export)
 

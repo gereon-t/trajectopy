@@ -57,7 +57,8 @@ class ResultTableView(QtWidgets.QTableView):
         self.verticalHeader().setVisible(False)
 
         if (header := self.horizontalHeader()) is not None:
-            header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+            header.setStretchLastSection(True)
 
         self.result_context_menu = ResultContextMenu()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)

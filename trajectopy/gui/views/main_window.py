@@ -574,8 +574,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             trajectory_table_model=self.trajectory_table_model,
         )
         header = self.trajectoryTableView.horizontalHeader()
-        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
+        header.setStretchLastSection(True)
+        header.resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         traj_layout.addWidget(self.trajectoryTableView)
 
         traj_button_layout = QtWidgets.QHBoxLayout()
