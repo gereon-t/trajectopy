@@ -63,6 +63,7 @@ class ProgressWindow(QtWidgets.QMainWindow):
         self._show_count += 1
         if self._show_count == 1:
             self.show()
+            self.raise_()
 
     @QtCore.Slot()
     def handle_close_request(self) -> None:

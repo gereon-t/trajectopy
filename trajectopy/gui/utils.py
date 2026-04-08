@@ -1,7 +1,7 @@
 ﻿from functools import wraps
 
 from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QMetaObject, Qt
 
 
 def center_window(window: QtWidgets.QWidget) -> None:
@@ -46,15 +46,34 @@ def show_progress(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # emit signal to show progress bar
-        args[0].operation_started.emit()
+        manager = args[0]
+        progress_window = getattr(manager, "_progress_window", None)
+
+        if progress_window is not None:
+            # Cross-thread: invoke the progress window slot directly via
+            # QMetaObject.invokeMethod with BlockingQueuedConnection.
+            # This guarantees the progress window is shown before work
+            # begins, even in PyInstaller-packaged executables where
+            # PySide6 signal dispatch across threads can be unreliable
+            # on the first call.
+            QMetaObject.invokeMethod(
+                progress_window,
+                "handle_show_request",
+                Qt.ConnectionType.BlockingQueuedConnection,
+            )
+
+        manager.operation_started.emit()
 
         try:
-            # execute the function
             return func(*args, **kwargs)
         finally:
-            # emit signal to hide progress bar
-            args[0].operation_finished.emit()
+            manager.operation_finished.emit()
+            if progress_window is not None:
+                QMetaObject.invokeMethod(
+                    progress_window,
+                    "handle_close_request",
+                    Qt.ConnectionType.BlockingQueuedConnection,
+                )
 
     return wrapper
 

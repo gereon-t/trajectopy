@@ -330,15 +330,30 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.result_model_request.connect(self.result_table_model.handle_request)
 
     def setup_progress_connections(self):
-        self.trajectory_manager.operation_started.connect(self.progress_window.handle_show_request)
-        self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
-        self.trajectory_manager.operation_finished.connect(self.progress_window.handle_close_request)
-        self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+        if self.computation_thread is not None:
+            # Give cross-thread managers a reference to the progress window
+            # so the @show_progress decorator can invoke it directly via
+            # QMetaObject.invokeMethod (bypasses signal dispatch).
+            self.trajectory_manager._progress_window = self.progress_window
+            self.file_manager._progress_window = self.progress_window
 
-        self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
-        self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
-        self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
-        self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+            # Status bar only — progress window is handled by the decorator.
+            self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
+            self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+
+            self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
+            self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+        else:
+            # Single-thread mode: all on main thread, use signal connections.
+            self.trajectory_manager.operation_started.connect(self.progress_window.handle_show_request)
+            self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
+            self.trajectory_manager.operation_finished.connect(self.progress_window.handle_close_request)
+            self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+
+            self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
+            self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
+            self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
+            self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
         self.session_manager.operation_started.connect(self.progress_window.handle_show_request)
         self.session_manager.operation_started.connect(lambda: self.statusBar().showMessage("Session operation..."))
