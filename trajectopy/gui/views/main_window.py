@@ -423,15 +423,19 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         _MAX_PREVIEW_POINTS = 2000
         for entry in entries:
             t = entry.trajectory
-            n = len(t.positions.xyz)
-            if n > _MAX_PREVIEW_POINTS:
-                idx = np.linspace(0, n - 1, _MAX_PREVIEW_POINTS, dtype=int)
-                pos_subset = t.positions.copy()
-                pos_subset.xyz = t.positions.xyz[idx]
-            else:
-                pos_subset = t.positions
-            local_xyz = pos_subset.to_local(inplace=False).xyz
-            self._preview_ax.plot(local_xyz[:, 0], local_xyz[:, 1], linewidth=1.0, label=t.name)
+            try:
+                n = len(t.positions.xyz)
+                if n > _MAX_PREVIEW_POINTS:
+                    idx = np.linspace(0, n - 1, _MAX_PREVIEW_POINTS, dtype=int)
+                    pos_subset = t.positions.copy()
+                    pos_subset.xyz = t.positions.xyz[idx]
+                else:
+                    pos_subset = t.positions
+                local_xyz = pos_subset.to_local(inplace=False).xyz
+                self._preview_ax.plot(local_xyz[:, 0], local_xyz[:, 1], linewidth=1.0, label=t.name)
+            except Exception:
+                logger.exception("Preview failed for trajectory '%s'", t.name)
+                self._preview_ax.plot(t.positions.xyz[:, 0], t.positions.xyz[:, 1], linewidth=1.0, label=t.name)
         self._preview_ax.set_aspect("equal", adjustable="datalim")
         self._preview_ax.set_xlabel("X [m]")
         self._preview_ax.set_ylabel("Y [m]")

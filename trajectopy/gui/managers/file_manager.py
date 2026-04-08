@@ -1,4 +1,5 @@
 ﻿import logging
+import threading
 from collections.abc import Callable
 from pathlib import Path
 
@@ -59,7 +60,9 @@ class FileManager(QObject):
     @Slot(FileRequest)
     def handle_request(self, request: FileRequest) -> None:
         """Logic for handling a request."""
-        generic_request_handler(self, request, True)
+        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
+        request_thread.start()
+        request_thread.join()
 
     def read_trajectory_files(self, request: FileRequest) -> None:
         for file in request.file_list:

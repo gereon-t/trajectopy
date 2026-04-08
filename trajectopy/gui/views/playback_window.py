@@ -58,6 +58,7 @@ class _TrajData:
         "arrow_meshes",
         "arrow_actors",
         "_last_trav_idx",
+        "_marker_pos",
     )
 
     def __init__(
@@ -83,6 +84,7 @@ class _TrajData:
         self.arrow_meshes: list[pv.PolyData] = []
         self.arrow_actors: list = []
         self._last_trav_idx: int = -1
+        self._marker_pos: np.ndarray = np.zeros(3)
 
         # Subsample for display if too many points
         if self.n > MAX_DISPLAY_POINTS:
@@ -255,15 +257,18 @@ class PlaybackWindow(QtWidgets.QDialog):
                 render_lines_as_tubes=False,
             )
 
-            # Current position marker (screen-space point, zoom-independent)
-            marker_mesh = pv.PolyData(td.xyz[0:1].copy())
-            td.marker_mesh = marker_mesh
-            td.marker_actor = pl.add_points(
-                marker_mesh,
-                color=td.color,
-                point_size=12,
-                render_points_as_spheres=True,
+            # Current position marker - solid sphere for guaranteed visibility
+            # (points get occluded by lines at the same depth; a sphere mesh does not)
+            marker_radius = self._axes_scale * 0.05
+            marker_sphere = pv.Sphere(
+                radius=marker_radius,
+                center=td.xyz[0].tolist(),
+                theta_resolution=12,
+                phi_resolution=12,
             )
+            td.marker_mesh = marker_sphere
+            td._marker_pos = td.xyz[0].copy()
+            td.marker_actor = pl.add_mesh(marker_sphere, color="#ffffff", lighting=False, render=False)
 
             # Body frame arrows - create meshes once, updated in-place
             if td.rot_mats is not None:
@@ -315,9 +320,11 @@ class PlaybackWindow(QtWidgets.QDialog):
                 td._last_trav_idx = disp_idx
                 needs_render = True
 
-            # Move the position marker in-place
-            td.marker_mesh.points[0] = pos
+            # Translate the sphere marker by delta to avoid regenerating it
+            delta = pos - td._marker_pos
+            td.marker_mesh.points += delta
             td.marker_mesh.Modified()
+            td._marker_pos = pos.copy()
             needs_render = True
 
             # Update body frame arrows in-place via template rotation

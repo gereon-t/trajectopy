@@ -189,7 +189,7 @@ DARK_STYLESHEET = """
             background-color: #0e639c;
             color: #ffffff;
             border: none;
-            padding: 6px 16px;
+            padding: 3px 16px;
             border-radius: 2px;
         }
         QPushButton:hover {
@@ -297,7 +297,7 @@ LIGHT_STYLESHEET = """
             background-color: #0078d4;
             color: #ffffff;
             border: none;
-            padding: 6px 16px;
+            padding: 3px 16px;
             border-radius: 2px;
         }
         QPushButton:hover {
