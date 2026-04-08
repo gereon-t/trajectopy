@@ -27,6 +27,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
     result_model_request = QtCore.Signal(ResultModelRequest)
     ui_request = QtCore.Signal(UIRequest)
     plot_request = QtCore.Signal(PlotRequest)
+    show_timeline = QtCore.Signal(object)  # emits list[TrajectoryEntry]
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -237,6 +238,10 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.addAction(property_action)
+
+        timeline_action = QAction("Timeline", self)
+        timeline_action.triggered.connect(lambda: self.show_timeline.emit(self.get_selection().entries))
+        self.addAction(timeline_action)
 
         plot_2d_action = QAction("Plot", self)
         plot_2d_action.triggered.connect(
