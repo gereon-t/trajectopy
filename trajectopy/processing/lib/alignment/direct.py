@@ -273,7 +273,7 @@ def align_rotations(rot_from: Rotations, rot_to: Rotations) -> SensorRotationPar
     """Aligns the rotations of two trajectories"""
 
     if rot_to is None or rot_from is None:
-        return Rotations.from_quat(np.array([0, 0, 0, 1]))
+        return SensorRotationParameters(enabled=False)
 
     rot_difference = (rot_to - rot_from).mean()
     rpy_diff = rot_difference.as_euler(seq="xyz")

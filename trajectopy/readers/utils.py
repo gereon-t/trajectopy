@@ -29,6 +29,6 @@ def get_rot_matrix(nframe: str) -> np.ndarray:
     for i, char in enumerate(nframe):
         index = "enu".find(char)
         value = -1 if char == "u" and sign_flipped else 1
-        rot_matrix[i, index] = value
+        rot_matrix[index, i] = value
 
     return rot_matrix

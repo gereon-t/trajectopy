@@ -7,6 +7,10 @@ altgraph==0.17.5 \
     # via
     #   macholib
     #   pyinstaller
+attrs==26.1.0 \
+    --hash=sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309 \
+    --hash=sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
+    # via cyclopts
 autograd==1.8.0 \
     --hash=sha256:107374ded5b09fc8643ac925348c0369e7b0e73bbed9565ffd61b8fd04425683 \
     --hash=sha256:4ab9084294f814cf56c280adbe19612546a35574d67c574b04933c7d2ecb7d78
@@ -421,10 +425,22 @@ cycler==0.12.1 \
     --hash=sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30 \
     --hash=sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c
     # via matplotlib
+cyclopts==4.10.1 \
+    --hash=sha256:35f37257139380a386d9fe4475e1e7c87ca7795765ef4f31abba579fcfcb6ecd \
+    --hash=sha256:ad4e4bb90576412d32276b14a76f55d43353753d16217f2c3cd5bdceba7f15a0
+    # via pyvista
 distlib==0.4.0 \
     --hash=sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16 \
     --hash=sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d
     # via virtualenv
+docstring-parser==0.17.0 \
+    --hash=sha256:583de4a309722b3315439bb31d64ba3eebada841f2e2cee23b99df001434c912 \
+    --hash=sha256:cf2569abd23dce8099b300f9b4fa8191e9582dda731fd533daf54c4551658708
+    # via cyclopts
+docutils==0.22.4 \
+    --hash=sha256:4db53b1fde9abecbb74d91230d32ab626d94f6badfc575d6db9194a49df29968 \
+    --hash=sha256:d0013f540772d1420576855455d050a2180186c91c15779301ac2ccb3eeb68de
+    # via rich-rst
 exceptiongroup==1.3.1 ; python_full_version < '3.11' \
     --hash=sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219 \
     --hash=sha256:a7a39a3bd276781e98394987d3a5701d0c4edffb633bb7a5144577f82c773598
@@ -842,7 +858,10 @@ matplotlib==3.10.8 \
     --hash=sha256:f97aeb209c3d2511443f8797e3e5a569aebb040d4f8bc79aa3ee78a8fb9e3dd8 \
     --hash=sha256:f9b587c9c7274c1613a30afabf65a272114cd6cdbe67b3406f818c79d7ab2e2a \
     --hash=sha256:fb061f596dad3a0f52b60dc6a5dec4a0c300dec41e058a7efe09256188d170b7
-    # via trajectopy
+    # via
+    #   pyvista
+    #   trajectopy
+    #   vtk
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
     --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba
@@ -966,6 +985,7 @@ numpy==2.2.6 ; python_full_version < '3.11' \
     #   contourpy
     #   matplotlib
     #   pandas
+    #   pyvista
     #   rosbags
     #   scipy
     #   trajectopy
@@ -1047,6 +1067,7 @@ numpy==2.4.4 ; python_full_version >= '3.11' \
     #   contourpy
     #   matplotlib
     #   pandas
+    #   pyvista
     #   rosbags
     #   scipy
     #   trajectopy
@@ -1058,9 +1079,11 @@ packaging==26.0 \
     #   matplotlib
     #   mkdocs
     #   plotly
+    #   pooch
     #   pyinstaller
     #   pyinstaller-hooks-contrib
     #   pytest
+    #   qtpy
 paginate==0.5.7 \
     --hash=sha256:22bd083ab41e1a8b4f3690544afb2c60c25e5c9a63a30fa2f483f6c60c8e5945 \
     --hash=sha256:b885e2af73abcf01d9559fd5216b57ef722f8c42affbb63942377668e35c7591
@@ -1267,13 +1290,16 @@ pillow==12.2.0 \
     --hash=sha256:f490f9368b6fc026f021db16d7ec2fbf7d89e2edb42e8ec09d2c60505f5729c7 \
     --hash=sha256:fb043ee2f06b41473269765c2feae53fc2e2fbf96e5e22ca94fb5ad677856f06 \
     --hash=sha256:fc3d34d4a8fbec3e88a79b92e5465e0f9b842b628675850d860b8bd300b159f5
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   pyvista
 platformdirs==4.9.4 \
     --hash=sha256:1ec356301b7dc906d83f371c8f487070e99d3ccf9e501686456394622a01a934 \
     --hash=sha256:68a9a4619a666ea6439f2ff250c12a853cd1cbd5158d258bd824a7df6be2f868
     # via
     #   black
     #   mkdocs-get-deps
+    #   pooch
     #   python-discovery
     #   virtualenv
 plotly==6.6.0 \
@@ -1286,6 +1312,10 @@ pluggy==1.6.0 \
     # via
     #   pytest
     #   pytest-cov
+pooch==1.9.0 \
+    --hash=sha256:de46729579b9857ffd3e741987a2f6d5e0e03219892c167c6578c0091fb511ed \
+    --hash=sha256:f265597baa9f760d25ceb29d0beb8186c243d6607b0f60b83ecf14078dbc703b
+    # via pyvista
 pre-commit==4.5.1 \
     --hash=sha256:3b3afd891e97337708c1674210f8eba659b52a38ea5f822ff142d10786221f77 \
     --hash=sha256:eb545fcff725875197837263e977ea257a402056661f09dae08e4b149b030a61
@@ -1494,6 +1524,16 @@ pytz==2026.1.post1 ; python_full_version < '3.11' \
     --hash=sha256:3378dde6a0c3d26719182142c56e60c7f9af7e968076f31aae569d72a0358ee1 \
     --hash=sha256:f2fd16142fda348286a75e1a524be810bb05d444e5a081f37f7affc635035f7a
     # via pandas
+pyvista==0.47.2 \
+    --hash=sha256:24e84687b2028a28717108cfc5b808d5903dc865593389090c016c197f4310ce \
+    --hash=sha256:dbcec458d5ac37439e86c14794eb922c9fe127c084b07181c1111a1413ec0568
+    # via
+    #   pyvistaqt
+    #   trajectopy
+pyvistaqt==0.11.4 \
+    --hash=sha256:b2bc92ac34e2bbd729c55fb27719684d4b518a593fce9c877621020d050b4bd5 \
+    --hash=sha256:f24b166c6835ef3100c1562b6bba411e2a79715cda7fa9f7da999169d2a125de
+    # via trajectopy
 pywin32-ctypes==0.2.3 ; sys_platform == 'win32' \
     --hash=sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8 \
     --hash=sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755
@@ -1566,14 +1606,27 @@ pyyaml-env-tag==1.1 \
     --hash=sha256:17109e1a528561e32f026364712fee1264bc2ea6715120891174ed1b980d2e04 \
     --hash=sha256:2eb38b75a2d21ee0475d6d97ec19c63287a7e140231e4214969d0eac923cd7ff
     # via mkdocs
+qtpy==2.4.3 \
+    --hash=sha256:72095afe13673e017946cc258b8d5da43314197b741ed2890e563cf384b51aa1 \
+    --hash=sha256:db744f7832e6d3da90568ba6ccbca3ee2b3b4a890c3d6fbbc63142f6e4cdf5bb
+    # via pyvistaqt
 requests==2.33.1 \
     --hash=sha256:18817f8c57c6263968bc123d237e3b8b08ac046f5456bd1e307ee8f4250d3517 \
     --hash=sha256:4e6d1ef462f3626a1f0a0a9c42dd93c63bad33f9f1c1937509b8c5c8718ab56a
-    # via mkdocs-material
+    # via
+    #   mkdocs-material
+    #   pooch
 rich==14.3.3 \
     --hash=sha256:793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d \
     --hash=sha256:b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b
-    # via trajectopy
+    # via
+    #   cyclopts
+    #   rich-rst
+    #   trajectopy
+rich-rst==1.3.2 \
+    --hash=sha256:a1196fdddf1e364b02ec68a05e8ff8f6914fee10fbca2e6b6735f166bb0da8d4 \
+    --hash=sha256:a99b4907cbe118cf9d18b0b44de272efa61f15117c61e39ebdc431baf5df722a
+    # via cyclopts
 rosbags==0.11.0 \
     --hash=sha256:2ce27d8dc37f554f10bf5962f665331ce16f43aba304c6c233eb15fab05b61ab \
     --hash=sha256:e73bbe79a15d7f539653375278ffca6c48e56b5c2ada4a4531de0b17737cbc46
@@ -1723,6 +1776,10 @@ scipy==1.17.1 ; python_full_version >= '3.11' \
     --hash=sha256:f8885db0bc2bffa59d5c1b72fad7a6a92d3e80e7257f967dd81abb553a90d293 \
     --hash=sha256:fcb310ddb270a06114bb64bbe53c94926b943f5b7f0842194d585c65eb4edd76
     # via trajectopy
+scooby==0.11.0 \
+    --hash=sha256:3dfacc6becf2d6558efa4b625bae3b844ced5d256f3143ebf774e005367e712a \
+    --hash=sha256:a79663d1a7711eb104e4b2935988ea1ed5f7be6b7288fad23b4fba7462832f9d
+    # via pyvista
 setuptools==82.0.1 \
     --hash=sha256:7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9 \
     --hash=sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb
@@ -1794,14 +1851,17 @@ tomli==2.4.1 ; python_full_version <= '3.11' \
     # via
     #   black
     #   coverage
+    #   cyclopts
     #   pytest
 typing-extensions==4.15.0 \
     --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
     --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548
     # via
     #   black
+    #   cyclopts
     #   exceptiongroup
     #   mkdocstrings-python
+    #   pyvista
     #   rosbags
     #   virtualenv
 tzdata==2026.1 ; python_full_version < '3.11' or sys_platform == 'emscripten' or sys_platform == 'win32' \
@@ -1816,6 +1876,35 @@ virtualenv==21.2.0 \
     --hash=sha256:1720dc3a62ef5b443092e3f499228599045d7fea4c79199770499df8becf9098 \
     --hash=sha256:1bd755b504931164a5a496d217c014d098426cddc79363ad66ac78125f9d908f
     # via pre-commit
+vtk==9.6.0 \
+    --hash=sha256:04a37b251d8a2baba85848f43ae15a40140a7fd25de5e0034e17b15a6e179b66 \
+    --hash=sha256:09ceedfb4e49db477aa40ae83d7578c1007387205463504e63b560e7c56219f3 \
+    --hash=sha256:14ef4d2bb32ee4322145d07d76ac587d6030cff03765fb15c0209b7aabdef7ff \
+    --hash=sha256:1598a524f2b8355be2e369f43343adecbea8ade826f5ba63c29421570b7a8cd3 \
+    --hash=sha256:16075dab279cf079e7d1a52d27219eee0a89f0d7f13a5c1130fa2c0acba100fc \
+    --hash=sha256:1a67c3b1cf1d89e83e6d4cd6e6b070ea5e979477bbc881daf19729b8a8e2cfd7 \
+    --hash=sha256:1af7f194e5b5c665343a41280834aab5d6ba803594032d837ab0710e974339bf \
+    --hash=sha256:1b1f0537c7886d671bd3cb3c09409e2a6565444ccee96dc5a12d19252a1755bf \
+    --hash=sha256:1e59c5badb1c3b86f784db761a86ddc0bcb4a15640a17b64ec5fd0710ed5edf3 \
+    --hash=sha256:351f023eadcd095838e4e3a7bc12b1b80abe3d7a77b9473ddeeefe065ec42cbe \
+    --hash=sha256:3cdc37959e9195c02452cbd6ddee8cb463931fe3a6fcd698ec5cd25c1f15aaba \
+    --hash=sha256:4ea035a360ab3ff3fcc6e9e34e2b7c5d8440d442b4d2f2ec68834dd241d1e45b \
+    --hash=sha256:5b1262a67e358b59c5ae82f136a6515980fbb1a3cf8329dd36b07dcb31c81227 \
+    --hash=sha256:82936685bc64ba4b206e60d67355c75ff6eb80f9e0154a931b4f4a2989bc103f \
+    --hash=sha256:8613b91c9e7d3de3905a9801be646863c93df797facd22b5070c95de6a1d77a4 \
+    --hash=sha256:8df76d131c284e99aac2e76055e5f0a8c94d54197089f8bd2f67213f51de6333 \
+    --hash=sha256:93bd59d309e9ec7a9b6c64142a3e227bc487c065be1bdc45c7c725099c9234e3 \
+    --hash=sha256:951837676f5ce294651f1e051a0581db2d6b0e519d0ce0ebc77ff2f446028a64 \
+    --hash=sha256:a82d59c4119aadd2885e4174432ff87f94320ba38aaeb7e2282ba0e6e3d09e0e \
+    --hash=sha256:aeb84471ef22fffb9120284af2cb0bda6af0b4ca421b9b8cb0741f1ca52930a2 \
+    --hash=sha256:b0b5a3480769439ed9ea393bf7cb474a974550565a39ce9e9586438a24b46b1d \
+    --hash=sha256:ca02262e60d2891d83f64e979a66e303809b182b47fc1c21ca6bbc4041b12419 \
+    --hash=sha256:d06fe9b5a9786165a59f494f801f35ad37018e45cfa91060ff025719a2f1e387 \
+    --hash=sha256:e3368371403d57108471431811851a82ad73524f31b684491eee2c9aef122632 \
+    --hash=sha256:e404d66c11476cfac2781025c29e9518ffbfa9a760ced419e5b34640d437f4dc \
+    --hash=sha256:ebea2a1d6ec6e04822e805acfd3119437ce9728b6807fa707c3ba0dc0de6c90a \
+    --hash=sha256:fcbfa103fb817a7c7564d32b0572c11d301542e860a9bf0592f5f9dd25cdff55
+    # via pyvista
 watchdog==6.0.0 \
     --hash=sha256:07df1fdd701c5d4c8e55ef6cf55b8f0120fe1aef7ef39a1c6fc6bc2e606d517a \
     --hash=sha256:20ffe5b202af80ab4266dcd3e91aae72bf2da48c0d33bdb15c66658e685e94e2 \

@@ -233,6 +233,12 @@ def generic_request_handler(manager: RequestHandler, request: Request, passthrou
     try:
         func(request) if passthrough_request else func()
     except Exception as e:
+        logger.exception(
+            "%s: Error processing request of type %s: %s",
+            manager.__class__.__name__,
+            request.type,
+            str(e),
+        )
         manager.ui_request.emit(
             UIRequest(
                 type=UIRequestType.MESSAGE,

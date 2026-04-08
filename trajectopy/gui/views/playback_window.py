@@ -1,32 +1,28 @@
-"""Trajectory playback animation window — 3D with body frame axes."""
+"""Trajectory playback animation window - PyVista 3D with body frame axes."""
 
 import numpy as np
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 — registers the 3D projection
+import pyvista as pv
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Qt
+from pyvistaqt import QtInteractor
 
 from trajectopy.core.trajectory import Trajectory
 
 SPEED_OPTIONS = [
-    ("0.1×", 0.1),
-    ("0.25×", 0.25),
-    ("0.5×", 0.5),
-    ("1×", 1.0),
-    ("2×", 2.0),
-    ("5×", 5.0),
-    ("10×", 10.0),
+    ("0.1x", 0.1),
+    ("0.25x", 0.25),
+    ("0.5x", 0.5),
+    ("1x", 1.0),
+    ("2x", 2.0),
+    ("5x", 5.0),
+    ("10x", 10.0),
 ]
-DEFAULT_SPEED_IDX = 3  # 1×
+DEFAULT_SPEED_IDX = 3  # 1x
 TIMER_INTERVAL_MS = 50  # ~20 fps
 SLIDER_STEPS = 1000
+MAX_DISPLAY_POINTS = 10000  # subsample visual paths with more points
 
-# Body frame axis colors: X = red, Y = green, Z = blue
-_AXIS_COLORS = ("#ff4444", "#44cc44", "#5599ff")
-_AXIS_LABELS = ("X", "Y", "Z")
-
-# Per-trajectory path colors
+# Per-trajectory path colors (PyVista accepts hex strings)
 _TRAJ_COLORS = (
     "#4fc3f7",
     "#81c784",
@@ -37,48 +33,73 @@ _TRAJ_COLORS = (
     "#fff176",
 )
 
+# Body frame axis colors: X = red, Y = green, Z = blue
+_AXIS_COLORS = ("#ff4444", "#44cc44", "#5599ff")
+
 
 class _TrajData:
-    """Pre-computed trajectory data and live plot handles for one trajectory."""
+    """Pre-computed data and live PyVista actor handles for one trajectory."""
 
     __slots__ = (
         "name",
         "color",
-        "x",
-        "y",
-        "z",
+        "xyz",
         "t_rel",
         "rot_mats",
         "duration",
         "n",
-        "traversed_line",
-        "marker",
-        "body_lines",
+        "display_xyz",
+        "display_idx_map",
+        "full_path_actor",
+        "traversed_mesh",
+        "traversed_actor",
+        "marker_mesh",
+        "marker_actor",
+        "arrow_meshes",
+        "arrow_actors",
+        "_last_trav_idx",
     )
 
     def __init__(
         self,
         name: str,
         color: str,
-        x: np.ndarray,
-        y: np.ndarray,
-        z: np.ndarray,
+        xyz: np.ndarray,
         t_rel: np.ndarray,
         rot_mats: np.ndarray | None,
     ) -> None:
         self.name = name
         self.color = color
-        self.x = x
-        self.y = y
-        self.z = z
+        self.xyz = xyz  # (N, 3) full-resolution coords
         self.t_rel = t_rel
-        self.rot_mats = rot_mats  # shape (N, 3, 3) or None
+        self.rot_mats = rot_mats  # (N, 3, 3) or None
         self.duration = float(t_rel[-1])
         self.n = len(t_rel)
-        # Assigned during plot setup
-        self.traversed_line = None
-        self.marker = None
-        self.body_lines: list = []  # one Line3D per body axis
+        self.full_path_actor = None
+        self.traversed_mesh: pv.PolyData | None = None
+        self.traversed_actor = None
+        self.marker_mesh: pv.PolyData | None = None
+        self.marker_actor = None
+        self.arrow_meshes: list[pv.PolyData] = []
+        self.arrow_actors: list = []
+        self._last_trav_idx: int = -1
+
+        # Subsample for display if too many points
+        if self.n > MAX_DISPLAY_POINTS:
+            step = self.n / MAX_DISPLAY_POINTS
+            indices = np.unique(np.round(np.arange(0, self.n, step)).astype(int))
+            if indices[-1] != self.n - 1:
+                indices = np.append(indices, self.n - 1)
+            self.display_xyz = self.xyz[indices]
+            self.display_idx_map = indices
+        else:
+            self.display_xyz = self.xyz
+            self.display_idx_map = np.arange(self.n, dtype=int)
+
+    def display_idx_for_full_idx(self, full_idx: int) -> int:
+        """Map a full-resolution index to the nearest display index."""
+        pos = int(np.searchsorted(self.display_idx_map, full_idx, side="right"))
+        return min(pos, len(self.display_idx_map) - 1)
 
     def idx_for_time(self, sim_time: float) -> int:
         t = min(sim_time, self.duration)
@@ -87,22 +108,23 @@ class _TrajData:
 
 
 class PlaybackWindow(QtWidgets.QDialog):
-    """Non-modal window that plays back one or more trajectories in 3D
-    with body frame axes (X/Y/Z) shown at the current pose."""
+    """Non-modal dialog that plays back one or more trajectories in 3D
+    using PyVista (GPU-rendered), with body frame axes at the current pose."""
 
     def __init__(self, trajectories: list[Trajectory], parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Playback — " + ", ".join(t.name for t in trajectories))
-        self.resize(800, 620)
+        self.setWindowTitle("Playback - " + ", ".join(t.name for t in trajectories))
+        self.resize(900, 680)
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.Window)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self._trajs = self._build_traj_data(trajectories)
         self._max_duration = max(td.duration for td in self._trajs)
-        self._arrow_scale = self._compute_arrow_scale()
+        self._axes_scale = self._compute_axes_scale()
+        self._arrow_templates = self._build_arrow_templates()
 
         self._setup_ui()
-        self._setup_plot()
+        self._setup_scene()
 
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(TIMER_INTERVAL_MS)
@@ -120,43 +142,58 @@ class PlaybackWindow(QtWidgets.QDialog):
         for i, traj in enumerate(trajectories):
             color = _TRAJ_COLORS[i % len(_TRAJ_COLORS)]
             local_xyz = traj.positions.to_local(inplace=False).xyz
-            x, y, z = local_xyz[:, 0], local_xyz[:, 1], local_xyz[:, 2]
             ts = traj.timestamps
             t_rel = ts - ts[0]
             rot_mats: np.ndarray | None = None
             if traj.has_orientation:
-                rot_mats = np.asarray(traj.rotations.as_matrix())  # (N, 3, 3)
-                if rot_mats.ndim == 2:  # single pose edge case
+                rot_mats = np.asarray(traj.rotations.as_matrix())
+                if rot_mats.ndim == 2:
                     rot_mats = rot_mats[np.newaxis]
-            result.append(_TrajData(traj.name, color, x, y, z, t_rel, rot_mats))
+            result.append(_TrajData(traj.name, color, local_xyz, t_rel, rot_mats))
         return result
 
-    def _compute_arrow_scale(self) -> float:
-        all_x = np.concatenate([td.x for td in self._trajs])
-        all_y = np.concatenate([td.y for td in self._trajs])
-        all_z = np.concatenate([td.z for td in self._trajs])
-        diag = float(
-            np.sqrt(
-                (all_x.max() - all_x.min()) ** 2 + (all_y.max() - all_y.min()) ** 2 + (all_z.max() - all_z.min()) ** 2
-            )
-        )
+    def _compute_axes_scale(self) -> float:
+        all_xyz = np.vstack([td.xyz for td in self._trajs])
+        ranges = all_xyz.max(axis=0) - all_xyz.min(axis=0)
+        diag = float(np.linalg.norm(ranges))
         return max(diag * 0.05, 1.0)
+
+    def _build_arrow_templates(self) -> list[tuple[np.ndarray, np.ndarray]]:
+        """Pre-compute arrow mesh point arrays and faces for each body axis (at origin)."""
+        templates = []
+        for i in range(3):
+            direction = [0.0, 0.0, 0.0]
+            direction[i] = 1.0
+            arrow = pv.Arrow(
+                start=(0, 0, 0),
+                direction=direction,
+                scale=self._axes_scale,
+                tip_length=0.2,
+                tip_radius=0.07,
+                shaft_radius=0.03,
+            )
+            templates.append((arrow.points.copy(), arrow.faces.copy()))
+        return templates
 
     # ------------------------------------------------------------------ UI
 
     def _setup_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(6)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
-        self._fig = Figure(figsize=(7, 5), tight_layout=True)
-        self._fig.patch.set_facecolor("#1e1e1e")
-        self._canvas = FigureCanvas(self._fig)
-        layout.addWidget(self._canvas, stretch=1)
+        # PyVista viewport embedded as a Qt widget
+        self._plotter = QtInteractor(self, auto_update=False)
+        layout.addWidget(self._plotter.interactor, stretch=1)
+
+        bottom = QtWidgets.QWidget()
+        bottom.setContentsMargins(8, 4, 8, 8)
+        bl = QtWidgets.QVBoxLayout(bottom)
+        bl.setSpacing(4)
 
         self._time_label = QtWidgets.QLabel(f"0.00 s / {self._max_duration:.2f} s")
         self._time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self._time_label)
+        bl.addWidget(self._time_label)
 
         self._slider = QtWidgets.QSlider(Qt.Orientation.Horizontal)
         self._slider.setRange(0, SLIDER_STEPS)
@@ -164,10 +201,10 @@ class PlaybackWindow(QtWidgets.QDialog):
         self._slider.sliderPressed.connect(self._on_slider_pressed)
         self._slider.sliderReleased.connect(self._on_slider_released)
         self._slider.valueChanged.connect(self._on_slider_moved)
-        layout.addWidget(self._slider)
+        bl.addWidget(self._slider)
 
         ctrl = QtWidgets.QHBoxLayout()
-        self._play_btn = QtWidgets.QPushButton("▶  Play")
+        self._play_btn = QtWidgets.QPushButton("Play")
         self._play_btn.setFixedWidth(100)
         self._play_btn.clicked.connect(self._toggle_play)
         ctrl.addWidget(self._play_btn)
@@ -178,66 +215,80 @@ class PlaybackWindow(QtWidgets.QDialog):
             self._speed_combo.addItem(label)
         self._speed_combo.setCurrentIndex(DEFAULT_SPEED_IDX)
         ctrl.addWidget(self._speed_combo)
-        layout.addLayout(ctrl)
+        bl.addLayout(ctrl)
 
-    # ------------------------------------------------------------------ plot
+        layout.addWidget(bottom)
 
-    def _setup_plot(self) -> None:
-        self._ax: Axes3D = self._fig.add_subplot(111, projection="3d")
-        self._ax.set_facecolor("#2d2d2d")
-        self._ax.tick_params(colors="#aaaaaa", labelsize=7)
-        self._ax.xaxis.label.set_color("#aaaaaa")
-        self._ax.yaxis.label.set_color("#aaaaaa")
-        self._ax.zaxis.label.set_color("#aaaaaa")
-        self._ax.set_xlabel("East [m]", fontsize=8)
-        self._ax.set_ylabel("North [m]", fontsize=8)
-        self._ax.set_zlabel("Up [m]", fontsize=8)
+    # ------------------------------------------------------------------ scene
+
+    def _setup_scene(self) -> None:
+        pl = self._plotter
+        pl.set_background("#1e1e1e")
+
+        all_xyz = np.vstack([td.xyz for td in self._trajs])
+        center = all_xyz.mean(axis=0)
 
         for td in self._trajs:
-            # Full path (faded background)
-            self._ax.plot3D(td.x, td.y, td.z, color="#444444", linewidth=0.8)
+            # Full path - simple polyline (no expensive spline interpolation)
+            n_disp = len(td.display_xyz)
+            if n_disp > 1:
+                path = pv.PolyData(td.display_xyz)
+                cells = np.empty(n_disp + 1, dtype=np.int64)
+                cells[0] = n_disp
+                cells[1:] = np.arange(n_disp, dtype=np.int64)
+                path.lines = cells
+                td.full_path_actor = pl.add_mesh(
+                    path,
+                    color="#444444",
+                    line_width=1,
+                    render_lines_as_tubes=False,
+                )
 
-            # Traversed portion (updated each frame)
-            (line,) = self._ax.plot3D([], [], [], color=td.color, linewidth=1.5, label=td.name)
-            td.traversed_line = line
+            # Traversed path - pre-allocated polyline, lines updated in-place
+            traversed = pv.PolyData(td.display_xyz.copy())
+            traversed.lines = np.array([1, 0], dtype=np.int64)  # degenerate single-point
+            td.traversed_mesh = traversed
+            td.traversed_actor = pl.add_mesh(
+                traversed,
+                color=td.color,
+                line_width=3,
+                render_lines_as_tubes=False,
+            )
 
-            # Current position marker
-            (marker,) = self._ax.plot3D([td.x[0]], [td.y[0]], [td.z[0]], "o", color=td.color, markersize=7)
-            td.marker = marker
+            # Current position marker (screen-space point, zoom-independent)
+            marker_mesh = pv.PolyData(td.xyz[0:1].copy())
+            td.marker_mesh = marker_mesh
+            td.marker_actor = pl.add_points(
+                marker_mesh,
+                color=td.color,
+                point_size=12,
+                render_points_as_spheres=True,
+            )
 
-            # Body frame axes — three Line3D segments, one per axis
+            # Body frame arrows - create meshes once, updated in-place
             if td.rot_mats is not None:
-                p = np.array([td.x[0], td.y[0], td.z[0]])
+                pos = td.xyz[0]
                 R = td.rot_mats[0]
                 for i, ax_color in enumerate(_AXIS_COLORS):
-                    end = p + R[:, i] * self._arrow_scale
-                    (bline,) = self._ax.plot3D(
-                        [p[0], end[0]],
-                        [p[1], end[1]],
-                        [p[2], end[2]],
-                        color=ax_color,
-                        linewidth=2,
-                    )
-                    td.body_lines.append(bline)
+                    tmpl_pts, tmpl_faces = self._arrow_templates[i]
+                    pts = (R @ tmpl_pts.T).T + pos
+                    mesh = pv.PolyData(pts, faces=tmpl_faces.copy())
+                    actor = pl.add_mesh(mesh, color=ax_color, render=False)
+                    td.arrow_meshes.append(mesh)
+                    td.arrow_actors.append(actor)
 
-        self._set_equal_axes()
+        # Camera
+        pl.camera.focal_point = center.tolist()
+        ranges = all_xyz.max(axis=0) - all_xyz.min(axis=0)
+        pl.camera.position = (
+            center + np.array([0, -np.linalg.norm(ranges) * 1.5, np.linalg.norm(ranges) * 0.5])
+        ).tolist()
+        pl.camera.up = (0, 0, 1)
 
-        if len(self._trajs) > 1:
-            self._ax.legend(fontsize=7, facecolor="#2d2d2d", labelcolor="#aaaaaa", loc="upper left")
+        # Axis widget in corner
+        pl.add_axes(interactive=False)
 
-        self._canvas.draw()
-
-    def _set_equal_axes(self) -> None:
-        all_x = np.concatenate([td.x for td in self._trajs])
-        all_y = np.concatenate([td.y for td in self._trajs])
-        all_z = np.concatenate([td.z for td in self._trajs])
-        max_range = max(all_x.max() - all_x.min(), all_y.max() - all_y.min(), all_z.max() - all_z.min(), 1.0) / 2.0
-        mid_x = (all_x.max() + all_x.min()) / 2
-        mid_y = (all_y.max() + all_y.min()) / 2
-        mid_z = (all_z.max() + all_z.min()) / 2
-        self._ax.set_xlim(mid_x - max_range, mid_x + max_range)
-        self._ax.set_ylim(mid_y - max_range, mid_y + max_range)
-        self._ax.set_zlim(mid_z - max_range, mid_z + max_range)
+        pl.render()
 
     # ------------------------------------------------------------------ helpers
 
@@ -246,20 +297,40 @@ class PlaybackWindow(QtWidgets.QDialog):
         return SPEED_OPTIONS[self._speed_combo.currentIndex()][1]
 
     def _update_frame(self, sim_time: float) -> None:
+        needs_render = False
+
         for td in self._trajs:
             idx = td.idx_for_time(sim_time)
-            p = np.array([td.x[idx], td.y[idx], td.z[idx]])
+            pos = td.xyz[idx]
 
-            td.traversed_line.set_data_3d(td.x[: idx + 1], td.y[: idx + 1], td.z[: idx + 1])
-            td.marker.set_data_3d([p[0]], [p[1]], [p[2]])
+            # Update traversed path line connectivity (no new objects)
+            disp_idx = td.display_idx_for_full_idx(idx)
+            if disp_idx > 0 and disp_idx != td._last_trav_idx:
+                n = disp_idx + 1
+                cells = np.empty(n + 1, dtype=np.int64)
+                cells[0] = n
+                cells[1:] = np.arange(n, dtype=np.int64)
+                td.traversed_mesh.lines = cells
+                td.traversed_mesh.Modified()
+                td._last_trav_idx = disp_idx
+                needs_render = True
 
-            if td.rot_mats is not None and td.body_lines:
+            # Move the position marker in-place
+            td.marker_mesh.points[0] = pos
+            td.marker_mesh.Modified()
+            needs_render = True
+
+            # Update body frame arrows in-place via template rotation
+            if td.rot_mats is not None and td.arrow_meshes:
                 R = td.rot_mats[idx]
-                for i, bline in enumerate(td.body_lines):
-                    end = p + R[:, i] * self._arrow_scale
-                    bline.set_data_3d([p[0], end[0]], [p[1], end[1]], [p[2], end[2]])
+                for i, mesh in enumerate(td.arrow_meshes):
+                    tmpl_pts = self._arrow_templates[i][0]
+                    mesh.points[:] = (R @ tmpl_pts.T).T + pos
+                    mesh.Modified()
+                needs_render = True
 
-        self._canvas.draw_idle()
+        if needs_render:
+            self._plotter.render()
 
     def _update_ui(self, sim_time: float) -> None:
         self._time_label.setText(f"{sim_time:.2f} s / {self._max_duration:.2f} s")
@@ -286,12 +357,12 @@ class PlaybackWindow(QtWidgets.QDialog):
 
     def _play(self) -> None:
         self._playing = True
-        self._play_btn.setText("⏸  Pause")
+        self._play_btn.setText("Pause")
         self._timer.start()
 
     def _pause(self) -> None:
         self._playing = False
-        self._play_btn.setText("▶  Play")
+        self._play_btn.setText("Play")
         self._timer.stop()
 
     def _on_slider_pressed(self) -> None:
@@ -310,4 +381,5 @@ class PlaybackWindow(QtWidgets.QDialog):
 
     def closeEvent(self, event) -> None:
         self._pause()
+        self._plotter.close()
         super().closeEvent(event)

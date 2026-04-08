@@ -25,7 +25,7 @@ class ResultContextMenu(QtWidgets.QMenu):
     file_request = Signal(FileRequest)
     plot_request = Signal(PlotRequest)
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent=None) -> None:
         super().__init__(parent=parent)
         self.edit_context_menu = QtWidgets.QMenu("Edit")
         self._selection: ResultSelection

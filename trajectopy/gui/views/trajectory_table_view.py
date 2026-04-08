@@ -61,7 +61,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
         self.setObjectName("trajectoryTableView")
         self.verticalHeader().setVisible(False)
 
-        self.trajectory_context_menu = TrajectoryContextMenu(parent=self)
+        self.trajectory_context_menu = TrajectoryContextMenu()
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda: self.trajectory_context_menu.show_context_menu(self.selection))
 
