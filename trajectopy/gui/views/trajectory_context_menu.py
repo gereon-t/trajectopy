@@ -250,6 +250,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.addAction(plot_2d_action)
 
+        playback_action = QAction("Playback", self)
+        playback_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.PLAYBACK,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.addAction(playback_action)
+
     def action_context(self) -> None:
         self.addMenu(self.action_context_menu)
 

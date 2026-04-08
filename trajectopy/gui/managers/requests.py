@@ -110,6 +110,7 @@ class UIRequestType(Enum):
     EDIT_ALIGNMENT = auto()
     EXPORT_DEV_SUMMARY = auto()
     EXPORT_REPORT = auto()
+    PLAYBACK = auto()
 
 
 class PlotSettingsRequestType(Enum):

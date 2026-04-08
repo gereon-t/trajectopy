@@ -27,6 +27,7 @@ from trajectopy.gui.utils import (
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.gui.views.dof_organizer import DOFOrganizer
 from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.gui.views.playback_window import PlaybackWindow
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
 
@@ -104,6 +105,7 @@ class UIManager(QObject):
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
             UIRequestType.GRID_SELECTION: self.grid_selection,
+            UIRequestType.PLAYBACK: self.trajectory_playback,
         }
 
     @Slot(UIRequest)
@@ -150,6 +152,11 @@ class UIManager(QObject):
         )
         self._track_window(settings_window)
         settings_window.show()
+
+    def trajectory_playback(self, request: UIRequest) -> None:
+        trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]
+        playback_window = PlaybackWindow(trajectories=trajectories, parent=self.parent())
+        playback_window.show()
 
     def alignment_selection(self, request: UIRequest) -> None:
         alignment_entries = [entry for entry in request.result_selection.entries if isinstance(entry, AlignmentEntry)]
