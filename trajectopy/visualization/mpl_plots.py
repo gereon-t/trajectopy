@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 
@@ -30,13 +31,25 @@ logger = logging.getLogger(__name__)
 plt.rcParams["figure.max_open_warning"] = 50
 
 
-def _apply_mpl_plot_settings(plot_settings: MPLPlotSettings) -> None:
-    """Applies global matplotlib settings controlled by MPLPlotSettings."""
-    plt.rcParams["font.size"] = plot_settings.font_size
-    plt.rcParams["axes.labelsize"] = plot_settings.font_size
-    plt.rcParams["axes.titlesize"] = plot_settings.font_size
-    plt.rcParams["xtick.labelsize"] = plot_settings.font_size
-    plt.rcParams["ytick.labelsize"] = plot_settings.font_size
+def _with_mpl_rc(func):
+    """Decorator that temporarily applies font size settings from plot_settings during the call."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        plot_settings = kwargs.get("plot_settings") or next(
+            (a for a in args if isinstance(a, MPLPlotSettings)), MPLPlotSettings()
+        )
+        rc_overrides = {
+            "font.size": plot_settings.font_size,
+            "axes.labelsize": plot_settings.font_size,
+            "axes.titlesize": plot_settings.font_size,
+            "xtick.labelsize": plot_settings.font_size,
+            "ytick.labelsize": plot_settings.font_size,
+        }
+        with plt.rc_context(rc=rc_overrides):
+            return func(*args, **kwargs)
+
+    return wrapper
 
 
 def _use_datetime_axis(
@@ -477,6 +490,7 @@ def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
     return c_list, lower_bound, upper_bound, c_bar_ticks, c_bar_ticklabels
 
 
+@_with_mpl_rc
 def plot_trajectories(
     trajectories: list[Trajectory],
     scatter_3d: bool = False,
@@ -494,7 +508,6 @@ def plot_trajectories(
     Returns:
         Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
     """
-    _apply_mpl_plot_settings(plot_settings)
     fig_pos = plot_positions(trajectories=trajectories, scatter_3d=scatter_3d)
     fig_xyz = plot_xyz(trajectories=trajectories, plot_settings=plot_settings)
     fig_rpy = plot_rpy(trajectories=trajectories, plot_settings=plot_settings)
@@ -561,6 +574,7 @@ def plot_covariance_heatmap(estimated_parameters: AlignmentParameters, enabled_o
     return fig
 
 
+@_with_mpl_rc
 def plot_ate_3d(ate_results: list[ATEResult], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """
     Plots the ATE results in 2D using matplotlib.
@@ -572,7 +586,6 @@ def plot_ate_3d(ate_results: list[ATEResult], plot_settings: MPLPlotSettings = M
     Returns:
         Figure: Figure containing the plot.
     """
-    _apply_mpl_plot_settings(plot_settings)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
@@ -609,6 +622,7 @@ def plot_ate_3d(ate_results: list[ATEResult], plot_settings: MPLPlotSettings = M
     return fig
 
 
+@_with_mpl_rc
 def plot_ate_bars(
     ate_results: list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
@@ -626,7 +640,6 @@ def plot_ate_bars(
     Returns:
         Figure: Bar plot figure.
     """
-    _apply_mpl_plot_settings(plot_settings)
     fig, ax = plt.subplots()
 
     if not ate_results:
@@ -676,6 +689,7 @@ def plot_ate_bars(
     return fig
 
 
+@_with_mpl_rc
 def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """
     Plots compact ATE histograms for the given ATEResult.
@@ -688,7 +702,6 @@ def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings 
     Returns:
         Figure: Figure containing the plot.
     """
-    _apply_mpl_plot_settings(plot_settings)
     fig = plt.figure()
     pos_ax = plt.subplot(2, 1, 1)
     plot_position_ate_hist(ate_result, plot_settings)
@@ -703,6 +716,7 @@ def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings 
     return fig
 
 
+@_with_mpl_rc
 def plot_ate(
     ate_results: ATEResult | list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
@@ -721,7 +735,6 @@ def plot_ate(
     """
     deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
     trajectories_list = [dev.trajectory for dev in deviation_list]
-    _apply_mpl_plot_settings(plot_settings)
 
     trajectories_sorting = get_sorting(traj.sorting for traj in trajectories_list)
     all_unix = all(traj.is_unix_time for traj in trajectories_list)
@@ -773,6 +786,7 @@ def plot_ate(
     return fig
 
 
+@_with_mpl_rc
 def plot_ate_dof(
     ate_result: ATEResult,
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
@@ -788,8 +802,6 @@ def plot_ate_dof(
     Returns:
         Figure: Figure containing the plot.
     """
-    _apply_mpl_plot_settings(plot_settings)
-
     trajectory = ate_result.trajectory
     x_label = derive_xlabel_from_sortings(
         TrajectoriesSorting.ALL_SPATIAL if trajectory.sorting == Sorting.PATH_LENGTH else TrajectoriesSorting.ALL_TIME,
@@ -864,6 +876,7 @@ def plot_ate_dof(
     return fig
 
 
+@_with_mpl_rc
 def plot_ate_edf(
     ate_results: ATEResult | list[ATEResult],
     plot_settings: MPLPlotSettings = MPLPlotSettings(),
@@ -880,7 +893,6 @@ def plot_ate_edf(
     Returns:
         Figure: Figure containing the plot.
     """
-    _apply_mpl_plot_settings(plot_settings)
     deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
 
     fig = plt.figure()
@@ -954,6 +966,7 @@ def plot_rpe(rpe_results: list[RPEResult]) -> tuple[Figure, Figure]:
     }[ret_sum]
 
 
+@_with_mpl_rc
 def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotSettings()) -> tuple[Figure, Figure]:
     """
     Plots the ATE results as a scatter plot with color-coded deviations.
@@ -962,7 +975,6 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
         ate_result (ATEResult): ATE result to plot.
         plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
     """
-    _apply_mpl_plot_settings(plot_settings)
     pos_fig = plt.figure()
     _colored_scatter_plot(
         xyz=ate_result.trajectory.xyz,
@@ -1017,9 +1029,9 @@ def plot_positions(trajectories: list[Trajectory], scatter_3d: bool = False) -> 
     return fig_pos
 
 
+@_with_mpl_rc
 def plot_xyz(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """Plots xyz coordinates of trajectories as subplots"""
-    _apply_mpl_plot_settings(plot_settings)
     fig_xyz, axs_xyz = plt.subplots(3, 1, sharex=True)
 
     for ax, label in zip(axs_xyz, get_axis_label(trajectories=trajectories)):
@@ -1060,9 +1072,9 @@ def plot_xyz(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MP
     return fig_xyz
 
 
+@_with_mpl_rc
 def plot_rpy(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure | None:
     """Plots rpy coordinates of trajectories as subplots"""
-    _apply_mpl_plot_settings(plot_settings)
     fig_rpy, axs_rpy = plt.subplots(3, 1, sharex=True)
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
     all_unix = all(traj.is_unix_time for traj in trajectories)
