@@ -1,9 +1,8 @@
 import logging
 from functools import lru_cache
 
-import networkx as nx
 import numpy as np
-from scipy.spatial import Delaunay
+from scipy.spatial import KDTree
 
 from trajectopy.core.settings import SortingSettings
 from trajectopy.core.trajectory import Trajectory
@@ -32,9 +31,8 @@ def sort_spatially(
 
     """
     sort_idx, arc_lengths = _sort_xyz(xyz=trajectory.positions.xyz, settings=sorting_settings)
-    arg_sort_sort_idx = np.argsort(sort_idx)
-    trajectory = trajectory.mask(sorted(sort_idx), inplace=inplace)
-    trajectory.path_lengths = arc_lengths[arg_sort_sort_idx]
+    trajectory = trajectory.mask(sort_idx, inplace=inplace)
+    trajectory.path_lengths = arc_lengths
     trajectory.set_sorting(Sorting.PATH_LENGTH)
     return trajectory
 
@@ -157,19 +155,14 @@ def _moving_least_squares(
 
 
 def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) -> tuple[list[int], np.ndarray]:
-    """Reconstructs the spatial sorting of the given points
+    """Reconstructs the spatial sorting of the given points.
 
-    Spatially sorts the positions by constructing the
-    minimum-spanning-tree of the positions.
-    Finally, by performing up to 3 breadth-first-searches
-    within the mst, the spatial sorting can be reconstructed
+    Smooths positions using Moving Least Squares, then
+    reconstructs the spatial order via greedy nearest-neighbor
+    traversal with a KDTree.
 
     This functionality is only useful if the positions describe a closed
     loop without intersections.
-
-    This method can also take care of inserting missing points
-    and assures that the direction of travel is kept during
-    sorting.
 
     Args:
         xyz (np.ndarray): unsorted positions
@@ -192,20 +185,7 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) ->
 
 
 def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
-    idx_sort = _mst_sorting(xyz=xyz_unsorted)
-
-    if len(idx_sort) < len(xyz_unsorted):
-        logger.warning(
-            "Some points were missing during sorting! This can happen if points are very close to each other."
-        )
-        missing_idx = list(set(range(len(xyz_unsorted))) - set(idx_sort))
-        logger.info("Inserting %i missing points back into sorted trajectory.", len(missing_idx))
-        for miss_idx in missing_idx:
-            # find nearest neighbor in sorted indices
-            dists = np.linalg.norm(xyz_unsorted[idx_sort, :] - xyz_unsorted[miss_idx, :], axis=1)
-            nn_idx = np.argmin(dists)
-            # insert missing index after nearest neighbor
-            idx_sort.insert(nn_idx + 1, miss_idx)
+    idx_sort = _greedy_nn_sort(xyz=xyz_unsorted)
 
     # Set start position of lap as the position with the maximum z-value
     idx_sort = _begin_with(idx=idx_sort, begin=int(np.argmax(xyz_unsorted[:, 2])))
@@ -214,64 +194,61 @@ def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
     xyz_sorted = xyz_unsorted[idx_sort, :]
     if _detect_direction(xyz_sorted) != _detect_direction(xyz_unsorted):
         logger.info("Adjusted direction of travel!")
-        idx_sort = np.flipud(idx_sort).tolist()
+        idx_sort = list(reversed(idx_sort))
 
     return idx_sort
 
 
-def _mst_sorting(xyz: np.ndarray) -> tuple[list, list]:
-    """Reconstruct the spatial sorting
+def _greedy_nn_sort(xyz: np.ndarray) -> list[int]:
+    """Sort points by greedy nearest-neighbor traversal using a KDTree.
 
-    Given a set of points inside a numpy array,
-    this method reconstruct the spatial sorting of
-    those points using a minimum-spanning-tree.
-    The minimum-spanning-tree is a cycle-free graph
-    that connects all points while minimizing its
-    edge lengths.
+    Starting from an arbitrary point, repeatedly visits the nearest
+    unvisited point. This guarantees that all points are included
+    in the result.
 
     Args:
-        xyz (np.ndarray): Input points that should be sorted
+        xyz (np.ndarray): Input points that should be sorted.
 
     Returns:
-        Tuple[list, list]: Index that establishes a spatial sorting
-                           as well as a list containing the indices
-                           of missing points. This can be the case
-                           if the delaunay triangulation necessary
-                           for the minimum-spanning-tree computation
-                           discards some points if they are almost
-                           identical. If no points are missing, the
-                           list will be empty.
+        list[int]: Index that establishes a spatial sorting.
     """
-    # create minimum spanning tree
-    mst = _compute_mst(xyz)
+    n = len(xyz)
+    if n <= 2:
+        return list(range(n))
 
-    # mst = nx.minimum_spanning_tree(delaunay, weight='weight', algorithm='prim')
-    logger.info("searching for endpoints")
+    tree = KDTree(xyz)
 
-    # find possible candidates for endpoints
-    d1_nodes = [n for n in range(len(mst.nodes)) if mst.degree[n] == 1]
-    logger.info("found %i nodes of degree 1", len(d1_nodes))
+    # Pre-compute nearest neighbors for each point
+    k = min(n, 64)
+    _, all_nn = tree.query(xyz, k=k)
 
-    if len(d1_nodes) == 2:
-        end_nodes = d1_nodes
-    else:
-        # breadth-first search starting from a arbitrary d1-node
-        bfs_a = _breadth_first_search(mst, d1_nodes[0])
+    visited = np.zeros(n, dtype=bool)
+    order: list[int] = [0]
+    visited[0] = True
+    current = 0
 
-        # the last visited node is one endpoint
-        e_1 = _breadth_first_search(mst, bfs_a[-1])[-1]
-        # perform breadth first search again, starting from this node
-        e_2 = _breadth_first_search(mst, e_1)[-1]
+    for _ in range(n - 1):
+        # Try pre-computed neighbors first
+        found = False
+        for nn_idx in all_nn[current]:
+            if not visited[nn_idx]:
+                order.append(int(nn_idx))
+                visited[nn_idx] = True
+                current = int(nn_idx)
+                found = True
+                break
 
-        # final end nodes
-        end_nodes = [e_1, e_2]
+        if not found:
+            # Fallback: brute-force nearest unvisited point
+            unvisited = np.where(~visited)[0]
+            dists = np.linalg.norm(xyz[unvisited] - xyz[current], axis=1)
+            nearest = int(unvisited[np.argmin(dists)])
+            order.append(nearest)
+            visited[nearest] = True
+            current = nearest
 
-    shortest_path_lengths = nx.shortest_path_length(mst, end_nodes[0], end_nodes[1], weight="weight")
-    logger.info("found minimum path length: %.3f m", shortest_path_lengths)
-
-    # breadth-first-search through mst to reconstruct the order
-    logger.info("reconstructing point order")
-    return _breadth_first_search(mst, root=end_nodes[0])
+    logger.info("Greedy nearest-neighbor sorting complete. All %i points included.", n)
+    return order
 
 
 def _begin_with(idx: list, begin: int) -> list:
@@ -290,69 +267,6 @@ def _begin_with(idx: list, begin: int) -> list:
     idx_max_sort = idx[idx_start:]
     idx_max_sort.extend(idx[:idx_start])
     return idx_max_sort
-
-
-def _compute_mst(xyz: np.ndarray) -> nx.Graph:
-    """
-    Function that computes a Minimum-Spanning-Tree using the
-    robust scipy.spatial.Delaunay implementation.
-
-    This approach correctly includes all points.
-
-    Args:
-        xyz (np.ndarray): 2d or 3d positions used for mst computation.
-
-    Returns:
-        nx.Graph: networkx.Graph object of the mst.
-    """
-    num_points = len(xyz)
-    if num_points < 3:
-        mst = nx.Graph()
-        if num_points == 2:
-            cost = np.linalg.norm(xyz[1] - xyz[0])
-            mst.add_weighted_edges_from([(0, 1, cost)])
-        return mst
-
-    logger.info("Building Delaunay triangulation...")
-
-    tri = Delaunay(xyz[:, :2])
-
-    # tri.simplices gives the indices of the points forming each triangle.
-    # We extract the edges from these triangles.
-    # e.g., triangle (p1, p2, p3) has edges (p1,p2), (p2,p3), (p3,p1)
-    edges = np.vstack((tri.simplices[:, :2], tri.simplices[:, 1:], tri.simplices[:, [0, 2]]))
-
-    # Sort and remove duplicate edges
-    edges = np.sort(edges, axis=1)
-    unique_edges = np.unique(edges, axis=0)
-
-    # Calculate the 3D distance for each edge's weight
-    e_diffs = xyz[unique_edges[:, 1]] - xyz[unique_edges[:, 0]]
-    e_costs = np.linalg.norm(e_diffs, axis=1)
-
-    logger.info("Computing minimum spanning tree...")
-
-    delaunay_graph = nx.Graph()
-    delaunay_graph.add_nodes_from(range(num_points))
-    delaunay_graph.add_weighted_edges_from(np.c_[unique_edges, e_costs])
-
-    mst = nx.minimum_spanning_tree(delaunay_graph)
-    logger.info("MST computation complete. All %i points were included.", num_points)
-    return mst
-
-
-def _breadth_first_search(graph: nx.Graph, root: int) -> list:
-    """Performs a breadth first search
-
-    Args:
-        graph (nx.Graph): networkx.Graph object
-        root (int): index of starting node for breadth-first-search
-
-    Returns:
-        list: list of visited nodes
-    """
-    edges = nx.bfs_edges(graph, root)
-    return [root] + [int(v) for _, v in edges]
 
 
 def _detect_direction(xyz: np.ndarray) -> int:
