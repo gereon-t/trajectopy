@@ -175,7 +175,11 @@ class PlotTabs(QtWidgets.QMainWindow):
 
         x_label, y_label, _ = get_axis_label(trajectories)
         self.tabs.clear()
-        fig_pos, fig_xyz, fig_rpy = plot_trajectories(trajectories, scatter_3d=mpl_plot_settings.scatter_3d)
+        fig_pos, fig_xyz, fig_rpy = plot_trajectories(
+            trajectories,
+            scatter_3d=mpl_plot_settings.scatter_3d,
+            plot_settings=mpl_plot_settings,
+        )
         # create tab group
         self.add_plot("Trajectory", fig_pos)
         self.add_plot("XYZ", fig_xyz)

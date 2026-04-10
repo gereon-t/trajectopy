@@ -818,6 +818,9 @@ class MPLPlotSettings(Settings):
         dofs_tab: Show degrees of freedom tab. Defaults to True.
         velocity_tab: Show velocity tab. Defaults to True.
         height_tab: Show height tab. Defaults to True.
+        font_size: Base matplotlib font size for plot text. Defaults to 10.
+        use_relative_timestamps: Plot time axes as seconds relative to the first
+            timestamp instead of absolute datetime/timestamp values. Defaults to False.
     """
 
     colorbar_show_zero_crossing: bool = True
@@ -835,6 +838,8 @@ class MPLPlotSettings(Settings):
     dofs_tab: bool = True
     velocity_tab: bool = True
     height_tab: bool = True
+    font_size: int = 12
+    use_relative_timestamps: bool = False
 
     @property
     def unit_multiplier(self) -> float:

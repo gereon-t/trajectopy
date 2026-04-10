@@ -1,7 +1,7 @@
 ﻿import copy
 import logging
-import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any
 
@@ -100,6 +100,9 @@ class TrajectoryManager(QObject):
         Initializes the TrajectoryManager object.
         """
         super().__init__()
+        # Python 3.14 workaround: execute request handlers in a real Python thread.
+        # Keep a persistent single worker to avoid per-request thread creation overhead.
+        self._request_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="TrajectopyTrajMgr")
         self.request: TrajectoryManagerRequest
         self.REQUEST_MAPPING: dict[TrajectoryManagerRequestType, Any] = {
             TrajectoryManagerRequestType.EDIT_EPSG: lambda: self.handle_trajectory_operation(
@@ -212,10 +215,17 @@ class TrajectoryManager(QObject):
             None.
         """
         self.request = request
-        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, False))
-        request_thread.start()
-        request_thread.join()
+        self._request_executor.submit(generic_request_handler, self, request, False).result()
         self.update_view.emit()
+
+    def shutdown_executor(self) -> None:
+        """Best-effort cleanup for the persistent Python worker thread."""
+        if hasattr(self, "_request_executor") and self._request_executor is not None:
+            self._request_executor.shutdown(wait=False, cancel_futures=True)
+            self._request_executor = None
+
+    def __del__(self) -> None:
+        self.shutdown_executor()
 
     def emit_add_trajectory_signal(self, new_trajectory_entry: TrajectoryEntry):
         """

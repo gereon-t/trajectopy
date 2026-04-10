@@ -13,5 +13,7 @@
     "directed_ate": false,
     "dofs_tab": true,
     "velocity_tab": true,
-    "height_tab": true
+    "height_tab": true,
+    "font_size": 12,
+    "use_relative_timestamps": false
 }

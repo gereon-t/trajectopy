@@ -1,6 +1,6 @@
 ﻿import logging
-import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PySide6.QtCore import QObject, Signal, Slot
@@ -46,6 +46,9 @@ class FileManager(QObject):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        # Python 3.14 workaround: execute request handlers in a real Python thread.
+        # Keep a persistent single worker to avoid per-request thread creation overhead.
+        self._request_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="TrajectopyFileMgr")
         self.REQUEST_MAPPING: dict[FileRequestType, Callable[[FileRequest], None]] = {
             FileRequestType.READ_TRAJ: self.read_trajectory_files,
             FileRequestType.WRITE_TRAJ: self.write_trajectory,
@@ -60,9 +63,16 @@ class FileManager(QObject):
     @Slot(FileRequest)
     def handle_request(self, request: FileRequest) -> None:
         """Logic for handling a request."""
-        request_thread = threading.Thread(target=generic_request_handler, args=(self, request, True))
-        request_thread.start()
-        request_thread.join()
+        self._request_executor.submit(generic_request_handler, self, request, True).result()
+
+    def shutdown_executor(self) -> None:
+        """Best-effort cleanup for the persistent Python worker thread."""
+        if hasattr(self, "_request_executor") and self._request_executor is not None:
+            self._request_executor.shutdown(wait=False, cancel_futures=True)
+            self._request_executor = None
+
+    def __del__(self) -> None:
+        self.shutdown_executor()
 
     def read_trajectory_files(self, request: FileRequest) -> None:
         for file in request.file_list:

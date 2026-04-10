@@ -256,6 +256,8 @@ To plot trajectories on a map, several requirements must be met:
 - `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
 - `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
 - `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.
+- `font_size` (int): Base font size used by Matplotlib plots. Default value is 12.
+- `use_relative_timestamps` (bool): If enabled, time axes in Matplotlib plots are shown as seconds relative to the first timestamp instead of absolute datetime/timestamp values. Default value is False.
 
 ## Custom Matplotlib Plotting
 

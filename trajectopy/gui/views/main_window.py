@@ -264,9 +264,19 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.plot_settings_action.setVisible(True)
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
+        # Stop persistent Python workers first so no new work starts during shutdown.
+        self.trajectory_manager.shutdown_executor()
+        self.file_manager.shutdown_executor()
+
         if self.computation_thread and self.computation_thread.isRunning():
+            self.computation_thread.requestInterruption()
             self.computation_thread.quit()
-            self.computation_thread.wait()
+            if not self.computation_thread.wait(5000):
+                logger.warning("Computation thread did not stop within timeout; close request aborted.")
+                if a0 is not None:
+                    a0.ignore()
+                self.statusBar().showMessage("Background work still running. Please try closing again.")
+                return
 
         if self.temp_dir:
             shutil.rmtree(self.report_output_path)

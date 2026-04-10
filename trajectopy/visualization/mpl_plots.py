@@ -30,6 +30,25 @@ logger = logging.getLogger(__name__)
 plt.rcParams["figure.max_open_warning"] = 50
 
 
+def _apply_mpl_plot_settings(plot_settings: MPLPlotSettings) -> None:
+    """Applies global matplotlib settings controlled by MPLPlotSettings."""
+    plt.rcParams["font.size"] = plot_settings.font_size
+    plt.rcParams["axes.labelsize"] = plot_settings.font_size
+    plt.rcParams["axes.titlesize"] = plot_settings.font_size
+    plt.rcParams["xtick.labelsize"] = plot_settings.font_size
+    plt.rcParams["ytick.labelsize"] = plot_settings.font_size
+
+
+def _use_datetime_axis(
+    trajectories_sorting: TrajectoriesSorting,
+    all_unix: bool,
+    plot_settings: MPLPlotSettings,
+) -> bool:
+    return (
+        all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME and not plot_settings.use_relative_timestamps
+    )
+
+
 def mplstyle_file_path() -> str:
     custom_path = os.path.join("./custom.mplstyle")
     if os.path.isfile(custom_path):
@@ -459,7 +478,9 @@ def _setup_cbar_params(c_list, plot_settings: MPLPlotSettings):
 
 
 def plot_trajectories(
-    trajectories: list[Trajectory], scatter_3d: bool = False
+    trajectories: list[Trajectory],
+    scatter_3d: bool = False,
+    plot_settings: MPLPlotSettings = MPLPlotSettings(),
 ) -> tuple[Figure, Figure, Figure | None]:
     """Plots the trajectories in 2d or 3d using matplotlib.
 
@@ -473,9 +494,10 @@ def plot_trajectories(
     Returns:
         Tuple[Figure, Figure, Union[Figure, None]]: Figures for the position, xyz and rpy plots.
     """
+    _apply_mpl_plot_settings(plot_settings)
     fig_pos = plot_positions(trajectories=trajectories, scatter_3d=scatter_3d)
-    fig_xyz = plot_xyz(trajectories=trajectories)
-    fig_rpy = plot_rpy(trajectories=trajectories)
+    fig_xyz = plot_xyz(trajectories=trajectories, plot_settings=plot_settings)
+    fig_rpy = plot_rpy(trajectories=trajectories, plot_settings=plot_settings)
     return fig_pos, fig_xyz, fig_rpy
 
 
@@ -550,6 +572,7 @@ def plot_ate_3d(ate_results: list[ATEResult], plot_settings: MPLPlotSettings = M
     Returns:
         Figure: Figure containing the plot.
     """
+    _apply_mpl_plot_settings(plot_settings)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
@@ -603,6 +626,7 @@ def plot_ate_bars(
     Returns:
         Figure: Bar plot figure.
     """
+    _apply_mpl_plot_settings(plot_settings)
     fig, ax = plt.subplots()
 
     if not ate_results:
@@ -664,6 +688,7 @@ def plot_compact_ate_hist(ate_result: ATEResult, plot_settings: MPLPlotSettings 
     Returns:
         Figure: Figure containing the plot.
     """
+    _apply_mpl_plot_settings(plot_settings)
     fig = plt.figure()
     pos_ax = plt.subplot(2, 1, 1)
     plot_position_ate_hist(ate_result, plot_settings)
@@ -696,23 +721,31 @@ def plot_ate(
     """
     deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
     trajectories_list = [dev.trajectory for dev in deviation_list]
+    _apply_mpl_plot_settings(plot_settings)
+
     trajectories_sorting = get_sorting(traj.sorting for traj in trajectories_list)
     all_unix = all(traj.is_unix_time for traj in trajectories_list)
-    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    use_datetime_axis = _use_datetime_axis(trajectories_sorting, all_unix, plot_settings)
+    x_label = (
+        "relative time [s]"
+        if plot_settings.use_relative_timestamps and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+        else derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    )
+    time_reference = min((traj.timestamps[0] for traj in trajectories_list if len(traj.timestamps) > 0), default=0.0)
 
     fig = plt.figure()
 
     ax_pos = plt.subplot(2, 1, 1)
     ax_pos.set_xlabel(x_label)
     ax_pos.set_ylabel(f"Deviation {plot_settings.unit_str}")
-    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+    if use_datetime_axis:
         ax_pos.xaxis.set_major_formatter(DATE_FORMATTER)
 
     if any(dev.abs_dev.rot_dev for dev in deviation_list):
         ax_rot = plt.subplot(2, 1, 2)
         ax_rot.set_xlabel(x_label)
         ax_rot.set_ylabel("Deviation [°]")
-        if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+        if use_datetime_axis:
             ax_rot.xaxis.set_major_formatter(DATE_FORMATTER)
     else:
         ax_rot = None
@@ -722,11 +755,12 @@ def plot_ate(
             logger.warning("Skipping %s as it has no data", dev.name)
             continue
 
-        index = (
-            dev.trajectory.datetimes
-            if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME
-            else dev.index
-        )
+        if use_datetime_axis:
+            index = dev.trajectory.datetimes
+        elif plot_settings.use_relative_timestamps and dev.trajectory.sorting == Sorting.TIME:
+            index = dev.trajectory.timestamps - time_reference
+        else:
+            index = dev.index
 
         ax_pos.plot(index, dev.pos_dev_comb * plot_settings.unit_multiplier)
         ax_pos.set_xlim(index[0], index[-1])
@@ -754,27 +788,33 @@ def plot_ate_dof(
     Returns:
         Figure: Figure containing the plot.
     """
+    _apply_mpl_plot_settings(plot_settings)
+
     trajectory = ate_result.trajectory
     x_label = derive_xlabel_from_sortings(
         TrajectoriesSorting.ALL_SPATIAL if trajectory.sorting == Sorting.PATH_LENGTH else TrajectoriesSorting.ALL_TIME,
         trajectory.is_unix_time,
     )
+    if plot_settings.use_relative_timestamps and trajectory.sorting == Sorting.TIME:
+        x_label = "relative time [s]"
 
-    is_unix_time = trajectory.is_unix_time and trajectory.sorting == Sorting.TIME
+    use_datetime_axis = (
+        trajectory.is_unix_time and trajectory.sorting == Sorting.TIME and not plot_settings.use_relative_timestamps
+    )
 
     fig = plt.figure()
 
     ax_pos = plt.subplot(2, 1, 1)
     ax_pos.set_xlabel(x_label)
     ax_pos.set_ylabel(f"Deviation {plot_settings.unit_str}")
-    if is_unix_time:
+    if use_datetime_axis:
         ax_pos.xaxis.set_major_formatter(DATE_FORMATTER)
 
     if ate_result.has_orientation:
         ax_rot = plt.subplot(2, 1, 2)
         ax_rot.set_xlabel(x_label)
         ax_rot.set_ylabel("Deviation [°]")
-        if is_unix_time:
+        if use_datetime_axis:
             ax_rot.xaxis.set_major_formatter(DATE_FORMATTER)
     else:
         ax_rot = None
@@ -787,7 +827,12 @@ def plot_ate_dof(
     pos_dev_y = ate_result.pos_dev_cross_h if plot_settings.directed_ate else ate_result.pos_dev_y
     pos_dev_z = ate_result.pos_dev_cross_v if plot_settings.directed_ate else ate_result.pos_dev_z
 
-    index = ate_result.trajectory.datetimes if is_unix_time else ate_result.index
+    if use_datetime_axis:
+        index = ate_result.trajectory.datetimes
+    elif plot_settings.use_relative_timestamps and trajectory.sorting == Sorting.TIME:
+        index = ate_result.trajectory.timestamps - ate_result.trajectory.timestamps[0]
+    else:
+        index = ate_result.index
 
     ax_pos.plot(
         index,
@@ -835,6 +880,7 @@ def plot_ate_edf(
     Returns:
         Figure: Figure containing the plot.
     """
+    _apply_mpl_plot_settings(plot_settings)
     deviation_list = ate_results if isinstance(ate_results, list) else [ate_results]
 
     fig = plt.figure()
@@ -916,6 +962,7 @@ def scatter_ate(ate_result: ATEResult, plot_settings: MPLPlotSettings = MPLPlotS
         ate_result (ATEResult): ATE result to plot.
         plot_settings (MPLPlotSettings, optional): Plot settings. Defaults to MPLPlotSettings().
     """
+    _apply_mpl_plot_settings(plot_settings)
     pos_fig = plt.figure()
     _colored_scatter_plot(
         xyz=ate_result.trajectory.xyz,
@@ -970,8 +1017,9 @@ def plot_positions(trajectories: list[Trajectory], scatter_3d: bool = False) -> 
     return fig_pos
 
 
-def plot_xyz(trajectories: list[Trajectory]) -> Figure:
+def plot_xyz(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure:
     """Plots xyz coordinates of trajectories as subplots"""
+    _apply_mpl_plot_settings(plot_settings)
     fig_xyz, axs_xyz = plt.subplots(3, 1, sharex=True)
 
     for ax, label in zip(axs_xyz, get_axis_label(trajectories=trajectories)):
@@ -979,11 +1027,17 @@ def plot_xyz(trajectories: list[Trajectory]) -> Figure:
 
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
     all_unix = all(traj.is_unix_time for traj in trajectories)
-    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    use_datetime_axis = _use_datetime_axis(trajectories_sorting, all_unix, plot_settings)
+    x_label = (
+        "relative time [s]"
+        if plot_settings.use_relative_timestamps and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+        else derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    )
+    time_reference = min((traj.timestamps[0] for traj in trajectories if len(traj.timestamps) > 0), default=0.0)
 
     axs_xyz[-1].set_xlabel(x_label)
 
-    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+    if use_datetime_axis:
         axs_xyz[-1].xaxis.set_major_formatter(DATE_FORMATTER)
 
     legend_names = []
@@ -993,7 +1047,12 @@ def plot_xyz(trajectories: list[Trajectory]) -> Figure:
 
         # xyz fig
         for j, ax in enumerate(axs_xyz):
-            index = traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.index
+            if use_datetime_axis:
+                index = traj.datetimes
+            elif plot_settings.use_relative_timestamps and traj.sorting == Sorting.TIME:
+                index = traj.timestamps - time_reference
+            else:
+                index = traj.index
             ax.plot(index, xyz[:, j])
             ax.set_xlim(index[0], index[-1])
 
@@ -1001,16 +1060,23 @@ def plot_xyz(trajectories: list[Trajectory]) -> Figure:
     return fig_xyz
 
 
-def plot_rpy(trajectories: list[Trajectory]) -> Figure | None:
+def plot_rpy(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MPLPlotSettings()) -> Figure | None:
     """Plots rpy coordinates of trajectories as subplots"""
+    _apply_mpl_plot_settings(plot_settings)
     fig_rpy, axs_rpy = plt.subplots(3, 1, sharex=True)
     trajectories_sorting = get_sorting([traj.sorting for traj in trajectories])
     all_unix = all(traj.is_unix_time for traj in trajectories)
-    x_label = derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    use_datetime_axis = _use_datetime_axis(trajectories_sorting, all_unix, plot_settings)
+    x_label = (
+        "relative time [s]"
+        if plot_settings.use_relative_timestamps and trajectories_sorting == TrajectoriesSorting.ALL_TIME
+        else derive_xlabel_from_sortings(trajectories_sorting, all_unix)
+    )
+    time_reference = min((traj.timestamps[0] for traj in trajectories if len(traj.timestamps) > 0), default=0.0)
 
     axs_rpy[-1].set_xlabel(x_label)
 
-    if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME:
+    if use_datetime_axis:
         axs_rpy[-1].xaxis.set_major_formatter(DATE_FORMATTER)
 
     not_empty = False
@@ -1022,9 +1088,12 @@ def plot_rpy(trajectories: list[Trajectory]) -> Figure | None:
             rpy = traj.rpy
             ylabels = ["roll [°]", "pitch [°]", "yaw [°]"]
             for j, (ax, yl) in enumerate(zip(axs_rpy, ylabels)):
-                index = (
-                    traj.datetimes if all_unix and trajectories_sorting == TrajectoriesSorting.ALL_TIME else traj.index
-                )
+                if use_datetime_axis:
+                    index = traj.datetimes
+                elif plot_settings.use_relative_timestamps and traj.sorting == Sorting.TIME:
+                    index = traj.timestamps - time_reference
+                else:
+                    index = traj.index
                 ax.plot(index, np.rad2deg(rpy[:, j]))
                 ax.set_ylabel(yl)
                 ax.set_xlim(index[0], index[-1])
