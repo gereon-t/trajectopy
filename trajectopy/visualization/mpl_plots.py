@@ -1053,6 +1053,7 @@ def plot_xyz(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MP
         axs_xyz[-1].xaxis.set_major_formatter(DATE_FORMATTER)
 
     legend_names = []
+    min_x, max_x = None, None
     for traj in trajectories:
         legend_names.append(traj.name)
         xyz = traj.xyz
@@ -1066,7 +1067,12 @@ def plot_xyz(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MP
             else:
                 index = traj.index
             ax.plot(index, xyz[:, j])
-            ax.set_xlim(index[0], index[-1])
+
+            min_x = min(min_x, index[0]) if min_x is not None else index[0]
+            max_x = max(max_x, index[-1]) if max_x is not None else index[-1]
+
+    for ax in axs_xyz:
+        ax.set_xlim(min_x, max_x)
 
     fig_xyz.legend(legend_names, ncol=4, loc="upper center")
     return fig_xyz
@@ -1093,6 +1099,7 @@ def plot_rpy(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MP
 
     not_empty = False
     legend_names = []
+    min_x, max_x = None, None
     for traj in trajectories:
         # rpy fig
         if traj.rotations and len(traj.rotations) > 0:
@@ -1109,7 +1116,12 @@ def plot_rpy(trajectories: list[Trajectory], plot_settings: MPLPlotSettings = MP
                 ax.plot(index, np.rad2deg(rpy[:, j]))
                 ax.set_ylabel(yl)
                 ax.set_xlim(index[0], index[-1])
+                min_x = min(min_x, index[0]) if min_x is not None else index[0]
+                max_x = max(max_x, index[-1]) if max_x is not None else index[-1]
             not_empty = True
+
+    for ax in axs_rpy:
+        ax.set_xlim(min_x, max_x)
 
     fig_rpy.legend(legend_names, ncol=4, loc="upper center")
 
