@@ -11,6 +11,15 @@ include = [
     "trajectopy/py.typed",
 ]
 
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.images",
+    "/example_data/*.html",
+    "/example_data/*.result",
+    "/reports",
+    "/*.exe",
+]
+
 [project]
 name = "trajectopy"
 requires-python = ">=3.10"
