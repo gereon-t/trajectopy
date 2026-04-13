@@ -32,7 +32,7 @@ from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET, MPL_COLORS
-from trajectopy.gui.utils import center_window
+from trajectopy.gui.utils import center_window, set_dark_titlebar
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
@@ -73,7 +73,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
         }
 
-        self._dark_theme = True
+        self._dark_theme = QtWidgets.QApplication.instance().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
@@ -115,6 +115,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         if self.computation_thread is not None:
             self.computation_thread.start()
+
+        set_dark_titlebar(self, self._dark_theme)
         self.show()
 
     def get_report_directory(self, report_output_path) -> str:
@@ -223,8 +225,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         theme_menu = QtWidgets.QMenu("Theme", parent=self)
         self._dark_theme_action = QAction("Dark", parent=self, checkable=True)
-        self._dark_theme_action.setChecked(True)
         self._light_theme_action = QAction("Light", parent=self, checkable=True)
+        self._dark_theme_action.setChecked(self._dark_theme)
+        self._light_theme_action.setChecked(not self._dark_theme)
+
         theme_group = QActionGroup(self)
         theme_group.addAction(self._dark_theme_action)
         theme_group.addAction(self._light_theme_action)
@@ -234,11 +238,22 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         theme_menu.addAction(self._light_theme_action)
         menubar.addMenu(theme_menu)
 
+        # Wire up system theme changes
+        app = QtWidgets.QApplication.instance()
+        if hasattr(app.styleHints(), "colorSchemeChanged"):
+            app.styleHints().colorSchemeChanged.connect(self._on_system_theme_changed)
+
+    @Slot(QtCore.Qt.ColorScheme)
+    def _on_system_theme_changed(self, scheme: QtCore.Qt.ColorScheme) -> None:
+        """Automatically switch theme when system color scheme changes."""
+        self._apply_theme(dark=scheme == QtCore.Qt.ColorScheme.Dark)
+
     def _apply_theme(self, dark: bool) -> None:
         self._dark_theme = dark
         self._dark_theme_action.setChecked(dark)
         self._light_theme_action.setChecked(not dark)
         QtWidgets.QApplication.instance().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
+        set_dark_titlebar(self, dark)
         self._update_preview_colors()
         self._preview_canvas.draw_idle()
         self._timeline_dialog.apply_theme(dark)

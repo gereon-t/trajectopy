@@ -1,7 +1,28 @@
-﻿from functools import wraps
+﻿import os
+from functools import wraps
 
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import QMetaObject, Qt
+
+
+def set_dark_titlebar(window: QtWidgets.QWidget, use_dark: bool) -> None:
+    """Set the Windows title bar to dark or light mode using DWM."""
+    if os.name == "nt":
+        try:
+            import ctypes
+            import sys
+
+            # https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+            build = sys.getwindowsversion().build
+            if build < 17763:
+                return
+
+            attribute = 20 if build >= 18985 else 19
+            value = ctypes.c_int(1 if use_dark else 0)
+            hwnd = int(window.winId())
+            ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, attribute, ctypes.byref(value), ctypes.sizeof(value))
+        except Exception:
+            pass
 
 
 def center_window(window: QtWidgets.QWidget) -> None:

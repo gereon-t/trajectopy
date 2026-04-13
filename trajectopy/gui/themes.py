@@ -141,6 +141,28 @@ _BASE = """
             width: 0;
             height: 0;
         }
+        QTabBar {
+            background-color: %(chrome)s;
+        }
+        QTabBar::tab {
+            background-color: %(chrome)s;
+            color: %(muted)s;
+            padding: 6px 12px;
+            border: none;
+            border-right: 1px solid %(border)s;
+        }
+        QTabBar::tab:selected {
+            background-color: %(bg)s;
+            color: %(text)s;
+            border-top: 2px solid %(accent)s;
+        }
+        QTabBar::tab:hover:!selected {
+            background-color: %(hover)s;
+            color: %(text)s;
+        }
+        QTabWidget::pane {
+            border: 1px solid %(border)s;
+        }
 """
 
 DARK_STYLESHEET = """
