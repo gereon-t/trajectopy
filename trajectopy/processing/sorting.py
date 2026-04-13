@@ -58,6 +58,7 @@ def divide_into_laps(
     else:
         trajectory = trajectory.copy()
 
+    trajectory.set_sorting(Sorting.TIME)
     arc_length_diffs = np.diff(trajectory.path_lengths)
     arc_length_threshold = 0.95 * np.max(trajectory.path_lengths)
     lap_indices = np.r_[0, np.where(np.abs(arc_length_diffs) > arc_length_threshold)[0], len(trajectory)]
