@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -2561,9 +2561,6 @@ dependencies = [
     { name = "plotly" },
     { name = "pyproj", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pyproj", version = "3.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "pyside6" },
-    { name = "pyvista" },
-    { name = "pyvistaqt" },
     { name = "rich" },
     { name = "rosbags" },
     { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -2573,6 +2570,8 @@ dependencies = [
 [package.optional-dependencies]
 gui = [
     { name = "pyside6" },
+    { name = "pyvista" },
+    { name = "pyvistaqt" },
 ]
 
 [package.dev-dependencies]
@@ -2596,10 +2595,9 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "plotly", specifier = ">=6.1.0" },
     { name = "pyproj", specifier = ">=3.6.1" },
-    { name = "pyside6", specifier = ">=6.11.0" },
     { name = "pyside6", marker = "extra == 'gui'" },
-    { name = "pyvista", specifier = ">=0.47.2" },
-    { name = "pyvistaqt", specifier = ">=0.11.4" },
+    { name = "pyvista", marker = "extra == 'gui'" },
+    { name = "pyvistaqt", marker = "extra == 'gui'" },
     { name = "rich", specifier = ">=14.0.0" },
     { name = "rosbags", specifier = ">=0.9.23" },
     { name = "scipy", specifier = ">=1.13.1" },
