@@ -77,6 +77,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
+        self._update_preview_colors()
         self.computation_thread: QtCore.QThread | None = None
 
         self.trajectory_manager = TrajectoryManager()
@@ -660,7 +661,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         details_v_splitter.addWidget(self.details_text)
 
         # Matplotlib 2D preview canvas
-        self._preview_fig = Figure(figsize=(4, 3), tight_layout=True, facecolor="#1e1e1e")
+        preview_colors = MPL_COLORS["dark" if self._dark_theme else "light"]
+        self._preview_fig = Figure(figsize=(4, 3), tight_layout=True, facecolor=preview_colors["bg"])
         self._preview_ax = self._preview_fig.add_subplot(111)
         self._preview_ax.set_visible(False)
         self._preview_canvas = FigureCanvas(self._preview_fig)

@@ -234,6 +234,10 @@ DARK_STYLESHEET = """
             selection-color: #ffffff;
             outline: none;
         }
+        QTableView::item:selected {
+            background-color: #094771;
+            color: #ffffff;
+        }
         QTextEdit, QPlainTextEdit {
             background-color: #1e1e1e;
             color: #cccccc;
@@ -341,6 +345,10 @@ LIGHT_STYLESHEET = """
             selection-background-color: #0078d4;
             selection-color: #ffffff;
             outline: none;
+        }
+        QTableView::item:selected {
+            background-color: #0078d4;
+            color: #ffffff;
         }
         QTextEdit, QPlainTextEdit {
             background-color: #ffffff;
