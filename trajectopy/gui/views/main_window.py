@@ -446,8 +446,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # Draw 2D XY preview
         self._preview_ax.set_visible(True)
         _MAX_PREVIEW_POINTS = 2000
+        local_transformer = None
         for entry in entries:
             t = entry.trajectory
+
+            if local_transformer is None and t.positions.local_transformer is not None:
+                local_transformer = t.positions.local_transformer
+
             try:
                 n = len(t.positions.xyz)
                 if n > _MAX_PREVIEW_POINTS:
@@ -455,7 +460,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                     pos_subset = t.positions.copy()
                     pos_subset.xyz = t.positions.xyz[idx]
                 else:
-                    pos_subset = t.positions
+                    pos_subset = t.positions.copy()
+
+                pos_subset.local_transformer = local_transformer
                 local_xyz = pos_subset.to_local(inplace=False).xyz
                 self._preview_ax.plot(local_xyz[:, 0], local_xyz[:, 1], linewidth=1.0, label=t.name)
             except Exception:
