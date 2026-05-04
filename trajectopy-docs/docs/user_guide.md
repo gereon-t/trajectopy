@@ -205,3 +205,28 @@ trajectopy
 ```
 
 This opens the application where you can drag & drop files, align them, and view results interactively.
+
+### Keyboard Shortcuts
+
+Keyboard shortcuts are active when the corresponding table has focus and at least one row is selected.
+
+| Shortcut | Context | Action | Availability |
+| --- | --- | --- | --- |
+| `Delete` | Trajectories table | Remove selected trajectories | Single and multi selection |
+| `T` | Trajectories table | Transform to EPSG | Single and multi selection |
+| `Ctrl+C` | Trajectories table | Copy selected trajectories | Single and multi selection |
+| `P` | Trajectories table | Open trajectory properties | Single and multi selection |
+| `V` | Trajectories table | Plot selected trajectories (2D) | Single and multi selection |
+| `M` | Trajectories table | Merge selected trajectories | Single and multi selection |
+| `R` | Trajectories table | Set selected trajectory as reference | Single selection only |
+| `Shift+R` | Trajectories table | Unset reference trajectory | Single selection only |
+| `S` | Trajectories table | Open trajectory settings | Single selection only |
+| `U` | Trajectories table | Rename selected trajectory | Single selection only |
+| `F2` | Trajectories table | Rename selected trajectory | Single selection only |
+| `E` | Trajectories table | Export selected trajectory | Single selection only |
+| `Delete` | Results table | Remove selected results | Single and multi selection |
+| `Ctrl+C` | Results table | Copy selected results | Single and multi selection |
+| `P` | Results table | Open result properties | Single and multi selection |
+| `U` | Results table | Rename selected result | Single selection only |
+| `F2` | Results table | Rename selected result | Single selection only |
+| `E` | Results table | Export selected result | Single selection only |

@@ -128,7 +128,7 @@ class ResultTableView(QtWidgets.QTableView):
             self.ui_request.emit(UIRequest(type=UIRequestType.RES_PROPERTIES, result_selection=self.selection))
         elif len(self.selected_entries) > 1:
             return
-        elif e.key() == Qt.Key.Key_U:
+        elif e.key() in (Qt.Key.Key_U, Qt.Key.Key_F2):
             self.result_model_request.emit(
                 ResultModelRequest(type=ResultModelRequestType.RENAME, selection=self.selection)
             )

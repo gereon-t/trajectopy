@@ -175,7 +175,7 @@ class TrajectoryTableView(QtWidgets.QTableView):
                     trajectory_selection=self.selection,
                 )
             )
-        elif e.key() == Qt.Key.Key_U:
+        elif e.key() in (Qt.Key.Key_U, Qt.Key.Key_F2):
             self.trajectory_model_request.emit(
                 TrajectoryModelRequest(type=TrajectoryModelRequestType.RENAME, selection=self.selection)
             )
