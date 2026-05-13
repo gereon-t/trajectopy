@@ -12,13 +12,15 @@ The processing settings allow you to configure various processing steps that can
 
 ### Alignment Settings
 
-#### Preprocessing Settings
+- `enabled` (boolean): Enable or disable trajectory alignment. If disabled, no alignment will be performed and the trajectories will be compared as-is. Default value is `True`.
+
+#### Alignment Preprocessing Settings
 
 - `min_speed` (float): Only poses with a speed above this threshold are considered for alignment (meters/second).
 - `time_start` (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 - `time_end` (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 
-#### Estimation Settings
+#### Alignment Estimation Settings
 
 - `translation_x` (boolean): Enable or disable x-translation of the similarity transformation.
 - `translation_y` (boolean): Enable or disable y-translation of the similarity transformation.
@@ -33,7 +35,7 @@ The processing settings allow you to configure various processing steps that can
 - `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
 - `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.
 
-#### Stochastics Settings
+#### Alignment Stochastics Settings
 
 - `std_xy_from` (float): Standard deviation of XY source position components in meters.
 - `std_z_from` (float): Standard deviation of Z source position component in meters.
@@ -45,7 +47,7 @@ The processing settings allow you to configure various processing steps that can
 - `error_probability` (float): Probability of error used for stochastic testing.
 - `variance_estimation` (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.
 
-#### Threshold Settings
+#### Alignment Threshold Settings
 
 Usually, these settings can be left at their default values.
 
