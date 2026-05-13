@@ -28,7 +28,8 @@ def main():
     # default settings
     processing_settings = ProcessingSettings()
 
-    ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
+    # align = True is the default, but can be disabled if you want to evaluate the unaligned trajectories
+    ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings, align=True)
     console.print(dict_to_table(ate_result.property_dict))
 
 

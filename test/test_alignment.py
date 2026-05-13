@@ -34,13 +34,13 @@ class TestAlignment(unittest.TestCase):
             trajectory=open_loop_trajectory.copy(),
             other=transformed,
             alignment_settings=AlignmentSettings(
-                estimation_settings=AlignmentEstimationSettings.from_components(
+                alignment_estimation_settings=AlignmentEstimationSettings.from_components(
                     similarity=similarity_enabled,
                     time_shift=time_shift_enabled,
                     leverarm=lever_enabled,
                     sensor_rotation=False,
                 ),
-                stochastics=AlignmentStochastics(),
+                alignment_stochastics=AlignmentStochastics(),
             ),
             matching_settings=MatchingSettings(),
         )

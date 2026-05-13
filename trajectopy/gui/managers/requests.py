@@ -55,8 +55,6 @@ class SessionManagerRequestType(Enum):
 
 class TrajectoryManagerRequestType(Enum):
     SWITCH_SORTING = auto()
-    COMPARE_ABS = auto()
-    COMPARE_REL = auto()
     ALIGN = auto()
     ADAPT_FIRST_POSE = auto()
     APPLY_ALIGNMENT = auto()

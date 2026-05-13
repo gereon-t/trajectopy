@@ -48,15 +48,6 @@ class TrajectoryEntryPair:
     request: TrajectoryManagerRequest
     reference_entry: TrajectoryEntry | None = None
 
-    def __post_init__(self) -> None:
-        if self.request.type in [
-            TrajectoryManagerRequestType.ATE,
-            TrajectoryManagerRequestType.RPE,
-        ]:  # pipeline requests use matching setting from trajectory
-            return
-
-        self.entry.settings.matching.method = self.request.matching_method
-
 
 class TrajectoryManager(QObject):
     """
@@ -144,16 +135,6 @@ class TrajectoryManager(QObject):
                 apply_to_reference=True,
             ),
             TrajectoryManagerRequestType.AVERAGE: self.operation_average_trajectories,
-            TrajectoryManagerRequestType.COMPARE_ABS: lambda: self.handle_trajectory_operation(
-                operation=self.operation_compare_abs,
-                inplace=False,
-                apply_to_reference=False,
-            ),
-            TrajectoryManagerRequestType.COMPARE_REL: lambda: self.handle_trajectory_operation(
-                operation=self.operation_compare_rel,
-                inplace=False,
-                apply_to_reference=False,
-            ),
             TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
             TrajectoryManagerRequestType.SORT: lambda: self.handle_trajectory_operation(
                 operation=self.operation_sort, inplace=False, apply_to_reference=True
@@ -476,64 +457,6 @@ class TrajectoryManager(QObject):
         self.emit_add_trajectory_signal(new_trajectory_entry)
 
     @staticmethod
-    def operation_compare_abs(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
-        """
-        Compares the selected trajectory to the reference trajectory.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
-
-        Returns:
-            ResultEntry: The result of the comparison.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        traj_test, traj_ref = matching.match_trajectories(
-            trajectory=entry_pair.entry.trajectory,
-            other=reference_entry.trajectory,
-            matching_settings=entry_pair.entry.settings.matching,
-        )
-
-        if len(traj_ref) != len(traj_test):
-            raise ValueError("Something went wrong during matching.")
-
-        comparison_result = evaluation._compare_trajectories_absolute(trajectory=traj_test, other=traj_ref)
-
-        return (AbsoluteDeviationEntry(deviations=comparison_result),)
-
-    @staticmethod
-    def operation_compare_rel(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
-        """
-        Compares the selected trajectory to the reference trajectory using relative comparison.
-
-        Args:
-            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
-
-        Returns:
-            ResultEntry: The result of the comparison.
-        """
-        if (reference_entry := entry_pair.reference_entry) is None:
-            raise ValueError("No reference trajectory selected.")
-
-        traj_test, traj_ref = matching.match_trajectories(
-            trajectory=entry_pair.entry.trajectory,
-            other=reference_entry.trajectory,
-            matching_settings=entry_pair.entry.settings.matching,
-        )
-
-        if len(traj_ref) != len(traj_test):
-            raise ValueError("Something went wrong during matching.")
-
-        comparison_result = evaluation._compare_trajectories_relative(
-            trajectory=traj_test,
-            other=traj_ref,
-            relative_comparison_settings=entry_pair.entry.settings.relative_comparison,
-        )
-
-        return (RelativeDeviationEntry(deviations=comparison_result),)
-
-    @staticmethod
     def operation_interpolate_to_grid(
         entry_pair: TrajectoryEntryPair,
     ) -> tuple[TrajectoryEntry]:
@@ -824,7 +747,7 @@ class TrajectoryManager(QObject):
             entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
 
         Returns:
-            ResultEntry: The result of the comparison.
+            ResultEntry: The result of the comparison and the alignment information.
         """
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
@@ -834,7 +757,11 @@ class TrajectoryManager(QObject):
             other=reference_entry.trajectory,
             processing_settings=entry_pair.entry.settings,
             return_alignment=True,
+            align=entry_pair.entry.settings.alignment.enabled,
         )
+
+        if not entry_pair.entry.settings.alignment.enabled:
+            return (AbsoluteDeviationEntry(deviations=ate_result),)
 
         return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
 

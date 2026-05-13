@@ -53,16 +53,18 @@ class AlignmentData:
         the same sampling.
         """
         # speed filter
-        self.traj_to.mask(self.traj_to.absolute_velocity >= self.alignment_settings.preprocessing.min_speed)
-        self.traj_from.mask(self.traj_from.absolute_velocity >= self.alignment_settings.preprocessing.min_speed)
+        self.traj_to.mask(self.traj_to.absolute_velocity >= self.alignment_settings.alignment_preprocessing.min_speed)
+        self.traj_from.mask(
+            self.traj_from.absolute_velocity >= self.alignment_settings.alignment_preprocessing.min_speed
+        )
 
         if (
-            self.alignment_settings.preprocessing.time_start != 0
-            or self.alignment_settings.preprocessing.time_end != 0
+            self.alignment_settings.alignment_preprocessing.time_start != 0
+            or self.alignment_settings.alignment_preprocessing.time_end != 0
         ):
             time_span = (
-                self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_start,
-                self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_end,
+                self.traj_from.timestamps[0] + self.alignment_settings.alignment_preprocessing.time_start,
+                self.traj_from.timestamps[0] + self.alignment_settings.alignment_preprocessing.time_end,
             )
             self.traj_to.crop(time_span[0], time_span[1])
             self.traj_from.crop(time_span[0], time_span[1])
@@ -99,9 +101,9 @@ class AlignmentData:
         """Returns the observation groups depending on the settings"""
         speed_indices: tuple[int | None, int | None] = (None, None)
 
-        if not self.alignment_settings.estimation_settings.time_shift_enabled:
+        if not self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             speed_indices = (None, None)
-        elif self.alignment_settings.estimation_settings.leverarm_enabled:
+        elif self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             speed_indices = (9, 12)
         else:
             speed_indices = (6, 9)
@@ -114,9 +116,11 @@ class AlignmentData:
             "Z_TO": (5, 6),
             "XYZ_TO": (3, 6),
             "POSITIONS": (0, 6),
-            "ROLL_PITCH": (6, 8) if self.alignment_settings.estimation_settings.leverarm_enabled else (None, None),
-            "YAW": (8, 9) if self.alignment_settings.estimation_settings.leverarm_enabled else (None, None),
-            "RPY": (6, 9) if self.alignment_settings.estimation_settings.leverarm_enabled else (None, None),
+            "ROLL_PITCH": (
+                (6, 8) if self.alignment_settings.alignment_estimation_settings.leverarm_enabled else (None, None)
+            ),
+            "YAW": (8, 9) if self.alignment_settings.alignment_estimation_settings.leverarm_enabled else (None, None),
+            "RPY": (6, 9) if self.alignment_settings.alignment_estimation_settings.leverarm_enabled else (None, None),
             "SPEED": speed_indices,
         }
 
@@ -125,10 +129,10 @@ class AlignmentData:
         """Returns the variance groups depending on the settings"""
         variance_groups = copy.deepcopy(POSITION_VARIANCE_GROUPS)
 
-        if self.alignment_settings.estimation_settings.leverarm_enabled:
+        if self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             variance_groups.extend(ORIENTATION_VARIANCE_GROUPS)
 
-        if self.alignment_settings.estimation_settings.time_shift_enabled:
+        if self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             variance_groups.extend(SPEED_VARIANCE_GROUP)
 
         return variance_groups
@@ -197,10 +201,10 @@ class AlignmentData:
         """
         obs_count = 6
 
-        if self.alignment_settings.estimation_settings.leverarm_enabled:
+        if self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             obs_count += 3
 
-        if self.alignment_settings.estimation_settings.time_shift_enabled:
+        if self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             obs_count += 3
 
         return obs_count
@@ -228,14 +232,14 @@ class AlignmentData:
         """
         obs_init: np.ndarray = np.c_[xyz_from, xyz_to]
 
-        if self.alignment_settings.estimation_settings.leverarm_enabled and rot_from is not None:
+        if self.alignment_settings.alignment_estimation_settings.leverarm_enabled and rot_from is not None:
             obs_init = np.c_[obs_init, rot_from.as_euler(seq="xyz")]
-        elif self.alignment_settings.estimation_settings.leverarm_enabled:
+        elif self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             raise ValueError(
                 "Failed to create observation vector: Please provide platform orientations for leverarm alignment!"
             )
 
-        if self.alignment_settings.estimation_settings.time_shift_enabled:
+        if self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             if speed is None and self.tstamps is not None:
                 speed = speed or gradient_3d(xyz_from, tstamps=self.tstamps)
 
@@ -244,7 +248,7 @@ class AlignmentData:
                     "Failed to create observation vector: Please provide platform speed for time shift alignment!"
                 )
 
-            speed[:, ~np.array(self.alignment_settings.estimation_settings.time_shift_filter)] = 0
+            speed[:, ~np.array(self.alignment_settings.alignment_estimation_settings.time_shift_filter)] = 0
             obs_init = np.c_[obs_init, speed]
 
         return np.reshape(obs_init, (obs_init.size,))
@@ -266,24 +270,38 @@ class AlignmentData:
         """
         variances = np.ones_like(self._obs_vector)
 
-        variances_xyz_from = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_xy_from
-        variances_xyz_from[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_z_from
+        variances_xyz_from = (
+            np.ones((self.number_of_epochs, 3)) * self.alignment_settings.alignment_stochastics.var_xy_from
+        )
+        variances_xyz_from[:, 2] = (
+            np.ones((self.number_of_epochs,)) * self.alignment_settings.alignment_stochastics.var_z_from
+        )
 
-        variances_xyz_to = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_xy_to
-        variances_xyz_to[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_z_to
+        variances_xyz_to = (
+            np.ones((self.number_of_epochs, 3)) * self.alignment_settings.alignment_stochastics.var_xy_to
+        )
+        variances_xyz_to[:, 2] = (
+            np.ones((self.number_of_epochs,)) * self.alignment_settings.alignment_stochastics.var_z_to
+        )
 
-        variances_rpy_body = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_roll_pitch
-        variances_rpy_body[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_yaw
+        variances_rpy_body = (
+            np.ones((self.number_of_epochs, 3)) * self.alignment_settings.alignment_stochastics.var_roll_pitch
+        )
+        variances_rpy_body[:, 2] = (
+            np.ones((self.number_of_epochs,)) * self.alignment_settings.alignment_stochastics.var_yaw
+        )
 
-        variances_speed_to = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_speed_to
+        variances_speed_to = (
+            np.ones((self.number_of_epochs, 3)) * self.alignment_settings.alignment_stochastics.var_speed_to
+        )
 
         self._set_vector_components(vector=variances, values=variances_xyz_from, key="XYZ_FROM")
         self._set_vector_components(vector=variances, values=variances_xyz_to, key="XYZ_TO")
 
-        if self.alignment_settings.estimation_settings.leverarm_enabled:
+        if self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             self._set_vector_components(vector=variances, values=variances_rpy_body, key="RPY")
 
-        if self.alignment_settings.estimation_settings.time_shift_enabled:
+        if self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             self._set_vector_components(vector=variances, values=variances_speed_to, key="SPEED")
         return variances
 
@@ -346,14 +364,14 @@ class AlignmentData:
 
     @property
     def rpy_from(self) -> np.ndarray:
-        if not self.alignment_settings.estimation_settings.leverarm_enabled:
+        if not self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
         return np.c_[self.get_obs_group("RPY")]
 
     @property
     def speed(self) -> np.ndarray:
-        if not self.alignment_settings.estimation_settings.time_shift_enabled:
+        if not self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
         return np.c_[self.get_obs_group("SPEED")]
@@ -416,14 +434,14 @@ class AlignmentData:
 
     @property
     def est_rpy_from(self) -> np.ndarray:
-        if not self.alignment_settings.estimation_settings.leverarm_enabled:
+        if not self.alignment_settings.alignment_estimation_settings.leverarm_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
         return np.c_[self.get_est_obs_group("RPY")]
 
     @property
     def est_speed(self) -> np.ndarray:
-        if not self.alignment_settings.estimation_settings.time_shift_enabled:
+        if not self.alignment_settings.alignment_estimation_settings.time_shift_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
         return np.c_[self.get_est_obs_group("SPEED")]

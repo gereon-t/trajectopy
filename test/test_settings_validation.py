@@ -17,10 +17,10 @@ class TestSettingsValidation(unittest.TestCase):
 
     def test_alignment_settings_construct(self):
         settings = AlignmentSettings(
-            estimation_settings=AlignmentEstimationSettings.from_components(
+            alignment_estimation_settings=AlignmentEstimationSettings.from_components(
                 similarity=True, time_shift=True, leverarm=True, sensor_rotation=False
             ),
-            stochastics=AlignmentStochastics(),
+            alignment_stochastics=AlignmentStochastics(),
         )
         self.assertIsInstance(settings, AlignmentSettings)
 

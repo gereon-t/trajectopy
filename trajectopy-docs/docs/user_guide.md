@@ -66,7 +66,8 @@ est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 # default settings
 processing_settings = ProcessingSettings()
 
-ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
+# align = True is the default, but can be disabled if you want to evaluate the unaligned trajectories
+ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings, align=True)
 print(f"Position ATE: {ate_result.pos_ate}")
 ```
 

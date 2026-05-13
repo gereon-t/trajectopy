@@ -3,7 +3,6 @@
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QAction, QCursor
 
-from trajectopy.core.settings import MatchingMethod
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
@@ -31,17 +30,12 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.metrics_context_menu = QtWidgets.QMenu("Metrics")
+        self.evaluate_context_menu = QtWidgets.QMenu("Evaluate")
         self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
-        self.match_context_menu = QtWidgets.QMenu("Match With Reference")
-        self.other_context_menu = QtWidgets.QMenu("Other")
+        self.other_context_menu = QtWidgets.QMenu("Utilities")
         self.view_context_menu = QtWidgets.QMenu("View")
         self.edit_context_menu = QtWidgets.QMenu("Edit")
-        self.action_context_menu = QtWidgets.QMenu("Action")
-        self.absolute_menu = QtWidgets.QMenu("Absolute", self)
-        self.relative_menu = QtWidgets.QMenu("Relative", self)
-        self.least_squares_menu = QtWidgets.QMenu("All Poses", self)
-        self.align_first_pose_menu = QtWidgets.QMenu("First Pose", self)
+        self.process_context_menu = QtWidgets.QMenu("Process")
         self.align_with_reference_sub_menu = QtWidgets.QMenu("Align With Reference", self)
         self._selection: TrajectorySelection
 
@@ -67,17 +61,12 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def clear(self) -> None:
         super().clear()
-        self.metrics_context_menu.clear()
+        self.evaluate_context_menu.clear()
         self.comparison_context_menu.clear()
-        self.match_context_menu.clear()
         self.other_context_menu.clear()
         self.view_context_menu.clear()
         self.edit_context_menu.clear()
-        self.action_context_menu.clear()
-        self.absolute_menu.clear()
-        self.relative_menu.clear()
-        self.least_squares_menu.clear()
-        self.align_first_pose_menu.clear()
+        self.process_context_menu.clear()
         self.align_with_reference_sub_menu.clear()
 
     def single_only_context(self) -> None:
@@ -116,12 +105,30 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
     def multi_context(self) -> None:
         """These options are shown for single and multiple trajectories"""
         self.view_context()
+
+        change_datum_action = QAction("Transform to EPSG", self)
+        change_datum_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.EPSG_TRANSFORMATION,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.addAction(change_datum_action)
+
+        if self.get_selection().reference_is_set:
+            self.addSeparator()
+            self.evaluate_context()
+            self.addAction(self.match_action())
+            self.addMenu(self.align_context())
+
+        self.addSeparator()
         self.edit_context()
-        self.action_context()
-        self.metrics_context()
+        self.process_context()
 
     def edit_context(self) -> None:
-        """Actions sub-context menu"""
+        """Edit sub-context menu"""
         single_selection = len(self.get_selection()) == 1
         self.addMenu(self.edit_context_menu)
 
@@ -268,23 +275,8 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.view_context_menu.addAction(playback_action)
 
-    def action_context(self) -> None:
-        self.addMenu(self.action_context_menu)
-
-        self.action_context_menu.addMenu(self.align_context())
-        self.action_context_menu.addMenu(self.compare_context())
-        self.action_context_menu.addMenu(self.match_context())
-
-        change_datum_action = QAction("Transform to EPSG", self)
-        change_datum_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EPSG_TRANSFORMATION,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.action_context_menu.addAction(change_datum_action)
+    def process_context(self) -> None:
+        self.addMenu(self.process_context_menu)
 
         approximate_action = QAction("Approximate", self)
         approximate_action.triggered.connect(
@@ -295,7 +287,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.action_context_menu.addAction(approximate_action)
+        self.process_context_menu.addAction(approximate_action)
 
         interpolate_to_grid_action = QAction("Interpolate to Grid", self)
         interpolate_to_grid_action.triggered.connect(
@@ -306,7 +298,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.action_context_menu.addAction(interpolate_to_grid_action)
+        self.process_context_menu.addAction(interpolate_to_grid_action)
 
         apply_alignment_action = QAction("Apply Alignment", self)
         # -> ResultModelRequest(selection=selected_trajectories) -> ResultModel
@@ -321,9 +313,9 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.action_context_menu.addAction(apply_alignment_action)
+        self.process_context_menu.addAction(apply_alignment_action)
 
-        self.action_context_menu.addMenu(self.other_context())
+        self.process_context_menu.addMenu(self.other_context())
 
         if not self.get_selection().reference_is_set:
             return
@@ -340,7 +332,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 )
             )
         )
-        self.action_context_menu.addAction(epsg_to_ref_action)
+        self.process_context_menu.addAction(epsg_to_ref_action)
 
     def other_context(self) -> QtWidgets.QMenu:
         sort_action = QAction("Sort Spatially", self)
@@ -380,274 +372,50 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
     def align_context(self) -> QtWidgets.QMenu:
         self.align_with_reference_sub_menu.setEnabled(self.get_selection().reference_is_set)
 
-        align_interpolate_action = QAction("Match by Interpolation", self)
-        align_interpolate_action.triggered.connect(
+        align_all_poses_action = QAction("All Poses", self)
+        align_all_poses_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
                     type=TrajectoryManagerRequestType.ALIGN,
                     selection=self.get_selection(),
-                    matching_method=MatchingMethod.INTERPOLATION,
                 )
             ),
         )
 
-        align_nearest_temporal_action = QAction("Match Nearest Temporal", self)
-        align_nearest_temporal_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ALIGN,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_TEMPORAL,
-                )
-            ),
-        )
-
-        align_nearest_spatial_action = QAction("Match Nearest Spatial", self)
-        align_nearest_spatial_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ALIGN,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL,
-                )
-            ),
-        )
-
-        align_nsi_action = QAction("Nearest Spatial Interpolated", self)
-        align_nsi_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ALIGN,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
-                )
-            ),
-        )
-
-        align_first_pose_interpolation_action = QAction("Match by Interpolation", self)
-        align_first_pose_interpolation_action.triggered.connect(
+        align_first_pose_action = QAction("First Pose", self)
+        align_first_pose_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
                     type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
                     selection=self.get_selection(),
-                    matching_method=MatchingMethod.INTERPOLATION,
                 )
             ),
         )
 
-        align_first_pose_nearest_temporal_action = QAction("Match Nearest Temporal", self)
-        align_first_pose_nearest_temporal_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_TEMPORAL,
-                )
-            ),
-        )
-
-        align_first_pose_nearest_spatial_action = QAction("Match Nearest Spatial", self)
-        align_first_pose_nearest_spatial_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL,
-                )
-            ),
-        )
-
-        align_first_pose_nsi_action = QAction("Nearest Spatial Interpolated", self)
-        align_first_pose_nsi_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
-                )
-            ),
-        )
-
-        self.least_squares_menu.addAction(align_interpolate_action)
-        self.least_squares_menu.addAction(align_nearest_temporal_action)
-        self.least_squares_menu.addAction(align_nearest_spatial_action)
-        self.least_squares_menu.addAction(align_nsi_action)
-        self.align_with_reference_sub_menu.addMenu(self.least_squares_menu)
-
-        self.align_first_pose_menu.addAction(align_first_pose_interpolation_action)
-        self.align_first_pose_menu.addAction(align_first_pose_nearest_temporal_action)
-        self.align_first_pose_menu.addAction(align_first_pose_nearest_spatial_action)
-        self.align_first_pose_menu.addAction(align_first_pose_nsi_action)
-        self.align_with_reference_sub_menu.addMenu(self.align_first_pose_menu)
+        self.align_with_reference_sub_menu.addAction(align_all_poses_action)
+        self.align_with_reference_sub_menu.addAction(align_first_pose_action)
 
         return self.align_with_reference_sub_menu
 
-    def compare_context(self) -> QtWidgets.QMenu:
-        """Compare-Sub-Context menu"""
-        self.comparison_context_menu.setEnabled(self.get_selection().reference_is_set)
-
-        abs_nearest_spatial_action = QAction("Match Nearest Spatial", self)
-        abs_nearest_spatial_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_ABS,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL,
-                )
-            ),
-        )
-
-        abs_nearest_temporal_action = QAction("Match Nearest Temporal", self)
-        abs_nearest_temporal_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_ABS,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_TEMPORAL,
-                )
-            ),
-        )
-
-        abs_interpolation_action = QAction("Match by Interpolation", self)
-        abs_interpolation_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_ABS,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.INTERPOLATION,
-                )
-            ),
-        )
-
-        abs_nsi_action = QAction("Nearest Spatial Interpolated", self)
-        abs_nsi_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_ABS,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
-                )
-            ),
-        )
-
-        rel_nearest_spatial_action = QAction("Match Nearest Spatial", self)
-        rel_nearest_spatial_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_REL,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL,
-                )
-            ),
-        )
-
-        rel_nearest_temporal_action = QAction("Match Nearest Temporal", self)
-        rel_nearest_temporal_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_REL,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_TEMPORAL,
-                )
-            ),
-        )
-
-        rel_interpolation_action = QAction("Match by Interpolation", self)
-        rel_interpolation_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_REL,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.INTERPOLATION,
-                )
-            ),
-        )
-
-        rel_nsi_action = QAction("Nearest Spatial Interpolated", self)
-        rel_nsi_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.COMPARE_REL,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
-                )
-            ),
-        )
-
-        self.absolute_menu.addAction(abs_interpolation_action)
-        self.absolute_menu.addAction(abs_nearest_temporal_action)
-        self.absolute_menu.addAction(abs_nearest_spatial_action)
-        self.absolute_menu.addAction(abs_nsi_action)
-
-        self.relative_menu.addAction(rel_interpolation_action)
-        self.relative_menu.addAction(rel_nearest_temporal_action)
-        self.relative_menu.addAction(rel_nearest_spatial_action)
-        self.relative_menu.addAction(rel_nsi_action)
-
-        self.comparison_context_menu.addMenu(self.absolute_menu)
-        self.comparison_context_menu.addMenu(self.relative_menu)
-        return self.comparison_context_menu
-
-    def match_context(self) -> QtWidgets.QMenu:
-        self.match_context_menu.setEnabled(self.get_selection().reference_is_set)
-
-        match_interpolation_action = QAction("Interpolation", self)
-        match_interpolation_action.triggered.connect(
+    def match_action(self) -> QAction:
+        match_action = QAction("Match With Reference", self)
+        match_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
                     type=TrajectoryManagerRequestType.MATCH,
                     selection=self.get_selection(),
-                    matching_method=MatchingMethod.INTERPOLATION,
                 )
             ),
         )
 
-        match_nearest_temporal_action = QAction("Nearest Temporal", self)
-        match_nearest_temporal_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.MATCH,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_TEMPORAL,
-                )
-            ),
-        )
+        return match_action
 
-        match_nearest_spatial_action = QAction("Nearest Spatial", self)
-        match_nearest_spatial_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.MATCH,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL,
-                )
-            ),
-        )
+    def evaluate_context(self) -> None:
+        self.addMenu(self.evaluate_context_menu)
+        self.evaluate_context_menu.setEnabled(self.get_selection().reference_is_set)
 
-        match_nsi_action = QAction("Nearest Spatial Interpolated", self)
-        match_nsi_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.MATCH,
-                    selection=self.get_selection(),
-                    matching_method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED,
-                )
-            ),
-        )
-
-        self.match_context_menu.addAction(match_interpolation_action)
-        self.match_context_menu.addAction(match_nearest_temporal_action)
-        self.match_context_menu.addAction(match_nearest_spatial_action)
-        self.match_context_menu.addAction(match_nsi_action)
-
-        return self.match_context_menu
-
-    def metrics_context(self) -> None:
-        self.addMenu(self.metrics_context_menu)
-        self.metrics_context_menu.setEnabled(self.get_selection().reference_is_set)
-
-        ate_action = QAction("Compute ATE", self)
-        ate_action.triggered.connect(
+        ate = QAction("ATE", self)
+        ate.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
                     type=TrajectoryManagerRequestType.ATE,
@@ -656,7 +424,7 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
-        rpe_action = QAction("Compute RPE", self)
+        rpe_action = QAction("RPE", self)
         rpe_action.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
@@ -666,5 +434,5 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
-        self.metrics_context_menu.addAction(ate_action)
-        self.metrics_context_menu.addAction(rpe_action)
+        self.evaluate_context_menu.addAction(ate)
+        self.evaluate_context_menu.addAction(rpe_action)
