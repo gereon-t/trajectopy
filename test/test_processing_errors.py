@@ -25,10 +25,10 @@ class TestProcessingErrors(unittest.TestCase):
             trajectory=traj_a,
             other=traj_b,
             alignment_settings=AlignmentSettings(
-                alignment_estimation_settings=AlignmentEstimationSettings.from_components(
+                estimation_settings=AlignmentEstimationSettings.from_components(
                     similarity=True, time_shift=False, leverarm=False, sensor_rotation=False
                 ),
-                alignment_stochastics=AlignmentStochastics(),
+                stochastics=AlignmentStochastics(),
             ),
             matching_settings=MatchingSettings(),
         )

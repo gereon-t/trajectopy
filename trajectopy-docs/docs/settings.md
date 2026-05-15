@@ -12,7 +12,7 @@ The processing settings allow you to configure various processing steps that can
 
 ### Alignment Settings
 
-- `enabled` (boolean): Enable or disable trajectory alignment. If disabled, no alignment will be performed and the trajectories will be compared as-is. Default value is `True`.
+- `alignment_enabled` (boolean): Enable or disable trajectory alignment. If disabled, no alignment will be performed and the trajectories will be compared as-is. Default value is `True`.
 
 #### Alignment Preprocessing Settings
 

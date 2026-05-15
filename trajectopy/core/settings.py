@@ -544,9 +544,9 @@ class AlignmentSettings(Settings):
 
     Attributes:
         enabled: Whether alignment is enabled.
-        alignment_preprocessing: Preprocessing filter settings
-        alignment_estimation_settings: Parameter estimation settings
-        alignment_stochastics: Stochastic model (observation uncertainty) settings
+        preprocessing: Preprocessing filter settings
+        estimation_settings: Parameter estimation settings
+        stochastics: Stochastic model (observation uncertainty) settings
         metric_threshold: Iteration threshold for metric parameters in least squares.
             Defaults to 1e-4.
         time_threshold: Iteration threshold for time shift parameter in least squares (seconds).
@@ -554,9 +554,9 @@ class AlignmentSettings(Settings):
     """
 
     enabled: bool = True
-    alignment_preprocessing: AlignmentPreprocessing = field(default_factory=AlignmentPreprocessing)
-    alignment_estimation_settings: AlignmentEstimationSettings = field(default_factory=AlignmentEstimationSettings)
-    alignment_stochastics: AlignmentStochastics = field(default_factory=AlignmentStochastics)
+    preprocessing: AlignmentPreprocessing = field(default_factory=AlignmentPreprocessing)
+    estimation_settings: AlignmentEstimationSettings = field(default_factory=AlignmentEstimationSettings)
+    stochastics: AlignmentStochastics = field(default_factory=AlignmentStochastics)
     metric_threshold: float = METRIC_THRESHOLD
     time_threshold: float = TIME_THRESHOLD
 
@@ -566,11 +566,7 @@ class AlignmentSettings(Settings):
         Returns:
             str: Concatenated string of preprocessing, estimation, and stochastics settings
         """
-        return (
-            str(self.alignment_preprocessing)
-            + str(self.alignment_estimation_settings)
-            + str(self.alignment_stochastics)
-        )
+        return str(self.preprocessing) + str(self.estimation_settings) + str(self.stochastics)
 
 
 if __name__ == "__main__":

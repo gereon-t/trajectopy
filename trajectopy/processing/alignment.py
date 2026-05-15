@@ -52,7 +52,7 @@ def estimate_alignment(
     if (
         alignment_data.traj_from.rotations is not None
         and alignment_data.traj_to.rotations is not None
-        and alignment_settings.alignment_estimation_settings.sensor_rotation
+        and alignment_settings.estimation_settings.sensor_rotation
     ):
         pre_aligned_trajectory = alignment_data.traj_from.transform(estimated_parameters.sim3_matrix, inplace=False)
         logger.info("Aligning rotations ...")
@@ -67,7 +67,7 @@ def estimate_alignment(
         name=f"{alignment_data.traj_from.name} to {alignment_data.traj_to.name}",
         position_parameters=estimated_parameters,
         rotation_parameters=sensor_rot_params,
-        estimation_of=ghm_alignment.settings.alignment_estimation_settings,
+        estimation_of=ghm_alignment.settings.estimation_settings,
         converged=ghm_alignment.has_results,
     )
 

@@ -79,7 +79,7 @@ class AlignmentEstimator:
             AlignmentParameters: Hold the estimates parameters.
                                  14 = 7 (helmert+scale) 3 (leverarm) 1 (time) 3 (orientation)
         """
-        if self.settings.alignment_estimation_settings.helmert_enabled:
+        if self.settings.estimation_settings.helmert_enabled:
             helmert_init = direct_helmert_transformation(xyz_from=self.data.xyz_from, xyz_to=self.data.xyz_to)
             xyz_init = helmert_init.apply_to(self.data.xyz_from)
         else:
@@ -89,8 +89,8 @@ class AlignmentEstimator:
         logger.debug("Initial Helmert: %s \n", str(helmert_init))
 
         if (
-            self.settings.alignment_estimation_settings.time_shift_enabled
-            and not self.settings.alignment_estimation_settings.leverarm_enabled
+            self.settings.estimation_settings.time_shift_enabled
+            and not self.settings.estimation_settings.leverarm_enabled
         ):
             time_shift_init, _ = direct_timeshift(xyz_from=xyz_init, xyz_to=self.data.xyz_to, speed=self.data.speed)
         else:
@@ -98,9 +98,9 @@ class AlignmentEstimator:
 
         logger.debug("Initial time shift: %.3f", time_shift_init.value)
 
-        if self.settings.alignment_estimation_settings.leverarm_enabled:
+        if self.settings.estimation_settings.leverarm_enabled:
             leverarm_init, time_shift_init, _ = direct_leverarm(
-                speed=self.data.speed if self.settings.alignment_estimation_settings.time_shift_enabled else None,
+                speed=self.data.speed if self.settings.estimation_settings.time_shift_enabled else None,
                 xyz_from=xyz_init,
                 xyz_to=self.data.xyz_to,
                 rpy_body=self.data.rpy_from,
@@ -124,15 +124,15 @@ class AlignmentEstimator:
             lever_z=leverarm_init.z,
         )
 
-        alignparams.apply_settings(self.settings.alignment_estimation_settings)
-        logger.debug("Applied settings: %s \n", str(self.settings.alignment_estimation_settings))
+        alignparams.apply_settings(self.settings.estimation_settings)
+        logger.debug("Applied settings: %s \n", str(self.settings.estimation_settings))
         return alignparams
 
     def estimate_parameters(self) -> AlignmentParameters:
         """Handles the estimation of the parameters"""
 
         logger.info("Performing alignment...")
-        if self.settings.alignment_estimation_settings.all_lq_disabled:
+        if self.settings.estimation_settings.all_lq_disabled:
             logger.warning("Nothing to estimate since all parameters are disabled")
             return AlignmentParameters()
 
@@ -145,7 +145,7 @@ class AlignmentEstimator:
             self._estimate_parameters()
             self._global_test(variance_factor=self.variance_factor, redundancy=self.redundancy)
 
-            if not self.data.alignment_settings.alignment_stochastics.variance_estimation:
+            if not self.data.alignment_settings.stochastics.variance_estimation:
                 break
 
             var_fac_diff = abs(self.variance_factor - 1)
@@ -229,7 +229,7 @@ class AlignmentEstimator:
             a_design = self._get_design_matrix()
 
             # filter design matrix
-            a_design = a_design[:, self.settings.alignment_estimation_settings.lq_parameter_filter]
+            a_design = a_design[:, self.settings.estimation_settings.lq_parameter_filter]
             b_cond = self._get_condition_matrix()
 
             bbt = b_cond @ self.data.sigma_ll @ b_cond.T
@@ -271,7 +271,7 @@ class AlignmentEstimator:
 
     def _global_test(self, variance_factor: float, redundancy: int, description: str = "global") -> bool:
         tau = variance_factor * redundancy
-        quantile = chi2.ppf(1 - self.settings.alignment_stochastics.error_probability, redundancy)
+        quantile = chi2.ppf(1 - self.settings.stochastics.error_probability, redundancy)
 
         logger.info(
             "Stochastic test passed (%s): %s, quantile: %.3f, test value: %.3f, variance factor: %.3f, redundancy: %i",
@@ -512,16 +512,16 @@ class AlignmentEstimator:
         xyz_from_component = self._get_condition_xyz_from()
 
         rpy_body_component = (
-            self._get_condition_rpy_body() if self.settings.alignment_estimation_settings.leverarm_enabled else None
+            self._get_condition_rpy_body() if self.settings.estimation_settings.leverarm_enabled else None
         )
 
         speed_to_component = (
-            self._get_condition_speed_to() if self.settings.alignment_estimation_settings.time_shift_enabled else None
+            self._get_condition_speed_to() if self.settings.estimation_settings.time_shift_enabled else None
         )
 
         if (
-            self.settings.alignment_estimation_settings.leverarm_enabled
-            and not self.settings.alignment_estimation_settings.time_shift_enabled
+            self.settings.estimation_settings.leverarm_enabled
+            and not self.settings.estimation_settings.time_shift_enabled
             and rpy_body_component is not None
         ):
             return np.column_stack(
@@ -536,8 +536,8 @@ class AlignmentEstimator:
             )
 
         if (
-            self.settings.alignment_estimation_settings.time_shift_enabled
-            and not self.settings.alignment_estimation_settings.leverarm_enabled
+            self.settings.estimation_settings.time_shift_enabled
+            and not self.settings.estimation_settings.leverarm_enabled
             and speed_to_component is not None
         ):
             return np.column_stack(
@@ -552,8 +552,8 @@ class AlignmentEstimator:
             )
 
         if (
-            self.settings.alignment_estimation_settings.leverarm_enabled
-            and self.settings.alignment_estimation_settings.time_shift_enabled
+            self.settings.estimation_settings.leverarm_enabled
+            and self.settings.estimation_settings.time_shift_enabled
             and rpy_body_component is not None
             and speed_to_component is not None
         ):
@@ -778,7 +778,7 @@ def settings_str(alignment: AlignmentEstimator) -> str:
     return (
         f"\n _____________________________________________________________________\n"
         f"| ---------------------------- Alignment ---------------------------- |\n"
-        f"| Estimation of:           {alignment.settings.alignment_estimation_settings.short_mode_str:<42} |\n"
-        f"| Error probability [%]:   {alignment.settings.alignment_stochastics.error_probability*100:<42} |\n"
+        f"| Estimation of:           {alignment.settings.estimation_settings.short_mode_str:<42} |\n"
+        f"| Error probability [%]:   {alignment.settings.stochastics.error_probability*100:<42} |\n"
         f"|_____________________________________________________________________|\n"
     )

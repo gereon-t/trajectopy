@@ -214,6 +214,10 @@ class JSONViewer(QtWidgets.QMainWindow):
                 group_label = QtWidgets.QLabel(self.scroll_area_widget_contents)
                 group_label.setStyleSheet("color: #888888;")
 
+                if parent_name == "root":
+                    # make first level keys more prominent
+                    group_label.setStyleSheet("color: #888888; font-weight: bold; font-size: 14px;")
+
                 group_label.setObjectName(f"label-{parent_name}-{key}")
                 group_label.setText(_translate("MainWindow", format_key(key)))
                 self.form_layout.setWidget(self.form_item_cnt, QtWidgets.QFormLayout.ItemRole.LabelRole, group_label)
