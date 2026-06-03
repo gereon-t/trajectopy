@@ -1917,13 +1917,16 @@
 </tbody>
 </table>
 <h3 id="alignment-settings">Alignment Settings<a class="headerlink" href="#alignment-settings" title="Permanent link">&para;</a></h3>
-<h4 id="preprocessing-settings">Preprocessing Settings<a class="headerlink" href="#preprocessing-settings" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>alignment_enabled</code> (boolean): Enable or disable trajectory alignment. If disabled, no alignment will be performed and the trajectories will be compared as-is. Default value is <code>True</code>.</li>
+</ul>
+<h4 id="alignment-preprocessing-settings">Alignment Preprocessing Settings<a class="headerlink" href="#alignment-preprocessing-settings" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>min_speed</code> (float): Only poses with a speed above this threshold are considered for alignment (meters/second).</li>
 <li><code>time_start</code> (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
 <li><code>time_end</code> (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
 </ul>
-<h4 id="estimation-settings">Estimation Settings<a class="headerlink" href="#estimation-settings" title="Permanent link">&para;</a></h4>
+<h4 id="alignment-estimation-settings">Alignment Estimation Settings<a class="headerlink" href="#alignment-estimation-settings" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>translation_x</code> (boolean): Enable or disable x-translation of the similarity transformation.</li>
 <li><code>translation_y</code> (boolean): Enable or disable y-translation of the similarity transformation.</li>
@@ -1938,7 +1941,7 @@
 <li><code>leverarm_z</code> (boolean): Enable or disable estimation of lever arm in the Z-axis.</li>
 <li><code>sensor_rotation</code> (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.</li>
 </ul>
-<h4 id="stochastics-settings">Stochastics Settings<a class="headerlink" href="#stochastics-settings" title="Permanent link">&para;</a></h4>
+<h4 id="alignment-stochastics-settings">Alignment Stochastics Settings<a class="headerlink" href="#alignment-stochastics-settings" title="Permanent link">&para;</a></h4>
 <ul>
 <li><code>std_xy_from</code> (float): Standard deviation of XY source position components in meters.</li>
 <li><code>std_z_from</code> (float): Standard deviation of Z source position component in meters.</li>
@@ -1950,7 +1953,7 @@
 <li><code>error_probability</code> (float): Probability of error used for stochastic testing.</li>
 <li><code>variance_estimation</code> (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.</li>
 </ul>
-<h4 id="threshold-settings">Threshold Settings<a class="headerlink" href="#threshold-settings" title="Permanent link">&para;</a></h4>
+<h4 id="alignment-threshold-settings">Alignment Threshold Settings<a class="headerlink" href="#alignment-threshold-settings" title="Permanent link">&para;</a></h4>
 <p>Usually, these settings can be left at their default values.</p>
 <ul>
 <li><code>metric_threshold</code> (float): Iteration threshold for the least squares adjustment regarding the metric parameters.</li>
@@ -2074,7 +2077,7 @@
 <h3 id="mapbox-settings">Mapbox Settings<a class="headerlink" href="#mapbox-settings" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>scatter_plot_on_map</code> (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.</li>
-<li><code>scatter_mapbox_style</code> (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".</li>
+<li><code>scatter_mapbox_style</code> (str): The style of the map. For some styles, a Mapbox token is required. Default value is "carto-positron".</li>
 <li><code>scatter_mapbox_zoom</code> (int): The zoom level of the map. Default value is 15.</li>
 <li><code>scatter_mapbox_token</code> (str): The Mapbox token. Default value is "".</li>
 </ul>
@@ -2124,7 +2127,7 @@
 <li>The trajectory must have valid EPSG information.</li>
 <li>The plotting backend must be set to <code>plotly</code>.</li>
 <li>The <code>scatter_plot_on_map</code> option must be enabled.</li>
-<li>For <code>scatter_mapbox_style</code> other than <code>open-street-map</code>, a Mapbox access token (<code>scatter_mapbox_token</code>) must be provided. The mapbox token can be obtained after free registration at <a href="https://www.mapbox.com/">Mapbox</a>.</li>
+<li>For <code>scatter_mapbox_style</code> other than <code>carto-positron</code>, a Mapbox access token (<code>scatter_mapbox_token</code>) must be provided. The mapbox token can be obtained after free registration at <a href="https://www.mapbox.com/">Mapbox</a>.</li>
 </ul>
 <h2 id="matplotlib-plotting-settings-mplplotsettings">Matplotlib Plotting Settings (MPLPlotSettings)<a class="headerlink" href="#matplotlib-plotting-settings-mplplotsettings" title="Permanent link">&para;</a></h2>
 <ul>
