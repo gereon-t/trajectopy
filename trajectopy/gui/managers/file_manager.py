@@ -61,9 +61,9 @@ class FileManager(QObject):
 
     @show_progress
     @Slot(FileRequest)
-    def handle_request(self, request: FileRequest) -> None:
+    def handle_request(self, request: FileRequest):
         """Logic for handling a request."""
-        self._request_executor.submit(generic_request_handler, self, request, True).result()
+        return self._request_executor.submit(generic_request_handler, self, request, True)
 
     def shutdown_executor(self) -> None:
         """Best-effort cleanup for the persistent Python worker thread."""

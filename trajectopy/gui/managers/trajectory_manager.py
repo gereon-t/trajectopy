@@ -196,8 +196,9 @@ class TrajectoryManager(QObject):
             None.
         """
         self.request = request
-        self._request_executor.submit(generic_request_handler, self, request, False).result()
-        self.update_view.emit()
+        future = self._request_executor.submit(generic_request_handler, self, request, False)
+        future.add_done_callback(lambda ft: self.update_view.emit())
+        return future
 
     def shutdown_executor(self) -> None:
         """Best-effort cleanup for the persistent Python worker thread."""

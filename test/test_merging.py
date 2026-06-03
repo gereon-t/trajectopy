@@ -59,7 +59,8 @@ class TestMerging(unittest.TestCase):
         self.assertIsInstance(merged, Trajectory)
 
         # Verify length is sum of input trajectories
-        expected_length = len(self.traj1) + len(self.traj2)
+        unique_timestamps = np.unique(np.concatenate([self.traj1.timestamps, self.traj2.timestamps]))
+        expected_length = len(unique_timestamps)
         self.assertEqual(len(merged), expected_length)
 
         # Verify name
@@ -81,7 +82,10 @@ class TestMerging(unittest.TestCase):
         merged = merge_trajectories([self.traj1, self.traj2, self.traj3])
 
         # Verify all trajectories are included
-        expected_length = len(self.traj1) + len(self.traj2) + len(self.traj3)
+        unique_timestamps = np.unique(
+            np.concatenate([self.traj1.timestamps, self.traj2.timestamps, self.traj3.timestamps])
+        )
+        expected_length = len(unique_timestamps)
         self.assertEqual(len(merged), expected_length)
 
         # Timestamps should still be sorted
@@ -104,9 +108,11 @@ class TestMerging(unittest.TestCase):
 
         merged = merge_trajectories([traj1_no_rot, traj2_no_rot])
 
+        unique_timestamps = np.unique(np.concatenate([traj1_no_rot.timestamps, traj2_no_rot.timestamps]))
+
         # Should work without rotations (creates identity rotations)
         self.assertIsNotNone(merged)
-        self.assertEqual(len(merged), len(traj1_no_rot) + len(traj2_no_rot))
+        self.assertEqual(len(merged), len(unique_timestamps))
 
     def test_merge_trajectories_preserves_epsg(self):
         """Test that EPSG code is preserved in merging."""

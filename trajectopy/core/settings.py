@@ -980,7 +980,7 @@ class ReportSettings(Settings):
         scatter_smooth: Smooth scatter plot color data. Defaults to False.
         scatter_smooth_window: Window size for scatter smoothing. Defaults to 5.
         scatter_plot_on_map: Plot trajectories on mapbox map (requires valid EPSG). Defaults to False.
-        scatter_mapbox_style: Mapbox style (some require token). Defaults to "open-street-map".
+        scatter_mapbox_style: Mapbox style (some require token). Defaults to "carto-positron".
         scatter_mapbox_zoom: Mapbox zoom level. Defaults to 15.
         scatter_mapbox_token: Mapbox access token (optional). Defaults to "".
         pos_x_name: Label for X position coordinate. Defaults to "x".
@@ -1026,7 +1026,7 @@ class ReportSettings(Settings):
     scatter_smooth_window: int = 5
 
     scatter_plot_on_map: bool = False
-    scatter_mapbox_style: str = "open-street-map"
+    scatter_mapbox_style: str = "carto-positron"
     scatter_mapbox_zoom: int = 15
     scatter_mapbox_token: str = ""
 

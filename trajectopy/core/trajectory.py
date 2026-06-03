@@ -73,6 +73,20 @@ class Trajectory:
 
         self.timestamps = np.arange(0, len(positions)) if timestamps is None else timestamps
 
+        # ensure strictly increasing timestamps
+        unique_timestamps, unique_indices = np.unique(self.timestamps, return_index=True)
+
+        if len(unique_timestamps) != len(self.timestamps):
+            logger.warning(
+                "Timestamps contain duplicates. Only the first occurrence of each unique timestamp will be kept. "
+                "This may lead to loss of data if duplicates are present."
+            )
+            self.timestamps = unique_timestamps
+            self.positions.xyz = self.positions.xyz[unique_indices, :]
+
+            if self.rotations is not None:
+                self.rotations = Rotations.from_quat(self.rotations.as_quat()[unique_indices, :])
+
         if velocity_xyz is not None and len(velocity_xyz) == len(self.positions):
             self._velocity_xyz = velocity_xyz
         else:

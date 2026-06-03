@@ -187,7 +187,7 @@ The ATE can be split into along-, horizontal-cross- and vertical-cross-track dir
 ### Mapbox Settings
 
 - `scatter_plot_on_map` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
-- `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "open-street-map".
+- `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "carto-positron".
 - `scatter_mapbox_zoom` (int): The zoom level of the map. Default value is 15.
 - `scatter_mapbox_token` (str): The Mapbox token. Default value is "".
 
@@ -239,7 +239,7 @@ To plot trajectories on a map, several requirements must be met:
 - The trajectory must have valid EPSG information.
 - The plotting backend must be set to `plotly`.
 - The `scatter_plot_on_map` option must be enabled.
-- For `scatter_mapbox_style` other than `open-street-map`, a Mapbox access token (`scatter_mapbox_token`) must be provided. The mapbox token can be obtained after free registration at [Mapbox](https://www.mapbox.com/).
+- For `scatter_mapbox_style` other than `carto-positron`, a Mapbox access token (`scatter_mapbox_token`) must be provided. The mapbox token can be obtained after free registration at [Mapbox](https://www.mapbox.com/).
 
 ## Matplotlib Plotting Settings (MPLPlotSettings)
 
