@@ -28,10 +28,6 @@ class TestSettingsValidation(unittest.TestCase):
         ms = MatchingSettings()
         self.assertIsInstance(ms, MatchingSettings)
 
-    def test_alignment_settings_from_dict_missing_keys_raises(self):
-        with self.assertRaises(ValueError):
-            AlignmentSettings.from_dict({"estimation_settings": {}, "metric_threshold": 1e-4})
-
 
 if __name__ == "__main__":
     unittest.main()

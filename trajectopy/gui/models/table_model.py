@@ -116,7 +116,8 @@ class RequestTableModel(BaseTableModel):
         desired_order = self.request.index_list
         present_ids = [item.entry_id for item in self.items]
         if any(id not in present_ids for id in desired_order):
-            raise ValueError("Desired order contains ids that are not present in the model.")
+            logger.error("Desired order contains ids that are not present in the model. Sorting aborted.")
+            return
 
         self.items = [entry for id in desired_order if (entry := self.get(id)) is not None]
         self.layoutChanged.emit()

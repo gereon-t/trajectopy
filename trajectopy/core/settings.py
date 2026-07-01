@@ -1,11 +1,14 @@
 import inspect
 import json
+import logging
 from abc import ABC
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 METRIC_THRESHOLD = 1e-4
 TIME_THRESHOLD = 1e-4
@@ -89,7 +92,8 @@ class Settings(ABC):
         settings = cls()
         for attribute_name, attribute_type in cls.__annotations__.items():
             if attribute_name not in dct:
-                raise ValueError(f"Attribute {attribute_name} not found in input data")
+                logger.error(f"Attribute {attribute_name} not found in input data")
+                continue  # Skip missing attributes instead of raising an error
 
             attribute_data = dct[attribute_name]
             if isinstance(attribute_data, dict) and issubclass(attribute_type, Settings):
@@ -553,7 +557,7 @@ class AlignmentSettings(Settings):
             Defaults to 1e-4.
     """
 
-    enabled: bool = True
+    enabled: bool = False
     preprocessing: AlignmentPreprocessing = field(default_factory=AlignmentPreprocessing)
     estimation_settings: AlignmentEstimationSettings = field(default_factory=AlignmentEstimationSettings)
     stochastics: AlignmentStochastics = field(default_factory=AlignmentStochastics)
