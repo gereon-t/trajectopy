@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Pose:
     timestamp: float
+    path_length: float
     position: tuple[float, float, float]
     rpy: tuple[float, float, float]
     velocity: tuple[float, float, float]
@@ -210,9 +211,10 @@ class Trajectory:
             Pose: A Pose instance for each timestamp.
         """
         rpy = self.rpy if self.has_orientation else np.zeros((len(self), 3))
-        for t, pos, rot, velocity in zip(self.timestamps, self.xyz, rpy, self.velocity_xyz):
+        for t, l, pos, rot, velocity in zip(self.timestamps, self.path_lengths, self.xyz, rpy, self.velocity_xyz):
             yield Pose(
                 timestamp=t,
+                path_length=l,
                 position=(pos[0], pos[1], pos[2]),
                 rpy=(rot[0], rot[1], rot[2]),
                 velocity=velocity,
