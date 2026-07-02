@@ -2,6 +2,7 @@ import copy
 import io
 import logging
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass
 from datetime import datetime
 
 import numpy as np
@@ -15,6 +16,15 @@ from trajectopy.utils.common import common_time_span, gradient_3d, lengths_from_
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Pose:
+    timestamp: float
+    position: tuple[float, float, float]
+    rpy: tuple[float, float, float]
+    velocity: tuple[float, float, float]
+    epsg: int = 0
 
 
 class Trajectory:
@@ -191,6 +201,22 @@ class Trajectory:
     def __len__(self) -> int:
         """Returns the number of poses in the trajectory."""
         return len(self.positions.xyz)
+
+    def __iter__(self):
+        """
+        Iterates over the trajectory, yielding a pose for each timestamp.
+
+        Yields:
+            Pose: A Pose instance for each timestamp.
+        """
+        for t, pos, rot, velocity in zip(self.timestamps, self.xyz, self.rpy, self.velocity_xyz):
+            yield Pose(
+                timestamp=t,
+                position=(pos[0], pos[1], pos[2]),
+                rpy=(rot[0], rot[1], rot[2]),
+                velocity=velocity,
+                epsg=self.positions.epsg,
+            )
 
     def __eq__(self, other: "Trajectory") -> bool:
         """

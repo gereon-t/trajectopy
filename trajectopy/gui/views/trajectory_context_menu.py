@@ -143,6 +143,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         )
         self.edit_context_menu.addAction(edit_epsg_action)
 
+        epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
+        epsg_to_ref_action.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.EPSG_TO_REF,
+                    selection=self.get_selection(),
+                )
+            )
+        )
+        self.process_context_menu.addAction(epsg_to_ref_action)
+
         copy_action = QAction("Copy", self)
         copy_action.triggered.connect(
             lambda: self.trajectory_model_request.emit(
@@ -322,17 +333,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
         if self.get_selection().reference_entry.trajectory.positions.local_transformer is None:
             return
-
-        epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
-        epsg_to_ref_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.EPSG_TO_REF,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.process_context_menu.addAction(epsg_to_ref_action)
 
     def other_context(self) -> QtWidgets.QMenu:
         sort_action = QAction("Sort Spatially", self)
