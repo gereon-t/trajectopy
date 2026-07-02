@@ -209,7 +209,8 @@ class Trajectory:
         Yields:
             Pose: A Pose instance for each timestamp.
         """
-        for t, pos, rot, velocity in zip(self.timestamps, self.xyz, self.rpy, self.velocity_xyz):
+        rpy = self.rpy if self.has_orientation else np.zeros((len(self), 3))
+        for t, pos, rot, velocity in zip(self.timestamps, self.xyz, rpy, self.velocity_xyz):
             yield Pose(
                 timestamp=t,
                 position=(pos[0], pos[1], pos[2]),
