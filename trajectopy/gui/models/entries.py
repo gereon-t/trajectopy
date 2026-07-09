@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
+from pyproj import Transformer
 
 from trajectopy.core.settings import AlignmentEstimationSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
@@ -111,9 +112,15 @@ class TrajectoryEntry(Entry):
         self.trajectory.to_file(filename=filename, mode="a")
 
     @classmethod
-    def from_file(cls, trajectory_filename: Path, settings_filename: Path) -> "TrajectoryEntry":
+    def from_file(
+        cls, trajectory_filename: Path, settings_filename: Path, local_transformer_filename: Path
+    ) -> "TrajectoryEntry":
         """Creates a new TrajectoryEntry from a trajectory file and a settings file."""
         header_data = HeaderData.from_file(str(trajectory_filename))
+
+        if not header_data.id and trajectory_filename.stem.split("_"):
+            header_data.id = trajectory_filename.stem.split("_")[1]
+
         trajectory = Trajectory.from_file(str(trajectory_filename))
         if settings_filename.is_file():
             logger.info("Using existing settings file: %s", settings_filename)
@@ -124,11 +131,14 @@ class TrajectoryEntry(Entry):
             )
             traj_settings = ProcessingSettings()
 
+        if local_transformer_filename.is_file():
+            logger.info("Using existing local transformer file: %s", local_transformer_filename)
+            trajectory.positions.import_local_transformer(str(local_transformer_filename))
+
         if trajectory is None:
             raise ValueError(
                 "This file does not seem to have correct trajectory information (Time, X, Y, Z, qx, qy, qz, qw)!"
             )
-
         traj_entry = TrajectoryEntry(
             full_filename=str(trajectory_filename),
             trajectory=trajectory,
@@ -234,6 +244,9 @@ class ResultEntry(Entry, ABC):
             ValueError: If the result file type is not supported.
         """
         header_data = HeaderData.from_file(filename)
+
+        if not header_data.id and Path(filename).stem.split("_"):
+            header_data.id = Path(filename).stem.split("_")[1]
 
         if header_data.type == "ATE Result".lower():
             logger.info("Detected Absolute Deviations file.")

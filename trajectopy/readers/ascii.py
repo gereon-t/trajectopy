@@ -85,6 +85,10 @@ class HeaderData:
     def id(self) -> str:
         return str(self.data.get("id", ""))
 
+    @id.setter
+    def id(self, value: str) -> None:
+        self.data["id"] = value
+
     @property
     def epsg(self) -> int:
         return int(self.data.get("epsg", 0))

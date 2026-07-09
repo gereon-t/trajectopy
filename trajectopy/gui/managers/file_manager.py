@@ -85,9 +85,13 @@ class FileManager(QObject):
 
     def handle_ascii(self, file: str) -> None:
         """Reads an ASCII trajectory file and emits a request to add it to the model."""
-        trajectory_file, settings_file = self._get_traj_filenames(file)
+        trajectory_file, settings_file, local_transformer_file = self._get_traj_filenames(file)
 
-        traj_entry = TrajectoryEntry.from_file(trajectory_filename=trajectory_file, settings_filename=settings_file)
+        traj_entry = TrajectoryEntry.from_file(
+            trajectory_filename=trajectory_file,
+            settings_filename=settings_file,
+            local_transformer_filename=local_transformer_file,
+        )
 
         self.trajectory_model_request.emit(
             TrajectoryModelRequest(
@@ -108,12 +112,13 @@ class FileManager(QObject):
         )
 
     @staticmethod
-    def _get_traj_filenames(file: str) -> tuple[Path, Path]:
+    def _get_traj_filenames(file: str) -> tuple[Path, Path, Path]:
         file_path = Path(file)
         file_name = file_path.stem
         file_directory = file_path.parent
         settings_file = file_directory / f"{file_name}.json"
-        return Path(file), Path(settings_file)
+        local_transformer_file = file_directory / f"{file_name}_local_transformer.txt"
+        return Path(file), Path(settings_file), Path(local_transformer_file)
 
     def write_trajectory(self, request: FileRequest) -> None:
         trajectory_entry = request.trajectory_selection.entries[0]

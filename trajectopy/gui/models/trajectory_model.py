@@ -68,6 +68,9 @@ class TrajectoryTableModel(RequestTableModel):
                 )
             )
             item.settings.to_file(settings_filename)
+            item.trajectory.positions.export_local_transformer(
+                os.path.join(self.request.file_path, f"{item.trajectory.name}_{item.entry_id}_local_transformer.txt")
+            )
 
         self.write_trajectory_order()
 

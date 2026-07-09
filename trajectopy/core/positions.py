@@ -125,6 +125,25 @@ class Positions:
 
         self.local_transformer = Transformer.from_pipeline(proj_pipeline=self.pipeline_str)
 
+    def export_local_transformer(self, filename: str) -> None:
+        """Exports the local transformer to a file.
+
+        Args:
+            filename (str): Path to the output file.
+        """
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(self.pipeline_str)
+
+    def import_local_transformer(self, filename: str) -> None:
+        """Imports the local transformer from a file.
+
+        Args:
+            filename (str): Path to the input file.
+        """
+        with open(filename, encoding="utf-8") as f:
+            self.pipeline_str = f.read()
+            self.local_transformer = Transformer.from_pipeline(proj_pipeline=self.pipeline_str)
+
     def __str__(self) -> str:
         return f"EPSG: {self.epsg}\nCoordinates:\n{str(self.xyz)}"
 
