@@ -3,6 +3,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from io import StringIO
+from uuid import UUID
 
 import numpy as np
 import pandas as pd
@@ -87,6 +88,11 @@ class HeaderData:
 
     @id.setter
     def id(self, value: str) -> None:
+        try:
+            UUID(value, version=4)
+        except ValueError:
+            logger.debug("Not setting id to '%s' since it is not a valid UUID4.", value)
+            return False
         self.data["id"] = value
 
     @property

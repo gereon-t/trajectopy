@@ -166,14 +166,7 @@ class PlaybackWindow(QtWidgets.QDialog):
         for i in range(3):
             direction = [0.0, 0.0, 0.0]
             direction[i] = 1.0
-            arrow = pv.Arrow(
-                start=(0, 0, 0),
-                direction=direction,
-                scale=self._axes_scale,
-                tip_length=0.2,
-                tip_radius=0.07,
-                shaft_radius=0.03,
-            )
+            arrow = pv.Arrow(start=(0, 0, 0), direction=direction)
             templates.append((arrow.points.copy(), arrow.faces.copy()))
         return templates
 
@@ -259,13 +252,7 @@ class PlaybackWindow(QtWidgets.QDialog):
 
             # Current position marker - solid sphere for guaranteed visibility
             # (points get occluded by lines at the same depth; a sphere mesh does not)
-            marker_radius = self._axes_scale * 0.05
-            marker_sphere = pv.Sphere(
-                radius=marker_radius,
-                center=td.xyz[0].tolist(),
-                theta_resolution=12,
-                phi_resolution=12,
-            )
+            marker_sphere = pv.Sphere(radius=0.1, center=td.xyz[0].tolist())
             td.marker_mesh = marker_sphere
             td._marker_pos = td.xyz[0].copy()
             td.marker_actor = pl.add_mesh(marker_sphere, color="#ffffff", lighting=False, render=False)

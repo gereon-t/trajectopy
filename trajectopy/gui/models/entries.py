@@ -118,7 +118,7 @@ class TrajectoryEntry(Entry):
         """Creates a new TrajectoryEntry from a trajectory file and a settings file."""
         header_data = HeaderData.from_file(str(trajectory_filename))
 
-        if not header_data.id and trajectory_filename.stem.split("_"):
+        if not header_data.id and len(trajectory_filename.stem.split("_")) > 1:
             header_data.id = trajectory_filename.stem.split("_")[1]
 
         trajectory = Trajectory.from_file(str(trajectory_filename))
@@ -245,7 +245,7 @@ class ResultEntry(Entry, ABC):
         """
         header_data = HeaderData.from_file(filename)
 
-        if not header_data.id and Path(filename).stem.split("_"):
+        if not header_data.id and len(Path(filename).stem.split("_")) > 1:
             header_data.id = Path(filename).stem.split("_")[1]
 
         if header_data.type == "ATE Result".lower():
