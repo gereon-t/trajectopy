@@ -7,12 +7,18 @@ from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
     PlotRequest,
+    PlotRequestType,
     ResultModelRequest,
     ResultModelRequestType,
     UIRequest,
     UIRequestType,
 )
-from trajectopy.gui.models.entries import ResultEntry
+from trajectopy.gui.models.entries import (
+    AbsoluteDeviationEntry,
+    AlignmentEntry,
+    RelativeDeviationEntry,
+    ResultEntry,
+)
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.selection import ResultSelection
 from trajectopy.gui.utils import handle_drag_enter, handle_drag_move
@@ -126,6 +132,32 @@ class ResultTableView(QtWidgets.QTableView):
             )
         elif e.key() == Qt.Key.Key_P:
             self.ui_request.emit(UIRequest(type=UIRequestType.RES_PROPERTIES, result_selection=self.selection))
+        elif e.key() == Qt.Key.Key_V:
+            if len(self.selected_entries) == 1 and isinstance(
+                self.selected_entries[0], (AbsoluteDeviationEntry, RelativeDeviationEntry)
+            ):
+                self.plot_request.emit(
+                    PlotRequest(
+                        type=PlotRequestType.SINGLE_DEVIATIONS,
+                        result_selection=self.selection,
+                    )
+                )
+            if len(self.selected_entries) == 1 and isinstance(self.selected_entries[0], AlignmentEntry):
+                self.plot_request.emit(
+                    PlotRequest(
+                        type=PlotRequestType.ALIGNMENT,
+                        result_selection=self.selection,
+                    )
+                )
+            if len(self.selected_entries) > 1 and all(
+                isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in self.selected_entries
+            ):
+                self.plot_request.emit(
+                    PlotRequest(
+                        type=PlotRequestType.MULTI_DEVIATIONS,
+                        result_selection=self.selection,
+                    )
+                )
         elif len(self.selected_entries) > 1:
             return
         elif e.key() in (Qt.Key.Key_U, Qt.Key.Key_F2):

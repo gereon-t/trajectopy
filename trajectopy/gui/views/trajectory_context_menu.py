@@ -102,6 +102,17 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.addAction(reference_action)
         self.addAction(settings_action)
 
+        export_action = QAction("Export", self)
+        export_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.EXPORT_TRAJ,
+                    trajectory_selection=self.get_selection(),
+                )
+            )
+        )
+        self.addAction(export_action)
+
     def multi_context(self) -> None:
         """These options are shown for single and multiple trajectories"""
         self.view_context()
@@ -119,6 +130,16 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
         if self.get_selection().reference_is_set:
             self.addSeparator()
+            epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
+            epsg_to_ref_action.triggered.connect(
+                lambda: self.trajectory_manager_request.emit(
+                    TrajectoryManagerRequest(
+                        type=TrajectoryManagerRequestType.EPSG_TO_REF,
+                        selection=self.get_selection(),
+                    )
+                )
+            )
+            self.addAction(epsg_to_ref_action)
             self.evaluate_context()
             self.addAction(self.match_action())
             self.addMenu(self.align_context())
@@ -142,17 +163,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.edit_context_menu.addAction(edit_epsg_action)
-
-        epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
-        epsg_to_ref_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.EPSG_TO_REF,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.process_context_menu.addAction(epsg_to_ref_action)
 
         copy_action = QAction("Copy", self)
         copy_action.triggered.connect(
@@ -232,17 +242,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.edit_context_menu.addAction(rename_action)
-
-        export_action = QAction("Export", self)
-        export_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EXPORT_TRAJ,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.edit_context_menu.addAction(export_action)
 
     def view_context(self) -> None:
         """View Sub-Context Menu"""
