@@ -68,7 +68,8 @@ class TrajectoryManagerRequestType(Enum):
     EPSG_TO_REF = auto()
     MERGE = auto()
     MATCH = auto()
-    ATE = auto()
+    ATE_WITH_ALIGNMENT = auto()
+    ATE_NO_ALIGNMENT = auto()
     RPE = auto()
     INTERPOLATE_TO_GRID = auto()
 

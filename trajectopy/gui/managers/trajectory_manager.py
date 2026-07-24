@@ -148,8 +148,11 @@ class TrajectoryManager(QObject):
             TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
                 operation=self.operation_match, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.ATE: lambda: self.handle_trajectory_operation(
-                operation=self.operation_ate, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT: lambda: self.handle_trajectory_operation(
+                operation=self.operation_ate_with_alignment, inplace=False, apply_to_reference=False
+            ),
+            TrajectoryManagerRequestType.ATE_NO_ALIGNMENT: lambda: self.handle_trajectory_operation(
+                operation=self.operation_ate_without_alignment, inplace=False, apply_to_reference=False
             ),
             TrajectoryManagerRequestType.RPE: lambda: self.handle_trajectory_operation(
                 operation=self.operation_rpe, inplace=False, apply_to_reference=False
@@ -739,7 +742,7 @@ class TrajectoryManager(QObject):
         )
 
     @staticmethod
-    def operation_ate(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
+    def operation_ate_with_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
         """
         Computes the absolute trajectory error (ATE) by aligning the selected
         trajectory to the reference trajectory and computing the pose differences.
@@ -758,13 +761,35 @@ class TrajectoryManager(QObject):
             other=reference_entry.trajectory,
             processing_settings=entry_pair.entry.settings,
             return_alignment=True,
-            align=entry_pair.entry.settings.alignment.enabled,
+            align=True,
         )
 
-        if not entry_pair.entry.settings.alignment.enabled:
-            return (AbsoluteDeviationEntry(deviations=ate_result),)
-
         return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
+
+    @staticmethod
+    def operation_ate_without_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
+        """
+        Computes the absolute trajectory error (ATE) by aligning the selected
+        trajectory to the reference trajectory and computing the pose differences.
+
+        Args:
+            entry_pair (TrajectoryEntryPair): The pair of trajectories to compare.
+
+        Returns:
+            ResultEntry: The result of the comparison and the alignment information.
+        """
+        if (reference_entry := entry_pair.reference_entry) is None:
+            raise ValueError("No reference trajectory selected.")
+
+        ate_result = evaluation.ate(
+            trajectory=entry_pair.entry.trajectory,
+            other=reference_entry.trajectory,
+            processing_settings=entry_pair.entry.settings,
+            return_alignment=False,
+            align=False,
+        )
+
+        return (AbsoluteDeviationEntry(deviations=ate_result),)
 
     @staticmethod
     def operation_rpe(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:

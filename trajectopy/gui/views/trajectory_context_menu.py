@@ -413,11 +413,21 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
         self.addMenu(self.evaluate_context_menu)
         self.evaluate_context_menu.setEnabled(self.get_selection().reference_is_set)
 
-        ate = QAction("ATE", self)
-        ate.triggered.connect(
+        ate_with_alignment = QAction("ATE (with alignment)", self)
+        ate_with_alignment.triggered.connect(
             lambda: self.trajectory_manager_request.emit(
                 TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ATE,
+                    type=TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT,
+                    selection=self.get_selection(),
+                )
+            ),
+        )
+
+        ate_without_alignment = QAction("ATE (without alignment)", self)
+        ate_without_alignment.triggered.connect(
+            lambda: self.trajectory_manager_request.emit(
+                TrajectoryManagerRequest(
+                    type=TrajectoryManagerRequestType.ATE_NO_ALIGNMENT,
                     selection=self.get_selection(),
                 )
             ),
@@ -433,5 +443,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
-        self.evaluate_context_menu.addAction(ate)
+        self.evaluate_context_menu.addAction(ate_with_alignment)
+        self.evaluate_context_menu.addAction(ate_without_alignment)
         self.evaluate_context_menu.addAction(rpe_action)

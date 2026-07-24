@@ -547,7 +547,6 @@ class AlignmentSettings(Settings):
     Combines preprocessing, estimation, and stochastic settings for trajectory alignment.
 
     Attributes:
-        enabled: Whether alignment is enabled.
         preprocessing: Preprocessing filter settings
         estimation_settings: Parameter estimation settings
         stochastics: Stochastic model (observation uncertainty) settings
@@ -557,7 +556,6 @@ class AlignmentSettings(Settings):
             Defaults to 1e-4.
     """
 
-    enabled: bool = False
     preprocessing: AlignmentPreprocessing = field(default_factory=AlignmentPreprocessing)
     estimation_settings: AlignmentEstimationSettings = field(default_factory=AlignmentEstimationSettings)
     stochastics: AlignmentStochastics = field(default_factory=AlignmentStochastics)
