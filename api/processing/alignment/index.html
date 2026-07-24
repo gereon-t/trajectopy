@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/icon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1673,7 +1673,7 @@
 
 
 
-  <div class="doc doc-children">
+<div class="doc doc-children">
 
 
 
@@ -1692,7 +1692,10 @@
 
 
 <a href="#trajectopy.processing.alignment.estimate_alignment" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">estimate_alignment</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">alignment_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">estimate_alignment</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">alignment_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentSettings
 
 
   
@@ -1702,7 +1705,8 @@
 
   
       dataclass
-   (trajectopy.core.settings.AlignmentSettings)" href="../../core/settings/#trajectopy.core.settings.AlignmentSettings">AlignmentSettings</a></span><span class="p">(),</span> <span class="n">matching_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MatchingSettings
+   (trajectopy.core.settings.AlignmentSettings)" href="../../core/settings/#trajectopy.core.settings.AlignmentSettings">AlignmentSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">matching_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MatchingSettings
 
 
   
@@ -1712,7 +1716,8 @@
 
   
       dataclass
-   (trajectopy.core.settings.MatchingSettings)" href="../../core/settings/#trajectopy.core.settings.MatchingSettings">MatchingSettings</a></span><span class="p">())</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
+   (trajectopy.core.settings.MatchingSettings)" href="../../core/settings/#trajectopy.core.settings.MatchingSettings">MatchingSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
 
 
   
@@ -1924,12 +1929,16 @@ This function only estimates the alignment parameters, it does not apply them to
 
 
 <a href="#trajectopy.processing.alignment.apply_alignment" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">apply_alignment</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">alignment_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">apply_alignment</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">alignment_result</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentResult
 
 
   
       dataclass
-   (trajectopy.results.alignment_result.AlignmentResult)" href="../../results/alignment_result/#trajectopy.results.alignment_result.AlignmentResult">AlignmentResult</a></span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
+   (trajectopy.results.alignment_result.AlignmentResult)" href="../../results/alignment_result/#trajectopy.results.alignment_result.AlignmentResult">AlignmentResult</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2164,7 +2173,11 @@ applied to arbitrary trajectories.</p>
 
 
 <a href="#trajectopy.processing.alignment.adopt_first_pose" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_pose</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_pose</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2260,7 +2273,11 @@ applied to arbitrary trajectories.</p>
 
 
 <a href="#trajectopy.processing.alignment.adopt_first_position" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_position</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_position</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2356,7 +2373,11 @@ applied to arbitrary trajectories.</p>
 
 
 <a href="#trajectopy.processing.alignment.adopt_first_orientation" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_orientation</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">adopt_first_orientation</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2460,7 +2481,10 @@ applied to arbitrary trajectories.</p>
 
 
 <a href="#trajectopy.processing.alignment.align" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">align</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span> <span class="n">alignment_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentSettings
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">align</span><span class="p">(</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">trajectory</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">other</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">alignment_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="AlignmentSettings
 
 
   
@@ -2470,7 +2494,8 @@ applied to arbitrary trajectories.</p>
 
   
       dataclass
-   (trajectopy.core.settings.AlignmentSettings)" href="../../core/settings/#trajectopy.core.settings.AlignmentSettings">AlignmentSettings</a></span><span class="p">(),</span> <span class="n">matching_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MatchingSettings
+   (trajectopy.core.settings.AlignmentSettings)" href="../../core/settings/#trajectopy.core.settings.AlignmentSettings">AlignmentSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">matching_settings</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="MatchingSettings
 
 
   
@@ -2480,7 +2505,9 @@ applied to arbitrary trajectories.</p>
 
   
       dataclass
-   (trajectopy.core.settings.MatchingSettings)" href="../../core/settings/#trajectopy.core.settings.MatchingSettings">MatchingSettings</a></span><span class="p">(),</span> <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
+   (trajectopy.core.settings.MatchingSettings)" href="../../core/settings/#trajectopy.core.settings.MatchingSettings">MatchingSettings</a></span><span class="p">(),</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">inplace</span><span class="p">:</span> <span class="n"><span title="bool">bool</span></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="Trajectory (trajectopy.core.trajectory.Trajectory)" href="../../core/trajectory/#trajectopy.core.trajectory.Trajectory">Trajectory</a></span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2767,10 +2794,10 @@ Defaults to MatchingSettings().</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="../../../javascripts/mathjax.js"></script>
       
