@@ -12,7 +12,7 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.exceptions import TrajectoryError
 from trajectopy.readers import ascii
-from trajectopy.utils.common import common_time_span, gradient_3d, lengths_from_xyz
+from trajectopy.utils.common import common_span, gradient_3d, lengths_from_xyz
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
 
 logger = logging.getLogger(__name__)
@@ -465,13 +465,13 @@ class Trajectory:
 
         return self.time_start <= other.time_end and self.time_end >= other.time_start
 
-    def crop(self, t_start: float, t_end: float, inverse: bool = False, inplace: bool = True) -> "Trajectory":
+    def crop(self, index_start: float, index_end: float, inverse: bool = False, inplace: bool = True) -> "Trajectory":
         """
         Crops (or cuts) the trajectory based on a time window.
 
         Args:
-            t_start (float): Start timestamp of the window.
-            t_end (float): End timestamp of the window.
+            index_start (float): Start index of the window.
+            index_end (float): End index of the window.
             inverse (bool, optional): If True, removes data *inside* the window (cutting).
                                       If False, keeps data *inside* the window (cropping). Defaults to False.
             inplace (bool, optional): If True, modifies self. If False, returns a new instance. Defaults to True.
@@ -479,15 +479,15 @@ class Trajectory:
         Returns:
             Trajectory: The modified or new trajectory instance.
         """
-        # filter to t_start and t_end
+        # filter to index_start and index_end
         if inverse:
-            filt = [not t_start <= tstamps <= t_end for tstamps in self.timestamps]
+            filt = [not index_start <= idx <= index_end for idx in self.index]
         else:
-            filt = [t_start <= tstamps <= t_end for tstamps in self.timestamps]
+            filt = [index_start <= idx <= index_end for idx in self.index]
 
         return self.mask(mask=filt, inplace=inplace)
 
-    def intersect(self, timestamps: np.ndarray, max_gap_size: float = 10.0, inplace: bool = True) -> "Trajectory":
+    def intersect(self, index: np.ndarray, max_gap_size: float = 10.0, inplace: bool = True) -> "Trajectory":
         """
         Filters the trajectory to overlap with a reference timestamp vector.
 
@@ -496,26 +496,26 @@ class Trajectory:
         or exist within valid gaps defined by `max_gap_size`.
 
         Args:
-            timestamps (np.ndarray): The reference timestamps to intersect with.
-            max_gap_size (float, optional): The maximum allowed time gap (in seconds) between
-                                            reference timestamps to include trajectory points. Defaults to 10.0.
+            index (np.ndarray): The reference indices to intersect with.
+            max_gap_size (float, optional): The maximum allowed time gap (in seconds or meters) between
+                                            reference indices to include trajectory points. Defaults to 10.0.
             inplace (bool, optional): If True, modifies self. Defaults to True.
 
         Raises:
-            ValueError: If the time spans do not overlap.
+            ValueError: If the index spans do not overlap.
 
         Returns:
             Trajectory: The intersected trajectory.
         """
         traj_self = self if inplace else self.copy()
-        time_span = common_time_span(tstamps1=timestamps, tstamps2=traj_self.timestamps)
+        index_span = common_span(index1=index, index2=traj_self.index)
 
-        if time_span is None:
-            raise ValueError("intersect_both: Timespans do not overlap!")
+        if index_span is None:
+            raise ValueError("intersect_both: Indices do not overlap!")
 
-        traj_self.crop(t_start=time_span[0], t_end=time_span[1])
+        traj_self.crop(index_start=index_span[0], index_end=index_span[1])
 
-        tstamps_sorted = np.sort(timestamps)
+        tstamps_sorted = np.sort(index)
         filter_mask = np.ones(len(traj_self.timestamps), dtype=bool)
 
         # find where gaps are too large

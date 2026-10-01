@@ -420,7 +420,7 @@ class TrajectoryManager(QObject):
         Returns:
             TrajectoryEntry: The approximated trajectory.
         """
-        approximation.approximate_cubic(
+        approximation.approximate(
             trajectory=entry_pair.entry.trajectory,
             approximation_settings=entry_pair.entry.settings.approximation,
             inplace=True,
@@ -468,7 +468,7 @@ class TrajectoryManager(QObject):
         t = entry_pair.entry.trajectory.timestamps
         step = entry_pair.request.grid
         new_timestamps = np.arange(t[0], t[-1] + step, step)
-        interpolate(entry_pair.entry.trajectory, timestamps=new_timestamps, inplace=True)
+        interpolate(entry_pair.entry.trajectory, index=new_timestamps, inplace=True)
         entry_pair.entry.trajectory.name += f" (grid {step:.4g}s)"
         return (
             TrajectoryEntry(

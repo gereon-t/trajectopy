@@ -129,8 +129,8 @@ class TestMatching(unittest.TestCase):
         # After interpolation matching, lengths should be equal
         self.assertEqual(len(test_matched), len(ref_matched))
 
-        # Timestamps should match
-        np.testing.assert_array_almost_equal(test_matched.timestamps, ref_matched.timestamps)
+        # Index should match
+        np.testing.assert_array_almost_equal(test_matched.index, ref_matched.index)
 
     def test_match_trajectories_spatial_interpolated_basic(self):
         """Test spatial interpolation-based matching."""

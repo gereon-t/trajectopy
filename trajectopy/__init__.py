@@ -62,9 +62,11 @@ from trajectopy.core.settings import (
     MPLPlotSettings,
     PairDistanceUnit,
     PlotBackend,
+    PositionApproximationMethod,
     ProcessingSettings,
     RelativeComparisonSettings,
     ReportSettings,
+    RotationApproximationMethod,
     Settings,
     SortingSettings,
 )
@@ -80,7 +82,7 @@ from trajectopy.exceptions import (
     TrajectoryError,
 )
 from trajectopy.processing.alignment import align, apply_alignment, estimate_alignment
-from trajectopy.processing.approximation import approximate_cubic
+from trajectopy.processing.approximation import approximate
 from trajectopy.processing.evaluation import ate, rpe
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.lib.alignment.parameters import (
@@ -90,7 +92,7 @@ from trajectopy.processing.lib.alignment.parameters import (
 )
 from trajectopy.processing.matching import match_trajectories
 from trajectopy.processing.merging import average_trajectories, merge_trajectories
-from trajectopy.processing.sorting import sort_spatially
+from trajectopy.processing.sorting import divide_into_laps, sort_spatially
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
@@ -111,6 +113,8 @@ __all__ = [
     "AlignmentStochastics",
     "MatchingSettings",
     "ReportSettings",
+    "RotationApproximationMethod",
+    "PositionApproximationMethod",
     "ApproximationSettings",
     "RelativeComparisonSettings",
     "MPLPlotSettings",
@@ -133,7 +137,7 @@ __all__ = [
     "estimate_alignment",
     "apply_alignment",
     "align",
-    "approximate_cubic",
+    "approximate",
     "ate",
     "rpe",
     "interpolate",
@@ -141,6 +145,7 @@ __all__ = [
     "average_trajectories",
     "match_trajectories",
     "sort_spatially",
+    "divide_into_laps",
     # Exceptions
     "TrajectopyError",
     "TrajectoryError",

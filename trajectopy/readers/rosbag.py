@@ -49,6 +49,11 @@ class PoseMessage(Protocol):
     pose: Pose
 
 
+class PointMessage(Protocol):
+    header: Header
+    point: Point
+
+
 def geometry_pose_stamped_handler(msg: PoseMessage) -> dict[str, Any]:
     """Handler for geometry_msgs/msg/PoseStamped messages
 
@@ -67,6 +72,23 @@ def geometry_pose_stamped_handler(msg: PoseMessage) -> dict[str, Any]:
         "qy": msg.pose.orientation.y,
         "qz": msg.pose.orientation.z,
         "qw": msg.pose.orientation.w,
+    }
+
+
+def geometry_point_stamped_handler(msg: PointMessage) -> dict[str, Any]:
+    """Handler for geometry_msgs/msg/PointStamped messages
+
+    Args:
+        msg (Any): Message to handle
+
+    Returns:
+        dict[str, Any]: Dictionary containing the data
+    """
+    return {
+        "tstamps": msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9,
+        "x": msg.point.x,
+        "y": msg.point.y,
+        "z": msg.point.z,
     }
 
 
@@ -109,7 +131,10 @@ def read_ros_bag(filename: str) -> dict[str, dict[str, list[Any]]]:
     Returns:
         Tuple[HeaderData, np.ndarray]: Header data and data
     """
-    ROS_MESSAGE_HANDLERS = {"geometry_msgs/msg/PoseStamped": geometry_pose_stamped_handler}
+    ROS_MESSAGE_HANDLERS = {
+        "geometry_msgs/msg/PoseStamped": geometry_pose_stamped_handler,
+        "geometry_msgs/msg/PointStamped": geometry_point_stamped_handler,
+    }
     data: dict[str, dict[str, list[Any]]] = {}
     with AnyReader([Path(filename)], default_typestore=typestore) as reader:
         for connection, _, rawdata in reader.messages(connections=reader.connections):

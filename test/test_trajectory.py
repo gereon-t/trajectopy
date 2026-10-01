@@ -9,7 +9,7 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
-from trajectopy.processing.matching import match_timestamps
+from trajectopy.processing.matching import match_stamps
 
 
 class TestTrajectory(unittest.TestCase):
@@ -25,9 +25,9 @@ class TestTrajectory(unittest.TestCase):
             replace=False,
         )
         trajectory.mask(random_sampling)
-        match_timestamps(trajectory_ref, trajectory.timestamps)
+        match_stamps(trajectory_ref, trajectory.index)
 
-        self.assertListEqual(sorted(trajectory_ref.timestamps.tolist()), sorted(trajectory.timestamps.tolist()))
+        self.assertListEqual(sorted(trajectory_ref.index.tolist()), sorted(trajectory.index.tolist()))
 
         self.trajectory_sanity_check(trajectory)
         self.trajectory_sanity_check(trajectory_ref)
@@ -38,15 +38,15 @@ class TestTrajectory(unittest.TestCase):
 
         random_sampling = np.array(
             [
-                random_number(lower_bound=trajectory.timestamps[0], upper_bound=trajectory.timestamps[-1])
+                random_number(lower_bound=trajectory.index[0], upper_bound=trajectory.index[-1])
                 for _ in range(np.random.randint(1, len(trajectory) // 1.2))
             ]
         )
-        interpolate(trajectory, timestamps=random_sampling)
-        interpolate(trajectory_ref, timestamps=random_sampling)
+        interpolate(trajectory, index=random_sampling)
+        interpolate(trajectory_ref, index=random_sampling)
 
-        traj_tstamps_set = set(trajectory.timestamps)
-        traj_ref_tstamps_set = set(trajectory_ref.timestamps)
+        traj_tstamps_set = set(trajectory.index)
+        traj_ref_tstamps_set = set(trajectory_ref.index)
 
         if len(traj_ref_tstamps_set) > len(traj_tstamps_set):
             self.assertTrue(traj_tstamps_set.issubset(traj_ref_tstamps_set))
@@ -64,13 +64,13 @@ class TestTrajectory(unittest.TestCase):
         )
         tstamp_max = random_number(lower_bound=tstamp_min, upper_bound=trajectory.timestamps[-1])
 
-        trajectory.crop(t_start=tstamp_min, t_end=tstamp_max)
+        trajectory.crop(index_start=tstamp_min, index_end=tstamp_max)
 
         self.assertGreaterEqual(trajectory.timestamps[0], tstamp_min, "First timestamp should be >= crop start")
         self.assertLessEqual(trajectory.timestamps[-1], tstamp_max, "Last timestamp should be <= crop end")
         self.trajectory_sanity_check(trajectory)
 
-        trajectory.crop(t_start=tstamp_min, t_end=tstamp_min, inplace=True)
+        trajectory.crop(index_start=tstamp_min, index_end=tstamp_min, inplace=True)
         self.assertEqual(len(trajectory), 0, "Cropping to same start and end should result in empty trajectory")
         self.trajectory_sanity_check(trajectory)
 
@@ -78,7 +78,7 @@ class TestTrajectory(unittest.TestCase):
         trajectory_ref = open_loop_trajectory.copy()
         trajectory = self.generate_altered_trajectory()
 
-        trajectory.intersect(timestamps=trajectory_ref.timestamps)
+        trajectory.intersect(index=trajectory_ref.timestamps)
 
         self.assertGreaterEqual(
             trajectory.timestamps[0],
@@ -166,7 +166,7 @@ class TestTrajectory(unittest.TestCase):
         trajectory = open_loop_trajectory.copy()
         t_start = trajectory.timestamps[0]
         t_end = trajectory.timestamps[0]
-        trajectory.crop(t_start=t_start, t_end=t_end, inplace=True)
+        trajectory.crop(index_start=t_start, index_end=t_end, inplace=True)
 
         # Cropping to same start and end timestamp keeps one point
         self.assertLessEqual(len(trajectory), 1, "Cropping to single timestamp should result in 0 or 1 points")

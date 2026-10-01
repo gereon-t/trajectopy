@@ -38,7 +38,7 @@ def sort_spatially(
 
 
 def divide_into_laps(
-    trajectory: Trajectory, sorting_settings: SortingSettings = SortingSettings(), return_lap_indices: bool = False
+    trajectory: Trajectory, return_lap_indices: bool = False
 ) -> list[Trajectory] | tuple[list[Trajectory], np.ndarray]:
     """
     Divides the trajectory into laps. This is only useful for trajectories
@@ -46,7 +46,6 @@ def divide_into_laps(
 
     Args:
         trajectory (Trajectory): Trajectory to divide.
-        sorting_settings (SortingSettings): Sorting settings.
         return_lap_indices (bool, optional): Whether to return lap indices. Defaults to False.
 
     Returns:
@@ -54,7 +53,8 @@ def divide_into_laps(
 
     """
     if trajectory.sorting != Sorting.PATH_LENGTH:
-        trajectory = sort_spatially(trajectory=trajectory, sorting_settings=sorting_settings, inplace=False)
+        logger.error("Provide a trajectory sorted by path length to divide into laps.")
+        raise ValueError("Trajectory must be sorted by path length to divide into laps.")
     else:
         trajectory = trajectory.copy()
 
@@ -67,6 +67,7 @@ def divide_into_laps(
     laps = []
     for i in range(len(lap_indices) - 1):
         lap = trajectory.mask(np.arange(lap_indices[i], lap_indices[i + 1]), inplace=False)
+        lap.set_sorting(Sorting.PATH_LENGTH)
         laps.append(lap)
 
     return laps if (not return_lap_indices) else (laps, lap_indices)

@@ -125,7 +125,7 @@ class TestSorting(unittest.TestCase):
             trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
         )
 
-        laps = divide_into_laps(trajectory=sorted_traj, sorting_settings=SortingSettings(), return_lap_indices=False)
+        laps = divide_into_laps(trajectory=sorted_traj, return_lap_indices=False)
 
         # Should detect approximately 2 laps (we created the trajectory with 4*pi)
         self.assertIsInstance(laps, list)
@@ -142,9 +142,7 @@ class TestSorting(unittest.TestCase):
             trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
         )
 
-        laps, lap_indices = divide_into_laps(
-            trajectory=sorted_traj, sorting_settings=SortingSettings(), return_lap_indices=True
-        )
+        laps, lap_indices = divide_into_laps(trajectory=sorted_traj, return_lap_indices=True)
 
         # Verify return types
         self.assertIsInstance(laps, list)
@@ -163,7 +161,7 @@ class TestSorting(unittest.TestCase):
             trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
         )
 
-        laps = divide_into_laps(trajectory=sorted_traj, sorting_settings=SortingSettings(), return_lap_indices=False)
+        laps = divide_into_laps(trajectory=sorted_traj, return_lap_indices=False)
 
         # Total length of all laps should not exceed original trajectory
         total_lap_length = sum(len(lap) for lap in laps)
@@ -181,7 +179,7 @@ class TestSorting(unittest.TestCase):
         )
         sorted_traj.set_sorting(Sorting.PATH_LENGTH)
 
-        laps = divide_into_laps(trajectory=sorted_traj, sorting_settings=SortingSettings(), return_lap_indices=False)
+        laps = divide_into_laps(trajectory=sorted_traj, return_lap_indices=False)
 
         # Should work without re-sorting
         self.assertIsInstance(laps, list)

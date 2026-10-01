@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 from trajectopy.core.trajectory import Trajectory
 
 
-def match_non_overlapping_timestamps(trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0) -> float:
-    """Roughly matches two trajectories temporally.
+def match_non_overlapping_stamps(trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0) -> float:
+    """Roughly matches two trajectories.
 
     Args:
         trajectory (Trajectory): Trajectory to match.
@@ -24,29 +24,29 @@ def match_non_overlapping_timestamps(trajectory: Trajectory, other: Trajectory, 
         max_distance (float, optional): Maximum distance for spatial matching. Defaults to 0.0.
 
     Returns:
-        float: Mean time offset.
+        float: Mean offset.
     """
     other, trajectory = _match_trajectories_spatial(
         trajectory=other.copy(), other=trajectory.copy(), max_distance=max_distance
     )
-    mean_time_offset = np.median(trajectory.timestamps - other.timestamps)
-    logger.info("Median time offset: %.3f s", mean_time_offset)
-    return mean_time_offset
+    mean_offset = np.median(trajectory.index - other.index)
+    logger.info("Median index offset: %.3f", mean_offset)
+    return mean_offset
 
 
-def match_timestamps(trajectory: Trajectory, timestamps: np.ndarray, inplace: bool = True) -> Trajectory:
-    """Truncates trajectory to only those poses where the timestamps exactly match "timestamps".
+def match_stamps(trajectory: Trajectory, index: np.ndarray, inplace: bool = True) -> Trajectory:
+    """Truncates trajectory to only those poses where the indices exactly match "index".
 
     Args:
         trajectory (Trajectory): Input trajectory.
-        timestamps (np.ndarray): Input timestamps.
+        index (np.ndarray): Input indices.
         inplace (bool, optional): Perform matching in-place. Defaults to True.
 
     Returns:
-        Trajectory: Trajectory with matched timestamps.
+        Trajectory: Trajectory with matched indices.
     """
     traj_self = trajectory if inplace else trajectory.copy()
-    _, idx_self, _ = np.intersect1d(traj_self.timestamps, timestamps, return_indices=True)
+    _, idx_self, _ = np.intersect1d(traj_self.index, index, return_indices=True)
     traj_self.mask(idx_self)
     return traj_self
 
@@ -90,11 +90,16 @@ def match_trajectories(
         settings.MatchingMethod.INTERPOLATION,
     ]:
         logger.warning("Trajectories do not overlap! Performing rough matching first.")
-        timeshift = match_non_overlapping_timestamps(
+        timeshift = match_non_overlapping_stamps(
             trajectory=other, other=trajectory, max_distance=matching_settings.max_distance
         )
-        logger.info("Rough matching time offset: %.3f s", timeshift)
-        trajectory.timestamps += timeshift
+        logger.info("Rough matching index offset: %.3f", timeshift)
+        from trajectopy.utils.definitions import Sorting
+
+        if trajectory.sorting == Sorting.TIME:
+            trajectory.timestamps = trajectory.timestamps + timeshift
+        else:
+            trajectory.path_lengths = trajectory.path_lengths + timeshift
 
     logger.info("Matching trajectories using method %s", matching_settings.method.name)
 
@@ -142,20 +147,20 @@ def _match_trajectories_interpolation(
         Tuple[Trajectory, Trajectory]: Both trajectories with the same sampling. The instance
             which called this method is the first returned trajectory.
     """
-    trajectory.intersect(other.timestamps, max_gap_size=max_gap_size)
+    trajectory.intersect(other.index, max_gap_size=max_gap_size)
 
-    if trajectory.timestamps.shape[0] == 0:
+    if trajectory.index.shape[0] == 0:
         raise ValueError(
-            "Reference trajectory has no timestamps after intersection! Check your matching settings, especially max_gap_size."
+            "Reference trajectory has no indices after intersection! Check your matching settings, especially max_gap_size."
         )
 
-    other.intersect(trajectory.timestamps, max_gap_size=max_gap_size)
+    other.intersect(trajectory.index, max_gap_size=max_gap_size)
 
-    if other.timestamps.shape[0] == 0:
+    if other.index.shape[0] == 0:
         raise ValueError(
-            "Test trajectory has no timestamps after intersection! Check your matching settings, especially max_gap_size."
+            "Test trajectory has no indices after intersection! Check your matching settings, especially max_gap_size."
         )
-    interpolate(trajectory, other.timestamps)
+    interpolate(trajectory, other.index)
     trajectory.path_lengths = copy.deepcopy(other.path_lengths)
 
     return trajectory, other
@@ -178,8 +183,8 @@ def _match_trajectories_temporal(
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
-    tstamps_ref_2d = np.c_[other.timestamps, np.zeros(other.timestamps.shape)]
-    tstamps_test_2d = np.c_[trajectory.timestamps, np.zeros(trajectory.timestamps.shape)]
+    tstamps_ref_2d = np.c_[other.index, np.zeros(other.index.shape)]
+    tstamps_test_2d = np.c_[trajectory.index, np.zeros(trajectory.index.shape)]
     ref_indices, test_indices = _kd_matcher(ref=tstamps_ref_2d, test=tstamps_test_2d, max_distance=max_distance)
     logger.info("Found %i temporal matches", len(ref_indices))
     return trajectory.mask(test_indices), other.mask(ref_indices)

@@ -580,6 +580,19 @@ if __name__ == "__main__":
     print(imported_settings)
 
 
+class RotationApproximationMethod(Enum):
+    """Method for rotation approximation."""
+
+    AVERAGE_PER_PATH_LENGTH = "average_per_path_length"
+    AVERAGE_IN_WINDOW = "average_in_window"
+
+
+class PositionApproximationMethod(Enum):
+    """Method for position approximation."""
+
+    CUBIC = "cubic"
+
+
 @dataclass
 class ApproximationSettings(Settings):
     """Configuration for trajectory approximation and smoothing.
@@ -591,11 +604,16 @@ class ApproximationSettings(Settings):
             for cubic approximation. Defaults to 25.
         rotation_window_size: Size of rotation smoothing window in meters (not cubic).
             Defaults to 0.15.
+        max_path_length_gap: Maximum gap size in path length for interpolation.
+            Defaults to 0.15.
     """
 
     position_interval_size: float = 0.15
     position_min_observations: int = 25
     rotation_window_size: float = 0.15
+    max_path_length_gap: float = 0.15
+    position_approximation_method: PositionApproximationMethod = PositionApproximationMethod.CUBIC
+    rotation_approximation_method: RotationApproximationMethod = RotationApproximationMethod.AVERAGE_IN_WINDOW
 
 
 class PairDistanceUnit(Enum):

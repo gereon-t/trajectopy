@@ -42,7 +42,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
 
         # Interpolate to half the timestamps
         new_timestamps = traj.timestamps[::2]
-        interpolate(traj, timestamps=new_timestamps)
+        interpolate(traj, index=new_timestamps)
 
         self.assertEqual(len(traj), len(new_timestamps))
         self.assertIsNotNone(traj.positions)
@@ -53,7 +53,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
         traj = open_loop_trajectory.copy()
         mid_timestamp = traj.timestamps[len(traj) // 2]
 
-        interpolate(traj, timestamps=np.array([mid_timestamp]))
+        interpolate(traj, index=np.array([mid_timestamp]))
 
         self.assertEqual(len(traj), 1)
 
@@ -64,7 +64,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
         t_start = traj.timestamps[10]
         t_end = traj.timestamps[original_length - 10]
 
-        traj.crop(t_start=t_start, t_end=t_end)
+        traj.crop(index_start=t_start, index_end=t_end)
 
         self.assertLess(len(traj), original_length)
         self.assertGreaterEqual(traj.timestamps[0], t_start)
@@ -77,7 +77,7 @@ class TestProcessingEdgeCases(unittest.TestCase):
         # Create subset of timestamps
         subset_timestamps = traj.timestamps[10 : original_length - 10]
 
-        traj.intersect(timestamps=subset_timestamps)
+        traj.intersect(index=subset_timestamps)
 
         self.assertLessEqual(len(traj), original_length)
         self.assertGreaterEqual(traj.timestamps[0], subset_timestamps[0])

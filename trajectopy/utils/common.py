@@ -265,35 +265,35 @@ def list2box(
     return table_str
 
 
-def common_time_span(tstamps1: np.ndarray, tstamps2: np.ndarray) -> tuple[float, float] | None:
+def common_span(index1: np.ndarray, index2: np.ndarray) -> tuple[float, float] | None:
     """
-    Computes the common time span between two arrays of timestamps.
+    Computes the common span between two arrays of timestamps.
 
     Args:
-        tstamps1 (np.ndarray): First array of timestamps.
-        tstamps2 (np.ndarray): Second array of timestamps.
+        index1 (np.ndarray): First array of indices.
+        index2 (np.ndarray): Second array of indices.
 
     Returns:
-        Union[Tuple[float, float], None]: A tuple containing the start and end times of the common time span,
+        Union[Tuple[float, float], None]: A tuple containing the start and end indices of the common span,
         or None if there is no overlap between the two arrays.
     """
-    tstamps1 = np.sort(tstamps1)
-    tstamps2 = np.sort(tstamps2)
+    index1 = np.sort(index1)
+    index2 = np.sort(index2)
 
     overlap = (
-        tstamps1[0] <= tstamps2[0] <= tstamps1[-1]
-        or tstamps1[0] <= tstamps2[-1] <= tstamps1[-1]
-        or tstamps2[0] <= tstamps1[0] <= tstamps2[-1]
-        or tstamps2[0] <= tstamps1[-1] <= tstamps2[-1]
+        index1[0] <= index2[0] <= index1[-1]
+        or index1[0] <= index2[-1] <= index1[-1]
+        or index2[0] <= index1[0] <= index2[-1]
+        or index2[0] <= index1[-1] <= index2[-1]
     )
     if not overlap:
         return None
 
-    # get limits (largest common time span)
-    t_start = max(tstamps1[0], tstamps2[0])
-    t_end = min(tstamps1[-1], tstamps2[-1])
+    # get limits (largest common span)
+    index_start = max(index1[0], index2[0])
+    index_end = min(index1[-1], index2[-1])
 
-    return (t_start, t_end)
+    return (index_start, index_end)
 
 
 def rndodd(s: float) -> int:

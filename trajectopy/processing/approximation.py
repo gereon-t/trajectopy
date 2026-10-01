@@ -3,17 +3,24 @@ import logging
 import numpy as np
 
 from trajectopy.core.rotations import Rotations
-from trajectopy.core.settings import ApproximationSettings
+from trajectopy.core.settings import (
+    ApproximationSettings,
+    PositionApproximationMethod,
+    RotationApproximationMethod,
+)
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.lib.approximation.cubic_approximation import (
     CubicApproximation,
 )
+from trajectopy.processing.sorting import divide_into_laps
 from trajectopy.utils.common import rndodd
+from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 
 
-def approximate_cubic(
+def approximate(
     trajectory: Trajectory,
     approximation_settings: ApproximationSettings = ApproximationSettings(),
     inplace: bool = False,
@@ -28,12 +35,17 @@ def approximate_cubic(
     Returns:
         Trajectory: The approximated trajectory.
     """
-    xyz_approx = _piecewise_cubic(
-        index=trajectory.index,
-        values=trajectory.xyz,
-        min_win_size=approximation_settings.position_interval_size,
-        min_obs=approximation_settings.position_min_observations,
-    )
+    if approximation_settings.position_approximation_method == PositionApproximationMethod.CUBIC:
+        xyz_approx = _piecewise_cubic(
+            index=trajectory.index,
+            values=trajectory.xyz,
+            min_win_size=approximation_settings.position_interval_size,
+            min_obs=approximation_settings.position_min_observations,
+        )
+    else:
+        raise ValueError(
+            f"Unknown position approximation method: {approximation_settings.position_approximation_method}"
+        )
 
     traj_approx = trajectory if inplace else trajectory.copy()
     traj_approx.positions.xyz = xyz_approx
@@ -41,14 +53,61 @@ def approximate_cubic(
     if not traj_approx.has_orientation:
         return traj_approx
 
-    quat_approx = _average_rotations_in_window(
-        index=trajectory.index,
-        quat=trajectory.quat,
-        win_size=approximation_settings.rotation_window_size,
-    )
+    if approximation_settings.rotation_approximation_method == RotationApproximationMethod.AVERAGE_PER_PATH_LENGTH:
+        quat_approx = _average_rotations_per_path_length(
+            trajectory, max_gap_size=approximation_settings.max_path_length_gap
+        )
+    elif approximation_settings.rotation_approximation_method == RotationApproximationMethod.AVERAGE_IN_WINDOW:
+        quat_approx = _average_rotations_in_window(
+            index=trajectory.index,
+            quat=trajectory.quat,
+            win_size=approximation_settings.rotation_window_size,
+        )
+    else:
+        raise ValueError(
+            f"Unknown rotation approximation method: {approximation_settings.rotation_approximation_method}"
+        )
     traj_approx.rotations = Rotations.from_quat(quat_approx)
 
     return traj_approx
+
+
+def _average_rotations_per_path_length(trajectory: Trajectory, max_gap_size: float = 0.15) -> np.ndarray:
+    trajectory = trajectory.copy()
+    trajectory.set_sorting(Sorting.PATH_LENGTH)
+
+    lap_list: list[Trajectory] = divide_into_laps(trajectory)
+
+    if len(lap_list) < 2:
+        logger.error("Not enough laps for rotation averaging. At least 2 laps are required.")
+        return trajectory.quat
+
+    # interpolate all laps to all path lengths
+    path_length_dict = {}
+    for i, lap in enumerate(lap_list):
+        interpolate(lap, trajectory.path_lengths, max_gap_size=max_gap_size)
+
+        for path_length, quat in zip(lap.path_lengths, lap.quat):
+            if path_length not in path_length_dict:
+                path_length_dict[path_length] = []
+
+            path_length_dict[path_length].append(quat)
+
+    # average all rotations for each path length
+    logger.info("Averaging rotations per path length for %d unique path lengths.", len(path_length_dict))
+    quat_mean = np.zeros((len(trajectory.path_lengths), 4))
+    number_of_rotations = []
+    for i, path_length in enumerate(trajectory.path_lengths):
+        quats = np.array(path_length_dict[path_length])
+        number_of_rotations.append(len(quats))
+        mean_quat = Rotations.from_quat(quats).mean().as_quat()
+        quat_mean[i, :] = mean_quat
+
+    logger.info(
+        "Rotation averaging per path length completed. Mean number of rotations per path length: %.2f",
+        np.mean(number_of_rotations),
+    )
+    return quat_mean
 
 
 def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: float = 0.15) -> np.ndarray:
