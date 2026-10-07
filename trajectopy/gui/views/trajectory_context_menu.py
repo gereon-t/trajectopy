@@ -391,8 +391,19 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             ),
         )
 
+        manual_align_action = QAction("Manual (Interactive)...", self)
+        manual_align_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(
+                    type=UIRequestType.MANUAL_ALIGNMENT,
+                    trajectory_selection=self.get_selection(),
+                )
+            ),
+        )
+
         self.align_with_reference_sub_menu.addAction(align_all_poses_action)
         self.align_with_reference_sub_menu.addAction(align_first_pose_action)
+        self.align_with_reference_sub_menu.addAction(manual_align_action)
 
         return self.align_with_reference_sub_menu
 

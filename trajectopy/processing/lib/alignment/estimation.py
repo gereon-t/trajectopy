@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import numpy as np
@@ -42,7 +43,7 @@ class AlignmentEstimator:
     - a leverarm (e.g. mounted at different locations on the platform)
     """
 
-    def __init__(self, alignment_data: AlignmentData) -> None:
+    def __init__(self, alignment_data: AlignmentData, initial_parameters: AlignmentParameters | None = None) -> None:
         """Constructor
 
         This class holds all data required for the alignment
@@ -51,7 +52,11 @@ class AlignmentEstimator:
 
         Args:
             alignment_data (AlignmentData): Stores all data required for the alignment
+            initial_parameters (AlignmentParameters | None): Optional prior (e.g. from a manual alignment).
+                If given, it replaces the direct initialization. Parameters that are not estimated are
+                kept fixed at their prior value.
         """
+        self._initial_parameters = initial_parameters
         self.funcrel = FunctionalRelationship()
         self.data = alignment_data
 
@@ -79,6 +84,9 @@ class AlignmentEstimator:
             AlignmentParameters: Hold the estimates parameters.
                                  14 = 7 (helmert+scale) 3 (leverarm) 1 (time) 3 (orientation)
         """
+        if self._initial_parameters is not None:
+            return self._init_from_prior(self._initial_parameters)
+
         if self.settings.estimation_settings.helmert_enabled:
             helmert_init = direct_helmert_transformation(xyz_from=self.data.xyz_from, xyz_to=self.data.xyz_to)
             xyz_init = helmert_init.apply_to(self.data.xyz_from)
@@ -128,13 +136,26 @@ class AlignmentEstimator:
         logger.debug("Applied settings: %s \n", str(self.settings.estimation_settings))
         return alignparams
 
+    def _init_from_prior(self, prior: AlignmentParameters) -> AlignmentParameters:
+        """Creates start parameters from a prior; non-estimated parameters stay fixed at their prior value."""
+        params = copy.deepcopy(prior)
+        for parameter in params:
+            prior_value = parameter.value
+            parameter.value = prior_value
+            parameter.default = prior_value
+            parameter.variance = 0.0
+
+        params.apply_settings(self.settings.estimation_settings)
+        logger.info("Using manual prior as initial parameters:\n%s", params)
+        return params
+
     def estimate_parameters(self) -> AlignmentParameters:
         """Handles the estimation of the parameters"""
 
         logger.info("Performing alignment...")
         if self.settings.estimation_settings.all_lq_disabled:
             logger.warning("Nothing to estimate since all parameters are disabled")
-            return AlignmentParameters()
+            return self.init_parameters() if self._initial_parameters is not None else AlignmentParameters()
 
         cnt = 0
         max_recomputations = 5

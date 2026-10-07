@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal
 from trajectopy.core.settings import MatchingMethod, MPLPlotSettings, ReportSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
+from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,7 @@ class UIRequestType(Enum):
     EXPORT_SESSION = auto()
     IMPORT_SESSION = auto()
     EDIT_ALIGNMENT = auto()
+    MANUAL_ALIGNMENT = auto()
     EXPORT_DEV_SUMMARY = auto()
     EXPORT_REPORT = auto()
     PLAYBACK = auto()
@@ -189,6 +191,8 @@ class TrajectoryManagerRequest(DeepCopyRequest):
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
     matching_method: MatchingMethod = MatchingMethod.NEAREST_TEMPORAL
     dof_mapping: dict[str, dict] = field(default_factory=dict)
+    manual_parameters: AlignmentParameters | None = None
+    refine_manual: bool = False
 
 
 @dataclass

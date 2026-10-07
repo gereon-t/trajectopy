@@ -27,6 +27,7 @@ from trajectopy.gui.utils import (
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.gui.views.dof_organizer import DOFOrganizer
 from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.gui.views.manual_alignment_window import ManualAlignmentWindow
 from trajectopy.gui.views.playback_window import PlaybackWindow
 from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
@@ -104,6 +105,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
             UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
+            UIRequestType.MANUAL_ALIGNMENT: self.manual_alignment,
             UIRequestType.GRID_SELECTION: self.grid_selection,
             UIRequestType.PLAYBACK: self.trajectory_playback,
         }
@@ -157,6 +159,38 @@ class UIManager(QObject):
         trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]
         playback_window = PlaybackWindow(trajectories=trajectories, parent=self.parent())
         playback_window.show()
+
+    def manual_alignment(self, request: UIRequest) -> None:
+        selection = request.trajectory_selection
+        if (reference_entry := selection.reference_entry) is None:
+            show_msg_box("No reference trajectory selected.")
+            return
+
+        entry = next((e for e in selection.entries if not e.set_as_reference), None)
+        if entry is None:
+            show_msg_box("Select a trajectory that is not the reference.")
+            return
+
+        manual_window = ManualAlignmentWindow(
+            trajectory=entry.trajectory,
+            reference=reference_entry.trajectory,
+            matching_settings=entry.settings.matching,
+            parent=self.parent(),
+        )
+        manual_window.alignment_accepted.connect(self.handle_manual_alignment)
+        self._track_window(manual_window)
+        manual_window.show()
+
+    @Slot(object, bool)
+    def handle_manual_alignment(self, parameters: object, refine: bool) -> None:
+        self.trajectory_manager_request.emit(
+            TrajectoryManagerRequest(
+                type=TrajectoryManagerRequestType.ALIGN,
+                selection=self.request.trajectory_selection,
+                manual_parameters=parameters,
+                refine_manual=refine,
+            )
+        )
 
     def alignment_selection(self, request: UIRequest) -> None:
         alignment_entries = [entry for entry in request.result_selection.entries if isinstance(entry, AlignmentEntry)]

@@ -605,12 +605,21 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        alignment_result = alignment.estimate_alignment(
-            trajectory=entry_pair.entry.trajectory,
-            other=reference_entry.trajectory,
-            alignment_settings=entry_pair.entry.settings.alignment,
-            matching_settings=entry_pair.entry.settings.matching,
-        )
+        manual_parameters = entry_pair.request.manual_parameters
+        if manual_parameters is not None and not entry_pair.request.refine_manual:
+            alignment_result = alignment.manual_alignment(
+                trajectory=entry_pair.entry.trajectory,
+                other=reference_entry.trajectory,
+                parameters=manual_parameters,
+            )
+        else:
+            alignment_result = alignment.estimate_alignment(
+                trajectory=entry_pair.entry.trajectory,
+                other=reference_entry.trajectory,
+                alignment_settings=entry_pair.entry.settings.alignment,
+                matching_settings=entry_pair.entry.settings.matching,
+                initial_parameters=manual_parameters,
+            )
 
         traj_aligned = alignment.apply_alignment(
             trajectory=entry_pair.entry.trajectory, alignment_result=alignment_result, inplace=False

@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import numpy as np
@@ -23,6 +24,7 @@ def estimate_alignment(
     other: Trajectory,
     alignment_settings: settings.AlignmentSettings = settings.AlignmentSettings(),
     matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
+    initial_parameters: AlignmentParameters | None = None,
 ) -> AlignmentResult:
     """Estimates the alignment between two trajectories.
 
@@ -34,6 +36,9 @@ def estimate_alignment(
         other (Trajectory): Reference trajectory to align to.
         alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
         matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
+        initial_parameters (AlignmentParameters, optional): Prior (e.g. from a manual alignment) used as
+            start values of the least squares adjustment instead of the direct initialization. Parameters
+            that are not estimated stay fixed at their prior value. Defaults to None.
 
     Returns:
         AlignmentResult: Result of the alignment process.
@@ -46,7 +51,7 @@ def estimate_alignment(
         alignment_settings=alignment_settings,
         matching_settings=matching_settings,
     )
-    ghm_alignment = AlignmentEstimator(alignment_data=alignment_data)
+    ghm_alignment = AlignmentEstimator(alignment_data=alignment_data, initial_parameters=initial_parameters)
     estimated_parameters = ghm_alignment.estimate_parameters()
 
     if (
@@ -69,6 +74,30 @@ def estimate_alignment(
         rotation_parameters=sensor_rot_params,
         estimation_of=ghm_alignment.settings.estimation_settings,
         converged=ghm_alignment.has_results,
+    )
+
+
+def manual_alignment(trajectory: Trajectory, other: Trajectory, parameters: AlignmentParameters) -> AlignmentResult:
+    """Creates an alignment result from manually chosen parameters (no estimation).
+
+    All parameters are marked as enabled so that their values are applied by `apply_alignment`.
+
+    Args:
+        trajectory (Trajectory): Trajectory that is aligned.
+        other (Trajectory): Reference trajectory.
+        parameters (AlignmentParameters): Manually chosen alignment parameters.
+
+    Returns:
+        AlignmentResult: Alignment result holding the manual parameters.
+    """
+    position_parameters = copy.deepcopy(parameters)
+    position_parameters.enable()
+    return AlignmentResult(
+        name=f"{trajectory.name} to {other.name} (manual)",
+        position_parameters=position_parameters,
+        rotation_parameters=SensorRotationParameters(enabled=False),
+        estimation_of=position_parameters.to_estimation_settings(),
+        converged=True,
     )
 
 
@@ -99,7 +128,15 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
                 alignment_parameters.lever_z.value,
             )
         else:
-            logger.warning("Trajectory has no orientations. Cannot apply leverarm.")
+            if any(
+                parameter.value != 0.0
+                for parameter in (
+                    alignment_parameters.lever_x,
+                    alignment_parameters.lever_y,
+                    alignment_parameters.lever_z,
+                )
+            ):
+                logger.warning("Trajectory has no orientations. Cannot apply leverarm.")
             euler_x, euler_y, euler_z = 0, 0, 0
             lever_x, lever_y, lever_z = 0, 0, 0
 

@@ -11,7 +11,11 @@ from trajectopy.core.settings import (
     AlignmentStochastics,
     MatchingSettings,
 )
-from trajectopy.processing.alignment import estimate_alignment
+from trajectopy.processing.alignment import (
+    apply_alignment,
+    estimate_alignment,
+    manual_alignment,
+)
 from trajectopy.processing.lib.alignment.direct import align_rotations
 from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
@@ -61,6 +65,52 @@ class TestAlignment(unittest.TestCase):
         for similarity, time_shift, lever in cases:
             with self.subTest(similarity=similarity, time_shift=time_shift, lever=lever):
                 self._alignment_test(similarity_enabled=similarity, time_shift_enabled=time_shift, lever_enabled=lever)
+
+    def test_alignment_with_prior(self):
+        """A prior is used as start value; non-estimated parameters stay fixed at the prior."""
+        transformed, groundtruth = transform_randomly(
+            open_loop_trajectory, similarity_enabled=True, time_shift_enabled=False, lever_enabled=False
+        )
+        prior = AlignmentParameters()
+        for name in ("sim_trans_x", "sim_trans_y", "sim_trans_z", "sim_rot_x", "sim_rot_y", "sim_rot_z"):
+            getattr(prior, name).enabled = True
+        prior.values = groundtruth.values + 1e-3
+
+        settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings.from_components(similarity=True),
+            stochastics=AlignmentStochastics(),
+        )
+        result = estimate_alignment(
+            trajectory=open_loop_trajectory.copy(),
+            other=transformed,
+            alignment_settings=settings,
+            matching_settings=MatchingSettings(),
+            initial_parameters=prior,
+        )
+        self._verify_alignment(target=groundtruth, estimation=result.position_parameters)
+
+        fixed_settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings.from_components(similarity=False),
+        )
+        fixed_result = estimate_alignment(
+            trajectory=open_loop_trajectory.copy(),
+            other=transformed,
+            alignment_settings=fixed_settings,
+            matching_settings=MatchingSettings(),
+            initial_parameters=prior,
+        )
+        np.testing.assert_allclose(fixed_result.position_parameters.values, prior.values)
+
+    def test_manual_alignment(self):
+        """Manual parameters are applied exactly as given."""
+        params = AlignmentParameters()
+        params.sim_trans_x.value = 2.0
+        params.time_shift.value = 0.5
+        result = manual_alignment(open_loop_trajectory, open_loop_trajectory, params)
+        aligned = apply_alignment(open_loop_trajectory, result, inplace=False)
+
+        np.testing.assert_allclose(aligned.positions.xyz[:, 0], open_loop_trajectory.positions.xyz[:, 0] + 2.0)
+        np.testing.assert_allclose(aligned.timestamps, open_loop_trajectory.timestamps - 0.5)
 
     def test_sensor_alignment_loop(self):
         """Test that sensor rotation alignment can be applied and reversed correctly."""
