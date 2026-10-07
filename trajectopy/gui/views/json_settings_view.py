@@ -14,6 +14,8 @@ EXPORT_FORMATS = ["png", "svg", "webp", "jpeg"]
 PLOT_MODES = ["lines+markers", "lines", "markers"]
 MATCHING_METHODS = ["nearest_spatial", "nearest_temporal", "interpolation", "nearest_spatial_interpolated"]
 PAIR_DISTANCE_UNITS = ["meter", "second"]
+POSITION_APPROXIMATION_METHODS = ["cubic"]
+ROTATION_APPROXIMATION_METHODS = ["average_in_window", "average_per_path_length"]
 
 SPECIAL_WORDS = {
     "mm": "mm",
@@ -241,6 +243,18 @@ def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> Qt
     if isinstance(value, bool):
         settings_field = QtWidgets.QCheckBox(parent_widget)
         settings_field.setChecked(value)
+        return settings_field
+
+    if value in POSITION_APPROXIMATION_METHODS:
+        settings_field = QtWidgets.QComboBox(parent_widget)
+        settings_field.addItems(POSITION_APPROXIMATION_METHODS)
+        settings_field.setCurrentIndex(POSITION_APPROXIMATION_METHODS.index(value))
+        return settings_field
+
+    if value in ROTATION_APPROXIMATION_METHODS:
+        settings_field = QtWidgets.QComboBox(parent_widget)
+        settings_field.addItems(ROTATION_APPROXIMATION_METHODS)
+        settings_field.setCurrentIndex(ROTATION_APPROXIMATION_METHODS.index(value))
         return settings_field
 
     if value in MATCHING_METHODS:

@@ -615,6 +615,37 @@ class ApproximationSettings(Settings):
     position_approximation_method: PositionApproximationMethod = PositionApproximationMethod.CUBIC
     rotation_approximation_method: RotationApproximationMethod = RotationApproximationMethod.AVERAGE_IN_WINDOW
 
+    @staticmethod
+    def encoder(name: str, value: Any) -> Any:
+        """Encodes position_approximation_method and rotation_approximation_method enums to string values.
+
+        Args:
+            name: Attribute name
+            value: Value to encode
+
+        Returns:
+            Any: Encoded value
+        """
+        if name in ["position_approximation_method", "rotation_approximation_method"]:
+            return value.value
+        return value
+
+    @staticmethod
+    def decoder(name: str, value: Any) -> Any:
+        """Decodes position_approximation_method and rotation_approximation_method strings to enums.
+        Args:
+            name: Attribute name
+            value: Value to decode
+
+        Returns:
+            Any: Decoded value
+        """
+        if name == "position_approximation_method":
+            return PositionApproximationMethod(value)
+        if name == "rotation_approximation_method":
+            return RotationApproximationMethod(value)
+        return value
+
 
 class PairDistanceUnit(Enum):
     """Unit of measurement for pose pair distances in relative comparison."""
