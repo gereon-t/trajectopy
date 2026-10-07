@@ -60,7 +60,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-gui = ["PySide6", "pyvista", "pyvistaqt"]
+gui = ["PySide6", "pyvista", "pyvistaqt", "pyqtgraph"]
 
 [project.urls]
 Homepage = "https://gereon-t.github.io/trajectopy/"

@@ -5,9 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 
 import numpy as np
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+import pyqtgraph as pg
 from PySide6 import QtCore, QtWidgets
 
 from trajectopy.core.settings import MatchingSettings
@@ -102,53 +100,22 @@ def _extent(xyz: np.ndarray) -> float:
     return float(np.max(np.ptp(xyz, axis=0)))
 
 
-TIME_SERIES_LABELS = ("x [m]", "y [m]", "z [m]", "roll [°]", "pitch [°]", "yaw [°]")
+TIME_SERIES_LABELS = ("x [m]", "y [m]", "z [m]", "roll [?]", "pitch [?]", "yaw [?]")
+LINE_WIDTH = 3
+REFERENCE_PEN = pg.mkPen("#1f77b4", width=LINE_WIDTH)
+ALIGNED_PEN = pg.mkPen("#ff7f0e", width=LINE_WIDTH)
+ERROR_PEN = pg.mkPen("#d62728", width=LINE_WIDTH)
 
 
-class FastCanvas(FigureCanvas):
-    """Matplotlib canvas that redraws only the animated artists (blitting) during interaction.
-
-    The expensive static parts (axes, ticks, reference lines, layout) are rendered once and cached;
-    `invalidate` forces a full redraw, `refresh` only repaints the animated artists.
-    """
-
-    def __init__(self, figure: Figure) -> None:
-        super().__init__(figure)
-        self._background = None
-        self._animated: list = []
-        self.mpl_connect("draw_event", self._on_draw)
-
-    def add_animated(self, *artists) -> None:
-        for artist in artists:
-            artist.set_animated(True)
-            self._animated.append(artist)
-
-    def resizeEvent(self, event) -> None:
-        # the layout engine is only active while the size changes
-        self.figure.set_layout_engine("constrained")
-        self._background = None
-        super().resizeEvent(event)
-
-    def _on_draw(self, _event) -> None:
-        self.figure.set_layout_engine("none")
-        self._background = self.copy_from_bbox(self.figure.bbox)
-        self._draw_animated()
-
-    def _draw_animated(self) -> None:
-        for artist in self._animated:
-            self.figure.draw_artist(artist)
-
-    def invalidate(self) -> None:
-        self._background = None
-        self.draw_idle()
-
-    def refresh(self) -> None:
-        if self._background is None:
-            self.draw_idle()
-            return
-        self.restore_region(self._background)
-        self._draw_animated()
-        self.blit(self.figure.bbox)
+def _make_plot(title: str | None = None, x_label: str = "", y_label: str = "") -> pg.PlotItem:
+    plot = pg.PlotItem()
+    if title:
+        plot.setTitle(title)
+    plot.setLabel("bottom", x_label)
+    plot.setLabel("left", y_label)
+    plot.showGrid(x=True, y=True, alpha=0.3)
+    plot.setClipToView(True)
+    return plot
 
 
 def _dofs(trajectory: Trajectory, include_orientation: bool) -> np.ndarray:
@@ -169,47 +136,38 @@ class TimeSeriesWindow(QtWidgets.QMainWindow):
         self._t0 = float(reference.timestamps[0])
         count = 6 if include_orientation else 3
 
-        self._figure = Figure(layout="constrained")
-        self._canvas = FastCanvas(self._figure)
-        container = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(container)
-        layout.addWidget(NavigationToolbar(self._canvas, self))
-        layout.addWidget(self._canvas, 1)
-        self.setCentralWidget(container)
+        self._graphics = pg.GraphicsLayoutWidget()
+        self.setCentralWidget(self._graphics)
         self.resize(1100, 850)
 
-        axes = self._figure.subplots(count, 1, sharex=True)
-        self._axes = np.atleast_1d(axes)
-        self._ref_lines = []
-        self._lines = []
-        for i, axis in enumerate(self._axes):
-            (ref_line,) = axis.plot([], [], color="tab:blue", lw=1.0, label="reference")
-            (line,) = axis.plot([], [], color="tab:orange", lw=1.0, label="aligned")
-            self._ref_lines.append(ref_line)
-            self._lines.append(line)
-            axis.set_ylabel(TIME_SERIES_LABELS[i])
-            axis.grid(True, alpha=0.3)
-        self._axes[0].legend(loc="upper right")
-        self._axes[-1].set_xlabel("time since reference start [s]")
-        self._canvas.add_animated(*self._lines)
+        self._ref_curves = []
+        self._curves = []
+        first_plot = None
+        for i in range(count):
+            plot = _make_plot(
+                y_label=TIME_SERIES_LABELS[i], x_label="time since reference start [s]" if i == count - 1 else ""
+            )
+            if i == 0:
+                plot.addLegend(offset=(-10, 10))
+                first_plot = plot
+            else:
+                plot.setXLink(first_plot)
+            self._ref_curves.append(plot.plot(pen=REFERENCE_PEN, antialias=True, name="reference"))
+            self._curves.append(plot.plot(pen=ALIGNED_PEN, antialias=True, name="aligned"))
+            self._graphics.addItem(plot, row=i, col=0)
         self.set_reference(reference)
 
     def set_reference(self, reference: Trajectory) -> None:
         ref_t = reference.timestamps - self._t0
         ref_dofs = _dofs(reference, self._include_orientation)
-        for i, line in enumerate(self._ref_lines):
-            line.set_data(ref_t, ref_dofs[:, i])
-        for axis in self._axes:
-            axis.relim()
-            axis.autoscale_view()
-        self._canvas.invalidate()
+        for i, curve in enumerate(self._ref_curves):
+            curve.setData(ref_t, ref_dofs[:, i])
 
     def update_aligned(self, aligned: Trajectory) -> None:
         t = aligned.timestamps - self._t0
         dofs = _dofs(aligned, self._include_orientation)
-        for i, line in enumerate(self._lines):
-            line.set_data(t, dofs[:, i])
-        self._canvas.refresh()
+        for i, curve in enumerate(self._curves):
+            curve.setData(t, dofs[:, i])
 
 
 class ParameterRow(QtWidgets.QWidget):
@@ -321,8 +279,6 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         self._matched_reference_t: np.ndarray | None = None
         self._matched_reference_xyz: np.ndarray | None = None
         self._error_ylim = 1.0
-        self._error_xmax = -1
-        self._needs_full_draw = True
         self._match_once()
 
         self._rows: dict[str, ParameterRow] = {}
@@ -437,12 +393,9 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         plot_panel = QtWidgets.QWidget()
         plot_layout = QtWidgets.QVBoxLayout(plot_panel)
         plot_layout.setContentsMargins(0, 0, 0, 0)
-        self._figure = Figure(layout="constrained")
-        self._canvas = FastCanvas(self._figure)
-        plot_layout.addWidget(NavigationToolbar(self._canvas, self))
-        plot_layout.addWidget(self._canvas, 1)
+        self._graphics = pg.GraphicsLayoutWidget()
+        plot_layout.addWidget(self._graphics, 1)
         self._setup_plot()
-        self._canvas.add_animated(self._line_top, self._line_side, self._line_error)
 
         main_layout.addWidget(control_panel)
         main_layout.addWidget(plot_panel, 1)
@@ -467,38 +420,36 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         self._moving = _downsample(self._full_trajectory, points)
         self._reference = _downsample(self._full_reference, points)
         self._reference_plot_xyz = self._reference.positions.xyz
-        for line, column in ((self._ref_line_top, 1), (self._ref_line_side, 2)):
-            line.set_data(self._reference_plot_xyz[:, 0], self._reference_plot_xyz[:, column])
+        self._ref_curve_top.setData(self._reference_plot_xyz[:, 0], self._reference_plot_xyz[:, 1])
+        self._ref_curve_side.setData(self._reference_plot_xyz[:, 0], self._reference_plot_xyz[:, 2])
         self._match_once()
         if self._series_window is not None:
             self._series_window.set_reference(self._reference)
         self._update_preview()
 
     def _setup_plot(self) -> None:
-        gs = self._figure.add_gridspec(2, 2, height_ratios=(3, 2))
-        self._ax_top = self._figure.add_subplot(gs[0, 0])
-        self._ax_side = self._figure.add_subplot(gs[0, 1])
-        self._ax_error = self._figure.add_subplot(gs[1, :])
+        self._plot_top = _make_plot("Top view", "x [m]", "y [m]")
+        self._plot_side = _make_plot("Side view", "x [m]", "z [m]")
+        self._plot_error = _make_plot("Position deviation to reference", "matched pose", "3D distance [m]")
+        self._plot_top.setAspectLocked(True)
+        self._plot_side.setAspectLocked(True)
+        self._plot_top.addLegend(offset=(10, 10))
 
         ref_xyz = self._reference_plot_xyz
-        (self._ref_line_top,) = self._ax_top.plot(
-            ref_xyz[:, 0], ref_xyz[:, 1], color="tab:blue", lw=1.2, label="reference"
+        self._ref_curve_top = self._plot_top.plot(
+            ref_xyz[:, 0], ref_xyz[:, 1], pen=REFERENCE_PEN, antialias=True, name="reference"
         )
-        (self._ref_line_side,) = self._ax_side.plot(
-            ref_xyz[:, 0], ref_xyz[:, 2], color="tab:blue", lw=1.2, label="reference"
-        )
-        (self._line_top,) = self._ax_top.plot([], [], color="tab:orange", lw=1.2, label="aligned")
-        (self._line_side,) = self._ax_side.plot([], [], color="tab:orange", lw=1.2, label="aligned")
-        (self._line_error,) = self._ax_error.plot([], [], color="tab:red", lw=1.0)
+        self._ref_curve_side = self._plot_side.plot(ref_xyz[:, 0], ref_xyz[:, 2], pen=REFERENCE_PEN, antialias=True)
+        self._curve_top = self._plot_top.plot(pen=ALIGNED_PEN, antialias=True, name="aligned")
+        self._curve_side = self._plot_side.plot(pen=ALIGNED_PEN, antialias=True)
+        self._curve_error = self._plot_error.plot(pen=ERROR_PEN, antialias=True)
+        self._plot_error.setYRange(0, self._error_ylim, padding=0)
 
-        self._ax_top.set(title="Top view", xlabel="x [m]", ylabel="y [m]")
-        self._ax_side.set(title="Side view", xlabel="x [m]", ylabel="z [m]")
-        self._ax_error.set(title="Position deviation to reference", xlabel="matched pose", ylabel="3D distance [m]")
-        for axis in (self._ax_top, self._ax_side):
-            axis.set_aspect("equal", adjustable="datalim")
-            axis.grid(True, alpha=0.3)
-        self._ax_error.grid(True, alpha=0.3)
-        self._ax_top.legend(loc="best")
+        self._graphics.addItem(self._plot_top, row=0, col=0)
+        self._graphics.addItem(self._plot_side, row=0, col=1)
+        self._graphics.addItem(self._plot_error, row=1, col=0, colspan=2)
+        self._graphics.ci.layout.setRowStretchFactor(0, 3)
+        self._graphics.ci.layout.setRowStretchFactor(1, 2)
 
     @property
     def parameters(self) -> AlignmentParameters:
@@ -528,16 +479,11 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
     def _update_preview(self) -> None:
         aligned = self._aligned_preview()
         xyz = aligned.positions.xyz
-        self._line_top.set_data(xyz[:, 0], xyz[:, 1])
-        self._line_side.set_data(xyz[:, 0], xyz[:, 2])
+        self._curve_top.setData(xyz[:, 0], xyz[:, 1])
+        self._curve_side.setData(xyz[:, 0], xyz[:, 2])
         self._update_deviation(aligned)
         if self._series_window is not None and self._series_window.isVisible():
             self._series_window.update_aligned(aligned)
-        if self._needs_full_draw:
-            self._needs_full_draw = False
-            self._canvas.invalidate()
-        else:
-            self._canvas.refresh()
 
     def _show_time_series(self) -> None:
         if self._series_window is None:
@@ -573,7 +519,7 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
 
     def _update_deviation(self, aligned: Trajectory) -> None:
         if self._matched_reference_t is None:
-            self._line_error.set_data([], [])
+            self._curve_error.setData([], [])
             self.metrics_label.setText("Deviation: not available (trajectories could not be matched).")
             return
 
@@ -582,7 +528,7 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         t = aligned.timestamps
         valid = (self._matched_reference_t >= t[0]) & (self._matched_reference_t <= t[-1])
         if not np.any(valid):
-            self._line_error.set_data([], [])
+            self._curve_error.setData([], [])
             self.metrics_label.setText("Deviation: not available (no temporal overlap).")
             return
 
@@ -590,33 +536,30 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         aligned_xyz = np.column_stack([np.interp(ref_t, t, aligned.positions.xyz[:, i]) for i in range(3)])
         deviations = np.linalg.norm(aligned_xyz - self._matched_reference_xyz[valid], axis=1)
 
-        self._line_error.set_data(np.flatnonzero(valid), deviations)
-        xmax = max(len(self._matched_reference_t) - 1, 1)
-        if xmax != self._error_xmax:
-            self._error_xmax = xmax
-            self._ax_error.set_xlim(0, xmax)
-            self._needs_full_draw = True
+        self._curve_error.setData(np.flatnonzero(valid), deviations)
+        self._plot_error.setXRange(0, max(len(self._matched_reference_t) - 1, 1), padding=0)
         peak = float(np.max(deviations)) * 1.05
         if peak > self._error_ylim or peak < 0.3 * self._error_ylim:
             self._error_ylim = max(peak * 1.2, 1e-6)
-            self._ax_error.set_ylim(0, self._error_ylim)
-            self._needs_full_draw = True
+            self._plot_error.setYRange(0, self._error_ylim, padding=0)
         rmse = float(np.sqrt(np.mean(deviations**2)))
         self.metrics_label.setText(
             f"Matched poses: {len(deviations)}    RMSE: {rmse:.4f} m    Max: {float(np.max(deviations)):.4f} m"
         )
 
     def _fit_view(self) -> None:
-        aligned_xyz = np.c_[self._line_top.get_xdata(), self._line_top.get_ydata(), self._line_side.get_ydata()]
-        all_xyz = np.vstack((self._reference_plot_xyz, aligned_xyz)) if len(aligned_xyz) else self._reference_plot_xyz
+        aligned_x, aligned_y = self._curve_top.getData()
+        _, aligned_z = self._curve_side.getData()
+        ref = self._reference_plot_xyz
+        if aligned_x is not None and len(aligned_x):
+            all_xyz = np.vstack((ref, np.column_stack((aligned_x, aligned_y, aligned_z))))
+        else:
+            all_xyz = ref
         low, high = np.min(all_xyz, axis=0), np.max(all_xyz, axis=0)
         margin = 0.05 * np.maximum(high - low, 1.0)
         low, high = low - margin, high + margin
-        self._ax_top.set_xlim(low[0], high[0])
-        self._ax_top.set_ylim(low[1], high[1])
-        self._ax_side.set_xlim(low[0], high[0])
-        self._ax_side.set_ylim(low[2], high[2])
-        self._canvas.invalidate()
+        self._plot_top.setRange(xRange=(low[0], high[0]), yRange=(low[1], high[1]), padding=0)
+        self._plot_side.setRange(xRange=(low[0], high[0]), yRange=(low[2], high[2]), padding=0)
 
     def _accept(self, refine: bool) -> None:
         self.alignment_accepted.emit(self.parameters, refine)
