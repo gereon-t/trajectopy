@@ -49,9 +49,8 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
             else:
                 self._hidden_ids.add(entry.entry_id)
         if self.items:
-            self.dataChanged.emit(
-                self.index(0, 0), self.index(len(self.items) - 1, 0), [Qt.ItemDataRole.CheckStateRole]
-            )
+            # whole rows: views may also show hidden entries differently (e.g. muted)
+            self.dataChanged.emit(self.index(0, 0), self.index(len(self.items) - 1, self.columnCount() - 1))
         self.visibility_changed.emit()
 
     def rowCount(self, parent: QModelIndex | QPersistentModelIndex = _ROOT_INDEX) -> int:

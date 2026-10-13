@@ -5,6 +5,10 @@ white (or dark) cards with thin borders and rounded corners, one blue accent for
 selection. Widgets opt into the card and label styles with their object name (e.g. ``sectionLabel``).
 """
 
+from functools import cache
+
+from PySide6 import QtCore, QtGui
+
 from trajectopy.utils.resources import resource_path
 
 LIGHT = {
@@ -257,6 +261,15 @@ QTableView#plainList {
 QTableView#plainList::item { padding: 0 6px; border: none; }
 QTableView#plainList::item:hover { background-color: %(hover)s; }
 QTableView#plainList::item:selected { background-color: %(selection)s; }
+/* the checkbox of a trajectory is an eye: shown in the views or not */
+QTableView#plainList::indicator {
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: transparent;
+    image: url(%(eye_off_icon)s);
+}
+QTableView#plainList::indicator:checked { border: none; background: transparent; image: url(%(eye_icon)s); }
 QLabel#sectionLabel { color: %(muted)s; font-size: 12px; font-weight: 600; }
 QLabel#selectionTitle { font-size: 15px; font-weight: 600; }
 QLabel#mutedLabel { color: %(muted)s; }
@@ -331,6 +344,7 @@ QToolButton#viewTitle::menu-indicator {
     subcontrol-position: right center;
     right: 6px;
 }
+QLabel#viewCaption { color: %(muted)s; font-size: 12px; padding-left: 4px; }
 QToolButton#hoverButton { color: %(muted)s; padding: 2px 7px; border: none; }
 QToolButton#hoverButton:hover { color: %(text)s; background-color: %(hover)s; }
 QFrame#floatingBar {
@@ -381,6 +395,8 @@ def _stylesheet(colors: dict[str, str], variant: str) -> str:
         **colors,
         "check_icon": _resource("check.svg"),
         "chevron_icon": _resource(f"chevron-{variant}.svg"),
+        "eye_icon": _resource(f"eye-{variant}.svg"),
+        "eye_off_icon": _resource(f"eye-off-{variant}.svg"),
     }
 
 
@@ -399,3 +415,35 @@ def set_dark(dark: bool) -> None:
 def color(name: str) -> str:
     """A color of the current theme, for widgets that paint or color items themselves."""
     return (DARK if _dark else LIGHT)[name]
+
+
+# Result types: short label and color of their badge (the same in both themes; white text on all of them)
+RESULT_BADGES = {
+    "ATE Result": ("ATE", "#1f6feb"),
+    "RPE Result": ("RPE", "#8250df"),
+    "Alignment": ("ALN", "#9a6700"),
+}
+
+
+@cache
+def badge_icon(text: str, background: str, pixel_ratio: float = 2.0) -> QtGui.QIcon:
+    """A small rounded label (e.g. "ATE") as an icon, used to tell result types apart at a glance."""
+    width, height = 30, 15
+    pixmap = QtGui.QPixmap(int(width * pixel_ratio), int(height * pixel_ratio))
+    pixmap.setDevicePixelRatio(pixel_ratio)
+    pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+    painter = QtGui.QPainter(pixmap)
+    painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+    painter.setPen(QtCore.Qt.PenStyle.NoPen)
+    painter.setBrush(QtGui.QColor(background))
+    painter.drawRoundedRect(QtCore.QRectF(0, 0, width, height), 4, 4)
+    font = QtGui.QFont()
+    font.setPixelSize(9)
+    font.setBold(True)
+    painter.setFont(font)
+    painter.setPen(QtGui.QColor("#ffffff"))
+    painter.drawText(QtCore.QRectF(0, 0, width, height), QtCore.Qt.AlignmentFlag.AlignCenter, text)
+    painter.end()
+    icon = QtGui.QIcon()
+    icon.addPixmap(pixmap)
+    return icon

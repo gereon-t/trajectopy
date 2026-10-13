@@ -6,6 +6,7 @@ from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QFontDatabase
 from PySide6.QtWidgets import QInputDialog
 
+from trajectopy.gui import themes
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
@@ -84,6 +85,9 @@ class TrajectoryTableModel(RequestTableModel):
     def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if index.row() >= len(self.items):
             return None
+        entry = self.items[index.row()]
+        if role == Qt.ItemDataRole.ForegroundRole and not self.is_visible(entry):
+            return QColor(themes.color("disabled"))
         if index.column() == self.badge_column:
             if role == Qt.ItemDataRole.DisplayRole:
                 return self.badges.get(self.items[index.row()].entry_id, "")
@@ -92,6 +96,10 @@ class TrajectoryTableModel(RequestTableModel):
             if role == Qt.ItemDataRole.FontRole:
                 return QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
             return None
+        if role == Qt.ItemDataRole.ToolTipRole and index.column() == 0:
+            if self.is_visible(entry):
+                return f"{entry.name}\nShown in the views (click the eye to hide it)"
+            return f"{entry.name}\nHidden from the views (click the eye to show it)"
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
             return QColor(_row_color(index.row()))
         if role == Qt.ItemDataRole.FontRole and index.column() == 0 and self.items[index.row()].set_as_reference:

@@ -539,6 +539,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 )
             )
         trajectories.set_badges(badges)
+        names = {entry.entry_id: entry.name for entry in trajectories.items}
+        short_names = {
+            result.entry_id: result.name[len(names[result.source_id]) :].strip() or result.name
+            for result in results
+            if result.source_id in names and result.name.startswith(names[result.source_id])
+        }
+        self.result_table_model.set_in_use(
+            {result.entry_id for source, own in latest.items() if source in names for result in own.values()},
+            short_names,
+        )
         if not trajectories.items:
             self._color_modes.clear()
 
@@ -848,7 +858,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # plain lists: the name (with visibility checkbox and color) and one number; no headers or grid
         for view, keep in (
             (self.trajectoryTableView, {0, self.trajectory_table_model.badge_column}),
-            (self.resultTableView, {0}),
+            (self.resultTableView, {0, self.result_table_model.value_column}),
         ):
             view.setObjectName("plainList")
             view.setShowGrid(False)
@@ -857,6 +867,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             view.horizontalHeader().hide()
             view.verticalHeader().setDefaultSectionSize(34)
             view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            view.setWordWrap(False)
+            view.setIconSize(QtCore.QSize(30, 15))  # result type badges
             header = view.horizontalHeader()
             header.setStretchLastSection(False)
             header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)

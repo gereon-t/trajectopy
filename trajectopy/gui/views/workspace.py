@@ -5,6 +5,7 @@ or into its own window. A layout is the list of views (id and type) plus the doc
 """
 
 import base64
+import html
 import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -306,6 +307,13 @@ def _message_label(text: str) -> QtWidgets.QLabel:
     return label
 
 
+MAX_CAPTION_NAMES = 4
+
+
+def _short(name: str, length: int = 22) -> str:
+    return name if len(name) <= length else name[: length - 1] + "…"
+
+
 def _flat_button(text: str, tip: str, slot: Callable[[], None] | None) -> QtWidgets.QToolButton:
     button = QtWidgets.QToolButton()
     button.setText(text)
@@ -387,10 +395,15 @@ def _rpe_figure(title: str):
     return build
 
 
+def _chosen_alignment(data: WorkspaceData) -> WorkspaceTrajectory | None:
+    """The alignment of the selected trajectory, else of the first checked one that has one."""
+    aligned = [t for t in data.trajectories if t.alignment is not None]
+    return next((t for t in aligned if t.entry.entry_id in data.selected_ids), aligned[0] if aligned else None)
+
+
 def _alignment_figure(title: str):
     def build(data: WorkspaceData):
-        aligned = [t for t in data.trajectories if t.alignment is not None]
-        chosen = next((t for t in aligned if t.entry.entry_id in data.selected_ids), aligned[0] if aligned else None)
+        chosen = _chosen_alignment(data)
         if chosen is None:
             return (
                 None,
@@ -406,37 +419,69 @@ def _pick(figures: Sequence[Figure], title: str) -> Figure | None:
     return next((figure for figure in figures if figure.title == title), None)
 
 
+Usage = list[tuple[WorkspaceTrajectory, str]]  # the trajectories a view shows and what of them
+
+
+def _uses_trajectories(data: WorkspaceData) -> Usage:
+    return [(t, "positions and orientations") for t in data.trajectories]
+
+
+def _uses_ate(data: WorkspaceData) -> Usage:
+    return [(t, f"ATE: {t.ate.name}") for t in data.trajectories if t.ate is not None]
+
+
+def _uses_rpe(data: WorkspaceData) -> Usage:
+    return [(t, f"RPE: {t.rpe.name}") for t in data.trajectories if t.rpe is not None]
+
+
+def _uses_evaluation(data: WorkspaceData) -> Usage:
+    return [
+        (t, "; ".join(f"{kind}: {r.name}" for kind, r in (("ATE", t.ate), ("RPE", t.rpe)) if r is not None))
+        for t in data.evaluated
+    ]
+
+
+def _uses_alignment(data: WorkspaceData) -> Usage:
+    chosen = _chosen_alignment(data)
+    return [(chosen, f"Alignment: {chosen.alignment.name}")] if chosen is not None else []
+
+
 @dataclass(frozen=True)
 class ViewType:
     key: str
     label: str
     create: Callable[[], ViewContent]
+    uses: Callable[[WorkspaceData], Usage] = _uses_trajectories
 
 
 VIEW_TYPES: tuple[ViewType, ...] = (
-    ViewType("comparison", "Comparison table", ComparisonContent),
+    ViewType("comparison", "Comparison table", ComparisonContent, _uses_evaluation),
     ViewType("scene", "3D view", SceneContent),
     ViewType("map", "Trajectory · Map", lambda: FigureContent(_trajectory_figure("Map"))),
     ViewType("positions", "Trajectory · Positions", lambda: FigureContent(_trajectory_figure("Positions"))),
     ViewType("xyz", "Trajectory · XYZ over time", lambda: FigureContent(_trajectory_figure("XYZ"))),
     ViewType("rpy", "Trajectory · Orientation (RPY)", lambda: FigureContent(_trajectory_figure("RPY"))),
-    ViewType("ate", "ATE · Over time", lambda: FigureContent(_ate_figure("ATE"))),
-    ViewType("ate_components", "ATE · Components", lambda: FigureContent(_ate_figure("ATE Components"))),
-    ViewType("ate_histograms", "ATE · Histograms", lambda: FigureContent(_ate_figure("ATE Histograms"))),
-    ViewType("ate_statistics", "ATE · Statistics", lambda: FigureContent(_ate_figure("ATE Statistics"))),
-    ViewType("ate_distribution", "ATE · Distribution", lambda: FigureContent(_ate_figure("ATE Distribution"))),
-    ViewType("ate_map", "ATE · Map", lambda: FigureContent(_ate_figure("ATE Map"))),
-    ViewType("rpe_meter", "RPE · Per meter", lambda: FigureContent(_rpe_figure("RPE (per meter)"))),
-    ViewType("rpe_second", "RPE · Per second", lambda: FigureContent(_rpe_figure("RPE (per second)"))),
+    ViewType("ate", "ATE · Over time", lambda: FigureContent(_ate_figure("ATE")), _uses_ate),
+    ViewType("ate_components", "ATE · Components", lambda: FigureContent(_ate_figure("ATE Components")), _uses_ate),
+    ViewType("ate_histograms", "ATE · Histograms", lambda: FigureContent(_ate_figure("ATE Histograms")), _uses_ate),
+    ViewType("ate_statistics", "ATE · Statistics", lambda: FigureContent(_ate_figure("ATE Statistics")), _uses_ate),
+    ViewType(
+        "ate_distribution", "ATE · Distribution", lambda: FigureContent(_ate_figure("ATE Distribution")), _uses_ate
+    ),
+    ViewType("ate_map", "ATE · Map", lambda: FigureContent(_ate_figure("ATE Map")), _uses_ate),
+    ViewType("rpe_meter", "RPE · Per meter", lambda: FigureContent(_rpe_figure("RPE (per meter)")), _uses_rpe),
+    ViewType("rpe_second", "RPE · Per second", lambda: FigureContent(_rpe_figure("RPE (per second)")), _uses_rpe),
     ViewType(
         "alignment_covariance",
         "Alignment · Parameter covariance",
         lambda: FigureContent(_alignment_figure("Parameter Covariance"), uses_selection=True),
+        _uses_alignment,
     ),
     ViewType(
         "alignment_correlation",
         "Alignment · Parameter correlation",
         lambda: FigureContent(_alignment_figure("Parameter Correlation"), uses_selection=True),
+        _uses_alignment,
     ),
 )
 VIEW_TYPE = {view_type.key: view_type for view_type in VIEW_TYPES}
@@ -481,6 +526,10 @@ class ViewDock(QtWidgets.QDockWidget):
         self._title.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
         self._title.setMenu(_view_type_menu(self._title, self._set_type))
         bar_layout.addWidget(self._title)
+        self._caption = QtWidgets.QLabel()  # which trajectories (and results) the view shows
+        self._caption.setObjectName("viewCaption")
+        self._caption.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        bar_layout.addWidget(self._caption)
         grip = QtWidgets.QLabel("")  # empty title bar space: drag here to move the view
         grip.setToolTip("Drag to move this view next to or onto another one")
         bar_layout.addWidget(grip, stretch=1)
@@ -496,6 +545,28 @@ class ViewDock(QtWidgets.QDockWidget):
         self.setTitleBarWidget(bar)
 
         self._set_type(view_type, notify=False)
+
+    def set_data(self, data: WorkspaceData) -> None:
+        self.content.set_data(data)
+        self._show_usage(data)
+
+    def _show_usage(self, data: WorkspaceData) -> None:
+        usage = VIEW_TYPE[self.view_type].uses(data)
+        if not usage:
+            self._caption.setText("")
+            self._caption.setToolTip("")
+            return
+        shown = usage[:MAX_CAPTION_NAMES]
+        parts = [f"<span style='color:{t.color}'>●</span>&nbsp;{html.escape(_short(t.entry.name))}" for t, _ in shown]
+        if len(usage) > len(shown):
+            parts.append(f"+{len(usage) - len(shown)}")
+        self._caption.setText("&nbsp;&nbsp;&nbsp;".join(parts))
+        lines = [f"● {t.entry.name}: {what}" for t, what in usage]
+        self._caption.setToolTip(
+            "Shows the trajectories with a visible eye in the list:\n" + "\n".join(lines)
+            if VIEW_TYPE[self.view_type].uses is _uses_trajectories
+            else "Shows the newest results of the trajectories with a visible eye:\n" + "\n".join(lines)
+        )
 
     def enterEvent(self, event: QtCore.QEvent) -> None:
         for button in self._actions:
@@ -555,7 +626,7 @@ class Workspace(QtWidgets.QMainWindow):
     def set_data(self, data: WorkspaceData) -> None:
         self._data = data
         for dock in self._docks:
-            dock.content.set_data(data)
+            dock.set_data(data)
 
     def apply_theme(self) -> None:
         for dock in self._docks:
@@ -570,7 +641,7 @@ class Workspace(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.DockWidgetArea.LeftDockWidgetArea, dock)
         if visible:
             self.splitDockWidget(visible[-1], dock, QtCore.Qt.Orientation.Horizontal)
-        dock.content.set_data(self._data)
+        dock.set_data(self._data)
         self._notify_changed()
         return dock
 
@@ -598,7 +669,7 @@ class Workspace(QtWidgets.QMainWindow):
 
     def _on_type_changed(self, dock: ViewDock) -> None:
         self._connect_content(dock)
-        dock.content.set_data(self._data)
+        dock.set_data(self._data)
         self._notify_changed()
 
     def remove_view(self, dock: ViewDock) -> None:
@@ -643,7 +714,7 @@ class Workspace(QtWidgets.QMainWindow):
             if not restored:
                 self._arrange_rows([[dock] for dock in self._docks])
             for dock in self._docks:
-                dock.content.set_data(self._data)
+                dock.set_data(self._data)
         finally:
             self._loading = False
         return True
@@ -659,7 +730,7 @@ class Workspace(QtWidgets.QMainWindow):
             starts, weights = [row[0] for row in rows], [100 * weight for weight, _ in spec]
             QtCore.QTimer.singleShot(0, lambda: self._resize_rows(starts, weights))
             for dock in self._docks:
-                dock.content.set_data(self._data)
+                dock.set_data(self._data)
         finally:
             self._loading = False
 
