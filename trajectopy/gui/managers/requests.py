@@ -7,7 +7,7 @@ from typing import Any, Protocol
 
 from PySide6.QtCore import SignalInstance
 
-from trajectopy.core.settings import MatchingMethod, PlotSettings
+from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.results.alignment_result import AlignmentResult
@@ -190,7 +190,6 @@ class TrajectoryManagerRequest(DeepCopyRequest):
     target_epsg: int = 0
     grid: float = 0.0
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
-    matching_method: MatchingMethod = MatchingMethod.NEAREST_TEMPORAL
     dof_mapping: dict[str, dict] = field(default_factory=dict)
     # alignment chosen in the manual alignment window; applied as is instead of being estimated
     manual_alignment: AlignmentResult | None = None
@@ -203,7 +202,6 @@ class UIRequest:
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     alignment_entry: AlignmentEntry = field(default_factory=AlignmentEntry)
     message: str = ""
-    confirm_reset: bool = False
     epsg: int = 0
     grid: int = 0
     file_path: str = ""

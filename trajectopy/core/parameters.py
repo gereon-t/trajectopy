@@ -760,30 +760,6 @@ class AlignmentParameters(ParameterSet):
         sim3_matrix[:3, 3] = trafo
         return sim3_matrix
 
-    @classmethod
-    def from_settings(cls, settings: AlignmentEstimationSettings) -> "AlignmentParameters":
-        """Creates AlignmentParameters from estimation settings.
-
-        Args:
-            settings: Settings specifying which parameters to enable
-
-        Returns:
-            AlignmentParameters: New instance with parameters enabled per settings
-        """
-        return cls(
-            sim_trans_x=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
-            sim_trans_y=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
-            sim_trans_z=Parameter(enabled=settings.translation_x, value=0.0, default=0.0),
-            sim_rot_x=Parameter(enabled=settings.rotation_x, value=0.0, default=0.0),
-            sim_rot_y=Parameter(enabled=settings.rotation_y, value=0.0, default=0.0),
-            sim_rot_z=Parameter(enabled=settings.rotation_z, value=0.0, default=0.0),
-            sim_scale=Parameter(enabled=settings.scale, value=1.0, default=1.0),
-            time_shift=Parameter(enabled=settings.time_shift, value=0.0, default=0.0),
-            lever_x=Parameter(enabled=settings.leverarm_x, value=0.0, default=0.0),
-            lever_y=Parameter(enabled=settings.leverarm_y, value=0.0, default=0.0),
-            lever_z=Parameter(enabled=settings.leverarm_z, value=0.0, default=0.0),
-        )
-
     def apply_settings(self, settings: AlignmentEstimationSettings) -> None:
         """Applies estimation settings by enabling or disabling parameters.
 

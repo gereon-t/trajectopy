@@ -214,6 +214,12 @@ DARK_STYLESHEET = (
         QMenu::item:selected {
             background-color: #094771;
         }
+        QMenu::item:disabled {
+            color: #6e6e6e;
+        }
+        QMenu::item:disabled:selected {
+            background-color: #2d2d30;
+        }
         QMenu::separator {
             height: 1px;
             background: #3c3c3c;
@@ -329,6 +335,12 @@ LIGHT_STYLESHEET = (
         QMenu::item:selected {
             background-color: #0078d4;
             color: #ffffff;
+        }
+        QMenu::item:disabled {
+            color: #a0a0a0;
+        }
+        QMenu::item:disabled:selected {
+            background-color: #e5e5e5;
         }
         QMenu::separator {
             height: 1px;

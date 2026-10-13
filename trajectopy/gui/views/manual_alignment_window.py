@@ -5,8 +5,9 @@ The workflow is "rough, then fine":
 1. "Auto align" runs the spatio-temporal least squares alignment, estimating the parameters checked with
    "estimate". Its start values are chosen automatically: the current values, the first pose matched,
    a fit on poses matched in time, or the centers matched - whatever is closest to the reference.
-2. If needed, the start can be improved manually: "Match first pose" (independent of the timestamps),
+2. Alternatively, the trajectory is placed manually: "Match first pose" (independent of the timestamps),
    dragging the trajectory in the three views (top, side, front), jog sliders, typed values, keyboard.
+   "Refine manual alignment" then runs the least squares alignment starting exactly from these values.
 3. "Apply" applies and saves what is shown.
 
 Translation, rotation and scale are presented relative to the trajectory's center (the *pivot*): the user
@@ -641,6 +642,14 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
             return
         self.run_least_squares(start)
 
+    def refine_manual_alignment(self) -> None:
+        """Least squares alignment of the checked parameters, starting from the values shown."""
+        if not any(self.estimation_settings.to_dict().values()):
+            self._status = "Nothing to refine. Check “estimate” for the parameters to estimate."
+            self._update_preview()
+            return
+        self.run_least_squares("manual alignment")
+
     def run_least_squares(self, start: str = "current values") -> None:
         """Runs the least squares alignment in the background, starting from the current values."""
         self._set_busy(True)
@@ -792,10 +801,17 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
             "Puts the first position onto the reference's first position and aligns the initial direction "
             "of travel. Does not use the timestamps, so it also works with an unknown time offset."
         )
+        refine_button = QtWidgets.QPushButton("Refine manual alignment")
+        refine_button.setToolTip(
+            "Least squares alignment of the parameters checked with “estimate”, starting exactly from the "
+            "values shown (unlike “Auto align”, which chooses its start itself)."
+        )
         auto_button.clicked.connect(self.auto_align)
         first_pose_button.clicked.connect(self._on_match_first_pose)
+        refine_button.clicked.connect(self.refine_manual_alignment)
         layout.addWidget(auto_button, 1)
         layout.addWidget(first_pose_button, 1)
+        layout.addWidget(refine_button, 1)
         return layout
 
     def _on_match_first_pose(self) -> None:

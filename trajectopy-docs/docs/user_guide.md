@@ -183,14 +183,15 @@ This opens the application where you can drag & drop files, align them, and view
 
 If the automatic alignment cannot find a solution on its own (e.g. trajectories in unrelated frames or
 with a large time offset), a trajectory can be aligned manually: set a reference, then choose
-*Process → Align With Reference → Manual (Interactive)…* in the context menu of the trajectory.
+*Align with Reference → Interactive Alignment…* in the context menu of the trajectory.
 
 1. **Auto align** runs the spatio-temporal least squares alignment and shows its result. Only the parameters
    checked with *estimate* are estimated (preselected from the trajectory settings); the others keep their
    values. The start values are chosen automatically: the current values, the first pose matched, a fit on
    poses matched in time or the centers matched, whatever brings the trajectory closest to the reference.
    The leverarm can only be estimated for trajectories with orientations.
-2. If Auto align does not find the right solution, **improve the start** and press *Auto align* again:
+2. If Auto align does not find the right solution, **place the trajectory manually** and press
+   *Refine manual alignment*: it runs the same least squares alignment, but starts exactly from the values shown.
    *Match first pose* puts the first position onto the reference's first position and aligns the initial
    direction of travel. It does not use the timestamps, so it also works with an unknown time offset.
    In the plots, drag ● to move and ◆ to rotate the trajectory. The top view rotates about the vertical
@@ -200,32 +201,41 @@ with a large time offset), a trajectory can be aligned manually: set a reference
    wheel (Ctrl: 10× steps), or with the keyboard after clicking into the plots (arrows, PgUp/PgDn, Q/E;
    Shift: 10× faster, Ctrl: 10× finer).
 3. **Apply** aligns the trajectory with the values shown and saves the alignment. If they come unchanged from
-   Auto align, the saved alignment includes its statistics (e.g. the covariance).
+   the least squares alignment, the saved alignment includes its statistics (e.g. the covariance).
 
 Position, heading and scale are relative to the trajectory's center, so rotating does not move the
 trajectory away even for georeferenced coordinates.
 
+### Context Menus
+
+All actions are in the context menu of the selected trajectories or results (right-click). Hover over an entry
+to see what it does. Entries that are not available for the current selection are greyed out and their hint
+explains why, e.g. *Compare with Reference* needs a reference: right-click the reference trajectory and choose
+*Set as Reference*.
+
+The trajectory context menu is grouped by task:
+
+- **Plot**, **Playback in 3D**, **Timeline** and **Properties**
+- **Set as Reference**, **Compare with Reference** (ATE, RPE, extracting matching poses) and
+  **Align with Reference** (estimated, interactive, first pose, or applying an existing alignment)
+- **Coordinate System**: transforming positions or declaring their EPSG code
+- **Process**: smoothing, resampling, rearranging axes, sorting, dividing into laps, merging and averaging
+- **Settings**, **Rename**, **Duplicate**, **Export** and **Remove**
+
 ### Keyboard Shortcuts
 
-Keyboard shortcuts are active when the corresponding table has focus and at least one row is selected.
+Keyboard shortcuts are shown next to the entries of the context menus. They are active when the corresponding
+table has focus and do what the menu entry does for the selected rows.
 
-| Shortcut | Context | Action | Availability |
-| --- | --- | --- | --- |
-| `Delete` | Trajectories table | Remove selected trajectories | Single and multi selection |
-| `T` | Trajectories table | Transform to EPSG | Single and multi selection |
-| `Ctrl+C` | Trajectories table | Copy selected trajectories | Single and multi selection |
-| `P` | Trajectories table | Open trajectory properties | Single and multi selection |
-| `V` | Trajectories table | Plot selected trajectories (2D) | Single and multi selection |
-| `M` | Trajectories table | Merge selected trajectories | Single and multi selection |
-| `R` | Trajectories table | Set selected trajectory as reference | Single selection only |
-| `Shift+R` | Trajectories table | Unset reference trajectory | Single selection only |
-| `S` | Trajectories table | Open trajectory settings | Single selection only |
-| `U` | Trajectories table | Rename selected trajectory | Single selection only |
-| `F2` | Trajectories table | Rename selected trajectory | Single selection only |
-| `E` | Trajectories table | Export selected trajectory | Single selection only |
-| `Delete` | Results table | Remove selected results | Single and multi selection |
-| `Ctrl+C` | Results table | Copy selected results | Single and multi selection |
-| `P` | Results table | Open result properties | Single and multi selection |
-| `U` | Results table | Rename selected result | Single selection only |
-| `F2` | Results table | Rename selected result | Single selection only |
-| `E` | Results table | Export selected result | Single selection only |
+| Shortcut | Trajectories table | Results table |
+| --- | --- | --- |
+| `V` | Plot | Plot |
+| `P` | Properties | Properties |
+| `R` / `Shift+R` | Set as reference / unset reference | |
+| `T` | Transform to EPSG | |
+| `M` | Merge (two or more trajectories) | |
+| `S` | Settings | |
+| `F2` (or `U`) | Rename | Rename |
+| `Ctrl+D` (or `Ctrl+C`) | Duplicate | Duplicate |
+| `E` | Export | Export |
+| `Delete` | Remove | Remove |

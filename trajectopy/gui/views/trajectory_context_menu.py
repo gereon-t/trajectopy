@@ -1,7 +1,7 @@
 import logging
+from collections.abc import Callable
 
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QAction, QCursor
+from PySide6 import QtCore
 
 from trajectopy.gui.managers.requests import (
     PlotRequest,
@@ -16,11 +16,23 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
 )
 from trajectopy.gui.models.selection import TrajectorySelection
+from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action, add_note, add_submenu
 
 logger = logging.getLogger(__name__)
 
+SINGLE_ONLY = "Select a single trajectory."
+MULTIPLE_ONLY = "Select two or more trajectories."
+NO_REFERENCE = "Set a reference first: right-click the reference trajectory → Set as Reference (R)."
+ONLY_REFERENCE = "Select a trajectory other than the reference."
 
-class TrajectoryContextMenu(QtWidgets.QMenu):
+
+class TrajectoryContextMenu(SelectionMenu):
+    """Context menu of the trajectory table.
+
+    The entries are grouped by task. Entries that are not available for the current selection stay visible
+    (disabled) and explain why on hover, so that all features can be discovered.
+    """
+
     trajectory_manager_request = QtCore.Signal(TrajectoryManagerRequest)
     trajectory_model_request = QtCore.Signal(TrajectoryModelRequest)
     result_model_request = QtCore.Signal(ResultModelRequest)
@@ -30,437 +42,349 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.evaluate_context_menu = QtWidgets.QMenu("Evaluate")
-        self.comparison_context_menu = QtWidgets.QMenu("Compare With Reference")
-        self.other_context_menu = QtWidgets.QMenu("Utilities")
-        self.view_context_menu = QtWidgets.QMenu("View")
-        self.edit_context_menu = QtWidgets.QMenu("Edit")
-        self.process_context_menu = QtWidgets.QMenu("Process")
-        self.align_with_reference_sub_menu = QtWidgets.QMenu("Align With Reference", self)
-        self._selection: TrajectorySelection
-
-    def set_selection(self, selection: TrajectorySelection) -> None:
-        self._selection = selection
+        self._selection = TrajectorySelection(entries=[])
+        self.alignments_available: Callable[[], bool] = lambda: True
 
     def get_selection(self) -> TrajectorySelection:
         return self._selection
 
-    @QtCore.Slot(TrajectorySelection)
-    def show_context_menu(self, selection: TrajectorySelection):
-        if not selection:
-            return
+    def _add_entries(self) -> None:
+        self._view_section()
+        self.addSeparator()
+        self._reference_section()
+        self.addSeparator()
+        self._coordinates_menu()
+        self._process_menu()
+        self.addSeparator()
+        self._entry_section()
 
-        self.clear()
-        self.set_selection(selection)
+    # ----------------------------------------------------------------------------------------------- availability
+    @property
+    def _single(self) -> str:
+        return "" if len(self._selection) == 1 else SINGLE_ONLY
 
-        if len(selection) == 1:
-            self.single_only_context()
+    @property
+    def _multiple(self) -> str:
+        return "" if len(self._selection) > 1 else MULTIPLE_ONLY
 
-        self.multi_context()
-        self.exec(QCursor.pos())
+    @property
+    def _needs_reference(self) -> str:
+        if not self._selection.reference_is_set:
+            return NO_REFERENCE
+        if all(entry.set_as_reference for entry in self._selection.entries):
+            return ONLY_REFERENCE
+        return ""
 
-    def clear(self) -> None:
-        super().clear()
-        self.evaluate_context_menu.clear()
-        self.comparison_context_menu.clear()
-        self.other_context_menu.clear()
-        self.view_context_menu.clear()
-        self.edit_context_menu.clear()
-        self.process_context_menu.clear()
-        self.align_with_reference_sub_menu.clear()
-
-    def single_only_context(self) -> None:
-        """These options are only shown for single trajectories"""
-        settings_action = QAction("Settings", self)
-        settings_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.TRAJ_SETTINGS,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
+    # ---------------------------------------------------------------------------------------------- request helpers
+    def _manager(self, request_type: TrajectoryManagerRequestType) -> Callable[[], None]:
+        return lambda: self.trajectory_manager_request.emit(
+            TrajectoryManagerRequest(type=request_type, selection=self.get_selection())
         )
 
-        if self.get_selection().entries[0].set_as_reference:
-            reference_action = QAction("Unset As Reference", self)
-            reference_action.triggered.connect(
-                lambda: self.trajectory_model_request.emit(
-                    TrajectoryModelRequest(type=TrajectoryModelRequestType.UNSET_REFERENCE)
-                )
+    def _model(self, request_type: TrajectoryModelRequestType) -> Callable[[], None]:
+        return lambda: self.trajectory_model_request.emit(
+            TrajectoryModelRequest(type=request_type, selection=self.get_selection())
+        )
+
+    def _ui(self, request_type: UIRequestType) -> Callable[[], None]:
+        return lambda: self.ui_request.emit(UIRequest(type=request_type, trajectory_selection=self.get_selection()))
+
+    # ------------------------------------------------------------------------------------------------------ sections
+    def _view_section(self) -> None:
+        add_action(
+            self,
+            "Plot",
+            lambda: self.plot_request.emit(
+                PlotRequest(type=PlotRequestType.TRAJECTORIES, trajectory_selection=self.get_selection())
+            ),
+            hint="Opens the trajectory plots (positions, orientations, velocity, map, …).",
+            shortcuts=("V",),
+        )
+        add_action(
+            self,
+            "Playback in 3D",
+            self._ui(UIRequestType.PLAYBACK),
+            hint="Plays the trajectories back in a 3D view, showing the body frame axes at the current pose.",
+        )
+        add_action(
+            self,
+            "Timeline",
+            lambda: self.show_timeline.emit(self.get_selection().entries),
+            hint="Shows the time spans of the trajectories, e.g. to check that they overlap.",
+        )
+        add_action(
+            self,
+            "Properties",
+            self._ui(UIRequestType.TRAJ_PROPERTIES),
+            hint="Shows details like the number of poses, length, data rate and coordinate system.",
+            shortcuts=("P",),
+        )
+
+    def _reference_section(self) -> None:
+        if len(self._selection) == 1 and self._selection.entries[0].set_as_reference:
+            add_action(
+                self,
+                "Unset Reference",
+                self._model(TrajectoryModelRequestType.UNSET_REFERENCE),
+                hint="This trajectory is no longer used as the reference.",
+                shortcuts=("Shift+R",),
             )
         else:
-            reference_action = QAction("Set As Reference", self)
-            reference_action.triggered.connect(
-                lambda: self.trajectory_model_request.emit(
-                    TrajectoryModelRequest(
-                        type=TrajectoryModelRequestType.SET_REFERENCE,
-                        selection=self.get_selection(),
-                    )
-                )
+            add_action(
+                self,
+                "Set as Reference",
+                self._model(TrajectoryModelRequestType.SET_REFERENCE),
+                hint="Uses this trajectory as the reference (ground truth) for comparisons and alignments.",
+                shortcuts=("R",),
+                unavailable=self._single,
             )
+        self._compare_menu()
+        self._align_menu()
 
-        self.addAction(reference_action)
-        self.addAction(settings_action)
-
-        export_action = QAction("Export", self)
-        export_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EXPORT_TRAJ,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
+    def _compare_menu(self) -> None:
+        menu = add_submenu(
+            self,
+            "Compare with Reference",
+            hint="Computes deviations to the reference. The results appear in the result table.",
         )
-        self.addAction(export_action)
-
-        kml_action = QAction("Export to Google Earth (KML)", self)
-        kml_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(type=UIRequestType.EXPORT_KML, trajectory_selection=self.get_selection())
+        needs_reference = self._needs_reference
+        if needs_reference:
+            add_note(
+                menu,
+                "No reference set: right-click it → Set as Reference"
+                if needs_reference == NO_REFERENCE
+                else needs_reference,
             )
+        add_action(
+            menu,
+            "Absolute Error (ATE), Aligned First",
+            self._manager(TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT),
+            hint="Aligns the trajectory with the reference (alignment settings), then computes the position and "
+            "orientation deviations of matching poses. Also adds the alignment to the results.",
+            unavailable=needs_reference,
         )
-        kml_action.setEnabled(self.get_selection().entries[0].trajectory.positions.epsg != 0)
-        kml_action.setToolTip("Requires a trajectory with a known EPSG code.")
-        self.addAction(kml_action)
-
-    def multi_context(self) -> None:
-        """These options are shown for single and multiple trajectories"""
-        self.view_context()
-
-        change_datum_action = QAction("Transform to EPSG", self)
-        change_datum_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EPSG_TRANSFORMATION,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
+        add_action(
+            menu,
+            "Absolute Error (ATE), as Is",
+            self._manager(TrajectoryManagerRequestType.ATE_NO_ALIGNMENT),
+            hint="Computes the position and orientation deviations of matching poses without aligning first.",
+            unavailable=needs_reference,
         )
-        self.addAction(change_datum_action)
-
-        if self.get_selection().reference_is_set:
-            self.addSeparator()
-            epsg_to_ref_action = QAction("Adapt EPSG from Reference", self)
-            epsg_to_ref_action.triggered.connect(
-                lambda: self.trajectory_manager_request.emit(
-                    TrajectoryManagerRequest(
-                        type=TrajectoryManagerRequestType.EPSG_TO_REF,
-                        selection=self.get_selection(),
-                    )
-                )
-            )
-            self.addAction(epsg_to_ref_action)
-            self.evaluate_context()
-            self.addAction(self.match_action())
-            self.addMenu(self.align_context())
-
-        self.addSeparator()
-        self.edit_context()
-        self.process_context()
-
-    def edit_context(self) -> None:
-        """Edit sub-context menu"""
-        single_selection = len(self.get_selection()) == 1
-        self.addMenu(self.edit_context_menu)
-
-        edit_epsg_action = QAction("EPSG", self)
-        edit_epsg_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.EPSG_EDIT,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
+        add_action(
+            menu,
+            "Relative Pose Error (RPE)",
+            self._manager(TrajectoryManagerRequestType.RPE),
+            hint="Computes the drift: deviations of the relative motion over pose pairs separated by the "
+            "distances or times defined in the settings (independent of an alignment).",
+            unavailable=needs_reference,
         )
-        self.edit_context_menu.addAction(edit_epsg_action)
-
-        copy_action = QAction("Copy", self)
-        copy_action.triggered.connect(
-            lambda: self.trajectory_model_request.emit(
-                TrajectoryModelRequest(type=TrajectoryModelRequestType.COPY, selection=self.get_selection())
-            )
+        menu.addSeparator()
+        add_action(
+            menu,
+            "Extract Matching Poses",
+            self._manager(TrajectoryManagerRequestType.MATCH),
+            hint="Creates copies of the trajectory and the reference that only contain the poses that correspond "
+            "to each other (matching settings).",
+            unavailable=needs_reference,
         )
-        self.edit_context_menu.addAction(copy_action)
 
-        remove_action = QAction("Remove", self)
-        remove_action.triggered.connect(
-            lambda: self.trajectory_model_request.emit(
-                TrajectoryModelRequest(
-                    type=TrajectoryModelRequestType.REMOVE,
-                    selection=self.get_selection(),
-                )
-            )
+    def _align_menu(self) -> None:
+        menu = add_submenu(
+            self,
+            "Align with Reference",
+            hint="Transforms the trajectory into the frame of the reference. Creates an aligned copy.",
         )
-        self.edit_context_menu.addAction(remove_action)
-
-        remove_related_action = QAction("Remove All Related", self)
-        remove_related_action.triggered.connect(
-            lambda: self.trajectory_model_request.emit(
-                TrajectoryModelRequest(
-                    type=TrajectoryModelRequestType.REMOVE_RELATED,
-                    selection=self.get_selection(),
-                )
+        needs_reference = self._needs_reference
+        if needs_reference:
+            add_note(
+                menu,
+                "No reference set: right-click it → Set as Reference"
+                if needs_reference == NO_REFERENCE
+                else needs_reference,
             )
+        add_action(
+            menu,
+            "Estimate Alignment",
+            self._manager(TrajectoryManagerRequestType.ALIGN),
+            hint="Estimates the alignment (least squares, alignment settings) and applies it. The estimated "
+            "parameters are added to the results.",
+            unavailable=needs_reference,
         )
-        self.edit_context_menu.addAction(remove_related_action)
-
-        merge_action = QAction("Merge", self)
-        merge_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.MERGE,
-                    selection=self.get_selection(),
-                )
-            )
+        add_action(
+            menu,
+            "Interactive Alignment…",
+            self._ui(UIRequestType.MANUAL_ALIGNMENT),
+            hint="Opens a window to align the trajectory by hand and/or by least squares, with a live preview. "
+            "Helpful if the automatic alignment fails, e.g. for unrelated frames or large time offsets.",
+            unavailable=needs_reference or self._single,
         )
-        self.edit_context_menu.addAction(merge_action)
-
-        if self.get_selection().entries[0].state.sorting_known:
-            switch_sorting_action = QAction("Switch Sorting", self)
-            switch_sorting_action.triggered.connect(
-                lambda: self.trajectory_manager_request.emit(
-                    TrajectoryManagerRequest(
-                        type=TrajectoryManagerRequestType.SWITCH_SORTING,
-                        selection=self.get_selection(),
-                    )
-                )
-            )
-            self.edit_context_menu.addAction(switch_sorting_action)
-
-        dof_action = QAction("Reorganize DOFs", self)
-        dof_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.DOF_ORGANIZER,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
+        add_action(
+            menu,
+            "Match First Pose",
+            self._manager(TrajectoryManagerRequestType.ADAPT_FIRST_POSE),
+            hint="Moves and rotates the trajectory so that its first pose coincides with the corresponding pose of "
+            "the reference. Only poses that match the reference are kept; the matched reference is added, too.",
+            unavailable=needs_reference,
         )
-        self.edit_context_menu.addAction(dof_action)
-
-        if single_selection:
-            self.edit_single()
-
-    def edit_single(self):
-        rename_action = QAction("Rename", self)
-        rename_action.triggered.connect(
-            lambda: self.trajectory_model_request.emit(
-                TrajectoryModelRequest(
-                    type=TrajectoryModelRequestType.RENAME,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.edit_context_menu.addAction(rename_action)
-
-    def view_context(self) -> None:
-        """View Sub-Context Menu"""
-        self.addMenu(self.view_context_menu)
-
-        property_action = QAction("Properties", self)
-        property_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.TRAJ_PROPERTIES,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.view_context_menu.addAction(property_action)
-
-        timeline_action = QAction("Timeline", self)
-        timeline_action.triggered.connect(lambda: self.show_timeline.emit(self.get_selection().entries))
-        self.view_context_menu.addAction(timeline_action)
-
-        plot_2d_action = QAction("Plot", self)
-        plot_2d_action.triggered.connect(
-            lambda: self.plot_request.emit(
-                PlotRequest(
-                    type=PlotRequestType.TRAJECTORIES,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.view_context_menu.addAction(plot_2d_action)
-
-        playback_action = QAction("Playback", self)
-        playback_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.PLAYBACK,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.view_context_menu.addAction(playback_action)
-
-    def process_context(self) -> None:
-        self.addMenu(self.process_context_menu)
-
-        approximate_action = QAction("Approximate", self)
-        approximate_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.APPROXIMATE,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.process_context_menu.addAction(approximate_action)
-
-        interpolate_to_grid_action = QAction("Interpolate to Grid", self)
-        interpolate_to_grid_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.GRID_SELECTION,
-                    trajectory_selection=self.get_selection(),
-                )
-            )
-        )
-        self.process_context_menu.addAction(interpolate_to_grid_action)
-
-        apply_alignment_action = QAction("Apply Alignment", self)
-        # -> ResultModelRequest(selection=selected_trajectories) -> ResultModel
-        # -> UIRequest(result_selection=Alignments, trajectory_selection=selected_trajectories)
-        # -> TrajectoryManagerRequest(selection=selected_trajectories, alignment_entry=selected_alignment)
-        # -> TrajectoryModelRequest(ADD, selection=aligned_trajectory)
-        apply_alignment_action.triggered.connect(
+        menu.addSeparator()
+        add_action(
+            menu,
+            "Apply Existing Alignment…",
             lambda: self.result_model_request.emit(
                 ResultModelRequest(
                     type=ResultModelRequestType.PASS_ALIGNMENTS_TO_UI,
                     trajectory_selection=self.get_selection(),
                 )
-            )
-        )
-        self.process_context_menu.addAction(apply_alignment_action)
-
-        self.process_context_menu.addMenu(self.other_context())
-
-        reference_entry = self.get_selection().reference_entry
-        if reference_entry is None or reference_entry.trajectory.positions.local_transformer is None:
-            return
-
-    def other_context(self) -> QtWidgets.QMenu:
-        sort_action = QAction("Sort Spatially", self)
-        sort_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.SORT,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.other_context_menu.addAction(sort_action)
-
-        divide_into_laps_action = QAction("Divide into Laps", self)
-        divide_into_laps_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.DIVIDE_INTO_LAPS,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.other_context_menu.addAction(divide_into_laps_action)
-
-        average_action = QAction("Average", self)
-        average_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.AVERAGE,
-                    selection=self.get_selection(),
-                )
-            )
-        )
-        self.other_context_menu.addAction(average_action)
-        return self.other_context_menu
-
-    def align_context(self) -> QtWidgets.QMenu:
-        self.align_with_reference_sub_menu.setEnabled(self.get_selection().reference_is_set)
-
-        align_all_poses_action = QAction("All Poses", self)
-        align_all_poses_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ALIGN,
-                    selection=self.get_selection(),
-                )
             ),
+            hint="Applies an alignment from the result table, e.g. one estimated for another trajectory.",
+            unavailable="" if self.alignments_available() else "There are no alignments in the result table.",
         )
 
-        align_first_pose_action = QAction("First Pose", self)
-        align_first_pose_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ADAPT_FIRST_POSE,
-                    selection=self.get_selection(),
-                )
-            ),
+    def _coordinates_menu(self) -> None:
+        menu = add_submenu(self, "Coordinate System", hint="Coordinate reference system (EPSG code) of the positions.")
+        add_action(
+            menu,
+            "Transform to EPSG…",
+            self._ui(UIRequestType.EPSG_TRANSFORMATION),
+            hint="Transforms the positions into another coordinate system, e.g. 25832 (UTM 32N).",
+            shortcuts=("T",),
+        )
+        reference = self._selection.reference_entry
+        if reference is None:
+            unavailable = NO_REFERENCE
+        elif reference.trajectory.positions.local_transformer is None:
+            unavailable = "The coordinate system of the reference is unknown (EPSG 0)."
+        else:
+            unavailable = ""
+        add_action(
+            menu,
+            "Transform to Reference System",
+            self._manager(TrajectoryManagerRequestType.EPSG_TO_REF),
+            hint="Transforms the positions into the coordinate system of the reference.",
+            unavailable=unavailable,
+        )
+        add_action(
+            menu,
+            "Set EPSG Code (No Transformation)…",
+            self._ui(UIRequestType.EPSG_EDIT),
+            hint="Declares in which coordinate system the positions are, e.g. if it was missing in the file. "
+            "The coordinates themselves are not changed.",
         )
 
-        manual_align_action = QAction("Manual (Interactive)...", self)
-        manual_align_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.MANUAL_ALIGNMENT,
-                    trajectory_selection=self.get_selection(),
-                )
-            ),
+    def _process_menu(self) -> None:
+        menu = add_submenu(self, "Process", hint="Operations that create modified copies of the trajectories.")
+        add_action(
+            menu,
+            "Smooth (Approximate)",
+            self._manager(TrajectoryManagerRequestType.APPROXIMATE),
+            hint="Approximates the trajectory by piecewise cubic polynomials (approximation settings).",
+        )
+        add_action(
+            menu,
+            "Resample to Time Grid…",
+            self._ui(UIRequestType.GRID_SELECTION),
+            hint="Interpolates the trajectory at equally spaced timestamps.",
+        )
+        add_action(
+            menu,
+            "Rearrange Axes / Angles…",
+            self._ui(UIRequestType.DOF_ORGANIZER),
+            hint="Swaps, negates or offsets the coordinate axes and Euler angles, e.g. to fix a different axis "
+            "convention.",
+        )
+        menu.addSeparator()
+        add_action(
+            menu,
+            "Sort Spatially",
+            self._manager(TrajectoryManagerRequestType.SORT),
+            hint="Orders the poses along the path (sorting settings), e.g. to compare repeated passes of the same "
+            "track independent of time.",
+        )
+        sorting_known = all(entry.state.sorting_known for entry in self._selection.entries)
+        add_action(
+            menu,
+            "Switch Order: Time ↔ Path",
+            self._manager(TrajectoryManagerRequestType.SWITCH_SORTING),
+            hint="Switches between chronological and spatial order of the poses.",
+            unavailable="" if sorting_known else "Sort spatially first.",
+        )
+        add_action(
+            menu,
+            "Divide into Laps",
+            self._manager(TrajectoryManagerRequestType.DIVIDE_INTO_LAPS),
+            hint="Splits a trajectory that repeatedly passes the same closed track into one trajectory per lap.",
+        )
+        menu.addSeparator()
+        add_action(
+            menu,
+            "Merge",
+            self._manager(TrajectoryManagerRequestType.MERGE),
+            hint="Combines the selected trajectories into one, ordered by time. They should be in the same "
+            "coordinate system.",
+            shortcuts=("M",),
+            unavailable=self._multiple,
+        )
+        add_action(
+            menu,
+            "Average",
+            self._manager(TrajectoryManagerRequestType.AVERAGE),
+            hint="Averages the selected trajectories pose by pose. They must have the same number of poses, e.g. "
+            "after resampling them to the same time grid.",
+            unavailable=self._multiple,
         )
 
-        self.align_with_reference_sub_menu.addAction(align_all_poses_action)
-        self.align_with_reference_sub_menu.addAction(align_first_pose_action)
-        self.align_with_reference_sub_menu.addAction(manual_align_action)
-
-        return self.align_with_reference_sub_menu
-
-    def match_action(self) -> QAction:
-        match_action = QAction("Match With Reference", self)
-        match_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.MATCH,
-                    selection=self.get_selection(),
-                )
-            ),
+    def _entry_section(self) -> None:
+        add_action(
+            self,
+            "Settings…",
+            self._ui(UIRequestType.TRAJ_SETTINGS),
+            hint="Settings used for processing this trajectory: alignment, matching, comparison, sorting, ….",
+            shortcuts=("S",),
+            unavailable=self._single,
         )
-
-        return match_action
-
-    def evaluate_context(self) -> None:
-        self.addMenu(self.evaluate_context_menu)
-        self.evaluate_context_menu.setEnabled(self.get_selection().reference_is_set)
-
-        ate_with_alignment = QAction("ATE (with alignment)", self)
-        ate_with_alignment.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT,
-                    selection=self.get_selection(),
-                )
-            ),
+        add_action(
+            self,
+            "Rename",
+            self._model(TrajectoryModelRequestType.RENAME),
+            shortcuts=("F2", "U"),
+            unavailable=self._single,
         )
-
-        ate_without_alignment = QAction("ATE (without alignment)", self)
-        ate_without_alignment.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.ATE_NO_ALIGNMENT,
-                    selection=self.get_selection(),
-                )
-            ),
+        add_action(
+            self,
+            "Duplicate",
+            self._model(TrajectoryModelRequestType.COPY),
+            hint="Adds a copy of the selected trajectories to the table.",
+            shortcuts=("Ctrl+D", "Ctrl+C"),
         )
-
-        rpe_action = QAction("RPE", self)
-        rpe_action.triggered.connect(
-            lambda: self.trajectory_manager_request.emit(
-                TrajectoryManagerRequest(
-                    type=TrajectoryManagerRequestType.RPE,
-                    selection=self.get_selection(),
-                )
-            ),
+        add_action(
+            self,
+            "Export…",
+            self._ui(UIRequestType.EXPORT_TRAJ),
+            hint="Saves the trajectory as a .traj file (readable by trajectopy and as plain text).",
+            shortcuts=("E",),
+            unavailable=self._single,
         )
-
-        self.evaluate_context_menu.addAction(ate_with_alignment)
-        self.evaluate_context_menu.addAction(ate_without_alignment)
-        self.evaluate_context_menu.addAction(rpe_action)
+        kml_unavailable = self._single
+        if not kml_unavailable and self._selection.entries[0].trajectory.positions.epsg == 0:
+            kml_unavailable = "The coordinate system is unknown (EPSG 0). Set or transform it under Coordinate System."
+        add_action(
+            self,
+            "Export to Google Earth (KML)…",
+            self._ui(UIRequestType.EXPORT_KML),
+            hint="Saves the trajectory as a line that can be opened in Google Earth.",
+            unavailable=kml_unavailable,
+        )
+        self.addSeparator()
+        add_action(
+            self,
+            "Remove",
+            self._model(TrajectoryModelRequestType.REMOVE),
+            shortcuts=("Del",),
+        )
+        add_action(
+            self,
+            "Remove Including Derived",
+            self._model(TrajectoryModelRequestType.REMOVE_RELATED),
+            hint="Removes the trajectories together with all trajectories derived from the same file (aligned, "
+            "matched, sorted, … copies).",
+        )

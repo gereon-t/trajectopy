@@ -75,7 +75,6 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.verticalLayout.addWidget(self.year)
         self.setCentralWidget(self.centralwidget)
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate

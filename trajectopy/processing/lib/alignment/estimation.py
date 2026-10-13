@@ -63,7 +63,6 @@ class AlignmentEstimator:
         self._est_params = self.init_parameters()
         self._has_results = False
         self._converged = False
-        self._group_redundancies: dict[str, float] = {}
 
         logger.info("Initialized Alignment!")
         logger.info(self)
@@ -201,10 +200,6 @@ class AlignmentEstimator:
     @property
     def est_params(self) -> AlignmentParameters:
         return self._est_params
-
-    @property
-    def group_redundancies(self) -> dict[str, float]:
-        return self._group_redundancies
 
     @property
     def num_of_equations(self) -> int:

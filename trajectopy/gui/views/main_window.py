@@ -284,8 +284,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # Also refresh details whenever layout changes (e.g., new items loaded)
         self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_selection_changed)
         self.result_table_model.layoutChanged.connect(self._on_result_selection_changed)
-        # Keep timeline in sync with trajectory model
-        self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_model_changed)
 
     @QtCore.Slot()
     def _on_trajectory_selection_changed(self) -> None:
@@ -337,10 +335,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             if len(items) > 1:
                 lines.append("─" * 48)
         self.details_text.setPlainText("\n".join(lines))
-
-    @QtCore.Slot()
-    def _on_trajectory_model_changed(self) -> None:
-        pass  # timeline is now driven by context menu selection
 
     @QtCore.Slot(object)
     def _show_timeline(self, entries) -> None:
@@ -445,6 +439,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         result_layout.setContentsMargins(6, 6, 6, 6)
 
         self.resultTableView = ResultTableView(parent=result_group, result_table_model=self.result_table_model)
+        self.trajectoryTableView.trajectory_context_menu.alignments_available = lambda: bool(
+            self.result_table_model.alignment_entries
+        )
         result_layout.addWidget(self.resultTableView)
 
         result_button_layout = QtWidgets.QHBoxLayout()
@@ -493,7 +490,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.statusBar().setSizeGripEnabled(False)
 
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate

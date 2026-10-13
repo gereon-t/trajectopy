@@ -50,11 +50,6 @@ class Interval:
         return [np.array(_compute_c(v - self.start, self.end - self.start)) for v in self.values]
 
 
-class Intervals:
-    def __init__(self):
-        self.intervals: list[Interval] = []
-
-
 class CubicApproximation:
     """
     Class for piecewise cubic approximation
@@ -77,15 +72,6 @@ class CubicApproximation:
 
         # compute approximation
         self._cubic_approx()
-
-    @property
-    def interval_bounds(self) -> list[float]:
-        """
-        Get the interval bounds of the cubic approximation
-        """
-        if self.interval_steps is None:
-            raise ValueError("Approximation not yet computed")
-        return [np.min(self.interval_steps), np.max(self.interval_steps)]
 
     def evaluate_at(self, locations: np.ndarray) -> np.ndarray:
         """

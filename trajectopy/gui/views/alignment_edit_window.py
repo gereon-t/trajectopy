@@ -88,9 +88,6 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
         button_layout.addWidget(self.okButton)
         main_layout.addLayout(button_layout)
 
-    def retranslateUi(self):
-        pass
-
     def update_view(self) -> None:
         helmert_enabled = self.alignment_entry.estimation_of.helmert_enabled
         leverarm_enabled = self.alignment_entry.estimation_of.leverarm_enabled

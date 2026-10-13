@@ -347,15 +347,7 @@ class TrajectoryManager(QObject):
         )
         entry_pair.entry.state.sorting_known = True
         entry_pair.entry.trajectory.name += " (sorted)"
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
-        )
+        return (entry_pair.entry.derive(entry_pair.entry.trajectory),)
 
     def operation_divide_into_laps(self, request: TrajectoryManagerRequest) -> None:
         """
@@ -407,15 +399,7 @@ class TrajectoryManager(QObject):
         )
         entry_pair.entry.state.approximated = True
         entry_pair.entry.trajectory.name += " (approximated)"
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
-        )
+        return (entry_pair.entry.derive(entry_pair.entry.trajectory),)
 
     def operation_average_trajectories(self, request: TrajectoryManagerRequest) -> None:
         """
@@ -450,15 +434,7 @@ class TrajectoryManager(QObject):
         new_timestamps = np.arange(t[0], t[-1] + step, step)
         interpolate(entry_pair.entry.trajectory, index=new_timestamps, inplace=True)
         entry_pair.entry.trajectory.name += f" (grid {step:.4g}s)"
-        return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=entry_pair.entry.trajectory,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
-        )
+        return (entry_pair.entry.derive(entry_pair.entry.trajectory),)
 
     @staticmethod
     def operation_epsg_edit(
@@ -600,13 +576,7 @@ class TrajectoryManager(QObject):
         traj_aligned.name += " (aligned)"
 
         return (
-            TrajectoryEntry(
-                full_filename=entry_pair.entry.full_filename,
-                trajectory=traj_aligned,
-                settings=entry_pair.entry.settings,
-                group_id=entry_pair.entry.group_id,
-                state=entry_pair.entry.state,
-            ),
+            entry_pair.entry.derive(traj_aligned),
             AlignmentEntry(alignment_result=alignment_result),
         )
 
@@ -631,13 +601,7 @@ class TrajectoryManager(QObject):
         )
         entry_pair.entry.state.aligned = True
         aligned_trajectory.name += " (aligned)"
-        new_entry = TrajectoryEntry(
-            full_filename=entry_pair.entry.full_filename,
-            trajectory=aligned_trajectory,
-            settings=entry_pair.entry.settings,
-            group_id=entry_pair.entry.group_id,
-            state=entry_pair.entry.state,
-        )
+        new_entry = entry_pair.entry.derive(aligned_trajectory)
         logger.info("Applied alignment to trajectory %s", entry_pair.entry.name)
         return (new_entry,)
 
@@ -668,18 +632,7 @@ class TrajectoryManager(QObject):
         entry_pair.entry.state.aligned = True
         traj_aligned.name += " (aligned)"
 
-        return TrajectoryEntry(
-            full_filename=entry_pair.entry.full_filename,
-            trajectory=traj_aligned,
-            settings=entry_pair.entry.settings,
-            group_id=entry_pair.entry.group_id,
-            state=entry_pair.entry.state,
-        ), TrajectoryEntry(
-            full_filename=reference_entry.full_filename,
-            trajectory=traj_ref,
-            settings=reference_entry.settings,
-            group_id=reference_entry.group_id,
-        )
+        return entry_pair.entry.derive(traj_aligned), reference_entry.derive(traj_ref, keep_state=False)
 
     @staticmethod
     def operation_match(entry_pair: TrajectoryEntryPair) -> tuple[TrajectoryEntry, ...]:
@@ -708,19 +661,7 @@ class TrajectoryManager(QObject):
         traj_test.name += " (matched)"
         traj_ref.name += " (matched)"
 
-        return TrajectoryEntry(
-            full_filename=entry_pair.entry.full_filename,
-            trajectory=traj_test,
-            settings=entry_pair.entry.settings,
-            group_id=entry_pair.entry.group_id,
-            state=entry_pair.entry.state,
-        ), TrajectoryEntry(
-            full_filename=reference_entry.full_filename,
-            trajectory=traj_ref,
-            settings=reference_entry.settings,
-            group_id=reference_entry.group_id,
-            state=reference_entry.state,
-        )
+        return entry_pair.entry.derive(traj_test), reference_entry.derive(traj_ref)
 
     @staticmethod
     def operation_ate_with_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:

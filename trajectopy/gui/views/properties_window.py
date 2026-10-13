@@ -69,7 +69,6 @@ class PropertiesGUI(QtWidgets.QMainWindow):
         self.exportButton.setObjectName("okButton")
 
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
@@ -89,10 +88,6 @@ class PropertiesGUI(QtWidgets.QMainWindow):
 
     def reset(self) -> None:
         self.property_table_model.items = []
-        self.refresh()
-
-    def add_entry(self, entry: PropertyEntry) -> None:
-        self.property_table_model.items.append(entry)
         self.refresh()
 
     def add_from_dict(self, input_dict: dict[str, str]) -> None:

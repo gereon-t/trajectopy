@@ -107,6 +107,16 @@ class TrajectoryEntry(Entry):
     def __len__(self) -> int:
         return len(self.trajectory)
 
+    def derive(self, trajectory: Trajectory, keep_state: bool = True) -> "TrajectoryEntry":
+        """New entry for a trajectory computed from this one (same file, settings and group; never the reference)."""
+        return TrajectoryEntry(
+            full_filename=self.full_filename,
+            trajectory=trajectory,
+            settings=self.settings,
+            group_id=self.group_id,
+            state=self.state if keep_state else TrajectoryProcessingState(),
+        )
+
     def to_file(self, filename: str) -> None:
         super().to_file(filename)
 

@@ -303,9 +303,16 @@ class TestManualAlignment(unittest.TestCase):
         self.assertTrue(window._leverarm_box.isChecked())
         self.assertIs(window.alignment_result, window._estimated[1])  # "Apply" keeps the estimation result
 
+    def test_refine_manual_alignment_starts_from_the_values_shown(self):
+        window = self._refinement_case()
+        for row in window._rows.values():
+            row.estimate.setChecked(False)
+        window.refine_manual_alignment()
+        self.assertIn("Nothing to refine", window._status)
+
     def test_refine_runs_in_the_background(self):
         window = self._refinement_case()
-        window.run_least_squares()
+        window.refine_manual_alignment()
         self.assertFalse(window._control_panel.isEnabled())  # busy while estimating
         import time
 
@@ -313,7 +320,7 @@ class TestManualAlignment(unittest.TestCase):
         while "Aligned" not in window._status and time.monotonic() < deadline:
             self.app.processEvents()
             time.sleep(0.01)
-        self.assertIn("Aligned", window._status)
+        self.assertIn("Aligned (start: manual alignment)", window._status)
         self.assertTrue(window._control_panel.isEnabled())
 
     def test_gui_applies_the_window_result(self):

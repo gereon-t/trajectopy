@@ -98,22 +98,6 @@ class Voxelizer:
     def index_to_id(self, index: int) -> str:
         return self.voxel_ids[index]
 
-    def ball_query(self, xyz: np.ndarray, r: float) -> list[frozenset[str]]:
-        """Performs a kd-ball-query within the voxels
-
-        Returns a list of frozensets containing the
-        voxel ids vor neighboring voxels.
-
-        Args:
-            xyz (np.ndarray): query positions
-            r (float): radius in [m]
-
-        Returns:
-            list[frozenset[str]]: list of frozensets containing voxel ids.
-        """
-        neighbor_voxels = self.kd_tree.query_ball_point(xyz, r=r)
-        return [frozenset(self.index_to_id(index) for index in voxel_list) for voxel_list in neighbor_voxels]
-
     def k_nearest_query(self, xyz: np.ndarray, k_nearest: int) -> list[frozenset[str]]:
         """Performs a k-nearest-query within the voxels
 

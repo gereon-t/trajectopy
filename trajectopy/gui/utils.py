@@ -1,8 +1,7 @@
 import os
 from functools import wraps
 
-from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import Qt
+from PySide6 import QtWidgets
 
 
 def set_dark_titlebar(window: QtWidgets.QWidget, use_dark: bool) -> None:
@@ -31,31 +30,6 @@ def center_window(window: QtWidgets.QWidget) -> None:
     cp = window.screen().availableGeometry().center()
     qr.moveCenter(cp)
     window.move(qr.topLeft())
-
-
-def handle_drag_enter(event: QtGui.QDragEnterEvent | None) -> None:
-    """Shared drag enter handler for table views accepting file drops."""
-    if event is None:
-        return
-    if (mime_data := event.mimeData()) is None:
-        return
-    if mime_data.hasUrls():
-        event.accept()
-    else:
-        event.ignore()
-
-
-def handle_drag_move(event: QtGui.QDragMoveEvent | None) -> None:
-    """Shared drag move handler for table views accepting file drops."""
-    if event is None:
-        return
-    if (mime_data := event.mimeData()) is None:
-        return
-    if mime_data.hasUrls():
-        event.setDropAction(Qt.DropAction.CopyAction)
-        event.accept()
-    else:
-        event.ignore()
 
 
 def show_progress(func):

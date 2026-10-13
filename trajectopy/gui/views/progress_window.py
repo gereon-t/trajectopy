@@ -51,7 +51,6 @@ class ProgressWindow(QtWidgets.QMainWindow):
         self.verticalLayout.addWidget(self.progressBar)
 
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate

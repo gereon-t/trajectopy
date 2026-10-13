@@ -1,6 +1,6 @@
-from PySide6 import QtWidgets
-from PySide6.QtCore import Signal, Slot
-from PySide6.QtGui import QAction, QCursor
+from collections.abc import Callable
+
+from PySide6.QtCore import Signal
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -17,150 +17,110 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
 )
 from trajectopy.gui.models.selection import ResultSelection
+from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action
+
+SINGLE_ONLY = "Select a single result."
 
 
-class ResultContextMenu(QtWidgets.QMenu):
+class ResultContextMenu(SelectionMenu):
+    """Context menu of the result table. Entries that are not available for the current selection stay visible
+    (disabled) and explain why on hover."""
+
     result_model_request = Signal(ResultModelRequest)
     ui_request = Signal(UIRequest)
     file_request = Signal(FileRequest)
     plot_request = Signal(PlotRequest)
 
     def __init__(self, parent=None) -> None:
-        super().__init__(parent=parent)
-        self.edit_context_menu = QtWidgets.QMenu("Edit")
-        self._selection: ResultSelection
-
-    def clear(self) -> None:
-        super().clear()
-        self.edit_context_menu.clear()
-
-    def set_selection(self, selection: ResultSelection) -> None:
-        self._selection = selection
+        super().__init__(parent)
+        self._selection = ResultSelection(entries=[])
 
     def get_selection(self) -> ResultSelection:
         return self._selection
 
-    @Slot(ResultSelection)
-    def show_context_menu(self, selection: ResultSelection):
-        if not selection:
-            return
+    def _add_entries(self) -> None:
+        selection = self.get_selection()
+        entries = selection.entries
+        single = "" if len(entries) == 1 else SINGLE_ONLY
 
-        self.clear()
-        self.set_selection(selection)
-
-        self.property_context()
-        self.edit_context()
-        self.plot_context()
-        self.exec(QCursor.pos())
-
-    def property_context(self) -> None:
-        property_action = QAction("Properties", self)
-        property_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(
-                    type=UIRequestType.RES_PROPERTIES,
-                    result_selection=self.get_selection(),
-                )
-            )
+        add_action(
+            self,
+            "Plot",
+            self._plot,
+            hint="Plots the deviations (several deviation results are plotted together) or the alignment "
+            "parameters with their uncertainties.",
+            shortcuts=("V",),
+            unavailable="" if self._plot_type is not None else "Select deviations, or a single alignment.",
         )
-        self.addAction(property_action)
-
-    def plot_context(self):
-        single_selection = len(self.get_selection().entries) == 1
-
-        if single_selection:
-            return self.plot_single()
-
-        # only useful case to plot multiple results is when they are all deviations
-        if all(
-            isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry))
-            for entry in self.get_selection().entries
+        add_action(
+            self,
+            "Properties",
+            self._ui(UIRequestType.RES_PROPERTIES),
+            hint="Shows the statistics of the result, e.g. RMS and maximum deviation or the estimated parameters.",
+            shortcuts=("P",),
+        )
+        if isinstance(alignment := entries[0], AlignmentEntry) and all(
+            isinstance(entry, AlignmentEntry) for entry in entries
         ):
-            plot_action = QAction("Plot", self)
-
-            plot_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(type=PlotRequestType.DEVIATIONS, result_selection=self.get_selection())
-                )
-            )
-            self.addAction(plot_action)
-
-    def plot_single(self):
-        plot_action = QAction("Plot", self)
-        if isinstance(self.get_selection().entries[0], (AbsoluteDeviationEntry, RelativeDeviationEntry)):
-            plot_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.DEVIATIONS,
-                        result_selection=self.get_selection(),
-                    )
-                )
-            )
-            self.addAction(plot_action)
-
-        if isinstance(self.get_selection().entries[0], AlignmentEntry):
-            plot_action.triggered.connect(
-                lambda: self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.ALIGNMENT,
-                        result_selection=self.get_selection(),
-                    )
-                )
-            )
-            self.addAction(plot_action)
-
-    def edit_context(self) -> None:
-        """Edit sub-context menu"""
-        single_selection = len(self.get_selection()) == 1
-        self.addMenu(self.edit_context_menu)
-
-        self.edit_multi()
-
-        if single_selection:
-            self.edit_single()
-
-    def edit_multi(self):
-        copy_action = QAction("Copy", self)
-        copy_action.triggered.connect(
-            lambda: self.result_model_request.emit(
-                ResultModelRequest(type=ResultModelRequestType.COPY, selection=self.get_selection())
-            )
-        )
-        self.edit_context_menu.addAction(copy_action)
-
-        remove_action = QAction("Remove", self)
-        remove_action.triggered.connect(
-            lambda: self.result_model_request.emit(
-                ResultModelRequest(type=ResultModelRequestType.REMOVE, selection=self.get_selection())
-            )
-        )
-        self.edit_context_menu.addAction(remove_action)
-
-    def edit_single(self):
-        if isinstance(alignment_entry := self.get_selection().entries[0], AlignmentEntry):
-            edit_alignment_action = QAction("Edit Enabled Parameters", self)
-            edit_alignment_action.triggered.connect(
+            add_action(
+                self,
+                "Choose Parameters to Apply…",
                 lambda: self.result_model_request.emit(
-                    ResultModelRequest(
-                        type=ResultModelRequestType.EDIT_ALIGNMENT,
-                        alignment=alignment_entry,
-                    )
-                )
+                    ResultModelRequest(type=ResultModelRequestType.EDIT_ALIGNMENT, alignment=alignment)
+                ),
+                hint="Selects which of the estimated parameters are used when this alignment is applied, e.g. "
+                "only the rotation.",
+                unavailable=single,
             )
-            self.edit_context_menu.addAction(edit_alignment_action)
-
-        rename_action = QAction("Rename", self)
-        rename_action.triggered.connect(
+        self.addSeparator()
+        add_action(
+            self,
+            "Rename",
             lambda: self.result_model_request.emit(
                 ResultModelRequest(type=ResultModelRequestType.RENAME, selection=self.get_selection())
-            )
+            ),
+            shortcuts=("F2", "U"),
+            unavailable=single,
         )
-        self.edit_context_menu.addAction(rename_action)
+        add_action(
+            self,
+            "Duplicate",
+            lambda: self.result_model_request.emit(
+                ResultModelRequest(type=ResultModelRequestType.COPY, selection=self.get_selection())
+            ),
+            hint="Adds a copy of the selected results to the table.",
+            shortcuts=("Ctrl+D", "Ctrl+C"),
+        )
+        add_action(
+            self,
+            "Export…",
+            self._ui(UIRequestType.EXPORT_RES),
+            hint="Saves the result as a .result file that can be loaded again.",
+            shortcuts=("E",),
+            unavailable=single,
+        )
+        self.addSeparator()
+        add_action(
+            self,
+            "Remove",
+            lambda: self.result_model_request.emit(
+                ResultModelRequest(type=ResultModelRequestType.REMOVE, selection=self.get_selection())
+            ),
+            shortcuts=("Del",),
+        )
 
-        export_action = QAction("Export", self)
-        export_action.triggered.connect(
-            lambda: self.ui_request.emit(
-                UIRequest(type=UIRequestType.EXPORT_RES, result_selection=self.get_selection())
-            )
-        )
-        self.edit_context_menu.addAction(export_action)
+    @property
+    def _plot_type(self) -> PlotRequestType | None:
+        entries = self._selection.entries
+        if entries and all(isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in entries):
+            return PlotRequestType.DEVIATIONS
+        if len(entries) == 1 and isinstance(entries[0], AlignmentEntry):
+            return PlotRequestType.ALIGNMENT
+        return None
+
+    def _plot(self) -> None:
+        if (plot_type := self._plot_type) is not None:
+            self.plot_request.emit(PlotRequest(type=plot_type, result_selection=self.get_selection()))
+
+    def _ui(self, request_type: UIRequestType) -> Callable[[], None]:
+        return lambda: self.ui_request.emit(UIRequest(type=request_type, result_selection=self.get_selection()))

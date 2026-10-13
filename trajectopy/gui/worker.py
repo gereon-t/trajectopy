@@ -31,10 +31,6 @@ class BackgroundWorker:
         )
         self._futures: set[concurrent.futures.Future] = set()
 
-    @property
-    def is_inline(self) -> bool:
-        return self._executor is None
-
     def submit(self, function: Callable[..., Any], *args: Any) -> None:
         """Schedules ``function(*args)``. Exceptions are logged; handlers report errors to the user themselves."""
         if self._executor is None:

@@ -84,7 +84,6 @@ class AlignmentSelector(QtWidgets.QMainWindow):
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.setCentralWidget(self.centralwidget)
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate

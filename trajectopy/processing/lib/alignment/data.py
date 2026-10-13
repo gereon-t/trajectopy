@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from functools import cached_property
 
 import numpy as np
-import pandas as pd
 from scipy.sparse import spdiags
 
 from trajectopy.core.rotations import Rotations
@@ -186,10 +185,6 @@ class AlignmentData:
     def tstamps(self) -> np.ndarray:
         return self.traj_from.timestamps
 
-    @cached_property
-    def rpy_to(self) -> np.ndarray | None:
-        return self.traj_to.rotations.as_euler(seq="xyz") if self.traj_to.rotations is not None else None
-
     @property
     def number_of_epochs(self) -> int:
         return len(self._obs_vector) // self.num_obs_per_epoch
@@ -301,20 +296,8 @@ class AlignmentData:
     def get_est_obs_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self.est_obs_vector, key=key)
 
-    def set_obs_group(self, key: str, values: np.ndarray) -> None:
-        self._set_vector_components(vector=self._obs_vector, values=values, key=key)
-
     def get_var_group(self, key: str) -> tuple[np.ndarray, ...]:
         return self._extract_from_vector(vector=self._var_vector, key=key)
-
-    def set_var_group(self, key: str, values: np.ndarray) -> None:
-        self._set_vector_components(vector=self._var_vector, values=values, key=key)
-
-    def get_res_group(self, key: str) -> tuple[np.ndarray, ...]:
-        return self._extract_from_vector(vector=self._res_vector, key=key)
-
-    def set_res_group(self, key: str, values: np.ndarray) -> None:
-        self._set_vector_components(vector=self._res_vector, values=values, key=key)
 
     def _extract_from_vector(self, vector: np.ndarray, key: str) -> tuple[np.ndarray, ...]:
         group_indices = self.observation_groups[key]
@@ -507,40 +490,3 @@ class AlignmentData:
         thresholds[7] *= self.alignment_settings.time_threshold
         thresholds[8:] *= self.alignment_settings.metric_threshold
         return thresholds
-
-    def get_variance_estimation_subset(self, num_obs: int = 200) -> "AlignmentData":
-        """Returns a subset of the alignment data for variance estimation
-
-        This method will return a subset of the alignment data
-        that contains 'num_obs' observations. The subset is selected
-        by finding the epoch with the highest standard deviation of
-        the observations. The idea is that a higher variance in the
-        observations will lead to a better estimation of the variances.
-
-        The motivation behind this is that the variance estimation
-        is memory and time consuming. Therefore, a subset of the
-        observations is used for the estimation.
-
-        Args:
-            num_obs (int, optional): Subet size. Defaults to 200.
-
-        Returns:
-            AlignmentData: Cropped alignment data
-        """
-        obs_matrix = np.reshape(self.obs_vector, (len(self), self.num_obs_per_epoch))
-        if len(obs_matrix) <= num_obs:
-            return copy.deepcopy(self)
-
-        obs_norm = np.linalg.norm(obs_matrix, axis=1)
-        obs_series = pd.Series(obs_norm)
-        max_idx = obs_series.rolling(window=num_obs).std().idxmax()
-
-        traj_index = np.arange(max_idx - num_obs, max_idx)
-        traj_from = self.traj_from.mask(traj_index, inplace=False)
-        traj_to = self.traj_to.mask(traj_index, inplace=False)
-        return AlignmentData(
-            traj_from=traj_from,
-            traj_to=traj_to,
-            alignment_settings=self.alignment_settings,
-            matching_settings=self.matching_settings,
-        )

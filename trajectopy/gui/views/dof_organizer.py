@@ -224,8 +224,6 @@ class DOFOrganizer(QtWidgets.QMainWindow):
         self.yaw_combo.setCurrentIndex(5)
         self.time_combo.setCurrentIndex(6)
 
-        QtCore.QMetaObject.connectSlotsByName(self)
-
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "DOF Organizer"))

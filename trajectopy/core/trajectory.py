@@ -1,5 +1,6 @@
 import copy
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -183,7 +184,7 @@ class Trajectory:
         """Returns the number of poses in the trajectory."""
         return len(self.positions.xyz)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Pose]:
         """
         Iterates over the trajectory, yielding a pose for each timestamp.
 
