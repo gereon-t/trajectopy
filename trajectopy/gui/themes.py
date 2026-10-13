@@ -25,6 +25,7 @@ LIGHT = {
     "success": "#1a7f37",
     "warning": "#9a6700",
     "scrollbar": "#c4ccd4",
+    "overlay": "rgba(255, 255, 255, 0.92)",
 }
 
 DARK = {
@@ -45,6 +46,7 @@ DARK = {
     "success": "#3fb950",
     "warning": "#d29922",
     "scrollbar": "#4a525c",
+    "overlay": "rgba(31, 35, 40, 0.92)",
 }
 
 _TEMPLATE = """
@@ -86,8 +88,8 @@ QMenu::indicator { width: 14px; height: 14px; left: 4px; }
 QToolBar#mainToolbar {
     background-color: %(surface)s;
     border: none;
-    border-bottom: 1px solid %(border)s;
-    padding: 8px 12px;
+    border-bottom: 1px solid %(border_soft)s;
+    padding: 8px 16px;
     spacing: 8px;
 }
 QToolBar#mainToolbar QLabel { background: transparent; color: %(muted)s; }
@@ -121,6 +123,11 @@ QPushButton:default, QPushButton#primaryButton, QToolButton#primaryButton {
     font-weight: 600;
 }
 QPushButton#primaryButton:hover, QToolButton#primaryButton:hover { background-color: %(accent_hover)s; }
+QPushButton#primaryButton:disabled, QToolButton#primaryButton:disabled {
+    background-color: %(surface_alt)s;
+    border-color: %(border)s;
+    color: %(disabled)s;
+}
 QToolButton#primaryButton {
     border-radius: 6px;
     padding: 6px 30px 6px 16px;
@@ -233,53 +240,107 @@ QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }
 QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
 
 /* ------------------------------------------------------------------------------------ structure */
-QSplitter::handle { background-color: %(window)s; }
-QSplitter::handle:hover { background-color: %(border)s; }
-QMainWindow::separator { background-color: %(window)s; width: 12px; height: 12px; }
+QSplitter::handle { background-color: %(border_soft)s; }
+QMainWindow::separator { background-color: %(window)s; width: 10px; height: 10px; }
+/* Qt places invisible helper widgets over dock separators to catch drags; they must not be painted */
+QWidget#qt_qmainwindow_extended_splitter { background: transparent; }
 QMainWindow::separator:hover { background-color: %(border_soft)s; }
 
-QWidget#sidebar { background-color: %(surface)s; border-right: 1px solid %(border)s; }
-QWidget#sidebar QWidget { background-color: %(surface)s; }
-QWidget#sidebar QTableView, QWidget#sidebar QTreeView { border: none; }
-QLabel#sectionLabel {
+/* sidebar: plain lists on the surface color, no headers, no grid, no frames */
+QWidget#sidebar { background-color: %(surface)s; }
+QWidget#sidebar QWidget#details { background: transparent; }
+QTableView#plainList {
     background: transparent;
+    border: none;
+    selection-background-color: %(selection)s;
+}
+QTableView#plainList::item { padding: 0 6px; border: none; }
+QTableView#plainList::item:hover { background-color: %(hover)s; }
+QTableView#plainList::item:selected { background-color: %(selection)s; }
+QLabel#sectionLabel { color: %(muted)s; font-size: 12px; font-weight: 600; }
+QLabel#selectionTitle { font-size: 15px; font-weight: 600; }
+QLabel#mutedLabel { color: %(muted)s; }
+QLabel#numberLabel { font-family: "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace; }
+QLabel#emptyMessage { color: %(muted)s; }
+QToolButton#iconButton {
     color: %(muted)s;
-    font-size: 11px;
+    font-size: 17px;
+    padding: 0 6px 2px 6px;
+    border-radius: 6px;
+}
+QToolButton#iconButton:hover { color: %(text)s; background-color: %(hover)s; }
+QToolButton#disclosureButton {
+    color: %(muted)s;
+    font-size: 12px;
     font-weight: 600;
+    padding: 4px 2px;
+    border: none;
 }
-QLabel#selectionTitle { background: transparent; font-size: 15px; font-weight: 600; }
-QLabel#mutedLabel { background: transparent; color: %(muted)s; }
-QLabel#warningLabel { background: transparent; color: %(warning)s; }
-QLabel#emptyMessage { background: transparent; color: %(muted)s; }
+QToolButton#disclosureButton:hover { color: %(text)s; background: transparent; }
+QToolButton#disclosureButton:checked { background: transparent; border: none; color: %(text)s; }
 
-QWidget#workspacePanel { background-color: %(window)s; }
-QFrame#layoutBar {
-    background-color: %(surface)s;
+/* top bar */
+QToolButton#layoutButton {
+    background-color: transparent;
     border: 1px solid %(border)s;
-    border-radius: 8px;
+    border-radius: 6px;
+    padding: 6px 28px 6px 12px;
+    min-height: 20px;
 }
-QFrame#layoutBar QLabel { background: transparent; }
+QToolButton#layoutButton:hover { background-color: %(hover)s; }
+QToolButton#layoutButton::menu-indicator {
+    image: url(%(chevron_icon)s);
+    subcontrol-position: right center;
+    right: 10px;
+}
 
+/* views: cards with a quiet title; their actions appear on hover */
+QWidget#workspacePanel { background-color: %(window)s; }
+QWidget#welcome {
+    background-color: %(surface)s;
+    border: 1px dashed %(border)s;
+    border-radius: 12px;
+}
+QLabel#welcomeTitle { font-size: 22px; font-weight: 600; }
 QDockWidget { color: %(text)s; }
 QWidget#viewTitleBar {
     background-color: %(surface)s;
-    border: 1px solid %(border)s;
-    border-bottom: 1px solid %(border_soft)s;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border: 1px solid %(border_soft)s;
+    border-bottom: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
-QWidget#viewTitleBar QLabel { background: transparent; }
 QWidget#viewContent {
     background-color: %(surface)s;
-    border: 1px solid %(border)s;
+    border: 1px solid %(border_soft)s;
     border-top: none;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 QWidget#viewContent QWidget { background-color: %(surface)s; }
 QWidget#viewContent QTableView { border: none; border-radius: 0; }
-QWidget#viewContent QToolBar { background-color: %(surface)s; border: none; padding: 2px 6px; spacing: 2px; }
-QWidget#viewContent QComboBox { margin: 6px 8px 0 8px; }
+QWidget#viewContent QComboBox { margin: 4px 8px 0 8px; }
+QToolButton#viewTitle {
+    font-weight: 600;
+    padding: 4px 24px 4px 8px;
+    border: none;
+}
+QToolButton#viewTitle:hover { background-color: %(hover)s; }
+QToolButton#viewTitle::menu-indicator {
+    image: url(%(chevron_icon)s);
+    subcontrol-position: right center;
+    right: 6px;
+}
+QToolButton#hoverButton { color: %(muted)s; padding: 2px 7px; border: none; }
+QToolButton#hoverButton:hover { color: %(text)s; background-color: %(hover)s; }
+QFrame#floatingBar {
+    background-color: %(overlay)s;
+    border: 1px solid %(border_soft)s;
+    border-radius: 8px;
+}
+QFrame#floatingBar QToolButton { background: transparent; color: %(muted)s; padding: 3px 9px; border: none; }
+QFrame#floatingBar QToolButton:hover { color: %(text)s; background-color: %(hover)s; }
+QFrame#floatingBar QToolButton:checked { color: %(accent)s; background-color: %(selection)s; }
 
 /* ------------------------------------------------------------------ other windows (plots, dialogs) */
 QTabWidget::pane { border: 1px solid %(border)s; border-radius: 6px; top: -1px; background: %(surface)s; }

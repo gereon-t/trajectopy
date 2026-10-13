@@ -22,8 +22,7 @@ class ResultTableView(EntryTableView):
             model=result_table_model,
             context_menu=self.result_context_menu,
             read_request=FileRequestType.READ_RES,
-            empty_hint="Results (deviations, alignments) appear here.\nDrop result files here or click “Add”.\n"
-            "Right-click a result for all actions.",
+            empty_hint="No results yet.\nRight-click a result for all actions.",
             parent=parent,
         )
         self.result_table_model = result_table_model

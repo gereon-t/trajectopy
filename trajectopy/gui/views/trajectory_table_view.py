@@ -32,7 +32,7 @@ class TrajectoryTableView(EntryTableView):
             model=trajectory_table_model,
             context_menu=self.trajectory_context_menu,
             read_request=FileRequestType.READ_TRAJ,
-            empty_hint="Drop trajectory files here or click “Add”.\nRight-click a trajectory for all actions.",
+            empty_hint="No trajectories yet",
             parent=parent,
         )
         self.trajectory_table_model = trajectory_table_model

@@ -106,7 +106,11 @@ class ComparisonContent(ViewContent):
         self._table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self._table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self._table.setShowGrid(False)
-        self._table.setAlternatingRowColors(True)
+        self._table.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self._table.verticalHeader().setDefaultSectionSize(36)
+        for column in range(len(self.COLUMNS)):
+            alignment = QtCore.Qt.AlignmentFlag.AlignLeft if column == 0 else QtCore.Qt.AlignmentFlag.AlignRight
+            self._table.horizontalHeaderItem(column).setTextAlignment(alignment | QtCore.Qt.AlignmentFlag.AlignVCenter)
         header = self._table.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
@@ -122,9 +126,7 @@ class ComparisonContent(ViewContent):
         self._data = data
         rows = sorted(data.evaluated, key=lambda t: t.ate.deviations.pos_dev_rms if t.ate else np.inf)
         if not rows:
-            self._message.setText(
-                "No evaluated trajectory is checked.\nUse “Evaluate all” to compare every trajectory with the reference."
-            )
+            self._message.setText("Nothing evaluated yet.\nChoose a reference and click “Evaluate”.")
             self._stack.setCurrentWidget(self._message)
             return
         self._stack.setCurrentWidget(self._table)
@@ -190,26 +192,28 @@ class SceneContent(ViewContent):
         super().__init__()
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        toolbar = QtWidgets.QToolBar()
-        toolbar.setIconSize(QtCore.QSize(14, 14))
         self.scene = SceneView()
+        layout.addWidget(self.scene)
+
+        # camera controls float over the scene instead of taking a toolbar row
+        controls = QtWidgets.QFrame(self.scene)
+        controls.setObjectName("floatingBar")
+        controls_layout = QtWidgets.QHBoxLayout(controls)
+        controls_layout.setContentsMargins(4, 4, 4, 4)
+        controls_layout.setSpacing(2)
         for text, tip, slot in (
-            ("Fit", "Fit the view to all trajectories", lambda: self.scene.fit()),
+            ("Fit", "Show all trajectories", lambda: self.scene.fit()),
             ("Top", "View from above", lambda: self.scene.view_from("top")),
-            ("Front", "View from the front", lambda: self.scene.view_from("front")),
             ("Side", "View from the side", lambda: self.scene.view_from("side")),
             ("3D", "Oblique view", lambda: self.scene.view_from("iso")),
         ):
-            action = toolbar.addAction(text, slot)
-            action.setToolTip(tip)
-        toolbar.addSeparator()
-        frames = toolbar.addAction("Frames")
+            controls_layout.addWidget(_flat_button(text, tip, slot))
+        frames = _flat_button("Axes", "Show the orientation (body frame axes) along the trajectories", None)
         frames.setCheckable(True)
-        frames.setToolTip("Show the orientation (body frame axes) along the trajectories")
         frames.toggled.connect(self.scene.set_frames_visible)
-        layout.addWidget(toolbar)
-        layout.addWidget(self.scene, stretch=1)
+        controls_layout.addWidget(frames)
+        controls.move(10, 10)
+        self._controls = controls
 
     def set_data(self, data: WorkspaceData) -> None:
         if not data.scene:
@@ -217,8 +221,13 @@ class SceneContent(ViewContent):
             return
         self.scene.set_content(data.scene, selected=data.selected_ids)
 
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        self._controls.adjustSize()  # sized once the stylesheet (paddings, fonts) applies
+
     def apply_theme(self) -> None:
         self.scene.apply_theme()
+        self._controls.adjustSize()
 
 
 class FigureContent(ViewContent):
@@ -297,6 +306,31 @@ def _message_label(text: str) -> QtWidgets.QLabel:
     return label
 
 
+def _flat_button(text: str, tip: str, slot: Callable[[], None] | None) -> QtWidgets.QToolButton:
+    button = QtWidgets.QToolButton()
+    button.setText(text)
+    button.setToolTip(tip)
+    button.setAutoRaise(True)
+    if slot is not None:
+        button.clicked.connect(slot)
+    return button
+
+
+def _view_type_menu(parent: QtWidgets.QWidget, choose: Callable[[str], None]) -> QtWidgets.QMenu:
+    """All view types, grouped by their category ("ATE · Histograms" is "Histograms" in the "ATE" submenu)."""
+    menu = QtWidgets.QMenu(parent)
+    groups: dict[str, QtWidgets.QMenu] = {}
+    for view_type in VIEW_TYPES:
+        category, _, label = view_type.label.rpartition(" · ")
+        target = menu
+        if category:
+            if category not in groups:
+                groups[category] = menu.addMenu(category)
+            target = groups[category]
+        target.addAction(label, lambda key=view_type.key: choose(key))
+    return menu
+
+
 def _monospace() -> QtGui.QFont:
     """Numbers in tables line up in a fixed-width font."""
     return QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
@@ -311,7 +345,7 @@ def _swatch(color: str) -> QtGui.QIcon:
 # ----------------------------------------------------------------------------------------------- catalog
 
 CHECK_TRAJECTORIES = "Check at least one trajectory in the list."
-EVALUATE_FIRST = "No checked trajectory has been evaluated yet.\nUse “Evaluate all” first."
+EVALUATE_FIRST = "Nothing evaluated yet.\nChoose a reference and click “Evaluate”."
 
 
 def _trajectory_figure(title: str):
@@ -358,7 +392,11 @@ def _alignment_figure(title: str):
         aligned = [t for t in data.trajectories if t.alignment is not None]
         chosen = next((t for t in aligned if t.entry.entry_id in data.selected_ids), aligned[0] if aligned else None)
         if chosen is None:
-            return None, [], "No checked trajectory has an alignment.\nIt is estimated by “Evaluate all” (aligned)."
+            return (
+                None,
+                [],
+                "No checked trajectory has an alignment.\nIt is estimated by “Evaluate” with “Align to the Reference First”.",
+            )
         return _pick(alignment_figures(chosen.alignment.estimated_parameters, data.plot_settings), title), [], ""
 
     return build
@@ -435,33 +473,39 @@ class ViewDock(QtWidgets.QDockWidget):
         bar.setObjectName("viewTitleBar")
         bar.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
         bar_layout = QtWidgets.QHBoxLayout(bar)
-        bar_layout.setContentsMargins(8, 6, 6, 6)
-        bar_layout.setSpacing(4)
-        self._type_box = QtWidgets.QComboBox()
-        self._type_box.setToolTip("What this view shows")
-        for view_type_option in VIEW_TYPES:
-            self._type_box.addItem(view_type_option.label, view_type_option.key)
-        self._type_box.activated.connect(lambda _: self._set_type(self._type_box.currentData()))
-        bar_layout.addWidget(self._type_box)
+        bar_layout.setContentsMargins(6, 4, 6, 2)
+        bar_layout.setSpacing(2)
+        self._title = QtWidgets.QToolButton()
+        self._title.setObjectName("viewTitle")
+        self._title.setToolTip("Change what this view shows")
+        self._title.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self._title.setMenu(_view_type_menu(self._title, self._set_type))
+        bar_layout.addWidget(self._title)
         grip = QtWidgets.QLabel("")  # empty title bar space: drag here to move the view
         grip.setToolTip("Drag to move this view next to or onto another one")
         bar_layout.addWidget(grip, stretch=1)
-        bar_layout.addWidget(
-            self._tool_button("⧉", "Open this view in its own window (again to dock it)", self._toggle_float)
-        )
-        bar_layout.addWidget(self._tool_button("✕", "Remove this view", lambda: self.remove_requested.emit(self)))
+        # shown while the pointer is over the view
+        self._actions = [
+            _flat_button("⧉", "Open in its own window (again to put it back)", self._toggle_float),
+            _flat_button("✕", "Remove this view", lambda: self.remove_requested.emit(self)),
+        ]
+        for button in self._actions:
+            button.setObjectName("hoverButton")
+            bar_layout.addWidget(button)
+            button.setVisible(False)
         self.setTitleBarWidget(bar)
 
         self._set_type(view_type, notify=False)
 
-    @staticmethod
-    def _tool_button(text: str, tip: str, slot: Callable[[], None]) -> QtWidgets.QToolButton:
-        button = QtWidgets.QToolButton()
-        button.setText(text)
-        button.setToolTip(tip)
-        button.setAutoRaise(True)
-        button.clicked.connect(slot)
-        return button
+    def enterEvent(self, event: QtCore.QEvent) -> None:
+        for button in self._actions:
+            button.setVisible(True)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event: QtCore.QEvent) -> None:
+        for button in self._actions:
+            button.setVisible(self.isFloating())
+        super().leaveEvent(event)
 
     def _toggle_float(self) -> None:
         self.setFloating(not self.isFloating())
@@ -470,14 +514,14 @@ class ViewDock(QtWidgets.QDockWidget):
         if view_type == self.view_type or view_type not in VIEW_TYPE:
             return
         self.view_type = view_type
-        self._type_box.setCurrentIndex(self._type_box.findData(view_type))
+        self._title.setText(VIEW_TYPE[view_type].label)
         self.setWindowTitle(VIEW_TYPE[view_type].label)
         if self.content is not None:
             self.content.deleteLater()
         self.content = VIEW_TYPE[view_type].create()
         self.content.setObjectName("viewContent")  # drawn as the body of a card below the title bar
         self.content.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
-        self.content.setContentsMargins(1, 0, 1, 1)
+        self.content.setContentsMargins(4, 0, 4, 4)
         self.setWidget(self.content)
         if notify:
             self.type_changed.emit(self)

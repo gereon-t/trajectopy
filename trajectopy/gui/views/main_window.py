@@ -15,6 +15,8 @@ from trajectopy.gui import themes
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
+    FileRequest,
+    FileRequestType,
     PlotRequest,
     PlotSettingsRequest,
     PlotSettingsRequestType,
@@ -45,7 +47,6 @@ from trajectopy.gui.utils import center_window, set_dark_titlebar
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.progress_window import ProgressWindow
-from trajectopy.gui.views.properties_panel import PropertiesPanel
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.scene_view import SceneTrajectory
 from trajectopy.gui.views.timeline_widget import TimelineDialog
@@ -85,7 +86,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     The list of trajectories and the selected trajectory are on the left; the workspace with the views the user
     arranged (comparison table, 3D view, plots) fills the rest. The trajectories' context menus contain all
-    operations; "Evaluate All" compares every trajectory with the reference in one step.
+    operations; "Evaluate" compares every trajectory with the reference in one step.
     """
 
     operation_started = Signal()
@@ -164,38 +165,23 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     # ------------------------------------------------------------------------------------------------ menus
 
     def setup_menu_bar(self):
-        """Session, layout, plot settings, theme and about menus."""
+        """Menus; on macOS they are in the system menu bar, so the window itself stays free of them."""
         menubar = self.menuBar()
-        menubar.setNativeMenuBar(False)
 
-        session_menu = QtWidgets.QMenu("Session", parent=self)
-        for text, slot in (
-            ("New", self.handle_new_session),
-            ("Load", self.handle_import_session),
-            ("Save", self.handle_export_session),
-        ):
-            action = QAction(text, parent=self)
-            action.triggered.connect(slot)
-            session_menu.addAction(action)
-        menubar.addMenu(session_menu)
+        session_menu = menubar.addMenu("Session")
+        session_menu.addAction(self._add_trajectories_action)
+        session_menu.addAction(self._add_results_action)
+        session_menu.addSeparator()
+        session_menu.addAction("New Session", self.handle_new_session)
+        session_menu.addAction("Load Session…", self.handle_import_session)
+        session_menu.addAction("Save Session…", self.handle_export_session)
 
-        layout_menu = QtWidgets.QMenu("Layout", parent=self)
-        layout_menu.addAction("Save", self._save_layout)
-        layout_menu.addAction("Save As…", lambda: self._save_layout_as())
-        layout_menu.addAction("Delete", self._delete_layout)
-        layout_menu.addSeparator()
-        layout_menu.addAction("Revert to Saved", lambda: self._load_layout(self._layout_name))
-        menubar.addMenu(layout_menu)
+        self._layout_menu = menubar.addMenu("Layout")
+        self._layout_menu.aboutToShow.connect(lambda: self._populate_layout_menu(self._layout_menu))
 
-        plot_settings_action = QAction("Plot Settings", parent=self)
-        plot_settings_action.triggered.connect(self.handle_show_plot_settings)
-        menubar.addAction(plot_settings_action)
-
-        self._timeline_dialog = TimelineDialog(parent=self)
-
-        theme_menu = QtWidgets.QMenu("Theme", parent=self)
-        self._dark_theme_action = QAction("Dark", parent=self, checkable=True)
-        self._light_theme_action = QAction("Light", parent=self, checkable=True)
+        view_menu = menubar.addMenu("View")
+        self._dark_theme_action = QAction("Dark Theme", parent=self, checkable=True)
+        self._light_theme_action = QAction("Light Theme", parent=self, checkable=True)
         self._dark_theme_action.setChecked(self._dark_theme)
         self._light_theme_action.setChecked(not self._dark_theme)
         theme_group = QActionGroup(self)
@@ -203,13 +189,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         theme_group.addAction(self._light_theme_action)
         self._dark_theme_action.triggered.connect(lambda: self._apply_theme(dark=True))
         self._light_theme_action.triggered.connect(lambda: self._apply_theme(dark=False))
-        theme_menu.addAction(self._dark_theme_action)
-        theme_menu.addAction(self._light_theme_action)
-        menubar.addMenu(theme_menu)
+        view_menu.addAction(self._light_theme_action)
+        view_menu.addAction(self._dark_theme_action)
+        view_menu.addSeparator()
+        view_menu.addAction("Plot Settings…", self.handle_show_plot_settings)
 
-        about_action = QAction("About", parent=self)
-        about_action.triggered.connect(self.about_window.show)
-        menubar.addAction(about_action)
+        help_menu = menubar.addMenu("Help")
+        about_action = help_menu.addAction("About Trajectopy", self.about_window.show)
+        about_action.setMenuRole(QAction.MenuRole.AboutRole)
+
+        self._timeline_dialog = TimelineDialog(parent=self)
 
         app = _application()
         if hasattr(app.styleHints(), "colorSchemeChanged"):
@@ -264,7 +253,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             logger.warning("Background operation did not finish within timeout; close request aborted.")
             if a0 is not None:
                 a0.ignore()
-            self.statusBar().showMessage("Background work still running. Please try closing again.")
+            self._message("Background work is still running. Please try closing again.")
             return
 
         self._save_window()
@@ -287,20 +276,41 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def _layout_names(self) -> list[str]:
         return [*BUILT_IN_LAYOUTS, *(name for name in self._user_layouts() if name not in BUILT_IN_LAYOUTS)]
 
-    def _update_layout_box(self) -> None:
-        self._layout_box.blockSignals(True)
-        self._layout_box.clear()
-        for name in self._layout_names():
-            self._layout_box.addItem(f"{name} (built-in)" if name in BUILT_IN_LAYOUTS else name, name)
-        self._layout_box.setCurrentIndex(self._layout_box.findData(self._layout_name))
-        self._layout_box.blockSignals(False)
+    def _populate_layout_menu(self, menu: QtWidgets.QMenu) -> None:
+        """Layouts to switch to, views to add and the layout commands, in one menu."""
+        menu.clear()
+        group = QActionGroup(menu)
+        for index, name in enumerate(self._layout_names()):
+            if index == len(BUILT_IN_LAYOUTS):
+                menu.addSeparator()
+            action = menu.addAction(name, lambda name=name: self._load_layout(name))
+            action.setCheckable(True)
+            action.setChecked(name == self._layout_name)
+            group.addAction(action)
+        menu.addSeparator()
+        add_menu = menu.addMenu("Add View")
+        groups: dict[str, QtWidgets.QMenu] = {}
+        for view_type in VIEW_TYPES:
+            category, _, label = view_type.label.rpartition(" · ")
+            target = add_menu
+            if category:
+                if category not in groups:
+                    groups[category] = add_menu.addMenu(category)
+                target = groups[category]
+            target.addAction(label, lambda key=view_type.key: self.workspace.add_view(key))
+        menu.addSeparator()
+        menu.addAction("Save Layout", self._save_layout)
+        menu.addAction("Save Layout As…", lambda: self._save_layout_as())
+        revert = menu.addAction("Revert Changes", lambda: self._load_layout(self._layout_name))
+        revert.setEnabled(self._layout_modified)
+        delete = menu.addAction("Delete Layout", self._delete_layout)
+        delete.setEnabled(self._layout_name not in BUILT_IN_LAYOUTS)
 
     def _set_layout_name(self, name: str, modified: bool = False) -> None:
         self._layout_name = name
         self._layout_modified = modified
-        self._update_layout_box()
-        self._modified_label.setVisible(modified)
-        self._delete_layout_button.setEnabled(name not in BUILT_IN_LAYOUTS)
+        self._layout_button.setText(f"{name}  •" if modified else name)
+        self._layout_button.setToolTip("Layout of the views" + (" (changed, not saved)" if modified else ""))
 
     def _load_layout(self, name: str) -> None:
         user_layouts = self._user_layouts()
@@ -312,12 +322,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             name = DEFAULT_LAYOUT
         self.workspace.load_built_in(name)
         self._set_layout_name(name)
-
-    @Slot()
-    def _on_layout_chosen(self) -> None:
-        name = self._layout_box.currentData()
-        if name is not None and (name != self._layout_name or self._layout_modified):
-            self._load_layout(name)
 
     @Slot()
     def _on_workspace_changed(self) -> None:
@@ -351,7 +355,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         layouts[name] = self.workspace.to_dict()
         self._store_user_layouts(layouts)
         self._set_layout_name(name)
-        self.statusBar().showMessage(f"Saved layout “{name}”", 4000)
 
     def _delete_layout(self) -> None:
         if self._layout_name in BUILT_IN_LAYOUTS:
@@ -427,17 +430,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.show_timeline.connect(self._show_timeline)
 
     def setup_progress_connections(self):
-        status_messages: dict[TrajectoryManager | FileManager | SessionManager | PlotManager, str] = {
-            self.trajectory_manager: "Processing...",
-            self.file_manager: "Loading...",
-            self.session_manager: "Session operation...",
-            self.plot_manager: "Generating plot...",
-        }
-        for manager, message in status_messages.items():
+        status_messages: list[TrajectoryManager | FileManager | SessionManager | PlotManager] = [
+            self.trajectory_manager,
+            self.file_manager,
+            self.session_manager,
+            self.plot_manager,
+        ]
+        for manager in status_messages:
             manager.operation_started.connect(self.progress_window.handle_show_request)
-            manager.operation_started.connect(lambda message=message: self.statusBar().showMessage(message))
             manager.operation_finished.connect(self.progress_window.handle_close_request)
-            manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
     def setup_plottings_connections(self):
         self.resultTableView.plot_request.connect(self.inject_plot_settings)
@@ -458,8 +459,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         for model in (self.trajectory_table_model, self.result_table_model):
             model.layoutChanged.connect(self._on_selection_changed)
         self.trajectory_table_model.layoutChanged.connect(self._update_reference_box)
+        for model in (self.trajectory_table_model, self.result_table_model):
+            model.layoutChanged.connect(self._update_empty_state)
+        self._update_empty_state()
         self.trajectory_table_model.visibility_changed.connect(self._schedule_refresh)
         self.workspace.changed.connect(self._on_workspace_changed)
+        self._welcome.files_dropped.connect(
+            lambda paths: self.file_manager.handle_request(
+                FileRequest(type=FileRequestType.READ_TRAJ, file_list=paths)
+            )
+        )
         self.workspace.trajectory_activated.connect(self._select_trajectory)
 
     # ----------------------------------------------------------------------------------- selection & data
@@ -555,22 +564,44 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def _update_selection_panel(self) -> None:
         entries = self._selected_trajectories
-        if not entries:
-            self._selection_title.setText(
-                f"<span style='color:{themes.color('muted')}; font-weight:400'>No trajectory selected</span>"
-            )
-        elif len(entries) == 1:
-            swatch = self.trajectory_table_model.color(entries[0])
-            self._selection_title.setText(f"<span style='color:{swatch}'>■</span>&nbsp;{html.escape(entries[0].name)}")
-        else:
-            self._selection_title.setText(f"{len(entries)} trajectories selected")
-        self._properties.show_entries(entries)
+        self._details.setVisible(bool(entries))
+        self._details_hint.setVisible(not entries and bool(self.trajectory_table_model.items))
+        if len(entries) == 1:
+            entry = entries[0]
+            swatch = self.trajectory_table_model.color(entry)
+            self._selection_title.setText(f"<span style='color:{swatch}'>●</span>&nbsp; {html.escape(entry.name)}")
+        elif entries:
+            self._selection_title.setText(f"{len(entries)} trajectories")
+        self._update_summary(entries)
         self._update_color_by(entries)
         self._filter_results()
 
+    def _update_summary(self, entries: list[TrajectoryEntry]) -> None:
+        """A few key numbers of the selected trajectory; everything else is in its "Properties"."""
+        values: list[tuple[str, str]] = []
+        if len(entries) == 1:
+            trajectory = entries[0].trajectory
+            own = self._latest_results().get(entries[0].entry_id, {})
+            ate = cast(AbsoluteDeviationEntry | None, own.get(AbsoluteDeviationEntry))
+            rpe = cast(RelativeDeviationEntry | None, own.get(RelativeDeviationEntry))
+            duration = float(trajectory.timestamps[-1] - trajectory.timestamps[0]) if len(trajectory) else 0.0
+            values = [
+                ("Poses", f"{len(trajectory):,}"),
+                ("Duration", _duration(duration)),
+                ("Length", f"{trajectory.total_length:,.1f} m"),
+                ("ATE RMS", f"{ate.deviations.pos_dev_rms:.3f} m" if ate else "–"),
+                ("RPE", f"{rpe.deviations.pos_rpe:.3f} {rpe.deviations.pos_drift_unit}" if rpe else "–"),
+            ]
+        for row, (key_label, value_label) in enumerate(self._summary_labels):
+            visible = row < len(values)
+            key_label.setVisible(visible)
+            value_label.setVisible(visible)
+            if visible:
+                key_label.setText(values[row][0])
+                value_label.setText(values[row][1])
+
     def _update_color_by(self, entries: list[TrajectoryEntry]) -> None:
         """Offers the fields all selected trajectories have; shows the current one if they share it."""
-        self._color_by_row.setEnabled(bool(entries))
         self._color_by.clear()
         if not entries:
             return
@@ -604,17 +635,23 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @Slot()
     def _filter_results(self) -> None:
-        """Shows the results of the selected trajectories and those whose trajectory is not loaded."""
+        """Shows the results of the selected trajectories (and those whose trajectory is not loaded)."""
         loaded = {entry.entry_id for entry in self.trajectory_table_model.items}
         selected = {entry.entry_id for entry in self._selected_trajectories}
-        show_all = self._show_all_results.isChecked()
         shown = 0
         for row, result in enumerate(self.result_table_model.items):
-            visible = show_all or result.source_id in selected or result.source_id not in loaded
+            visible = not selected or result.source_id in selected or result.source_id not in loaded
             self.resultTableView.setRowHidden(row, not visible)
             shown += visible
-        total = len(self.result_table_model.items)
-        self._results_label.setText(f"RESULTS ({shown} of {total})" if shown != total else f"RESULTS ({total})")
+        self._results_toggle.setText(f"Results  {shown}" if shown else "Results")
+        self._results_toggle.setVisible(bool(self.result_table_model.items))
+        self.resultTableView.setVisible(self._results_toggle.isVisible() and self._results_toggle.isChecked())
+
+    def _toggle_results(self, expanded: bool) -> None:
+        self.resultTableView.setVisible(expanded)
+        self._results_toggle.setArrowType(
+            QtCore.Qt.ArrowType.DownArrow if expanded else QtCore.Qt.ArrowType.RightArrow
+        )
 
     # ------------------------------------------------------------------------------- reference & evaluation
 
@@ -732,42 +769,43 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.resize(1440, 900)
         self.setMinimumSize(QtCore.QSize(900, 560))
 
+        self._add_trajectories_action = QAction("Add Trajectories…", self)
+        self._add_trajectories_action.setShortcut("Ctrl+O")
+        self._add_results_action = QAction("Add Results…", self)
+
         self._setup_toolbar()
 
         self._splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
+        self._splitter.setHandleWidth(1)
         self._splitter.addWidget(self._create_sidebar())
         self._splitter.addWidget(self._create_workspace_panel())
         self._splitter.setStretchFactor(0, 0)
         self._splitter.setStretchFactor(1, 1)
-        self._splitter.setSizes([340, 1100])
+        self._splitter.setSizes([300, 1140])
         self.setCentralWidget(self._splitter)
-
-        self.statusBar().showMessage("Ready")
-        self.statusBar().setSizeGripEnabled(False)
+        self.statusBar().hide()
 
     def _setup_toolbar(self) -> None:
+        """One slim bar: name, reference, the main action and the layout."""
         toolbar = QtWidgets.QToolBar("Main", self)
         toolbar.setObjectName("mainToolbar")
         toolbar.setMovable(False)
-        toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
+        toolbar.setFloatable(False)
+        toolbar.toggleViewAction().setVisible(False)
         self.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, toolbar)
 
         title = QtWidgets.QLabel("trajectopy")
         title.setObjectName("appTitle")
         toolbar.addWidget(title)
-        self._add_trajectories_action = toolbar.addAction("Add Trajectories…")
-        self._add_trajectories_action.setToolTip("Load trajectory files (or drop them onto the list)")
-        self._add_results_action = toolbar.addAction("Add Results…")
-        self._add_results_action.setToolTip("Load result files of earlier evaluations")
-        for action in (self._add_trajectories_action, self._add_results_action):
-            toolbar.widgetForAction(action).setObjectName("outlineButton")
-        spacer = QtWidgets.QLabel()  # labels are transparent in the toolbar
-        spacer.setFixedWidth(12)
+        spacer = QtWidgets.QLabel()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Preferred)
         toolbar.addWidget(spacer)
 
-        toolbar.addWidget(QtWidgets.QLabel("Reference"))
+        reference_label = QtWidgets.QLabel("Reference")
+        reference_label.setObjectName("mutedLabel")
+        toolbar.addWidget(reference_label)
         self._reference_box = QtWidgets.QComboBox()
-        self._reference_box.setMinimumContentsLength(18)
+        self._reference_box.setMinimumContentsLength(16)
         self._reference_box.setSizeAdjustPolicy(
             QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
         )
@@ -776,19 +814,30 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         toolbar.addWidget(self._reference_box)
         self._update_reference_box()
 
-        evaluate_button = QtWidgets.QToolButton()
+        self._evaluate_button = evaluate_button = QtWidgets.QToolButton()
         evaluate_button.setObjectName("primaryButton")
-        evaluate_button.setText("Evaluate All")
+        evaluate_button.setText("Evaluate")
         evaluate_button.setToolTip("Compute ATE and RPE of every trajectory against the reference")
         evaluate_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         evaluate_button.clicked.connect(self.evaluate_all)
         evaluate_menu = QtWidgets.QMenu(evaluate_button)
-        self._align_action = evaluate_menu.addAction("Align to the Reference Before Computing the ATE")
+        self._align_action = evaluate_menu.addAction("Align to the Reference First")
         self._align_action.setCheckable(True)
         self._align_action.setChecked(self._settings.value(ALIGN_KEY, True, type=bool))
         self._align_action.toggled.connect(lambda checked: self._settings.setValue(ALIGN_KEY, checked))
         evaluate_button.setMenu(evaluate_menu)
         toolbar.addWidget(evaluate_button)
+
+        gap = QtWidgets.QLabel()
+        gap.setFixedWidth(16)
+        toolbar.addWidget(gap)
+        self._layout_button = QtWidgets.QToolButton()
+        self._layout_button.setObjectName("layoutButton")
+        self._layout_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        layout_button_menu = QtWidgets.QMenu(self._layout_button)
+        layout_button_menu.aboutToShow.connect(lambda: self._populate_layout_menu(layout_button_menu))
+        self._layout_button.setMenu(layout_button_menu)
+        toolbar.addWidget(self._layout_button)
 
     def _create_sidebar(self) -> QtWidgets.QWidget:
         self.trajectoryTableView = TrajectoryTableView(parent=None, trajectory_table_model=self.trajectory_table_model)
@@ -796,138 +845,185 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.trajectory_context_menu.alignments_available = lambda: bool(
             self.result_table_model.alignment_entries
         )
-        # the list shows the name (with visibility checkbox and color) and the evaluation summary
+        # plain lists: the name (with visibility checkbox and color) and one number; no headers or grid
         for view, keep in (
             (self.trajectoryTableView, {0, self.trajectory_table_model.badge_column}),
-            (self.resultTableView, {0, 1}),
+            (self.resultTableView, {0}),
         ):
+            view.setObjectName("plainList")
             view.setShowGrid(False)
+            view.setAlternatingRowColors(False)
+            view.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+            view.horizontalHeader().hide()
+            view.verticalHeader().setDefaultSectionSize(34)
+            view.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             header = view.horizontalHeader()
             header.setStretchLastSection(False)
             header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
             header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-            header.setMinimumSectionSize(40)
             for column in range(view.model().columnCount()):
                 view.setColumnHidden(column, column not in keep)
 
-        # sizing to the contents ignores the stylesheet's cell padding and would elide the type
-        type_header = self.resultTableView.horizontalHeader()
-        type_header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Fixed)
-        type_header.resizeSection(1, self.resultTableView.fontMetrics().horizontalAdvance("ATE Result") + 32)
+        sidebar = QtWidgets.QWidget()
+        sidebar.setObjectName("sidebar")
+        sidebar.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
+        sidebar.setMinimumWidth(240)
+        layout = QtWidgets.QVBoxLayout(sidebar)
+        layout.setContentsMargins(12, 14, 12, 12)
+        layout.setSpacing(6)
 
-        list_panel = QtWidgets.QWidget()
-        list_layout = QtWidgets.QVBoxLayout(list_panel)
-        list_layout.setContentsMargins(12, 14, 12, 6)
-        list_layout.setSpacing(6)
-        list_layout.addWidget(_section_label("TRAJECTORIES"))
-        list_layout.addWidget(self.trajectoryTableView)
+        header = QtWidgets.QHBoxLayout()
+        header.setContentsMargins(4, 0, 0, 0)
+        header.addWidget(_section_label("Trajectories"))
+        header.addStretch()
+        add_button = QtWidgets.QToolButton()
+        add_button.setObjectName("iconButton")
+        add_button.setText("+")
+        add_button.setToolTip("Add trajectory files (or drop them onto the list)")
+        add_button.clicked.connect(self._add_trajectories_action.trigger)
+        header.addWidget(add_button)
+        layout.addLayout(header)
+        layout.addWidget(self.trajectoryTableView, stretch=3)
 
-        details = QtWidgets.QWidget()
-        details_layout = QtWidgets.QVBoxLayout(details)
-        details_layout.setContentsMargins(12, 12, 12, 12)
+        # the selected trajectory
+        self._details_hint = QtWidgets.QLabel("Select a trajectory to see its details.")
+        self._details_hint.setObjectName("mutedLabel")
+        self._details_hint.setWordWrap(True)
+        self._details_hint.hide()
+        layout.addWidget(self._details_hint)
+
+        self._details = QtWidgets.QWidget()
+        self._details.setObjectName("details")
+        details_layout = QtWidgets.QVBoxLayout(self._details)
+        details_layout.setContentsMargins(4, 12, 4, 0)
         details_layout.setSpacing(10)
-        self._selection_title = QtWidgets.QLabel("No trajectory selected")
+        self._selection_title = QtWidgets.QLabel()
         self._selection_title.setObjectName("selectionTitle")
         self._selection_title.setTextFormat(QtCore.Qt.TextFormat.RichText)
         details_layout.addWidget(self._selection_title)
 
         self._color_by = QtWidgets.QComboBox()
-        self._color_by.setToolTip("Color of the selected trajectories in the 3D view")
+        self._color_by.setToolTip("How the selected trajectories are colored in the 3D view")
         self._color_by.activated.connect(self._on_color_by_chosen)
-        self._color_by_row = QtWidgets.QWidget()
-        color_by_layout = QtWidgets.QHBoxLayout(self._color_by_row)
-        color_by_layout.setContentsMargins(0, 0, 0, 0)
+        color_by_row = QtWidgets.QHBoxLayout()
         color_by_label = QtWidgets.QLabel("Color by")
         color_by_label.setObjectName("mutedLabel")
-        color_by_layout.addWidget(color_by_label)
-        color_by_layout.addWidget(self._color_by, stretch=1)
-        self._color_by_row.setEnabled(False)
-        details_layout.addWidget(self._color_by_row)
+        color_by_row.addWidget(color_by_label)
+        color_by_row.addWidget(self._color_by, stretch=1)
+        details_layout.addLayout(color_by_row)
 
-        self._properties = PropertiesPanel()
-        details_layout.addWidget(self._properties, stretch=3)
+        summary = QtWidgets.QGridLayout()
+        summary.setHorizontalSpacing(12)
+        summary.setVerticalSpacing(6)
+        self._summary_labels: list[tuple[QtWidgets.QLabel, QtWidgets.QLabel]] = []
+        for row in range(5):
+            key_label = QtWidgets.QLabel()
+            key_label.setObjectName("mutedLabel")
+            value_label = QtWidgets.QLabel()
+            value_label.setObjectName("numberLabel")
+            value_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+            summary.addWidget(key_label, row, 0)
+            summary.addWidget(value_label, row, 1)
+            self._summary_labels.append((key_label, value_label))
+        details_layout.addLayout(summary)
+        layout.addWidget(self._details)
+        self._details.hide()
 
-        results_header = QtWidgets.QHBoxLayout()
-        self._results_label = _section_label("RESULTS")
-        results_header.addWidget(self._results_label)
-        results_header.addStretch()
-        self._show_all_results = QtWidgets.QCheckBox("Show all")
-        self._show_all_results.setToolTip("Show the results of all trajectories, not only of the selected ones")
-        self._show_all_results.toggled.connect(self._filter_results)
-        results_header.addWidget(self._show_all_results)
-        details_layout.addLayout(results_header)
-        details_layout.addWidget(self.resultTableView, stretch=2)
-
-        sidebar = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
-        sidebar.setObjectName("sidebar")
-        sidebar.setHandleWidth(1)
-        sidebar.addWidget(list_panel)
-        sidebar.addWidget(details)
-        sidebar.setStretchFactor(0, 2)
-        sidebar.setStretchFactor(1, 3)
-        sidebar.setMinimumWidth(260)
+        # results, collapsed: they are mostly needed for their context menus (export, plots, alignments)
+        self._results_toggle = QtWidgets.QToolButton()
+        self._results_toggle.setObjectName("disclosureButton")
+        self._results_toggle.setText("Results")
+        self._results_toggle.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self._results_toggle.setArrowType(QtCore.Qt.ArrowType.RightArrow)
+        self._results_toggle.setCheckable(True)
+        self._results_toggle.toggled.connect(self._toggle_results)
+        self._results_toggle.hide()
+        layout.addSpacing(8)
+        layout.addWidget(self._results_toggle)
+        layout.addWidget(self.resultTableView, stretch=2)
+        self.resultTableView.hide()
+        layout.addStretch()
         return sidebar
 
     def _create_workspace_panel(self) -> QtWidgets.QWidget:
         self.workspace = Workspace()
-
-        bar_frame = QtWidgets.QFrame()
-        bar_frame.setObjectName("layoutBar")
-        bar = QtWidgets.QHBoxLayout(bar_frame)
-        bar.setContentsMargins(12, 8, 12, 8)
-        bar.setSpacing(8)
-        layout_label = QtWidgets.QLabel("Layout")
-        layout_label.setObjectName("mutedLabel")
-        bar.addWidget(layout_label)
-        self._layout_box = QtWidgets.QComboBox()
-        self._layout_box.setMinimumContentsLength(16)
-        self._layout_box.setToolTip("Saved arrangements of views")
-        self._layout_box.activated.connect(self._on_layout_chosen)
-        bar.addWidget(self._layout_box)
-        self._modified_label = QtWidgets.QLabel("modified")
-        self._modified_label.setObjectName("warningLabel")
-        self._modified_label.setToolTip("The views were changed since the layout was loaded or saved")
-        self._modified_label.hide()
-        bar.addWidget(self._modified_label)
-        for text, tip, slot in (
-            ("Save", "Save the views in this layout (a built-in layout is saved as a copy)", self._save_layout),
-            ("Save As…", "Save the views as a new layout", lambda: self._save_layout_as()),
-        ):
-            button = QtWidgets.QPushButton(text)
-            button.setToolTip(tip)
-            button.clicked.connect(slot)
-            bar.addWidget(button)
-        self._delete_layout_button = QtWidgets.QPushButton("Delete")
-        self._delete_layout_button.setToolTip("Delete this layout (built-in layouts cannot be deleted)")
-        self._delete_layout_button.clicked.connect(self._delete_layout)
-        bar.addWidget(self._delete_layout_button)
-        bar.addStretch()
-
-        add_view = QtWidgets.QToolButton()
-        add_view.setObjectName("outlineButton")
-        add_view.setText("+  Add View")
-        add_view.setToolTip("Add a table, the 3D view or a plot to the workspace")
-        add_view.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
-        add_menu = QtWidgets.QMenu(add_view)
-        for view_type in VIEW_TYPES:
-            add_menu.addAction(view_type.label, lambda key=view_type.key: self.workspace.add_view(key))
-        add_view.setMenu(add_menu)
-        bar.addWidget(add_view)
+        self._workspace_stack = QtWidgets.QStackedWidget()
+        self._welcome = WelcomePage(
+            add_trajectories=self._add_trajectories_action.trigger,
+            load_session=self.handle_import_session,
+        )
+        self._workspace_stack.addWidget(self._welcome)
+        self._workspace_stack.addWidget(self.workspace)
 
         panel = QtWidgets.QWidget()
         panel.setObjectName("workspacePanel")
         layout = QtWidgets.QVBoxLayout(panel)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
-        layout.addWidget(bar_frame)
-        layout.addWidget(self.workspace, stretch=1)
+        layout.addWidget(self._workspace_stack)
         return panel
+
+    @Slot()
+    def _update_empty_state(self) -> None:
+        """Before anything is loaded, a welcome page replaces the (empty) views; controls without use are off."""
+        has_data = bool(self.trajectory_table_model.items or self.result_table_model.items)
+        self._workspace_stack.setCurrentWidget(self.workspace if has_data else self._welcome)
+        trajectories = self.trajectory_table_model.items
+        self._reference_box.setEnabled(bool(trajectories))
+        self._evaluate_button.setEnabled(len(trajectories) > 1)
+
+
+class WelcomePage(QtWidgets.QWidget):
+    """Shown while nothing is loaded: what to do first, and a target for dropped files."""
+
+    files_dropped = Signal(list)
+
+    def __init__(self, add_trajectories: Callable[[], None], load_session: Callable[[], None]) -> None:
+        super().__init__()
+        self.setObjectName("welcome")
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
+        self.setAcceptDrops(True)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addStretch(3)
+        title = QtWidgets.QLabel("Compare trajectories")
+        title.setObjectName("welcomeTitle")
+        text = QtWidgets.QLabel(
+            "Drop trajectory files here to start, then pick a reference\nand click “Evaluate” to compare them."
+        )
+        text.setObjectName("mutedLabel")
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addStretch()
+        add = QtWidgets.QPushButton("Add Trajectories…")
+        add.setObjectName("primaryButton")
+        add.clicked.connect(add_trajectories)
+        session = QtWidgets.QPushButton("Load Session…")
+        session.clicked.connect(load_session)
+        buttons.addWidget(add)
+        buttons.addWidget(session)
+        buttons.addStretch()
+        for label in (title, text):
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(label)
+        layout.addSpacing(16)
+        layout.addLayout(buttons)
+        layout.addStretch(4)
+
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
+        if event.mimeData() is not None and event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event: QtGui.QDropEvent) -> None:
+        paths = [url.toLocalFile() for url in event.mimeData().urls() if url.isLocalFile()]
+        if paths:
+            self.files_dropped.emit(paths)
+
+
+def _duration(seconds: float) -> str:
+    minutes, seconds = divmod(int(round(seconds)), 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}:{minutes:02d}:{seconds:02d} h" if hours else f"{minutes}:{seconds:02d} min"
 
 
 def _section_label(text: str) -> QtWidgets.QLabel:
     label = QtWidgets.QLabel(text)
     label.setObjectName("sectionLabel")
-    font = label.font()
-    font.setLetterSpacing(QtGui.QFont.SpacingType.AbsoluteSpacing, 0.6)
-    label.setFont(font)
     return label
