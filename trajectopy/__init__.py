@@ -19,7 +19,7 @@ Key Components
     - interpolate: Temporal interpolation of trajectories
     - merge_trajectories, average_trajectories: Combine multiple trajectories
     - sort_spatially: Spatial sorting of trajectory poses
-    - approximate_cubic: Cubic approximation of trajectory data
+    - approximate: Smoothing by piecewise cubic approximation
 
 **Result Classes:**
     - ATEResult: Absolute Trajectory Error results

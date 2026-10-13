@@ -41,7 +41,7 @@ The processing settings allow you to configure various processing steps that can
 - `std_z_to` (float): Standard deviation of Z target position component in meters.
 - `std_roll_pitch` (float): Standard deviation of roll and pitch in radians.
 - `std_yaw` (float): Standard deviation of yaw in radians.
-- `std_speed_to` (float): Standard deviation of platform speed in (meters per second).
+- `std_speed` (float): Standard deviation of the platform speed in meters per second.
 - `error_probability` (float): Probability of error used for stochastic testing.
 - `variance_estimation` (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.
 
@@ -88,7 +88,7 @@ This method matches both trajectories spatially by requesting the nearest k posi
 
 - `pair_distance_step` (float): Step in which the pose pair distance increases.
 
-- `pair_distance_unit` (`Unit`): Unit of the pose pair distance. Choices: `Unit.METER`, `Unit.SECOND`.
+- `pair_distance_unit` (`PairDistanceUnit`): Unit of the pose pair distance. Choices: `PairDistanceUnit.METER`, `PairDistanceUnit.SECOND`.
 
 - `use_all_pose_pairs` (boolean): If enabled, overlapping pose pairs will be used for relative metrics calculation.
 
@@ -130,9 +130,15 @@ Furthermore, the user can choose to either use consecutive pose pairs (non-overl
 
 Trajectopy currently supports piece-wise cubic approximation for position components and moving average for rotation components. Piece-wise cubic means that the trajectory is divided into intervals of a specified size, and within each interval, a cubic polynomial is fitted to the position data. The fitted polynomial is then used to approximate the position values within that interval.
 
-- `position_interval_size` (float): Size of the position intervals in meters for cubic approximation. Default value is 0.15 meters.
+The interval and window sizes refer to the index of the trajectory: seconds for trajectories sorted by time,
+meters for spatially sorted trajectories.
+
+- `position_approximation_method` (`PositionApproximationMethod`): Method for the positions. Choices: `PositionApproximationMethod.CUBIC`. Default value is `CUBIC`.
+- `position_interval_size` (float): Size of the intervals of the piece-wise cubic approximation. Default value is 0.15.
 - `position_min_observations` (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.
-- `rotation_window_size` (float): Size of the rotation smoothing window in meters for rotation approximation (not cubic!). Default value is 0.15 meters.
+- `rotation_approximation_method` (`RotationApproximationMethod`): Method for the rotations. Choices: `RotationApproximationMethod.AVERAGE_IN_WINDOW` (moving average, see `rotation_window_size`) and `RotationApproximationMethod.AVERAGE_PER_PATH_LENGTH` (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see `max_path_length_gap`). Default value is `AVERAGE_IN_WINDOW`.
+- `rotation_window_size` (float): Size of the moving average window for the rotations. Default value is 0.15.
+- `max_path_length_gap` (float): Maximum path length gap in meters that is bridged when the rotations of several laps are averaged (`AVERAGE_PER_PATH_LENGTH`). Default value is 0.15.
 
 ### Sorting Settings
 

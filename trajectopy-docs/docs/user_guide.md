@@ -158,7 +158,8 @@ vis.show(vis.ate_map_figure(ate_results, settings))
 
 - Map tiles are loaded from OpenStreetMap or Esri World Imagery without an API key. This requires an
   internet connection and sends the approximate area of your trajectories to the tile server. Tiles are
-  cached on disk (`%LOCALAPPDATA%	rajectopy	iles` on Windows, `~/.cache/trajectopy/tiles` otherwise) and
+  cached on disk (`%LOCALAPPDATA%\trajectopy\tiles` on Windows, `$XDG_CACHE_HOME/trajectopy/tiles` or
+  `~/.cache/trajectopy/tiles` otherwise) and
   refreshed after 30 days.
 - With a map, positions are shown in local east/north meters around the center of the trajectories
   (true north; the axes can be rotated slightly against a UTM grid due to meridian convergence).

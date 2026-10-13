@@ -52,7 +52,7 @@ Headers start with `#` and configure how data is interpreted:
 | `#datetime_format` | Datetime string format | `%Y-%m-%d %H:%M:%S.%f` | strftime format |
 | `#datetime_timezone` | Timezone | `UTC` | TZ name or `GPS` |
 | `#gps_week` | GPS week (for gps_sow) | `0` | Integer |
-| `#sorting` | Data sorting | `time` | `time`, `arc_length` |
+| `#sorting` | Data sorting | `time` | `time`, `path_length` (or `arc_length`) |
 
 ### Field Names
 
@@ -161,7 +161,7 @@ positions = np.column_stack(
 quaternions = np.tile([0, 0, 0, 1], (len(timestamps), 1))
 
 # Create trajectory
-traj = tpy.Trajectory(
+traj = tpy.Trajectory.from_arrays(
     timestamps=timestamps,
     xyz=positions,
     quat=quaternions,

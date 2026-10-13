@@ -3,6 +3,7 @@ import logging
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -142,9 +143,21 @@ class Trajectory:
         quat: np.ndarray | None = None,
         rpy: np.ndarray | None = None,
         epsg: int = 0,
-        **kwargs,
+        **kwargs: Any,
     ) -> "Trajectory":
-        """Factory: Handles creation from raw numpy arrays."""
+        """Creates a trajectory from numpy arrays.
+
+        Args:
+            xyz (np.ndarray): Positions, shape (N, 3).
+            quat (np.ndarray | None, optional): Orientations as quaternions (x, y, z, w), shape (N, 4).
+            rpy (np.ndarray | None, optional): Orientations as Euler angles (roll, pitch, yaw) in radians,
+                shape (N, 3). Provide either ``quat`` or ``rpy``.
+            epsg (int, optional): EPSG code of the positions. 0 means a local, unknown system. Defaults to 0.
+            **kwargs: Further arguments of the constructor, e.g. ``timestamps`` and ``name``.
+
+        Returns:
+            Trajectory: The new trajectory.
+        """
 
         pos_obj = Positions(xyz=xyz, epsg=epsg)
 
