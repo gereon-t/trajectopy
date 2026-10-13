@@ -180,6 +180,7 @@ class PlaybackWindow(QtWidgets.QDialog):
     # ------------------------------------------------------------------ scene
 
     def _setup_scene(self) -> None:
+        ratio = self.devicePixelRatioF()  # OpenGL sizes are in device pixels
         all_xyz = np.vstack([td.xyz for td in self._trajs])
         center = all_xyz.mean(axis=0)
         extent = float(np.linalg.norm(all_xyz.max(axis=0) - all_xyz.min(axis=0))) or 1.0
@@ -192,18 +193,22 @@ class PlaybackWindow(QtWidgets.QDialog):
         self._view.addItem(grid)
 
         for td in self._trajs:
-            self._view.addItem(gl.GLLinePlotItem(pos=td.display_xyz, color=PATH_COLOR, width=1.0, antialias=True))
+            self._view.addItem(
+                gl.GLLinePlotItem(pos=td.display_xyz, color=PATH_COLOR, width=1.0 * ratio, antialias=True)
+            )
 
-            td.traversed = gl.GLLinePlotItem(pos=td.display_xyz[:1], color=_rgba(td.color), width=3.0, antialias=True)
+            td.traversed = gl.GLLinePlotItem(
+                pos=td.display_xyz[:1], color=_rgba(td.color), width=3.0 * ratio, antialias=True
+            )
             self._view.addItem(td.traversed)
 
-            td.marker = gl.GLScatterPlotItem(pos=td.xyz[:1], color=MARKER_COLOR, size=12.0, pxMode=True)
+            td.marker = gl.GLScatterPlotItem(pos=td.xyz[:1], color=MARKER_COLOR, size=12.0 * ratio, pxMode=True)
             self._view.addItem(td.marker)
 
             if td.rot_mats is not None:
                 axis_colors = np.repeat([_rgba(c) for c in style.AXIS_COLORS], 2, axis=0)
                 td.body_axes = gl.GLLinePlotItem(
-                    pos=np.zeros((6, 3)), color=axis_colors, width=3.0, mode="lines", antialias=True
+                    pos=np.zeros((6, 3)), color=axis_colors, width=3.0 * ratio, mode="lines", antialias=True
                 )
                 self._view.addItem(td.body_axes)
 

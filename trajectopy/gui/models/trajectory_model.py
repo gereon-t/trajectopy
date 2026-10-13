@@ -2,7 +2,8 @@ import copy
 import logging
 import os
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, Signal
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
@@ -13,9 +14,14 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy.gui.models.table_model import RequestTableModel
+from trajectopy.gui.models.table_model import _ROOT_INDEX, RequestTableModel
+from trajectopy.visualization import style
 
 logger = logging.getLogger(__name__)
+
+
+def _row_color(row: int) -> str:
+    return style.PALETTE[row % len(style.PALETTE)]
 
 
 class TrajectoryTableModel(RequestTableModel):
@@ -50,6 +56,47 @@ class TrajectoryTableModel(RequestTableModel):
             ],
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
+        self.badge_column = len(self._headers)
+        self.badges: dict[str, str] = {}  # entry id -> short summary of its evaluation, e.g. the ATE RMS
+
+    def columnCount(self, parent: QModelIndex | QPersistentModelIndex = _ROOT_INDEX) -> int:
+        return len(self._headers) + 1
+
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if section == self.badge_column and orientation == Qt.Orientation.Horizontal:
+            return "ATE RMS" if role == Qt.ItemDataRole.DisplayRole else None
+        return super().headerData(section, orientation, role)
+
+    def set_badges(self, badges: dict[str, str]) -> None:
+        if badges == self.badges:
+            return
+        self.badges = badges
+        if self.items:
+            self.dataChanged.emit(self.index(0, self.badge_column), self.index(len(self.items) - 1, self.badge_column))
+
+    def is_drawable(self, entry: TrajectoryEntry) -> bool:
+        return True
+
+    def color(self, entry: TrajectoryEntry) -> str:
+        """Color of the trajectory in all views, also shown as a swatch next to its name."""
+        return _row_color(self.items.index(entry))
+
+    def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
+        if index.row() >= len(self.items):
+            return None
+        if index.column() == self.badge_column:
+            if role == Qt.ItemDataRole.DisplayRole:
+                return self.badges.get(self.items[index.row()].entry_id, "")
+            if role == Qt.ItemDataRole.TextAlignmentRole:
+                return Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            return None
+        if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
+            return QColor(_row_color(index.row()))
+        if role == Qt.ItemDataRole.FontRole and index.column() == 0 and self.items[index.row()].set_as_reference:
+            font = QFont()
+            font.setBold(True)
+            return font
+        return super().data(index, role)
 
     def remove_group(self, group_id: str) -> None:
         self.items = [item for item in self.items if item.group_id not in group_id]

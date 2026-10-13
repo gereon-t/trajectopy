@@ -28,6 +28,13 @@ class TestGuiSmoke(unittest.TestCase):
             # same as trajectopy.gui.app.main
             QtWidgets.QApplication.setAttribute(QtCore.Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
         cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        # keep the window layout and view options of the user's own installation untouched
+        cls.app.setOrganizationName("trajectopy-tests")
+        cls.app.setApplicationName("trajectopy-tests")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        QtCore.QSettings().clear()
 
     def setUp(self) -> None:
         # Never block on modal dialogs; record messages instead.
@@ -195,6 +202,70 @@ class TestGuiSmoke(unittest.TestCase):
                 self.assertEqual(settings, expected)
                 self.assertEqual(self.messages, [])
                 viewer.close()
+
+    def test_evaluate_all_and_views(self):
+        """ "Evaluate All" fills the comparison and every view type can show the results."""
+        from trajectopy.gui.managers.requests import FileRequest, FileRequestType
+        from trajectopy.gui.models.entries import AbsoluteDeviationEntry, RelativeDeviationEntry
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+        from trajectopy.gui.views.workspace import VIEW_TYPES, FigureContent
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            trajectories, results = window.trajectory_table_model, window.result_table_model
+            window.file_manager.handle_request(FileRequest(type=FileRequestType.READ_TRAJ, file_list=TRAJECTORY_FILES))
+            self._wait_until(lambda: len(trajectories.items) == 2)
+            reference, test = trajectories.items
+
+            window._on_reference_chosen(window._reference_box.findData(reference.entry_id))
+            self.assertIs(trajectories.reference_entry, reference)
+            window.evaluate_all()
+            self._wait_until(lambda: any(isinstance(r, RelativeDeviationEntry) for r in results.items))
+            ate = next(r for r in results.items if isinstance(r, AbsoluteDeviationEntry))
+            self.assertEqual(ate.source_id, test.entry_id)
+            window._refresh()
+            self.assertEqual(trajectories.badges[reference.entry_id], "reference")
+            self.assertTrue(trajectories.badges[test.entry_id].endswith(" m"))
+
+            for view_type in VIEW_TYPES:
+                with self.subTest(view=view_type.key):
+                    dock = window.workspace.add_view(view_type.key)
+                    if isinstance(dock.content, FigureContent):
+                        self.assertIsNotNone(dock.content._widget)
+                    window.workspace.remove_view(dock)
+            self.assertEqual(self.messages, [])
+        finally:
+            window.close()
+            self.app.processEvents()
+
+    def test_layouts_are_saved_and_restored(self):
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            window._load_layout("Trajectory check")
+            window.workspace.add_view("ate_histograms")
+            self.assertTrue(window._layout_modified)
+            with mock.patch("PySide6.QtWidgets.QInputDialog.getText", return_value=("My layout", True)):
+                window._save_layout()  # a built-in layout is saved as a copy under a new name
+            self.assertEqual(window._layout_name, "My layout")
+            self.assertFalse(window._layout_modified)
+            saved = [dock.view_type for dock in window.workspace.docks]
+        finally:
+            window.close()
+            self.app.processEvents()
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            self.assertEqual(window._layout_name, "My layout")
+            self.assertEqual([dock.view_type for dock in window.workspace.docks], saved)
+            window._load_layout("Evaluation")
+            self.assertEqual([dock.view_type for dock in window.workspace.docks], ["comparison", "scene", "ate"])
+            window._load_layout("My layout")
+            self.assertEqual([dock.view_type for dock in window.workspace.docks], saved)
+        finally:
+            window.close()
+            self.app.processEvents()
 
     def test_divide_into_laps(self):
         from trajectopy.gui.managers.requests import TrajectoryManagerRequest, TrajectoryManagerRequestType

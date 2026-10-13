@@ -22,12 +22,37 @@ _ROOT_INDEX = QModelIndex()
 
 
 class BaseTableModel(QAbstractTableModel, Generic[T]):
-    """Base class for all table models."""
+    """Base class for all table models.
+
+    Entries for which ``is_drawable`` is true get a checkbox in the first column that controls whether
+    they are shown in the 3D view.
+    """
+
+    visibility_changed = Signal()
 
     def __init__(self, headers: list[str] | None = None):
         super().__init__()
         self.items: list[T] = []
         self._headers = [""] if headers is None else headers
+        self._hidden_ids: set[str] = set()
+
+    def is_drawable(self, entry: T) -> bool:
+        return False
+
+    def is_visible(self, entry: T) -> bool:
+        return self.is_drawable(entry) and entry.entry_id not in self._hidden_ids
+
+    def set_visible(self, entries: list[T], visible: bool) -> None:
+        for entry in entries:
+            if visible:
+                self._hidden_ids.discard(entry.entry_id)
+            else:
+                self._hidden_ids.add(entry.entry_id)
+        if self.items:
+            self.dataChanged.emit(
+                self.index(0, 0), self.index(len(self.items) - 1, 0), [Qt.ItemDataRole.CheckStateRole]
+            )
+        self.visibility_changed.emit()
 
     def rowCount(self, parent: QModelIndex | QPersistentModelIndex = _ROOT_INDEX) -> int:
         return len(self.items)
@@ -39,14 +64,32 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             return self._headers[section]
 
+    def flags(self, index: QModelIndex | QPersistentModelIndex) -> Qt.ItemFlag:
+        flags = super().flags(index)
+        if index.column() == 0 and index.row() < len(self.items) and self.is_drawable(self.items[index.row()]):
+            flags |= Qt.ItemFlag.ItemIsUserCheckable
+        return flags
+
     def data(self, index: QModelIndex | QPersistentModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
-        if not self.items:
+        if not self.items or index.row() >= len(self.items):
             return None
 
+        entry = self.items[index.row()]
         if role == Qt.ItemDataRole.DisplayRole:
-            return self.items[index.row()].column[index.column()]
+            return entry.column[index.column()]
+
+        if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0 and self.is_drawable(entry):
+            return Qt.CheckState.Checked if self.is_visible(entry) else Qt.CheckState.Unchecked
 
         return None
+
+    def setData(
+        self, index: QModelIndex | QPersistentModelIndex, value: Any, role: int = Qt.ItemDataRole.EditRole
+    ) -> bool:
+        if role != Qt.ItemDataRole.CheckStateRole or index.column() != 0 or index.row() >= len(self.items):
+            return False
+        self.set_visible([self.items[index.row()]], Qt.CheckState(value) == Qt.CheckState.Checked)
+        return True
 
     def get(self, item_id: str) -> None | T:
         return next((item for item in self.items if item.entry_id == item_id), None)

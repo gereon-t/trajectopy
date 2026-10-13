@@ -577,7 +577,7 @@ class TrajectoryManager(QObject):
 
         return (
             entry_pair.entry.derive(traj_aligned),
-            AlignmentEntry(alignment_result=alignment_result),
+            AlignmentEntry(alignment_result=alignment_result, source_id=entry_pair.entry.entry_id),
         )
 
     @staticmethod
@@ -686,7 +686,11 @@ class TrajectoryManager(QObject):
             align=True,
         )
 
-        return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
+        source_id = entry_pair.entry.entry_id
+        return (
+            AbsoluteDeviationEntry(deviations=ate_result, source_id=source_id),
+            AlignmentEntry(alignment_result=alignment_result, source_id=source_id),
+        )
 
     @staticmethod
     def operation_ate_without_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:
@@ -711,7 +715,7 @@ class TrajectoryManager(QObject):
             align=False,
         )
 
-        return (AbsoluteDeviationEntry(deviations=ate_result),)
+        return (AbsoluteDeviationEntry(deviations=ate_result, source_id=entry_pair.entry.entry_id),)
 
     @staticmethod
     def operation_rpe(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:
@@ -733,4 +737,4 @@ class TrajectoryManager(QObject):
             processing_settings=entry_pair.entry.settings,
         )
 
-        return (RelativeDeviationEntry(deviations=rpe_result),)
+        return (RelativeDeviationEntry(deviations=rpe_result, source_id=entry_pair.entry.entry_id),)

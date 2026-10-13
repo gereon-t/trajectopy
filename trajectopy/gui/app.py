@@ -47,6 +47,8 @@ def main(
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
 
     app = QApplication([])
+    app.setOrganizationName("trajectopy")
+    app.setApplicationName("trajectopy")  # where QSettings stores the window layout
 
     if sys.platform == "darwin":
         font = QFont(".AppleSystemUIFont", 13)

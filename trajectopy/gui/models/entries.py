@@ -223,7 +223,13 @@ class TrajectoryEntry(Entry):
 
 @dataclass
 class ResultEntry(Entry, ABC):
-    """Abstract base class for result entries in the result model."""
+    """Abstract base class for result entries in the result model.
+
+    ``source_id`` is the id of the trajectory entry the result was computed from (empty if unknown, e.g. for
+    files of older versions). The 3D view uses it to color that trajectory by the result.
+    """
+
+    source_id: str = field(default="", kw_only=True)
 
     @abstractmethod
     def __len__(self) -> int:
@@ -243,8 +249,20 @@ class ResultEntry(Entry, ABC):
     def column(self) -> tuple[str, str, int, str]:
         return self.name, self.type, len(self), self.entry_id
 
+    def to_file(self, filename: str) -> None:
+        super().to_file(filename)
+        if self.source_id:
+            with open(filename, "a", newline="\n", encoding="utf-8") as file:
+                file.write(f"#source_id {self.source_id}\n")
+
     @classmethod
     def from_file(cls, filename: str) -> "ResultEntry":
+        entry = cls._from_file(filename)
+        entry.source_id = str(HeaderData.from_file(filename).data.get("source_id", ""))
+        return entry
+
+    @classmethod
+    def _from_file(cls, filename: str) -> "ResultEntry":
         """
         Reads a result file and returns an object of the appropriate type based on the file's header data.
 

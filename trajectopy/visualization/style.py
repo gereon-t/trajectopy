@@ -1,5 +1,7 @@
 """Shared look of all plots: colors, colormaps and the light/dark theme."""
 
+import contextvars
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -89,9 +91,15 @@ def readable_text_color(background: QtGui.QColor) -> str:
     return "#000000" if luminance > 0.5 else "#ffffff"
 
 
+# Colors of the data series while rendering, if the caller assigns them (e.g. the GUI, so that a trajectory has
+# the same color in all views); otherwise the palette is used in order.
+series_colors: contextvars.ContextVar[Sequence[str] | None] = contextvars.ContextVar("series_colors", default=None)
+
+
 def color(index: int) -> str:
     """Color of the ``index``-th data series."""
-    return PALETTE[index % len(PALETTE)]
+    colors = series_colors.get() or PALETTE
+    return colors[index % len(colors)]
 
 
 def pen(index_or_color: int | str, width: float = 1.5, style=None) -> QtGui.QPen:

@@ -50,7 +50,8 @@ class EntryTableView(QtWidgets.QTableView):
     def selected_entries(self) -> list:
         if (selection_model := self.selectionModel()) is None:
             return []
-        return [self.table_model.items[index.row()] for index in selection_model.selectedRows()]
+        items = self.table_model.items
+        return [items[index.row()] for index in selection_model.selectedRows() if index.row() < len(items)]
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent) -> None:
         self._accept_files(event)

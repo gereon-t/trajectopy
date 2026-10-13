@@ -102,16 +102,23 @@ _BASE = """
             color: %(text)s;
             spacing: 6px;
         }
-        QCheckBox::indicator {
+        QCheckBox::indicator, QTableView::indicator {
             width: 13px;
             height: 13px;
             border: 1px solid %(muted)s;
             border-radius: 2px;
             background: %(input_bg)s;
         }
-        QCheckBox::indicator:checked {
+        QCheckBox::indicator:checked, QTableView::indicator:checked {
             background-color: %(accent)s;
             border-color: %(accent)s;
+        }
+        QTableView::indicator:checked:selected {
+            background-color: %(text)s;
+            border-color: %(text)s;
+        }
+        QTableView::indicator:selected {
+            border-color: %(text)s;
         }
         QRadioButton {
             color: %(text)s;
