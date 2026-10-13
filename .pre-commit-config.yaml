@@ -1,17 +1,10 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
     hooks:
-      - id: black
-        args: [--line-length=119]
-        stages: [pre-commit]
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile=black"]
-        stages: [pre-commit]
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.6
@@ -21,15 +14,10 @@ repos:
 
   - repo: local
     hooks:
-      - id: unittest
+      - id: pytest
         name: Run unit tests
-        entry: python -m unittest discover -s test -p "test_*.py"
+        entry: uv run pytest -q
         language: system
         pass_filenames: false
         stages: [pre-commit]
         always_run: true
-  -   repo: https://github.com/asottile/pyupgrade
-      rev: v3.19.0  # Use the latest version
-      hooks:
-      -   id: pyupgrade
-          args: [--py310-plus]

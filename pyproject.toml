@@ -47,20 +47,19 @@ dynamic = ["version"]
 readme = "README.md"
 dependencies = [
     "autograd>=1.8.0",
-    "jinja2>=3.1.6",
-    "matplotlib>=3.9.4",
     "numpy>=2.0.2",
     "pandas>=2.2.3",
-    "plotly>=6.1.0",
     "pyproj>=3.6.1",
-    "rich>=14.0.0",
     "rosbags>=0.9.23",
     "scipy>=1.13.1",
 ]
 
 
 [project.optional-dependencies]
-gui = ["PySide6", "pyvista", "pyvistaqt", "pyqtgraph"]
+# Plotting (trajectopy.visualization) is built on pyqtgraph and needs Qt.
+plot = ["PySide6-Essentials>=6.8", "pyqtgraph>=0.13.7"]
+# The GUI additionally renders the 3D playback with OpenGL.
+gui = ["trajectopy[plot]", "PyOpenGL>=3.1.7"]
 
 [project.urls]
 Homepage = "https://gereon-t.github.io/trajectopy/"
@@ -73,7 +72,6 @@ trajectopy = "trajectopy.cli.main:main"
 
 [dependency-groups]
 dev = [
-    "black>=25.11.0",
     "mkdocs-material>=9.6.14",
     "mkdocstrings[python]>=0.24.0",
     "pillow>=11.2.1",
@@ -81,4 +79,34 @@ dev = [
     "pyinstaller>=6.13.0",
     "pytest>=8.3.5",
     "pytest-cov>=4.1.0",
+    "ruff>=0.14.0",
+    "mypy>=1.18.2",
+    "pandas-stubs>=2.2.3",
 ]
+
+[tool.ruff]
+line-length = 119
+target-version = "py310"
+extend-exclude = ["trajectopy-docs"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+ignore = [
+    "B905",  # zip() without strict=: arrays are validated upstream
+    "E741",  # single-letter names such as `l` are standard notation in the math code
+    "B024",  # abstract base classes without abstract methods are used as markers
+]
+
+[tool.ruff.lint.per-file-ignores]
+"trajectopy/gui/app.py" = ["E402"]  # logging must be configured before the GUI modules are imported
+"trajectopy/visualization/__init__.py" = ["F401"]  # re-exports for type checkers; loaded lazily at runtime
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.mypy]
+files = ["trajectopy"]
+python_version = "3.10"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true

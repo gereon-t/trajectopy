@@ -8,6 +8,7 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 - **[Positions](core/positions.md)** - Position data container
 - **[Rotations](core/rotations.md)** - Rotation data container  
 - **[Settings](core/settings.md)** - Configuration classes for trajectory processing
+- **[Parameters](core/parameters.md)** - Alignment parameters and stochastic models
 
 ## Processing Functions
 
@@ -18,7 +19,11 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 - **[Merging](processing/merging.md)** - Merge and average multiple trajectories
 - **[Sorting](processing/sorting.md)** - Spatial sorting of trajectories
 - **[Approximation](processing/approximation.md)** - Trajectory approximation algorithms
-- **[Parameters](processing/parameters.md)** - Alignment parameters and stochastic models
+
+## File I/O
+
+- **[Trajectory I/O](io/trajectory_io.md)** - Read and write trajectories (ASCII, KML)
+- **[Results I/O](io/results_io.md)** - Read and write ATE/RPE/alignment results and parameters
 
 ## Results
 
@@ -28,6 +33,5 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 
 ## Visualization
 
-- **[Matplotlib Plots](visualization/mpl_plots.md)** - Static plotting with Matplotlib
-- **[Plotly Plots](visualization/plotly_plots.md)** - Interactive plotting with Plotly
-- **[HTML Reports](visualization/plotly_reports.md)** - Generate comprehensive HTML reports
+- **[Figures](visualization/figures.md)** - Plots of trajectories, ATE/RPE results and alignment parameters
+- **[Showing & Exporting](visualization/display.md)** - Interactive plot window and image export

@@ -1,4 +1,5 @@
 import logging
+from typing import Literal, overload
 
 import numpy as np
 
@@ -10,15 +11,46 @@ from trajectopy.processing.matching import match_trajectories
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
-from trajectopy.utils.common import nearest_point
+from trajectopy.utils.geometry import nearest_point
 
 logger = logging.getLogger(__name__)
+
+
+@overload
+def ate(
+    trajectory: Trajectory,
+    other: Trajectory,
+    processing_settings: settings.ProcessingSettings | None = None,
+    return_alignment: Literal[False] = False,
+    align: bool = True,
+) -> ATEResult: ...
+
+
+@overload
+def ate(
+    trajectory: Trajectory,
+    other: Trajectory,
+    processing_settings: settings.ProcessingSettings | None = None,
+    *,
+    return_alignment: Literal[True],
+    align: bool = True,
+) -> tuple[ATEResult, AlignmentResult]: ...
+
+
+@overload
+def ate(
+    trajectory: Trajectory,
+    other: Trajectory,
+    processing_settings: settings.ProcessingSettings | None,
+    return_alignment: Literal[True],
+    align: bool = True,
+) -> tuple[ATEResult, AlignmentResult]: ...
 
 
 def ate(
     trajectory: Trajectory,
     other: Trajectory,
-    processing_settings: settings.ProcessingSettings = settings.ProcessingSettings(),
+    processing_settings: settings.ProcessingSettings | None = None,
     return_alignment: bool = False,
     align: bool = True,
 ) -> ATEResult | tuple[ATEResult, AlignmentResult]:
@@ -41,6 +73,9 @@ def ate(
         ATEResult: Result of the ATE computation. If return_alignment is True, returns a tuple
             containing (ATEResult, AlignmentResult).
     """
+    if processing_settings is None:
+        processing_settings = settings.ProcessingSettings()
+
     trajectory, other = match_trajectories(
         trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
     )
@@ -70,7 +105,7 @@ def ate(
 def rpe(
     trajectory: Trajectory,
     other: Trajectory,
-    processing_settings: settings.ProcessingSettings = settings.ProcessingSettings(),
+    processing_settings: settings.ProcessingSettings | None = None,
 ) -> RPEResult:
     """Computes the relative pose error (RPE) between two trajectories.
 
@@ -86,6 +121,9 @@ def rpe(
     Returns:
         RPEResult: Result of the RPE computation.
     """
+    if processing_settings is None:
+        processing_settings = settings.ProcessingSettings()
+
     trajectory, other = match_trajectories(
         trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
     )
@@ -169,9 +207,12 @@ def _compare_trajectories_relative(
     *,
     trajectory: Trajectory,
     other: Trajectory,
-    relative_comparison_settings: settings.RelativeComparisonSettings = settings.RelativeComparisonSettings(),
+    relative_comparison_settings: settings.RelativeComparisonSettings | None = None,
 ) -> RPEResult:
     """This function compares two trajectories using the relative comparison method."""
+    if relative_comparison_settings is None:
+        relative_comparison_settings = settings.RelativeComparisonSettings()
+
     logger.info("Performing relative comparison")
     if relative_comparison_settings.pair_min_distance > relative_comparison_settings.pair_max_distance:
         raise ValueError("Maximum pose distance must be larger than minimum pose distance")

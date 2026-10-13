@@ -3,7 +3,7 @@
     <a href="https://github.com/gereon-t/trajectopy/releases"><img src="https://img.shields.io/github/v/release/gereon-t/trajectopy?label=version" /></a>
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue.svg" /></a>
     <a href="https://github.com/gereon-t/trajectopy/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gereon-t/trajectopy" /></a>
-    <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+    <a href="https://github.com/astral-sh/ruff"><img alt="Code style: ruff" src="https://img.shields.io/badge/code%20style-ruff-000000.svg"></a>
     <br />
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Windows-0078D6?st&logo=windows&logoColor=white" /></a>
     <a href="https://github.com/gereon-t/trajectopy"><img src="https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black" /></a>
@@ -18,12 +18,6 @@
   <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/trajectopy_gif_low_quality.gif">
 </p>
 
-Using [Mapbox](https://www.mapbox.com/), you can visualize your trajectories on a map:
-
-<p align="center">
-  <img style="border-radius: 10px;" src=".images/plot.png">
-</p>
-
 </div>
 
 ## Installation
@@ -32,6 +26,12 @@ Full version (with GUI):
 
 ```bash
 pip install "trajectopy[gui]"
+```
+
+Python package with plotting (no GUI):
+
+```bash
+pip install "trajectopy[plot]"
 ```
 
 Python package only:
@@ -52,7 +52,7 @@ Trajectopy offers a range of features, including:
 - __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
 - __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
-- __Customizable Visualization__: Powered by [Plotly](https://plotly.com/) or [Matplotlib](https://matplotlib.org/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy/blob/main/example_data/report.html))
+- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories can be shown on OpenStreetMap or satellite maps and exported to Google Earth.
 
 ## Web Application (Docker)
 

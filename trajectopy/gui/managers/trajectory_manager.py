@@ -1,9 +1,8 @@
-﻿import copy
+import copy
+import functools
 import logging
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
 from PySide6.QtCore import QObject, Signal, Slot
@@ -27,7 +26,7 @@ from trajectopy.gui.models.entries import (
     TrajectoryEntry,
 )
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.gui.utils import show_progress
+from trajectopy.gui.worker import BackgroundWorker
 from trajectopy.processing import (
     alignment,
     approximation,
@@ -40,6 +39,21 @@ from trajectopy.processing.interpolation import interpolate
 from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class _PerEntryOperation:
+    """An operation applied to every selected trajectory entry.
+
+    Attributes:
+        function: Receives the entry (and reference) and returns the new or updated entries.
+        inplace: Whether returned trajectory entries replace the input entries or are added as new entries.
+        apply_to_reference: Whether the operation is also applied to the reference trajectory if it is selected.
+    """
+
+    function: Callable[["TrajectoryEntryPair"], tuple | None]
+    inplace: bool
+    apply_to_reference: bool
 
 
 @dataclass
@@ -86,131 +100,112 @@ class TrajectoryManager(QObject):
     operation_finished = Signal()
     ui_request = Signal(UIRequest)
 
-    def __init__(self) -> None:
+    def __init__(self, worker: BackgroundWorker | None = None) -> None:
         """
         Initializes the TrajectoryManager object.
+
+        Args:
+            worker: Worker that executes the (potentially long-running) requests. Requests are processed
+                synchronously on the calling thread if no worker is given.
         """
         super().__init__()
-        # Python 3.14 workaround: execute request handlers in a real Python thread.
-        # Keep a persistent single worker to avoid per-request thread creation overhead.
-        self._request_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="TrajectopyTrajMgr")
-        self.request: TrajectoryManagerRequest
-        self.REQUEST_MAPPING: dict[TrajectoryManagerRequestType, Any] = {
-            TrajectoryManagerRequestType.EDIT_EPSG: lambda: self.handle_trajectory_operation(
-                operation=self.operation_epsg_edit,
-                inplace=True,
-                apply_to_reference=True,
+        self._worker = worker or BackgroundWorker(inline=True)
+
+        per_entry_operations: dict[TrajectoryManagerRequestType, _PerEntryOperation] = {
+            TrajectoryManagerRequestType.EDIT_EPSG: _PerEntryOperation(
+                self.operation_epsg_edit, inplace=True, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.CHANGE_ESPG: lambda: self.handle_trajectory_operation(
-                operation=self.operation_epsg_change,
-                inplace=True,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.CHANGE_ESPG: _PerEntryOperation(
+                self.operation_epsg_change, inplace=True, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.REARANGE_DOF: lambda: self.handle_trajectory_operation(
-                operation=self.operation_rearange_dof,
-                inplace=True,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.REARANGE_DOF: _PerEntryOperation(
+                self.operation_rearange_dof, inplace=True, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.EPSG_TO_REF: lambda: self.handle_trajectory_operation(
-                operation=self.operation_ref_epsg,
-                inplace=True,
-                apply_to_reference=False,
+            TrajectoryManagerRequestType.EPSG_TO_REF: _PerEntryOperation(
+                self.operation_ref_epsg, inplace=True, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.ALIGN: lambda: self.handle_trajectory_operation(
-                operation=self.operation_align, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.ALIGN: _PerEntryOperation(
+                self.operation_align, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.ADAPT_FIRST_POSE: lambda: self.handle_trajectory_operation(
-                operation=self.operation_adopt_first_pose,
-                inplace=False,
-                apply_to_reference=False,
+            TrajectoryManagerRequestType.ADAPT_FIRST_POSE: _PerEntryOperation(
+                self.operation_adopt_first_pose, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.APPLY_ALIGNMENT: lambda: self.handle_trajectory_operation(
-                operation=self.operation_apply_alignment,
-                inplace=False,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.APPLY_ALIGNMENT: _PerEntryOperation(
+                self.operation_apply_alignment, inplace=False, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.APPROXIMATE: lambda: self.handle_trajectory_operation(
-                operation=self.operation_approximate,
-                inplace=False,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.APPROXIMATE: _PerEntryOperation(
+                self.operation_approximate, inplace=False, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.AVERAGE: self.operation_average_trajectories,
-            TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
-            TrajectoryManagerRequestType.SORT: lambda: self.handle_trajectory_operation(
-                operation=self.operation_sort, inplace=False, apply_to_reference=True
+            TrajectoryManagerRequestType.SORT: _PerEntryOperation(
+                self.operation_sort, inplace=False, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.DIVIDE_INTO_LAPS: self.operation_divide_into_laps,
-            TrajectoryManagerRequestType.SWITCH_SORTING: lambda: self.handle_trajectory_operation(
-                operation=self.operation_switch_sorting,
-                inplace=True,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.SWITCH_SORTING: _PerEntryOperation(
+                self.operation_switch_sorting, inplace=True, apply_to_reference=True
             ),
-            TrajectoryManagerRequestType.MATCH: lambda: self.handle_trajectory_operation(
-                operation=self.operation_match, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.MATCH: _PerEntryOperation(
+                self.operation_match, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT: lambda: self.handle_trajectory_operation(
-                operation=self.operation_ate_with_alignment, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT: _PerEntryOperation(
+                self.operation_ate_with_alignment, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.ATE_NO_ALIGNMENT: lambda: self.handle_trajectory_operation(
-                operation=self.operation_ate_without_alignment, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.ATE_NO_ALIGNMENT: _PerEntryOperation(
+                self.operation_ate_without_alignment, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.RPE: lambda: self.handle_trajectory_operation(
-                operation=self.operation_rpe, inplace=False, apply_to_reference=False
+            TrajectoryManagerRequestType.RPE: _PerEntryOperation(
+                self.operation_rpe, inplace=False, apply_to_reference=False
             ),
-            TrajectoryManagerRequestType.INTERPOLATE_TO_GRID: lambda: self.handle_trajectory_operation(
-                operation=self.operation_interpolate_to_grid,
-                inplace=False,
-                apply_to_reference=True,
+            TrajectoryManagerRequestType.INTERPOLATE_TO_GRID: _PerEntryOperation(
+                self.operation_interpolate_to_grid, inplace=False, apply_to_reference=True
             ),
         }
+        self.REQUEST_MAPPING: dict[TrajectoryManagerRequestType, Callable[[TrajectoryManagerRequest], None]] = {
+            request_type: functools.partial(self.handle_trajectory_operation, operation=operation)
+            for request_type, operation in per_entry_operations.items()
+        }
+        self.REQUEST_MAPPING.update(
+            {
+                TrajectoryManagerRequestType.AVERAGE: self.operation_average_trajectories,
+                TrajectoryManagerRequestType.MERGE: self.operation_merge_trajectories,
+                TrajectoryManagerRequestType.DIVIDE_INTO_LAPS: self.operation_divide_into_laps,
+            }
+        )
 
-    def selected_trajectory_entries(self, return_reference: bool = True) -> list[TrajectoryEntry]:
+    @staticmethod
+    def selected_trajectory_entries(
+        request: TrajectoryManagerRequest, return_reference: bool = True
+    ) -> list[TrajectoryEntry]:
         """
         Returns a list of selected trajectory entries.
 
         Args:
+            request: The request containing the selection.
             return_reference: If True, returns the reference trajectory entry as well.
 
         Returns:
             A list of selected trajectory entries.
         """
-        return [entry for entry in self.request.selection.entries if return_reference or not entry.set_as_reference]
+        return [entry for entry in request.selection.entries if return_reference or not entry.set_as_reference]
 
-    @property
-    def reference_entry(self) -> TrajectoryEntry | None:
-        """
-        Returns the reference trajectory entry of the current trajectory manager request.
-
-        Returns:
-            The reference trajectory entry of the current trajectory manager request.
-        """
-        return self.request.selection.reference_entry
-
-    @show_progress
     @Slot(TrajectoryManagerRequest)
     def handle_request(self, request: TrajectoryManagerRequest) -> None:
         """
-        Handles a trajectory manager request and emits a signal to update the view.
+        Schedules a trajectory manager request on the worker.
+
+        ``operation_started`` is emitted immediately; ``operation_finished`` and ``update_view`` are
+        emitted once the request has been processed.
 
         Args:
-            trajectory_manager_request: The trajectory manager request to handle.
-
-        Returns:
-            None.
+            request: The trajectory manager request to handle.
         """
-        self.request = request
-        future = self._request_executor.submit(generic_request_handler, self, request, False)
-        future.add_done_callback(lambda ft: self.update_view.emit())
-        return future
+        self.operation_started.emit()
+        self._worker.submit(self._process_request, request)
 
-    def shutdown_executor(self) -> None:
-        """Best-effort cleanup for the persistent Python worker thread."""
-        if hasattr(self, "_request_executor") and self._request_executor is not None:
-            self._request_executor.shutdown(wait=False, cancel_futures=True)
-            self._request_executor = None
-
-    def __del__(self) -> None:
-        self.shutdown_executor()
+    def _process_request(self, request: TrajectoryManagerRequest) -> None:
+        try:
+            generic_request_handler(self, request)
+        finally:
+            self.operation_finished.emit()
+            self.update_view.emit()
 
     def emit_add_trajectory_signal(self, new_trajectory_entry: TrajectoryEntry):
         """
@@ -263,50 +258,37 @@ class TrajectoryManager(QObject):
             )
         )
 
-    def handle_trajectory_operation(
-        self,
-        operation: Callable[[TrajectoryEntryPair], tuple | None],
-        inplace: bool = False,
-        apply_to_reference: bool = True,
-    ) -> None:
+    def handle_trajectory_operation(self, request: TrajectoryManagerRequest, operation: "_PerEntryOperation") -> None:
         """
         Executes a given operation on each selected trajectory entry and emits the resulting trajectory and/or result
         entries.
 
         Args:
-            operation: A callable that takes a TrajectoryEntryPair as input and returns either tuple of TrajectoryEntry,
-                ResultEntry, or None.
-
-        Returns:
-            None.
+            request: The request containing the selected entries and operation parameters.
+            operation: The operation to apply to each selected entry.
         """
-        selected_entries = self.selected_trajectory_entries(return_reference=apply_to_reference)
-
-        if selected_entries is None:
-            return
-
-        for selected_entry in selected_entries:
+        for selected_entry in self.selected_trajectory_entries(request, return_reference=operation.apply_to_reference):
             entry_pair = TrajectoryEntryPair(
                 entry=selected_entry,
-                reference_entry=copy.deepcopy(self.reference_entry),
-                request=self.request,
+                reference_entry=copy.deepcopy(request.selection.reference_entry),
+                request=request,
             )
 
-            output_entries = operation(entry_pair)
+            output_entries = operation.function(entry_pair)
 
             if output_entries is None:
                 continue
 
             for entry in output_entries:
                 if isinstance(entry, TrajectoryEntry):
-                    if inplace:
+                    if operation.inplace:
                         self.emit_update_trajectory_signal(entry)
                     else:
                         self.emit_add_trajectory_signal(entry)
                 elif isinstance(entry, ResultEntry):
                     self.emit_add_result_signal(entry)
 
-    def operation_merge_trajectories(self) -> None:
+    def operation_merge_trajectories(self, request: TrajectoryManagerRequest) -> None:
         """
         Merges all selected trajectories into one trajectory. The first selected trajectory is used as reference for
         the local coordinate system and the EPSG code. The resulting trajectory is added to the trajectory model.
@@ -317,7 +299,7 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        if (selected_entries := self.selected_trajectory_entries()) is None:
+        if not (selected_entries := self.selected_trajectory_entries(request)):
             return
 
         merged_trajectory = merging.merge_trajectories([entry.trajectory for entry in selected_entries])
@@ -375,7 +357,7 @@ class TrajectoryManager(QObject):
             ),
         )
 
-    def operation_divide_into_laps(self) -> tuple[TrajectoryEntry]:
+    def operation_divide_into_laps(self, request: TrajectoryManagerRequest) -> None:
         """
         Divides the trajectory into laps based on spatial sorting
 
@@ -386,17 +368,15 @@ class TrajectoryManager(QObject):
             TrajectoryEntry: The
 
         """
-        if (selected_entries := self.selected_trajectory_entries()) is None:
+        if not (selected_entries := self.selected_trajectory_entries(request)):
             return
 
         for selected_entry in selected_entries:
             logger.info("Dividing trajectory %s into laps ...", selected_entry.trajectory.name)
-            laps = sorting.divide_into_laps(
-                trajectory=selected_entry.trajectory, sorting_settings=selected_entry.settings.sorting
-            )
+            laps = sorting.divide_into_laps(trajectory=selected_entry.trajectory)
 
             for i, lap in enumerate(laps):
-                lap.name += f" Lap {i+1}"
+                lap.name += f" Lap {i + 1}"
                 state = copy.deepcopy(selected_entry.state)
                 state.sorting_known = True
                 new_trajectory_entry = TrajectoryEntry(
@@ -437,7 +417,7 @@ class TrajectoryManager(QObject):
             ),
         )
 
-    def operation_average_trajectories(self) -> None:
+    def operation_average_trajectories(self, request: TrajectoryManagerRequest) -> None:
         """
         Averages all selected trajectories into one trajectory.
 
@@ -447,7 +427,7 @@ class TrajectoryManager(QObject):
         Returns:
             None.
         """
-        if (selected_entries := self.selected_trajectory_entries()) is None:
+        if not (selected_entries := self.selected_trajectory_entries(request)):
             return
 
         averaged_trajectory = merging.average_trajectories([entry.trajectory for entry in selected_entries])
@@ -605,20 +585,12 @@ class TrajectoryManager(QObject):
         if (reference_entry := entry_pair.reference_entry) is None:
             raise ValueError("No reference trajectory selected.")
 
-        manual_parameters = entry_pair.request.manual_parameters
-        if manual_parameters is not None and not entry_pair.request.refine_manual:
-            alignment_result = alignment.manual_alignment(
-                trajectory=entry_pair.entry.trajectory,
-                other=reference_entry.trajectory,
-                parameters=manual_parameters,
-            )
-        else:
+        if (alignment_result := entry_pair.request.manual_alignment) is None:
             alignment_result = alignment.estimate_alignment(
                 trajectory=entry_pair.entry.trajectory,
                 other=reference_entry.trajectory,
                 alignment_settings=entry_pair.entry.settings.alignment,
                 matching_settings=entry_pair.entry.settings.matching,
-                initial_parameters=manual_parameters,
             )
 
         traj_aligned = alignment.apply_alignment(
@@ -751,7 +723,7 @@ class TrajectoryManager(QObject):
         )
 
     @staticmethod
-    def operation_ate_with_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
+    def operation_ate_with_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:
         """
         Computes the absolute trajectory error (ATE) by aligning the selected
         trajectory to the reference trajectory and computing the pose differences.
@@ -776,7 +748,7 @@ class TrajectoryManager(QObject):
         return (AbsoluteDeviationEntry(deviations=ate_result), AlignmentEntry(alignment_result=alignment_result))
 
     @staticmethod
-    def operation_ate_without_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
+    def operation_ate_without_alignment(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:
         """
         Computes the absolute trajectory error (ATE) by aligning the selected
         trajectory to the reference trajectory and computing the pose differences.
@@ -801,7 +773,7 @@ class TrajectoryManager(QObject):
         return (AbsoluteDeviationEntry(deviations=ate_result),)
 
     @staticmethod
-    def operation_rpe(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry]:
+    def operation_rpe(entry_pair: TrajectoryEntryPair) -> tuple[ResultEntry, ...]:
         """
         Computes the relative pose error (RPE)
 

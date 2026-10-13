@@ -4,12 +4,9 @@ from functools import cached_property
 import numpy as np
 import pandas as pd
 
-from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.readers.ascii import HeaderData
-from trajectopy.utils.common import rms
-from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.numeric import rms
 
 
 @dataclass
@@ -119,10 +116,10 @@ class ATEResult:
         }
 
     def __eq__(self, other) -> bool:
-        for self_value, other_value in zip(self.property_dict.values(), other.property_dict.values()):
-            assert self_value == other_value
+        if not isinstance(other, ATEResult):
+            return NotImplemented
 
-        return True
+        return list(self.property_dict.values()) == list(other.property_dict.values())
 
     def remove_ate_above(self, threshold: float) -> None:
         """Clips the ATE at a given value.
@@ -135,7 +132,7 @@ class ATEResult:
         if threshold <= 0.0:
             return
 
-        ate_below_idx = [dev < threshold for dev in self.pos_dev_comb]
+        ate_below_idx = self.pos_dev_comb < threshold
         self.trajectory.mask(ate_below_idx)
 
         self.abs_dev.pos_dev = self.abs_dev.pos_dev[ate_below_idx]
@@ -146,6 +143,10 @@ class ATEResult:
                 angles=self.abs_dev.rot_dev.as_euler(seq="xyz")[ate_below_idx],
                 seq="xyz",
             )
+
+        # rotation statistics are cached and depend on the removed deviations
+        for cached in ("rot_dev_xyz", "rot_bias_xyz"):
+            self.__dict__.pop(cached, None)
 
     @property
     def index(self) -> np.ndarray:
@@ -472,41 +473,11 @@ class ATEResult:
         return trajectory_columns
 
     @classmethod
-    def from_file(cls, filename: str):
-        header_data = HeaderData.from_file(filename)
-        deviation_data = pd.read_csv(filename, comment="#")
+    def from_file(cls, filename: str) -> "ATEResult":
+        """Reads an ATE result from a file."""
+        from trajectopy.io import results_io
 
-        tstamps = deviation_data["time"].to_numpy(dtype=float)
-        path_lengths = deviation_data["arc_lengths"].to_numpy(dtype=float)
-        positions = Positions(deviation_data[["pos_x", "pos_y", "pos_z"]].to_numpy(dtype=float), epsg=header_data.epsg)
-
-        rot_columns = ["rot_x", "rot_y", "rot_z", "rot_w"]
-        if all(column in deviation_data.columns for column in rot_columns):
-            rotations = Rotations.from_quat(deviation_data[rot_columns].to_numpy(dtype=float))
-        else:
-            rotations = None
-
-        pos_dev = deviation_data[["pos_dev_x", "pos_dev_y", "pos_dev_z"]].to_numpy(dtype=float)
-        directed_pos_dev = deviation_data[["pos_dev_along", "pos_dev_cross_h", "pos_dev_cross_v"]].to_numpy(
-            dtype=float
-        )
-
-        rot_dev_columns = ["rot_dev_x", "rot_dev_y", "rot_dev_z", "rot_dev_w"]
-        if all(column in deviation_data.columns for column in rot_dev_columns):
-            rot_dev = Rotations.from_quat(deviation_data[rot_dev_columns].to_numpy(dtype=float))
-        else:
-            rot_dev = None
-
-        trajectory = Trajectory(
-            name=header_data.name,
-            positions=positions,
-            rotations=rotations,
-            timestamps=tstamps,
-            path_lengths=path_lengths,
-            sorting=Sorting.from_str(header_data.sorting),
-        )
-        ate_result = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
-        return ATEResult(trajectory=trajectory, abs_dev=ate_result)
+        return results_io.read_ate_result(filename)
 
     def to_dataframe(self) -> pd.DataFrame:
         """
@@ -518,7 +489,7 @@ class ATEResult:
             self.trajectory.positions.xyz,
         ]
 
-        if self.trajectory.has_orientation:
+        if self.trajectory.rotations is not None:
             trajectory_data = np.c_[trajectory_data, self.trajectory.rotations.as_quat()]
 
         deviation_data = np.c_[self.abs_dev.pos_dev, self.abs_dev.directed_pos_dev]
@@ -531,11 +502,7 @@ class ATEResult:
         return pd.DataFrame(all_data, columns=self.columns)
 
     def to_file(self, filename: str, mode: str = "a") -> None:
-        """
-        Exports results as csv
-        """
-        with open(filename, mode, newline="\n", encoding="utf-8") as file:
-            file.write(f"#name {self.name}\n")
-            file.write(f"#epsg {self.trajectory.positions.epsg}\n")
-            file.write(f"#sorting {self.trajectory.sorting.value}\n")
-        self.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
+        """Exports the result as CSV with a metadata header."""
+        from trajectopy.io import results_io
+
+        results_io.write_ate_result(self, filename, mode=mode)

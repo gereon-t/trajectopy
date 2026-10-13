@@ -1,7 +1,7 @@
 import logging
 
 from trajectopy import ProcessingSettings, Trajectory, estimate_alignment
-from trajectopy.visualization import plotly_reports
+from trajectopy import visualization as vis
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,11 +21,8 @@ def main():
         matching_settings=processing_settings.matching,
     )
 
-    report = plotly_reports.create_alignment_report(
-        alignment_parameters=alignment_result.position_parameters,
-        name=alignment_result.name,
-    )
-    plotly_reports.show_report(report_text=report, filepath="reports/report.html")
+    # covariance and correlation of the estimated parameters
+    vis.show(vis.alignment_figures(alignment_result.position_parameters), title=alignment_result.name)
 
 
 if __name__ == "__main__":

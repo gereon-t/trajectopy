@@ -145,7 +145,7 @@ class TestMerging(unittest.TestCase):
         """Test averaging multiple trajectories."""
         # Create multiple copies with same timestamps
         trajs = []
-        for i in range(5):
+        for _ in range(5):
             traj = self.traj1.copy()
             traj.positions.xyz += np.random.randn(*traj.positions.xyz.shape) * 0.05
             trajs.append(traj)
@@ -163,7 +163,7 @@ class TestMerging(unittest.TestCase):
         # Create noisy versions of the same trajectory
         num_versions = 10
         trajs = []
-        for i in range(num_versions):
+        for _ in range(num_versions):
             traj = clean_traj.copy()
             traj.positions.xyz += np.random.randn(*traj.positions.xyz.shape) * 1.0
             trajs.append(traj)

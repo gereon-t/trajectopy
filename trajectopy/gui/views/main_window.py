@@ -1,21 +1,14 @@
-﻿import logging
+import logging
 import os
-import shutil
 from collections.abc import Callable
-from tempfile import mkdtemp
+from typing import cast
 
-import matplotlib
-import numpy as np
-
-matplotlib.use("QtAgg")
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
-from trajectopy.core.settings import MPLPlotSettings, PlotBackend, ReportSettings
+from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
@@ -31,17 +24,26 @@ from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
-from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET, MPL_COLORS
+from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 from trajectopy.gui.utils import center_window, set_dark_titlebar
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.gui.views.preview_plot import PreviewPlot
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.timeline_widget import TimelineDialog
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
-from trajectopy.utils.common import YEAR
+from trajectopy.gui.worker import BackgroundWorker
+from trajectopy.utils.resources import YEAR
+from trajectopy.visualization import style as plot_style
 
 logger = logging.getLogger(__name__)
+
+PLOT_SETTINGS_FILENAME = "plot_settings.json"
+
+
+def _application() -> QtWidgets.QApplication:
+    return cast(QtWidgets.QApplication, QtWidgets.QApplication.instance())
 
 
 class TrajectopyGUI(QtWidgets.QMainWindow):
@@ -60,10 +62,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def __init__(
         self,
         single_thread: bool = False,
-        report_settings_path: str = "",
-        mpl_plot_settings_path: str = "",
-        report_output_path: str = "",
-        mapbox_token: str = "",
+        plot_settings_path: str = "",
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
@@ -73,37 +72,22 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
         }
 
-        self._dark_theme = QtWidgets.QApplication.instance().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
+        self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
+        plot_style.set_theme(self._dark_theme)
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
-        self._update_preview_colors()
-        self.computation_thread: QtCore.QThread | None = None
+        # Trajectory and file operations share one worker so that they run strictly one after another.
+        self.worker = BackgroundWorker(inline=single_thread)
+        logger.info("Multithreading %s", "disabled" if single_thread else "enabled")
 
-        self.trajectory_manager = TrajectoryManager()
+        self.trajectory_manager = TrajectoryManager(worker=self.worker)
         self.ui_manager = UIManager(parent=self)
-        self.file_manager = FileManager()
+        self.file_manager = FileManager(worker=self.worker)
         self.session_manager = SessionManager()
 
-        self.report_settings = self.get_report_settings(report_settings_path)
-        self.report_settings.scatter_mapbox_token = mapbox_token or self.get_mapbox_token()
-        self.report_output_path = self.get_report_directory(report_output_path)
-
-        self.mpl_plot_settings = self.get_mpl_plot_settings(mpl_plot_settings_path)
-
-        self.plot_manager = PlotManager(
-            report_dir=self.report_output_path,
-            plot_backend=PlotBackend.MPL,
-            parent=self,
-        )
-
-        if not single_thread:
-            self.computation_thread = QtCore.QThread(parent=self)
-            self.trajectory_manager.moveToThread(self.computation_thread)
-            self.file_manager.moveToThread(self.computation_thread)
-            logger.info("Multithreading enabled")
-        else:
-            logger.info("Multithreading disabled")
+        self.plot_settings = self.load_plot_settings(plot_settings_path)
+        self.plot_manager = PlotManager(parent=self)
 
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
@@ -114,59 +98,20 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_progress_connections()
         self.setup_menu_bar()
 
-        if self.computation_thread is not None:
-            self.computation_thread.start()
-
         set_dark_titlebar(self, self._dark_theme)
         self.show()
 
-    def get_report_directory(self, report_output_path) -> str:
-        if not report_output_path:
-            self.temp_dir = True
-            return mkdtemp(prefix="trajectopy_reports_")
-        else:
-            self.temp_dir = False
-            target_dir = os.path.abspath(report_output_path)
-            os.makedirs(target_dir, exist_ok=True)
-            return target_dir
-
-    def get_report_settings(self, report_settings_path: str = "") -> ReportSettings:
-        if report_settings_path:
-            try:
-                logger.info("Loaded report settings from %s", report_settings_path)
-                return ReportSettings.from_file(report_settings_path)
-            except Exception as e:
-                logger.error("Could not load report settings file: %s", e)
-                return ReportSettings()
-        else:
-            return ReportSettings()
-
-    def get_mpl_plot_settings(self, mpl_plot_settings_path: str = "") -> MPLPlotSettings:
-        if mpl_plot_settings_path:
-            try:
-                logger.info("Loaded MPL plot settings from %s", mpl_plot_settings_path)
-                return MPLPlotSettings.from_file(mpl_plot_settings_path)
-            except Exception as e:
-                logger.error("Could not load MPL plot settings file: %s", e)
-                return MPLPlotSettings()
-        else:
-            return MPLPlotSettings()
-
-    def get_mapbox_token(self) -> str:
-        mapbox_token = os.environ.get("MAPBOX_TOKEN")
-
-        if mapbox_token:
-            logger.info("Using mapbox token from environment variable")
-            return mapbox_token
-
-        mapbox_token_file = os.path.join(os.getcwd(), ".mapbox_token")
-        if os.path.isfile(mapbox_token_file):
-            with open(mapbox_token_file, encoding="utf-8") as f:
-                mapbox_token = f.read()
-                logger.info("Using mapbox token from file")
-                return mapbox_token
-
-        return ""
+    @staticmethod
+    def load_plot_settings(path: str = "") -> PlotSettings:
+        if not path:
+            return PlotSettings()
+        try:
+            settings = PlotSettings.from_file(path)
+            logger.info("Loaded plot settings from %s", path)
+            return settings
+        except Exception as e:
+            logger.error("Could not load plot settings file: %s", e)
+            return PlotSettings()
 
     def setup_menu_bar(self):
         """
@@ -190,33 +135,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         session_menu.addAction(save_session_action)
         menubar.addMenu(session_menu)
 
-        self.report_settings_action = QAction("Report Settings", parent=self)
-        self.report_settings_action.triggered.connect(self.handle_show_report_settings)
-        self.report_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
-        menubar.addAction(self.report_settings_action)
-
-        self.plot_settings_action = QAction("Plot Settings", parent=self)
-        self.plot_settings_action.triggered.connect(self.handle_show_mpl_settings)
-        self.plot_settings_action.setVisible(self.plot_manager.plot_backend == PlotBackend.MPL)
-        menubar.addAction(self.plot_settings_action)
-
-        plot_backend_menu = QtWidgets.QMenu("Plotting Backend", parent=self)
-        self.plotly_action = QAction("Plotly (HTML)", parent=self, checkable=True)
-        self.matplotlib_action = QAction("Matplotlib", parent=self, checkable=True)
-        self.matplotlib_action.setChecked(self.plot_manager.plot_backend == PlotBackend.MPL)
-        self.plotly_action.setChecked(self.plot_manager.plot_backend == PlotBackend.PLOTLY)
-
-        action_group = QActionGroup(self)
-        action_group.addAction(self.plotly_action)
-        action_group.addAction(self.matplotlib_action)
-
-        plot_backend_menu.addAction(self.plotly_action)
-        plot_backend_menu.addAction(self.matplotlib_action)
-        menubar.addMenu(plot_backend_menu)
-
-        # Connect signals to methods
-        self.plotly_action.triggered.connect(self.set_plotly_backend)
-        self.matplotlib_action.triggered.connect(self.set_matplotlib_backend)
+        plot_settings_action = QAction("Plot Settings", parent=self)
+        plot_settings_action.triggered.connect(self.handle_show_plot_settings)
+        menubar.addAction(plot_settings_action)
 
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
@@ -240,7 +161,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         menubar.addMenu(theme_menu)
 
         # Wire up system theme changes
-        app = QtWidgets.QApplication.instance()
+        app = _application()
         if hasattr(app.styleHints(), "colorSchemeChanged"):
             app.styleHints().colorSchemeChanged.connect(self._on_system_theme_changed)
 
@@ -253,52 +174,23 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._dark_theme = dark
         self._dark_theme_action.setChecked(dark)
         self._light_theme_action.setChecked(not dark)
-        QtWidgets.QApplication.instance().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
+        _application().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
         set_dark_titlebar(self, dark)
-        self._update_preview_colors()
-        self._preview_canvas.draw_idle()
+        plot_style.set_theme(dark)
+        self._preview.apply_theme()
         self._timeline_dialog.apply_theme(dark)
 
-    def _update_preview_colors(self) -> None:
-        colors = MPL_COLORS["dark" if self._dark_theme else "light"]
-        self._preview_fig.patch.set_facecolor(colors["bg"])
-        self._preview_ax.set_facecolor(colors["bg"])
-        for spine in self._preview_ax.spines.values():
-            spine.set_edgecolor(colors["spine"])
-        self._preview_ax.tick_params(colors=colors["tick"], labelsize=7)
-        self._preview_ax.xaxis.label.set_color(colors["tick"])
-        self._preview_ax.yaxis.label.set_color(colors["tick"])
-
-    def set_plotly_backend(self):
-        self.plot_manager.set_plot_backend(PlotBackend.PLOTLY)
-        self.report_settings_action.setVisible(True)
-        self.plot_settings_action.setVisible(False)
-
-    def set_matplotlib_backend(self):
-        self.plot_manager.set_plot_backend(PlotBackend.MPL)
-        self.report_settings_action.setVisible(False)
-        self.plot_settings_action.setVisible(True)
-
     def closeEvent(self, a0: QCloseEvent | None) -> None:
-        # Stop persistent Python workers first so no new work starts during shutdown.
-        self.trajectory_manager.shutdown_executor()
-        self.file_manager.shutdown_executor()
+        if not self.worker.shutdown(timeout=5.0):
+            logger.warning("Background operation did not finish within timeout; close request aborted.")
+            if a0 is not None:
+                a0.ignore()
+            self.statusBar().showMessage("Background work still running. Please try closing again.")
+            return
 
-        if self.computation_thread and self.computation_thread.isRunning():
-            self.computation_thread.requestInterruption()
-            self.computation_thread.quit()
-            if not self.computation_thread.wait(5000):
-                logger.warning("Computation thread did not stop within timeout; close request aborted.")
-                if a0 is not None:
-                    a0.ignore()
-                self.statusBar().showMessage("Background work still running. Please try closing again.")
-                return
-
-        if self.temp_dir:
-            shutil.rmtree(self.report_output_path)
-            logger.info("Removed temporary report directory %s", self.report_output_path)
-
-        return super().closeEvent(a0)
+        self._preview.dispose()
+        if a0 is not None:
+            super().closeEvent(a0)
 
     def setup_worker_connections(self):
         """This method sets up the signal connections between the worker thread and the main thread"""
@@ -338,7 +230,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
         self.session_manager.file_request.connect(self.file_manager.handle_request)
         self.session_manager.ui_request.connect(self.ui_manager.handle_request)
-        self.session_manager.report_settings_request.connect(self.handle_report_settings_request)
+        self.session_manager.plot_settings_request.connect(self.handle_plot_settings_request)
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
@@ -361,40 +253,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.show_timeline.connect(self._show_timeline)
 
     def setup_progress_connections(self):
-        if self.computation_thread is not None:
-            # Give cross-thread managers a reference to the progress window
-            # so the @show_progress decorator can invoke it directly via
-            # QMetaObject.invokeMethod (bypasses signal dispatch).
-            self.trajectory_manager._progress_window = self.progress_window
-            self.file_manager._progress_window = self.progress_window
-
-            # Status bar only — progress window is handled by the decorator.
-            self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
-            self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
-
-            self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
-            self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
-        else:
-            # Single-thread mode: all on main thread, use signal connections.
-            self.trajectory_manager.operation_started.connect(self.progress_window.handle_show_request)
-            self.trajectory_manager.operation_started.connect(lambda: self.statusBar().showMessage("Processing..."))
-            self.trajectory_manager.operation_finished.connect(self.progress_window.handle_close_request)
-            self.trajectory_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
-
-            self.file_manager.operation_started.connect(self.progress_window.handle_show_request)
-            self.file_manager.operation_started.connect(lambda: self.statusBar().showMessage("Loading..."))
-            self.file_manager.operation_finished.connect(self.progress_window.handle_close_request)
-            self.file_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
-
-        self.session_manager.operation_started.connect(self.progress_window.handle_show_request)
-        self.session_manager.operation_started.connect(lambda: self.statusBar().showMessage("Session operation..."))
-        self.session_manager.operation_finished.connect(self.progress_window.handle_close_request)
-        self.session_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
-
-        self.plot_manager.operation_started.connect(self.progress_window.handle_show_request)
-        self.plot_manager.operation_started.connect(lambda: self.statusBar().showMessage("Generating plot..."))
-        self.plot_manager.operation_finished.connect(self.progress_window.handle_close_request)
-        self.plot_manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
+        status_messages: dict[TrajectoryManager | FileManager | SessionManager | PlotManager, str] = {
+            self.trajectory_manager: "Processing...",
+            self.file_manager: "Loading...",
+            self.session_manager: "Session operation...",
+            self.plot_manager: "Generating plot...",
+        }
+        for manager, message in status_messages.items():
+            manager.operation_started.connect(self.progress_window.handle_show_request)
+            manager.operation_started.connect(lambda message=message: self.statusBar().showMessage(message))
+            manager.operation_finished.connect(self.progress_window.handle_close_request)
+            manager.operation_finished.connect(lambda: self.statusBar().showMessage("Ready"))
 
     def setup_plottings_connections(self):
         self.resultTableView.plot_request.connect(self.inject_plot_settings)
@@ -421,12 +290,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def _on_trajectory_selection_changed(self) -> None:
         entries = self.trajectoryTableView.selected_entries
-        self._preview_ax.clear()
         if not entries:
             self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
             self.details_text.clear()
-            self._preview_ax.set_visible(False)
-            self._preview_canvas.draw_idle()
+            self._preview.clear_preview()
             return
 
         lines = []
@@ -444,38 +311,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 lines.append("\u2500" * 36)
         self.details_text.setPlainText("\n".join(lines))
 
-        # Draw 2D XY preview
-        self._preview_ax.set_visible(True)
-        _MAX_PREVIEW_POINTS = 2000
-        local_transformer = None
-        for entry in entries:
-            t = entry.trajectory
-
-            if local_transformer is None and t.positions.local_transformer is not None:
-                local_transformer = t.positions.local_transformer
-
-            try:
-                n = len(t.positions.xyz)
-                if n > _MAX_PREVIEW_POINTS:
-                    idx = np.linspace(0, n - 1, _MAX_PREVIEW_POINTS, dtype=int)
-                    pos_subset = t.positions.copy()
-                    pos_subset.xyz = t.positions.xyz[idx]
-                else:
-                    pos_subset = t.positions.copy()
-
-                pos_subset.local_transformer = local_transformer
-                local_xyz = pos_subset.to_local(inplace=False).xyz
-                self._preview_ax.plot(local_xyz[:, 0], local_xyz[:, 1], linewidth=1.0, label=t.name)
-            except Exception:
-                logger.exception("Preview failed for trajectory '%s'", t.name)
-                self._preview_ax.plot(t.positions.xyz[:, 0], t.positions.xyz[:, 1], linewidth=1.0, label=t.name)
-        self._preview_ax.set_aspect("equal", adjustable="datalim")
-        self._preview_ax.set_xlabel("X [m]")
-        self._preview_ax.set_ylabel("Y [m]")
-        if len(entries) > 1:
-            self._preview_ax.legend(fontsize=7)
-        self._update_preview_colors()
-        self._preview_canvas.draw_idle()
+        self._preview.show_trajectories([entry.trajectory for entry in entries])
 
     @QtCore.Slot()
     def _on_result_selection_changed(self) -> None:
@@ -486,11 +322,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         if not items:
             return
 
-        # Clear the trajectory 2D preview
-        self._preview_ax.clear()
-        self._preview_ax.set_visible(False)
-        self._update_preview_colors()
-        self._preview_canvas.draw_idle()
+        self._preview.clear_preview()
 
         lines = []
         for item in items:
@@ -522,44 +354,28 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.result_table_model.layoutChanged.emit()
 
     @Slot(PlotSettingsRequest)
-    def handle_report_settings_request(self, request: PlotSettingsRequest) -> None:
+    def handle_plot_settings_request(self, request: PlotSettingsRequest) -> None:
         """Logic for handling a request."""
-        generic_request_handler(self, request, passthrough_request=True)
+        generic_request_handler(self, request)
 
-    def handle_show_report_settings(self) -> None:
-        viewer = JSONViewer(settings=self.report_settings, parent=self)
-        viewer.show()
-
-    def handle_show_mpl_settings(self) -> None:
-        viewer = JSONViewer(settings=self.mpl_plot_settings, parent=self)
+    def handle_show_plot_settings(self) -> None:
+        viewer = JSONViewer(settings=self.plot_settings, parent=self)
         viewer.show()
 
     def handle_plot_settings_export(self, request: PlotSettingsRequest) -> None:
-        self.report_settings.to_file(os.path.join(request.file_path, "report_settings.json"))
-        self.mpl_plot_settings.to_file(os.path.join(request.file_path, "mpl_settings.json"))
+        self.plot_settings.to_file(os.path.join(request.file_path, PLOT_SETTINGS_FILENAME))
 
     def handle_plot_settings_import(self, request: PlotSettingsRequest) -> None:
-        try:
-            self.report_settings = ReportSettings.from_file(os.path.join(request.file_path, "report_settings.json"))
-        except Exception as e:
-            logger.warning("Could not load report settings file: %s", e)
-            self.report_settings = ReportSettings()
-
-        try:
-            self.mpl_plot_settings = MPLPlotSettings.from_file(os.path.join(request.file_path, "mpl_settings.json"))
-        except Exception as e:
-            logger.warning("Could not load MPL plot settings file: %s", e)
-            self.mpl_plot_settings = MPLPlotSettings()
+        path = os.path.join(request.file_path, PLOT_SETTINGS_FILENAME)
+        self.plot_settings = self.load_plot_settings(path) if os.path.isfile(path) else PlotSettings()
 
     def handle_plot_settings_reset(self, _: PlotSettingsRequest) -> None:
-        self.report_settings = ReportSettings()
-        self.mpl_plot_settings = MPLPlotSettings()
+        self.plot_settings = PlotSettings()
 
     @QtCore.Slot(PlotRequest)
     def inject_plot_settings(self, plot_request: PlotRequest) -> None:
         logger.debug("Injecting plotting settings into plot request of type %s", plot_request.type)
-        plot_request.report_settings = self.report_settings
-        plot_request.mpl_plot_settings = self.mpl_plot_settings
+        plot_request.plot_settings = self.plot_settings
         self.plot_manager.handle_request(plot_request)
 
     @QtCore.Slot()
@@ -660,14 +476,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
         details_v_splitter.addWidget(self.details_text)
 
-        # Matplotlib 2D preview canvas
-        preview_colors = MPL_COLORS["dark" if self._dark_theme else "light"]
-        self._preview_fig = Figure(figsize=(4, 3), tight_layout=True, facecolor=preview_colors["bg"])
-        self._preview_ax = self._preview_fig.add_subplot(111)
-        self._preview_ax.set_visible(False)
-        self._preview_canvas = FigureCanvas(self._preview_fig)
-        self._preview_canvas.setMinimumHeight(150)
-        details_v_splitter.addWidget(self._preview_canvas)
+        self._preview = PreviewPlot()
+        self._preview.setMinimumHeight(150)
+        details_v_splitter.addWidget(self._preview)
         details_v_splitter.setStretchFactor(0, 1)
         details_v_splitter.setStretchFactor(1, 2)
 

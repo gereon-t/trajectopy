@@ -1,4 +1,5 @@
 import logging
+from typing import Literal, overload
 
 import numpy as np
 
@@ -14,15 +15,15 @@ from trajectopy.processing.lib.approximation.cubic_approximation import (
     CubicApproximation,
 )
 from trajectopy.processing.sorting import divide_into_laps
-from trajectopy.utils.common import rndodd
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.numeric import rndodd
 
 logger = logging.getLogger(__name__)
 
 
 def approximate(
     trajectory: Trajectory,
-    approximation_settings: ApproximationSettings = ApproximationSettings(),
+    approximation_settings: ApproximationSettings | None = None,
     inplace: bool = False,
 ) -> Trajectory:
     """Approximate the trajectory using piecewise cubic polynomials based on the provided settings.
@@ -35,6 +36,9 @@ def approximate(
     Returns:
         Trajectory: The approximated trajectory.
     """
+    if approximation_settings is None:
+        approximation_settings = ApproximationSettings()
+
     if approximation_settings.position_approximation_method == PositionApproximationMethod.CUBIC:
         xyz_approx = _piecewise_cubic(
             index=trajectory.index,
@@ -83,8 +87,8 @@ def _average_rotations_per_path_length(trajectory: Trajectory, max_gap_size: flo
         return trajectory.quat
 
     # interpolate all laps to all path lengths
-    path_length_dict = {}
-    for i, lap in enumerate(lap_list):
+    path_length_dict: dict[float, list[np.ndarray]] = {}
+    for lap in lap_list:
         interpolate(lap, trajectory.path_lengths, max_gap_size=max_gap_size)
 
         for path_length, quat in zip(lap.path_lengths, lap.quat):
@@ -156,6 +160,27 @@ def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: 
         # compute mean
         quat_mean[i, :] = Rotations.from_quat(quat_i).mean().as_quat()
     return quat_mean
+
+
+@overload
+def _piecewise_cubic(
+    index: np.ndarray,
+    values: np.ndarray,
+    min_win_size: float = ...,
+    min_obs: int = ...,
+    return_approx_objects: Literal[False] = False,
+) -> np.ndarray: ...
+
+
+@overload
+def _piecewise_cubic(
+    index: np.ndarray,
+    values: np.ndarray,
+    min_win_size: float = ...,
+    min_obs: int = ...,
+    *,
+    return_approx_objects: Literal[True],
+) -> tuple[np.ndarray, list[CubicApproximation]]: ...
 
 
 def _piecewise_cubic(

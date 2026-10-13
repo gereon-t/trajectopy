@@ -6,6 +6,12 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spsolve
 from scipy.stats.distributions import chi2
 
+from trajectopy.core.parameters import (
+    AlignmentParameters,
+    HelmertTransformation,
+    Leverarm,
+    Parameter,
+)
 from trajectopy.core.settings import AlignmentSettings
 from trajectopy.processing.lib.alignment.data import AlignmentData
 from trajectopy.processing.lib.alignment.direct import (
@@ -14,14 +20,8 @@ from trajectopy.processing.lib.alignment.direct import (
     direct_timeshift,
 )
 from trajectopy.processing.lib.alignment.egrad_interface import FunctionalRelationship
-from trajectopy.processing.lib.alignment.parameters import (
-    AlignmentParameters,
-    HelmertTransformation,
-    Leverarm,
-    Parameter,
-)
-from trajectopy.utils.common import dict2table
 from trajectopy.utils.definitions import Unit
+from trajectopy.utils.formatting import dict2table
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class AlignmentEstimator:
         self._est_params = self.init_parameters()
         self._has_results = False
         self._converged = False
-        self._group_redundancies = {}
+        self._group_redundancies: dict[str, float] = {}
 
         logger.info("Initialized Alignment!")
         logger.info(self)
@@ -203,7 +203,7 @@ class AlignmentEstimator:
         return self._est_params
 
     @property
-    def group_redundancies(self) -> dict[str, bool]:
+    def group_redundancies(self) -> dict[str, float]:
         return self._group_redundancies
 
     @property
@@ -800,6 +800,6 @@ def settings_str(alignment: AlignmentEstimator) -> str:
         f"\n _____________________________________________________________________\n"
         f"| ---------------------------- Alignment ---------------------------- |\n"
         f"| Estimation of:           {alignment.settings.estimation_settings.short_mode_str:<42} |\n"
-        f"| Error probability [%]:   {alignment.settings.stochastics.error_probability*100:<42} |\n"
+        f"| Error probability [%]:   {alignment.settings.stochastics.error_probability * 100:<42} |\n"
         f"|_____________________________________________________________________|\n"
     )

@@ -12,7 +12,7 @@ import numpy as np
 from scipy.sparse import csr_matrix, lil_matrix
 
 from trajectopy.exceptions import ApproximationError
-from trajectopy.utils.common import sparse_least_squares
+from trajectopy.utils.linalg import sparse_least_squares
 
 # logger configuration
 logger = logging.getLogger(__name__)

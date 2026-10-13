@@ -1,10 +1,10 @@
 import unittest
-from test.testdata import open_loop_trajectory
-from test.util import random_number
 from typing import Any
 
 import numpy as np
 
+from test.testdata import open_loop_trajectory
+from test.util import random_number
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory

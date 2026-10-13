@@ -1,4 +1,4 @@
-﻿from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QGuiApplication
 
 from trajectopy.gui.models.entries import AlignmentEntry

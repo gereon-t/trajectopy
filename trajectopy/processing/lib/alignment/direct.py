@@ -3,27 +3,27 @@ import logging
 import numpy as np
 from scipy.sparse import spdiags
 
-from trajectopy.core.rotations import Rotations
-from trajectopy.processing.lib.alignment.parameters import (
+from trajectopy.core.parameters import (
     HelmertTransformation,
     Leverarm,
     Parameter,
     SensorRotationParameters,
 )
-from trajectopy.utils.common import least_squares
+from trajectopy.core.rotations import Rotations
 from trajectopy.utils.definitions import Unit
+from trajectopy.utils.linalg import least_squares
 
 logger = logging.getLogger(__name__)
 
 
 def direct_helmert_transformation(
-    xyz_from: np.ndarray, xyz_to: np.ndarray, weights: np.ndarray = np.zeros(0)
+    xyz_from: np.ndarray, xyz_to: np.ndarray, weights: np.ndarray | None = None
 ) -> HelmertTransformation:
     """
     Args:
         xyz_from (np.ndarray): n x 3 source point set.
         xyz_to (np.ndarray): n x 3 target point set.
-        weights (np.ndarray, optional): Weights for the point sets. Defaults to np.zeros(0).
+        weights (np.ndarray, optional): Weights for the point sets. Defaults to uniform weights.
 
     Returns:
         HelmertTransformation: Helmert transformation parameters.
@@ -38,7 +38,7 @@ def direct_helmert_transformation(
     if len(xyz_from) == 0 or len(xyz_to) == 0:
         raise ValueError("Cannot compute Helmert transformation with empty point sets")
 
-    if len(weights) == 0:
+    if weights is None or len(weights) == 0:
         weights = np.ones((len(xyz_from),))
 
     sum_of_weights = np.sum(weights)
@@ -63,7 +63,10 @@ def direct_helmert_transformation(
 
     u, _, v = np.linalg.svd(moment_matrix, full_matrices=True)
 
-    estimated_rotation = v.T @ u.T
+    # For (nearly) planar point sets, e.g. trajectories on flat ground, v.T @ u.T can be a reflection
+    # (det = -1) instead of a rotation; the sign correction (Umeyama, 1991) yields the best proper rotation.
+    reflection = np.diag([1.0, 1.0, np.sign(np.linalg.det(v.T @ u.T)) or 1.0])
+    estimated_rotation = v.T @ reflection @ u.T
     estimated_scale = (
         np.sum(weights[:, None] * centered_to @ estimated_rotation * centered_from)
         / weighted_sum_of_squared_distances_from
@@ -219,7 +222,7 @@ def direct_timeshift(
     xyz_to: np.ndarray,
     xyz_from: np.ndarray,
     speed: np.ndarray,
-    weights: np.ndarray = np.zeros(0),
+    weights: np.ndarray | None = None,
 ) -> tuple[Parameter, np.ndarray]:
     """Time shift estimation
 
@@ -235,7 +238,7 @@ def direct_timeshift(
         xyz_from (np.ndarray): target positions
         speed (np.ndarray): speed of the platform.
         weights (np.ndarray, optional): observation weights.
-                                        Defaults to np.zeros(0).
+                                        Defaults to uniform weights.
 
     Returns:
         Tuple[Parameter, np.ndarray]: Tuple containing the estimated

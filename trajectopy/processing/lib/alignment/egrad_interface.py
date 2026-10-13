@@ -3,13 +3,13 @@ from collections.abc import Callable
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad
 
+from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.processing.lib.alignment.data import AlignmentData
 from trajectopy.processing.lib.alignment.equations import (
     functional_relationship_x,
     functional_relationship_y,
     functional_relationship_z,
 )
-from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 
 class FunctionalRelationship:

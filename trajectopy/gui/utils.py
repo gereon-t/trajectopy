@@ -1,8 +1,8 @@
-﻿import os
+import os
 from functools import wraps
 
 from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import Qt
 
 
 def set_dark_titlebar(window: QtWidgets.QWidget, use_dark: bool) -> None:
@@ -60,63 +60,19 @@ def handle_drag_move(event: QtGui.QDragMoveEvent | None) -> None:
 
 def show_progress(func):
     """
-    Decorator to show progress bar while executing a function
+    Decorator for synchronous manager slots: emits operation_started before and
+    operation_finished after the call (also if it raises).
+
+    Managers that run work on the :class:`~trajectopy.gui.worker.BackgroundWorker` emit these signals themselves.
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        manager = args[0]
-        progress_window = getattr(manager, "_progress_window", None)
-
-        if progress_window is not None:
-            QMetaObject.invokeMethod(
-                progress_window,
-                "handle_show_request",
-                Qt.ConnectionType.BlockingQueuedConnection,
-            )
-
+    def wrapper(manager, *args, **kwargs):
         manager.operation_started.emit()
-
         try:
-            result = func(*args, **kwargs)
-            # Check if the result is a concurrent.futures.Future
-            import concurrent.futures
-
-            if isinstance(result, concurrent.futures.Future):
-
-                def on_done(future):
-                    # We must emit signals from the manager's thread
-                    # QMetaObject.invokeMethod handles this nicely if we call a slot,
-                    # but we can also just emit the signal directly since Qt queued connections will route it.
-                    manager.operation_finished.emit()
-                    if progress_window is not None:
-                        QMetaObject.invokeMethod(
-                            progress_window,
-                            "handle_close_request",
-                            Qt.ConnectionType.BlockingQueuedConnection,
-                        )
-                    # If there's an exception, we might want to log it
-                    try:
-                        future.result()
-                    except Exception as e:
-                        import logging
-
-                        logging.getLogger(__name__).exception("Error in background task: %s", e)
-
-                result.add_done_callback(on_done)
-                return result
-            else:
-                return result
+            return func(manager, *args, **kwargs)
         finally:
-            # Only emit finished immediately if it's NOT a Future
-            if not isinstance(result, concurrent.futures.Future):
-                manager.operation_finished.emit()
-                if progress_window is not None:
-                    QMetaObject.invokeMethod(
-                        progress_window,
-                        "handle_close_request",
-                        Qt.ConnectionType.BlockingQueuedConnection,
-                    )
+            manager.operation_finished.emit()
 
     return wrapper
 

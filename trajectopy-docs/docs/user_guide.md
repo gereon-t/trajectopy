@@ -88,114 +88,86 @@ rpe_result = rpe(other=gt_traj, trajectory=est_traj, processing_settings=process
 print(f"Position RPE: {rpe_result.pos_rpe}")
 ```
 
-## 4. Visualization & Reporting
+## 4. Visualization
 
-### Plotly Reports
+Plotting requires the plotting extra (included in the GUI installation):
 
-You can generate interactive HTML reports using Plotly.
-
-#### Trajectory Visualization
-
-```python
-from trajectopy import Trajectory, ReportSettings
-from trajectopy.visualization import plotly_reports
-
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
-
-report_settings = ReportSettings(scatter_axis_order="xy", ate_unit_is_mm=False)
-traj_report = plotly_reports.create_trajectory_report(
-    trajectories=[gt_traj, est_traj], report_settings=report_settings
-)
-plotly_reports.show_report(traj_report, filepath="reports/report.html")
+```bash
+pip install "trajectopy[plot]"
 ```
 
-#### Evaluation Report
+`trajectopy.visualization` provides the same figures that the GUI shows. A figure is a page of plots;
+some figures offer *variants*, e.g. the quantity a trajectory is colored by. Figures can be explored in
+an interactive window or exported to PNG, JPG or SVG files (also without a display).
 
 ```python
-from trajectopy import ProcessingSettings, ReportSettings, Trajectory, ate, rpe
-from trajectopy.visualization import plotly_reports
+import trajectopy as tpy
+from trajectopy import visualization as vis
 
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+orb_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+sptam_traj = tpy.Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
 
-# default settings
-processing_settings = ProcessingSettings()
+ate_results = [tpy.ate(orb_traj, gt_traj), tpy.ate(sptam_traj, gt_traj)]
+rpe_results = [tpy.rpe(orb_traj, gt_traj), tpy.rpe(sptam_traj, gt_traj)]
+ate_result, alignment = tpy.ate(orb_traj, gt_traj, return_alignment=True)
 
-ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
-rpe_result = rpe(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
+settings = tpy.PlotSettings(ate_unit_is_mm=True)
 
-report_settings = ReportSettings(ate_unit_is_mm=False, scatter_marker_size=8)
-report = plotly_reports.create_deviation_report(
-    ate_result=ate_result, rpe_result=rpe_result, report_settings=report_settings
-)
-plotly_reports.show_report(report_text=report, filepath="reports/report.html")
+# Collections of figures (exactly what the GUI shows)
+trajectory_figures = vis.trajectory_figures([gt_traj, orb_traj], settings)
+deviation_figures = vis.deviation_figures(ate_results, rpe_results, settings)  # one or several results
+alignment_figures = vis.alignment_figures(alignment.position_parameters, settings)
+
+# Interactive window with one tab per figure (blocks until the window is closed)
+vis.show(deviation_figures, title="KITTI Evaluation")
+
+# Export all figures and variants, e.g. for a paper or a report
+vis.export_figures(deviation_figures, "plots", export_format="svg")
+
+# Single figures
+vis.show(vis.ate_figure(ate_results, settings))
+vis.ate_map_figure([ate_result], settings).export("ate_map.png", variant="Position", width=2400)
 ```
 
-#### Alignment Report
+Available figures:
+
+| Function | Content |
+| --- | --- |
+| `positions_figure` | Top view of trajectories |
+| `xyz_figure` / `rpy_figure` | Coordinates / orientations over time or path length |
+| `trajectory_map_figure` | Top view colored by velocity or height |
+| `ate_figure` | Position (and rotation) deviations over time or path length |
+| `ate_components_figure` | Deviations of the single degrees of freedom |
+| `ate_histogram_figure` | Histograms of the deviations |
+| `ate_statistics_figure` | Min, max, mean, median, RMS and standard deviation |
+| `ate_distribution_figure` | Empirical cumulative distribution of the deviations |
+| `ate_map_figure` | Top view colored by any deviation component |
+| `rpe_figures` | Relative pose error over the pair distance |
+| `parameter_matrix_figure` | Covariance / correlation of estimated alignment parameters |
+
+### Maps
+
+Top views of georeferenced trajectories (trajectories with an EPSG code) can be drawn on a map, in the GUI
+and in scripts:
 
 ```python
-from trajectopy import ProcessingSettings, Trajectory, estimate_alignment
-from trajectopy.visualization import plotly_reports
-
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
-
-# default settings
-processing_settings = ProcessingSettings()
-
-alignment_result = estimate_alignment(
-    trajectory=est_traj,
-    other=gt_traj,
-    alignment_settings=processing_settings.alignment,
-    matching_settings=processing_settings.matching,
-)
-
-report = plotly_reports.create_alignment_report(
-    alignment_parameters=alignment_result.position_parameters,
-    name=alignment_result.name,
-)
-plotly_reports.show_report(report_text=report, filepath="reports/report.html")
+settings = tpy.PlotSettings(background_map=True, map_style="satellite")  # or "osm"
+vis.show(vis.ate_map_figure(ate_results, settings))
 ```
 
-### Matplotlib Visualization
+- Map tiles are loaded from OpenStreetMap or Esri World Imagery without an API key. This requires an
+  internet connection and sends the approximate area of your trajectories to the tile server. Tiles are
+  cached on disk (`%LOCALAPPDATA%	rajectopy	iles` on Windows, `~/.cache/trajectopy/tiles` otherwise) and
+  refreshed after 30 days.
+- With a map, positions are shown in local east/north meters around the center of the trajectories
+  (true north; the axes can be rotated slightly against a UTM grid due to meridian convergence).
+- Trajectories without an EPSG code are drawn without a map.
 
-Additionally, you can visualize trajectories directly using Matplotlib.
+### Google Earth
 
-```python
-import matplotlib.pyplot as plt
-
-from trajectopy import Trajectory, ate, estimate_alignment, rpe
-from trajectopy.visualization import mpl_plots
-
-gt = Trajectory.from_file("./example_data/KITTI_gt.traj")
-orb = Trajectory.from_file("./example_data/KITTI_ORB.traj")
-sptam = Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
-mpl_plots.plot_trajectories([gt, orb])
-
-alignment_result = estimate_alignment(gt, orb)
-ate_result_orb = ate(gt, orb)
-ate_result_sptam = ate(gt, sptam)
-rpe_result = rpe(gt, orb)
-
-# All available plotting functions
-mpl_plots.plot_covariance_heatmap(alignment_result.position_parameters)
-mpl_plots.plot_correlation_heatmap(alignment_result.position_parameters)
-
-mpl_plots.plot_ate_3d([ate_result_orb, ate_result_sptam])
-mpl_plots.plot_compact_ate_hist(ate_result_orb)
-mpl_plots.plot_ate([ate_result_orb, ate_result_sptam])
-mpl_plots.plot_ate_bars([ate_result_orb, ate_result_sptam], mode="positions")
-mpl_plots.plot_ate_bars([ate_result_orb, ate_result_sptam], mode="rotations")
-
-mpl_plots.plot_ate_edf(ate_result_orb)
-
-mpl_plots.scatter_ate(ate_result_orb)
-
-mpl_plots.plot_rpe(rpe_result)
-
-plt.show()
-```
+Georeferenced trajectories can be exported as KML and opened in Google Earth: `trajectory.to_kml("track.kml")`
+or "Export to Google Earth (KML)" in the trajectory context menu of the GUI.
 
 ## 5. GUI Application
 
@@ -206,6 +178,32 @@ trajectopy
 ```
 
 This opens the application where you can drag & drop files, align them, and view results interactively.
+
+### Manual Alignment
+
+If the automatic alignment cannot find a solution on its own (e.g. trajectories in unrelated frames or
+with a large time offset), a trajectory can be aligned manually: set a reference, then choose
+*Process → Align With Reference → Manual (Interactive)…* in the context menu of the trajectory.
+
+1. **Auto align** runs the spatio-temporal least squares alignment and shows its result. Only the parameters
+   checked with *estimate* are estimated (preselected from the trajectory settings); the others keep their
+   values. The start values are chosen automatically: the current values, the first pose matched, a fit on
+   poses matched in time or the centers matched, whatever brings the trajectory closest to the reference.
+   The leverarm can only be estimated for trajectories with orientations.
+2. If Auto align does not find the right solution, **improve the start** and press *Auto align* again:
+   *Match first pose* puts the first position onto the reference's first position and aligns the initial
+   direction of travel. It does not use the timestamps, so it also works with an unknown time offset.
+   In the plots, drag ● to move and ◆ to rotate the trajectory. The top view rotates about the vertical
+   axis (yaw), the side view about y (pitch) and the front view about x (roll).
+   Single parameters can be fine-tuned with the jog sliders (drag and hold: the further you drag, the faster
+   the value changes; they snap back when released), by typing values or with the spin box arrows / mouse
+   wheel (Ctrl: 10× steps), or with the keyboard after clicking into the plots (arrows, PgUp/PgDn, Q/E;
+   Shift: 10× faster, Ctrl: 10× finer).
+3. **Apply** aligns the trajectory with the values shown and saves the alignment. If they come unchanged from
+   Auto align, the saved alignment includes its statistics (e.g. the covariance).
+
+Position, heading and scale are relative to the trajectory's center, so rotating does not move the
+trajectory away even for georeferenced coordinates.
 
 ### Keyboard Shortcuts
 

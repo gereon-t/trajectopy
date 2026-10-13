@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 import logging
 import os
 
@@ -23,7 +23,6 @@ class TrajectoryTableModel(RequestTableModel):
 
     file_request = Signal(FileRequest)
     items: list[TrajectoryEntry]
-    request: TrajectoryModelRequest
 
     def __init__(self):
         REQUEST_MAPPING = {
@@ -56,10 +55,10 @@ class TrajectoryTableModel(RequestTableModel):
         self.items = [item for item in self.items if item.group_id not in group_id]
         self.layoutChanged.emit()
 
-    def export_all(self) -> None:
+    def export_all(self, request: TrajectoryModelRequest) -> None:
         for item in self.items:
-            trajectory_filename = os.path.join(self.request.file_path, f"{item.trajectory.name}_{item.entry_id}.traj")
-            settings_filename = os.path.join(self.request.file_path, f"{item.trajectory.name}_{item.entry_id}.json")
+            trajectory_filename = os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}.traj")
+            settings_filename = os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}.json")
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_TRAJ,
@@ -71,15 +70,13 @@ class TrajectoryTableModel(RequestTableModel):
 
             if item.trajectory.positions.local_transformer is not None:
                 item.trajectory.positions.export_local_transformer(
-                    os.path.join(
-                        self.request.file_path, f"{item.trajectory.name}_{item.entry_id}_local_transformer.txt"
-                    )
+                    os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}_local_transformer.txt")
                 )
 
-        self.write_trajectory_order()
+        self.write_trajectory_order(request.file_path)
 
-    def write_trajectory_order(self):
-        trajectory_order_filename = os.path.join(self.request.file_path, "trajectory_order.txt")
+    def write_trajectory_order(self, directory: str) -> None:
+        trajectory_order_filename = os.path.join(directory, "trajectory_order.txt")
         self.file_request.emit(
             FileRequest(
                 type=FileRequestType.WRITE_LIST,
@@ -92,8 +89,8 @@ class TrajectoryTableModel(RequestTableModel):
     def reference_entry(self) -> TrajectoryEntry | None:
         return next((item for item in self.items if item.set_as_reference), None)
 
-    def rename_trajectories(self) -> None:
-        if not isinstance((selection := self.request.selection), TrajectorySelection):
+    def rename_trajectories(self, request: TrajectoryModelRequest) -> None:
+        if not isinstance((selection := request.selection), TrajectorySelection):
             raise ValueError("No trajectory selection provided")
 
         input_name, ok = QInputDialog.getText(None, "Please enter a name", "Name:", text=selection.entries[0].name)
@@ -101,17 +98,17 @@ class TrajectoryTableModel(RequestTableModel):
             selection.entries[0].trajectory.name = input_name
         self.layoutChanged.emit()
 
-    def remove_related_trajectories(self) -> None:
+    def remove_related_trajectories(self, request: TrajectoryModelRequest) -> None:
         """Remove all trajectories that are related"""
-        if not isinstance((selection := self.request.selection), TrajectorySelection):
+        if not isinstance((selection := request.selection), TrajectorySelection):
             raise ValueError("No trajectory selection provided")
 
         for entry in selection.entries:
             self.remove_group(entry.group_id)
 
-    def copy_trajectories(self) -> None:
+    def copy_trajectories(self, request: TrajectoryModelRequest) -> None:
         """Deep copy trajectory"""
-        if not isinstance((selection := self.request.selection), TrajectorySelection):
+        if not isinstance((selection := request.selection), TrajectorySelection):
             raise ValueError("No trajectory selection provided")
 
         for entry in selection.entries:
@@ -120,9 +117,9 @@ class TrajectoryTableModel(RequestTableModel):
             entry_copy.set_as_reference = False
             self.add(entry_copy)
 
-    def set_as_reference(self) -> None:
+    def set_as_reference(self, request: TrajectoryModelRequest) -> None:
         """Marks selected trajectory as reference"""
-        if not isinstance((selection := self.request.selection), TrajectorySelection):
+        if not isinstance((selection := request.selection), TrajectorySelection):
             raise ValueError("No trajectory selection provided")
 
         selected_id = selection.entries[0].entry_id
@@ -130,7 +127,7 @@ class TrajectoryTableModel(RequestTableModel):
             entry.set_as_reference = entry.entry_id == selected_id
         self.layoutChanged.emit()
 
-    def unset_as_reference(self) -> None:
+    def unset_as_reference(self, request: TrajectoryModelRequest) -> None:
         """Removes the reference status from the selected trajectory"""
         for entry in self.items:
             entry.set_as_reference = False

@@ -31,6 +31,22 @@ Key Components
     - SensorRotationParameters: Sensor orientation parameters
     - Parameter: Base class for stochastic parameters with variance
 
+**Visualization** (``pip install "trajectopy[plot]"``):
+    - trajectopy.visualization: Figures of trajectories, ATE/RPE results and alignment parameters,
+      shown in an interactive window (``show``) or exported to PNG/SVG (``export_figures``).
+
+**File I/O:**
+    - trajectopy.io: Reading and writing of trajectories, results and alignment parameters.
+      ``Trajectory.from_file`` / ``to_file`` and the result classes' equivalents delegate to it.
+
+Conventions
+-----------
+    - Functions that transform a trajectory accept ``inplace``. With ``inplace=False`` the inputs are
+      never modified and a new object is returned; with ``inplace=True`` the modified input is returned.
+      Always use the return value, e.g. ``traj = tpy.align(traj, ref, inplace=False)``.
+    - Evaluation functions (``ate``, ``rpe``, ``estimate_alignment``) never modify their inputs.
+    - Settings arguments default to ``None``, which means "use the default settings".
+
 Quick Start
 -----------
     >>> import trajectopy as tpy
@@ -46,6 +62,11 @@ Quick Start
 """
 
 from trajectopy.__version__ import __version__
+from trajectopy.core.parameters import (
+    AlignmentParameters,
+    Parameter,
+    SensorRotationParameters,
+)
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
@@ -55,27 +76,24 @@ from trajectopy.core.settings import (
     AlignmentStochastics,
     ApproximationSettings,
     ComparisonMethod,
-    ExportSettings,
     InterpolationMethod,
     MatchingMethod,
     MatchingSettings,
-    MPLPlotSettings,
     PairDistanceUnit,
-    PlotBackend,
+    PlotSettings,
     PositionApproximationMethod,
     ProcessingSettings,
     RelativeComparisonSettings,
-    ReportSettings,
     RotationApproximationMethod,
     Settings,
     SortingSettings,
 )
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.exceptions import IOError  # Deprecated: use TrajectopyIOError
 from trajectopy.exceptions import (
     AlignmentError,
     AlignmentParametersError,
     ApproximationError,
+    IOError,  # Deprecated: use TrajectopyIOError
     PointSetError,
     TrajectopyError,
     TrajectopyIOError,
@@ -85,18 +103,13 @@ from trajectopy.processing.alignment import align, apply_alignment, estimate_ali
 from trajectopy.processing.approximation import approximate
 from trajectopy.processing.evaluation import ate, rpe
 from trajectopy.processing.interpolation import interpolate
-from trajectopy.processing.lib.alignment.parameters import (
-    AlignmentParameters,
-    Parameter,
-    SensorRotationParameters,
-)
 from trajectopy.processing.matching import match_trajectories
 from trajectopy.processing.merging import average_trajectories, merge_trajectories
 from trajectopy.processing.sorting import divide_into_laps, sort_spatially
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.utils.common import Sorting
+from trajectopy.utils.definitions import Sorting
 
 __all__ = [
     # Version
@@ -112,19 +125,16 @@ __all__ = [
     "AlignmentPreprocessing",
     "AlignmentStochastics",
     "MatchingSettings",
-    "ReportSettings",
     "RotationApproximationMethod",
     "PositionApproximationMethod",
     "ApproximationSettings",
     "RelativeComparisonSettings",
-    "MPLPlotSettings",
     "SortingSettings",
-    "ExportSettings",
+    "PlotSettings",
     "PairDistanceUnit",
     "ComparisonMethod",
     "MatchingMethod",
     "InterpolationMethod",
-    "PlotBackend",
     # Results
     "ATEResult",
     "RPEResult",

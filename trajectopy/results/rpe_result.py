@@ -1,4 +1,3 @@
-import csv
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -7,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 from trajectopy.core.settings import PairDistanceUnit
-from trajectopy.readers.ascii import HeaderData
 
 
 @dataclass
@@ -70,10 +68,10 @@ class RPEResult:
         self.rpe_dev = rpe_dev
 
     def __eq__(self, other) -> bool:
-        for self_value, other_value in zip(self.property_dict.values(), other.property_dict.values()):
-            assert self_value == other_value
+        if not isinstance(other, RPEResult):
+            return NotImplemented
 
-        return True
+        return list(self.property_dict.values()) == list(other.property_dict.values())
 
     def __len__(self) -> int:
         return self.rpe_dev.num_pairs
@@ -84,7 +82,7 @@ class RPEResult:
 
     @property
     def step(self) -> float:
-        return np.mean(np.diff(self.mean_pair_distances)) if len(self.mean_pair_distances) > 1 else 0.0
+        return float(np.mean(np.diff(self.mean_pair_distances))) if len(self.mean_pair_distances) > 1 else 0.0
 
     @property
     def pair_distance_unit(self) -> str:
@@ -124,7 +122,7 @@ class RPEResult:
         Returns:
             float: Average rotation drift.
         """
-        return np.mean(self.rot_dev_mean)
+        return float(np.mean(self.rot_dev_mean))
 
     @property
     def pos_std(self) -> list[float]:
@@ -278,44 +276,14 @@ class RPEResult:
             return pd.DataFrame(np.c_[self.all_pair_distances, self.pos_dev_all], columns=self.columns)
 
     def to_file(self, filename: str, mode: str = "a") -> None:
-        with open(filename, mode, encoding="utf-8", newline="") as file:
-            file.write(f"#relative_dist_unit {self.rpe_dev.pair_distance_unit.name}\n")
-            file.write(f"#name {self.name}\n")
+        """Exports the result as CSV with a metadata header."""
+        from trajectopy.io import results_io
 
-            writer = csv.writer(file)
-            file.write("#num_pairs ")
-            writer.writerow(self.num_pairs)
-        self.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
+        results_io.write_rpe_result(self, filename, mode=mode)
 
     @classmethod
-    def from_file(cls, filename: str):
-        """Reads a set of relative trajectory deviations from a file."""
-        header_data = HeaderData.from_file(filename)
-        deviation_data = pd.read_csv(filename, comment="#")
+    def from_file(cls, filename: str) -> "RPEResult":
+        """Reads an RPE result from a file."""
+        from trajectopy.io import results_io
 
-        pos_dev: dict[float, list[float]] = {}
-        rot_dev: dict[float, list[float]] = {}
-        pair_distance: dict[float, list[float]] = {}
-
-        last_index = 0
-        for index in header_data.num_pairs:
-            dev_block = deviation_data.iloc[last_index : last_index + index, :]
-            pair_distances = dev_block["pair_distance"].to_numpy(dtype=float)
-            pos_devs = dev_block["pos_dev"].to_numpy(dtype=float)
-            rot_devs = dev_block["rot_dev"].to_numpy(dtype=float) if "rot_dev" in deviation_data.columns else []
-
-            mean_dist = np.mean(pair_distances)
-            pair_distance[mean_dist] = list(pair_distances)
-            pos_dev[mean_dist] = list(pos_devs)
-            rot_dev[mean_dist] = list(rot_devs)
-
-            last_index += index
-
-        rpe_dev = RelativeTrajectoryDeviations(
-            pair_distance=pair_distance,
-            pos_dev=pos_dev,
-            rot_dev=rot_dev,
-            pair_distance_unit=header_data.relative_dist_unit,
-        )
-
-        return cls(rpe_dev=rpe_dev, name=header_data.name)
+        return results_io.read_rpe_result(filename)

@@ -24,7 +24,7 @@ class Positions:
         self,
         xyz: np.ndarray | list,
         epsg: int = 0,
-        local_transformer: Transformer = None,
+        local_transformer: Transformer | None = None,
         init_local_transformer: bool = True,
         epsg_local_cart: int = 4936,
         epsg_local_geod: int = 4937,
@@ -118,9 +118,9 @@ class Positions:
             f"+step +proj=affine "
             f"+xoff={-mean_pos[0]} +yoff={-mean_pos[1]} +zoff={-mean_pos[2]} "
             f"+step +proj=affine "
-            f"+s11={t_local[0,0]} +s12={t_local[0,1]} +s13={t_local[0,2]} "
-            f"+s21={t_local[1,0]} +s22={t_local[1,1]} +s23={t_local[1,2]} "
-            f"+s31={t_local[2,0]} +s32={t_local[2,1]} +s33={t_local[2,2]}"
+            f"+s11={t_local[0, 0]} +s12={t_local[0, 1]} +s13={t_local[0, 2]} "
+            f"+s21={t_local[1, 0]} +s22={t_local[1, 1]} +s23={t_local[1, 2]} "
+            f"+s31={t_local[2, 0]} +s32={t_local[2, 1]} +s33={t_local[2, 2]}"
         )
 
         self.local_transformer = Transformer.from_pipeline(proj_pipeline=self.pipeline_str)
@@ -223,30 +223,6 @@ class Positions:
         """
         return self.__get_column(idx=0)
 
-    @property
-    def y(self) -> int | float | np.ndarray:
-        """Returns y coordinate(s).
-
-        The x/y/z properties will either return a one-dimensional numpy array or a single
-        float / int depending on whether there is more than one point in the Positions object.
-
-        Returns:
-            Union[int, float, np.ndarray]: Y coordinate(s).
-        """
-        return self.__get_column(idx=1)
-
-    @property
-    def z(self) -> int | float | np.ndarray:
-        """Returns z coordinate(s).
-
-        The x/y/z properties will either return a one-dimensional numpy array or a single
-        float / int depending on whether there is more than one point in the Positions object.
-
-        Returns:
-            Union[int, float, np.ndarray]: Z coordinate(s).
-        """
-        return self.__get_column(idx=2)
-
     @x.setter
     def x(self, x: int | float | np.ndarray) -> None:
         """Sets x coordinate(s).
@@ -259,6 +235,18 @@ class Positions:
         """
         self.__set_column(v=x, idx=0)
 
+    @property
+    def y(self) -> int | float | np.ndarray:
+        """Returns y coordinate(s).
+
+        The x/y/z properties will either return a one-dimensional numpy array or a single
+        float / int depending on whether there is more than one point in the Positions object.
+
+        Returns:
+            Union[int, float, np.ndarray]: Y coordinate(s).
+        """
+        return self.__get_column(idx=1)
+
     @y.setter
     def y(self, y: int | float | np.ndarray) -> None:
         """Sets y coordinate(s).
@@ -270,6 +258,18 @@ class Positions:
                 the same length as xyz.
         """
         self.__set_column(v=y, idx=1)
+
+    @property
+    def z(self) -> int | float | np.ndarray:
+        """Returns z coordinate(s).
+
+        The x/y/z properties will either return a one-dimensional numpy array or a single
+        float / int depending on whether there is more than one point in the Positions object.
+
+        Returns:
+            Union[int, float, np.ndarray]: Z coordinate(s).
+        """
+        return self.__get_column(idx=2)
 
     @z.setter
     def z(self, z: int | float | np.ndarray) -> None:
@@ -284,11 +284,11 @@ class Positions:
         self.__set_column(v=z, idx=2)
 
     @property
-    def crs(self) -> CRS:
+    def crs(self) -> CRS | None:
         """Returns the Coordinate Reference System.
 
         Returns:
-            CRS: pyproj CRS object that represents the current coordinate system.
+            CRS | None: pyproj CRS object that represents the current coordinate system (None if local).
         """
         return None if self.epsg == 0 else CRS.from_epsg(code=self.epsg)
 
@@ -316,16 +316,19 @@ class Positions:
             return pointset
 
         # currently in unknown frame
-        if pointset.epsg == 0 and pointset.local_transformer is None:
+        local_transformer = pointset.local_transformer
+        if pointset.epsg == 0 and local_transformer is None:
             raise PointSetError("Unable to recover from local frame since definition is unknown!")
 
         # 1) from non-local to local
         if target_epsg == 0:
             # geocentric cartesian (ITRF2014)
+            if local_transformer is None:
+                raise PointSetError("Unable to transform to a local frame since no local transformer is defined!")
             pointset.to_epsg(target_epsg=pointset.epsg_local_cart)
 
             # apply local transformer
-            x, y, z = pointset.local_transformer.transform(xx=pointset.x, yy=pointset.y, zz=pointset.z)
+            x, y, z = local_transformer.transform(xx=pointset.x, yy=pointset.y, zz=pointset.z)
 
             pointset.xyz = np.c_[x, y, z]
             pointset.epsg = target_epsg
@@ -333,9 +336,9 @@ class Positions:
             return pointset
 
         # 2) from local to non-local (intermediate step)
-        if pointset.epsg == 0:
+        if pointset.epsg == 0 and local_transformer is not None:
             # undo local transformation
-            x, y, z = pointset.local_transformer.transform(
+            x, y, z = local_transformer.transform(
                 xx=pointset.x,
                 yy=pointset.y,
                 zz=pointset.z,
@@ -345,7 +348,7 @@ class Positions:
             crs = CRS.from_epsg(pointset.epsg_local_cart)
         else:
             xyz = pointset.xyz
-            crs = pointset.crs
+            crs = CRS.from_epsg(pointset.epsg)
 
         # 3) from non-local to non-local
         transformer = Transformer.from_crs(crs, CRS.from_epsg(code=target_epsg))
@@ -443,7 +446,7 @@ class Positions:
     def __hash__(self):
         return hash(self.__key())
 
-    def __eq__(self, other: "Positions") -> bool:
+    def __eq__(self, other: object) -> bool:
         """Equality comparison.
 
         Args:
@@ -451,10 +454,7 @@ class Positions:
 
         Returns:
             bool: True if equal, False otherwise.
-
-        Raises:
-            NotImplementedError: If comparing with incompatible type.
         """
         if isinstance(other, Positions):
             return self.__key() == other.__key()
-        raise NotImplementedError(f"Cannot compare {type(self)} with {type(other)}!")
+        return NotImplemented

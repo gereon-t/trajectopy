@@ -1,3 +1,1 @@
-"""Readers for loading trajectory data from various formats."""
-
-__all__ = ["ascii", "header", "rosbag", "rosmsg", "utils"]
+"""Deprecated: use :mod:`trajectopy.io` instead. Kept as a re-export for backwards compatibility."""

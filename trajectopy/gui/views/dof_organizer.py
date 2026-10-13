@@ -1,4 +1,4 @@
-﻿from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.utils import center_window

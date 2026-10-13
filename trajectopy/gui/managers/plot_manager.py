@@ -1,14 +1,13 @@
-﻿import logging
-import os
+import logging
 from collections.abc import Callable
 
 from PySide6.QtCore import QObject, Signal, Slot
 
-from trajectopy.core.settings import PlotBackend
 from trajectopy.gui.managers.requests import (
     PlotRequest,
     PlotRequestType,
     UIRequest,
+    UIRequestType,
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import (
@@ -18,14 +17,14 @@ from trajectopy.gui.models.entries import (
     ResultEntry,
 )
 from trajectopy.gui.utils import show_progress
-from trajectopy.gui.views.mpl_plot_tabs import PlotTabs
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
-from trajectopy.visualization.plotly_reports import (
-    create_alignment_report,
-    create_deviation_report,
-    create_trajectory_report,
-    show_report,
+from trajectopy.visualization import (
+    Figure,
+    PlotWindow,
+    alignment_figures,
+    deviation_figures,
+    trajectory_figures,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,155 +32,64 @@ logger = logging.getLogger(__name__)
 
 class PlotManager(QObject):
     """
-    Manager for handling plot requests.
+    Manager for handling plot requests: builds the figures for the selection and opens a plot window.
 
     Possible requests:
     - Plot trajectories
-    - Plot single deviations
-    - Plot multi deviations
+    - Plot deviations (one or several ATE/RPE results)
     - Plot alignment
-
     """
 
     ui_request = Signal(UIRequest)
     operation_started = Signal()
     operation_finished = Signal()
 
-    def __init__(
-        self,
-        report_dir: str,
-        plot_backend: PlotBackend = PlotBackend.PLOTLY,
-        parent=None,
-    ) -> None:
-        self.cnt = 0
-        self.plot_backend = plot_backend
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.REQUEST_MAPPING: dict[PlotRequestType, Callable[[PlotRequest], None]] = {
-            PlotRequestType.TRAJECTORIES: self.plot_selected_trajectories,
-            PlotRequestType.SINGLE_DEVIATIONS: self.plot_single_deviations,
-            PlotRequestType.MULTI_DEVIATIONS: self.plot_multi_deviations,
+            PlotRequestType.TRAJECTORIES: self.plot_trajectories,
+            PlotRequestType.DEVIATIONS: self.plot_deviations,
             PlotRequestType.ALIGNMENT: self.plot_alignment,
         }
-        self.report_dir = os.path.abspath(report_dir)
-
-    def set_plot_backend(self, plot_backend: PlotBackend) -> None:
-        """Set the plot backend."""
-        logger.info("Setting plot backend to %s", plot_backend)
-        self.plot_backend = plot_backend
+        self._windows: list[PlotWindow] = []
 
     @show_progress
     @Slot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
-        generic_request_handler(self, request, True)
+        generic_request_handler(self, request)
 
-    def report_path(self, prefix: str = "report") -> str:
-        """Return the path to the report file."""
-        prefix = prefix.replace(" ", "_").replace(".", "")
-        path = os.path.join(self.report_dir, f"{prefix}_{self.cnt:03}.html")
-        self.cnt += 1
-        return path
+    def _open_window(self, figures: list[Figure], title: str, request: PlotRequest) -> None:
+        if not figures:
+            self.ui_request.emit(UIRequest(type=UIRequestType.MESSAGE, message="Nothing to plot."))
+            return
+        window = PlotWindow(
+            figures,
+            title=title,
+            export_format=request.plot_settings.export_format,
+            export_width=request.plot_settings.export_width,
+            parent=self.parent(),  # type: ignore[arg-type]
+        )
+        window.destroyed.connect(lambda _=None, w=window: self._windows.remove(w) if w in self._windows else None)
+        self._windows.append(window)
+        window.show()
 
-    def plot_selected_trajectories(self, request: PlotRequest) -> None:
-        trajectory_list = [entry.trajectory for entry in request.trajectory_selection.entries]
+    def plot_trajectories(self, request: PlotRequest) -> None:
+        trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]
+        title = trajectories[0].name if len(trajectories) == 1 else "Trajectories"
+        self._open_window(trajectory_figures(trajectories, request.plot_settings), title, request)
 
-        if self.plot_backend == PlotBackend.PLOTLY:
-            traj_report = create_trajectory_report(
-                trajectories=trajectory_list, report_settings=request.report_settings
-            )
-            show_report(traj_report, filepath=self.report_path(prefix="trajectories"))
-        elif self.plot_backend == PlotBackend.MPL:
-            name = "Trajectopy Viewer" if len(trajectory_list) > 1 else trajectory_list[0].name
-            plot_tabs = PlotTabs(parent=self.parent(), window_title=name)
-            plot_tabs.show_trajectories(trajectory_list, mpl_plot_settings=request.mpl_plot_settings)
-
-    def plot_single_deviations(self, request: PlotRequest) -> None:
+    def plot_deviations(self, request: PlotRequest) -> None:
         ate_results = get_ate_results(request.result_selection.entries)
         rpe_results = get_rpe_results(request.result_selection.entries)
-
-        if not ate_results and not rpe_results:
-            logger.error("No deviations selected!")
-            return
-
-        if len(ate_results) > 1 or len(rpe_results) > 1:
-            logger.error("Too many deviations selected for single report!")
-            return
-
-        ate_result = ate_results[0] if ate_results else None
-        rpe_result = rpe_results[0] if rpe_results else None
-
-        name = ate_result.name if ate_result else rpe_result.name
-
-        if ate_result:
-            ate_result.remove_ate_above(
-                request.mpl_plot_settings.ate_remove_above
-                if self.plot_backend == PlotBackend.MPL
-                else request.report_settings.ate_remove_above
-            )
-
-        if self.plot_backend == PlotBackend.PLOTLY:
-            report = create_deviation_report(
-                ate_result=ate_result,
-                rpe_result=rpe_result,
-                report_settings=request.report_settings,
-            )
-            show_report(
-                report_text=report,
-                filepath=self.report_path(prefix=ate_result.name if ate_result else rpe_result.name),
-            )
-        elif self.plot_backend == PlotBackend.MPL:
-            plot_tabs = PlotTabs(parent=self.parent(), window_title=name)
-            plot_tabs.show_single_deviations(
-                ate_result=ate_result, rpe_result=rpe_result, mpl_plot_settings=request.mpl_plot_settings
-            )
-
-    def plot_multi_deviations(self, request: PlotRequest) -> None:
-        """Plot multiple absolute deviations."""
-        ate_results = get_ate_results(request.result_selection.entries)
-        rpe_results = get_rpe_results(request.result_selection.entries)
-
-        if not ate_results and not rpe_results:
-            logger.error("No deviations selected!")
-            return
-
-        for ate in ate_results:
-            ate.remove_ate_above(
-                request.mpl_plot_settings.ate_remove_above
-                if self.plot_backend == PlotBackend.MPL
-                else request.report_settings.ate_remove_above
-            )
-
-        if self.plot_backend == PlotBackend.PLOTLY:
-            multi_report = create_deviation_report(
-                ate_result=ate_results or None,
-                rpe_result=rpe_results or None,
-                report_settings=request.report_settings,
-            )
-            show_report(
-                report_text=multi_report,
-                filepath=self.report_path(prefix="multi_deviations"),
-            )
-        elif self.plot_backend == PlotBackend.MPL:
-            plot_tabs = PlotTabs(parent=self.parent())
-            plot_tabs.show_multiple_deviations(
-                ate_results=ate_results, rpe_results=rpe_results, mpl_plot_settings=request.mpl_plot_settings
-            )
+        results: list[ATEResult | RPEResult] = [*ate_results, *rpe_results]
+        title = results[0].name if len(results) == 1 else "Trajectory Comparison"
+        self._open_window(deviation_figures(ate_results, rpe_results, request.plot_settings), title, request)
 
     def plot_alignment(self, request: PlotRequest) -> None:
         if not isinstance((entry := request.result_selection.entries[0]), AlignmentEntry):
             raise TypeError("Entry must be of type AlignmentEntry!")
-
-        if self.plot_backend == PlotBackend.PLOTLY:
-            report = create_alignment_report(
-                alignment_parameters=entry.estimated_parameters,
-                name=entry.name,
-                report_settings=request.report_settings,
-            )
-
-            show_report(report_text=report, filepath=self.report_path(prefix=entry.name))
-        elif self.plot_backend == PlotBackend.MPL:
-            plot_tabs = PlotTabs(parent=self.parent())
-            plot_tabs.show_alignment_parameters(entry.estimated_parameters)
+        self._open_window(alignment_figures(entry.estimated_parameters, request.plot_settings), entry.name, request)
 
 
 def get_ate_results(entries: list[ResultEntry]) -> list[ATEResult]:

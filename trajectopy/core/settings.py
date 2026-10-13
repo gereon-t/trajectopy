@@ -1,14 +1,16 @@
-import inspect
+import copy
 import json
 import logging
 from abc import ABC
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from enum import Enum, auto
-from typing import Any
+from typing import Any, TypeVar, get_type_hints
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+_SettingsT = TypeVar("_SettingsT", bound="Settings")
 
 METRIC_THRESHOLD = 1e-4
 TIME_THRESHOLD = 1e-4
@@ -77,8 +79,39 @@ class Settings(ABC):
             f.write(self.to_json())
 
     @classmethod
-    def from_dict(cls, dct: dict) -> "Settings":
+    def _field_types(cls) -> dict[str, Any]:
+        """Returns the resolved types of all dataclass fields, including inherited ones."""
+        hints = get_type_hints(cls)
+        return {f.name: hints[f.name] for f in fields(cls) if f.init}
+
+    @classmethod
+    def _check_keys(cls, dct: dict) -> None:
+        if unknown := set(dct) - set(cls._field_types()):
+            logger.warning("%s: ignoring unknown settings %s", cls.__name__, sorted(unknown))
+
+    def _decode_value(self, name: str, field_type: Any, value: Any) -> Any:
+        """Decodes a value and validates it against the declared field type.
+
+        Raises:
+            TypeError: If the decoded value does not match the declared type.
+        """
+        decoded = self.decoder(name, value)
+        if field_type is float and isinstance(decoded, int) and not isinstance(decoded, bool):
+            return float(decoded)
+        if field_type in (bool, int, float, str) and (
+            not isinstance(decoded, field_type) or (field_type is int and isinstance(decoded, bool))
+        ):
+            raise TypeError(
+                f"{type(self).__name__}.{name}: expected {field_type.__name__}, got {type(decoded).__name__} ({value!r})"
+            )
+        return decoded
+
+    @classmethod
+    def from_dict(cls: type[_SettingsT], dct: dict) -> _SettingsT:
         """Creates settings instance from a dictionary.
+
+        Missing attributes keep their default value so that settings files written by
+        older versions can still be read. Unknown attributes are ignored with a warning.
 
         Args:
             dct: Dictionary containing settings data
@@ -87,24 +120,14 @@ class Settings(ABC):
             Settings: New settings instance
 
         Raises:
-            ValueError: If required attribute is missing from dictionary
+            TypeError: If a value does not match the declared attribute type
         """
         settings = cls()
-        for attribute_name, attribute_type in cls.__annotations__.items():
-            if attribute_name not in dct:
-                logger.error(f"Attribute {attribute_name} not found in input data")
-                continue  # Skip missing attributes instead of raising an error
-
-            attribute_data = dct[attribute_name]
-            if isinstance(attribute_data, dict) and issubclass(attribute_type, Settings):
-                setattr(settings, attribute_name, attribute_type.from_dict(attribute_data))
-            else:
-                setattr(settings, attribute_name, settings.decoder(attribute_name, attribute_data))
-
+        settings.update_from_dict(dct)
         return settings
 
     @classmethod
-    def from_file(cls, path: str) -> "Settings":
+    def from_file(cls: type[_SettingsT], path: str) -> _SettingsT:
         """Loads settings from a JSON file.
 
         Args:
@@ -121,22 +144,52 @@ class Settings(ABC):
     def update_from_dict(self, dct: dict) -> None:
         """Updates settings from a dictionary.
 
+        Attributes missing from the dictionary keep their current value. Unknown attributes
+        are ignored with a warning. The update is atomic: if any value is invalid, the
+        settings remain unchanged.
+
         Args:
             dct: Dictionary containing updated settings data
 
         Raises:
-            ValueError: If required attribute is missing from dictionary
+            TypeError: If a value does not match the declared attribute type
         """
-        annotations = inspect.get_annotations(type(self))
-        for attribute_name, attribute_type in annotations.items():
+        updates = self._decoded_updates(dct)  # validates everything before anything is changed
+        for attribute_name, value in updates.items():
+            if isinstance(value, Settings):
+                # update nested settings in place, so that references held elsewhere stay up to date
+                getattr(self, attribute_name)._assign_from(value)
+            else:
+                setattr(self, attribute_name, value)
+
+    def _assign_from(self, other: "Settings") -> None:
+        """Copies all values of ``other`` into this object, keeping the identity of nested settings."""
+        for attribute_name in self._field_types():
+            value = getattr(other, attribute_name)
+            if isinstance(value, Settings):
+                getattr(self, attribute_name)._assign_from(value)
+            else:
+                setattr(self, attribute_name, value)
+
+    def _decoded_updates(self, dct: dict) -> dict[str, Any]:
+        """Validates and decodes ``dct`` without modifying ``self``. Nested settings are returned as new objects."""
+        self._check_keys(dct)
+        updates: dict[str, Any] = {}
+        for attribute_name, attribute_type in self._field_types().items():
             if attribute_name not in dct:
-                raise ValueError(f"Attribute {attribute_name} not found in input data")
+                logger.debug("%s: %s not given, keeping current value", type(self).__name__, attribute_name)
+                continue
 
             attribute_data = dct[attribute_name]
-            if isinstance(attribute_data, dict) and issubclass(attribute_type, Settings):
-                getattr(self, attribute_name).update_from_dict(attribute_data)
+            if isinstance(attribute_type, type) and issubclass(attribute_type, Settings):
+                if not isinstance(attribute_data, dict):
+                    raise TypeError(f"{type(self).__name__}.{attribute_name}: expected a dictionary")
+                nested = copy.deepcopy(getattr(self, attribute_name))
+                nested.update_from_dict(attribute_data)
+                updates[attribute_name] = nested
             else:
-                setattr(self, attribute_name, self.decoder(attribute_name, attribute_data))
+                updates[attribute_name] = self._decode_value(attribute_name, attribute_type, attribute_data)
+        return updates
 
 
 @dataclass
@@ -571,15 +624,6 @@ class AlignmentSettings(Settings):
         return str(self.preprocessing) + str(self.estimation_settings) + str(self.stochastics)
 
 
-if __name__ == "__main__":
-    settings = AlignmentSettings()
-    settings.to_file("alignment_settings.json")
-    imported_settings = AlignmentSettings.from_file("alignment_settings.json")
-
-    assert settings == imported_settings
-    print(imported_settings)
-
-
 class RotationApproximationMethod(Enum):
     """Method for rotation approximation."""
 
@@ -760,15 +804,6 @@ class RelativeComparisonSettings(Settings):
         return PairDistanceUnit(value) if name == "pair_distance_unit" else value
 
 
-if __name__ == "__main__":
-    settings = RelativeComparisonSettings()
-    settings.to_file("rel_settings.json")
-    imported_settings = RelativeComparisonSettings.from_file("rel_settings.json")
-
-    assert imported_settings == settings
-    print(imported_settings)
-
-
 class MatchingMethod(Enum):
     """Method for matching poses between two trajectories.
 
@@ -842,82 +877,60 @@ class MatchingSettings(Settings):
         return MatchingMethod(value) if name == "method" else value
 
 
-if __name__ == "__main__":
-    settings = MatchingSettings()
-    settings.to_file("matching_settings.json")
-    imported_settings = MatchingSettings.from_file("matching_settings.json")
-
-    assert imported_settings == settings
-    print(imported_settings)
-
-
 @dataclass
-class MPLPlotSettings(Settings):
-    """Configuration for matplotlib plotting backend.
+class PlotSettings(Settings):
+    """Configuration of all plots (GUI and :mod:`trajectopy.visualization`).
+
+    The along-track direction is positive in travel direction, horizontal cross-track is
+    positive to the right, and vertical cross-track is positive upwards.
 
     Attributes:
-        colorbar_show_zero_crossing: Show zero in colorbar. Defaults to True.
-        colorbar_steps: Number of colorbar steps. Defaults to 4.
-        colorbar_max_std: Upper colorbar limit as mean + this * std. Defaults to 3.0.
-        scatter_hide_axes: Hide axes in scatter plots. Defaults to False.
-        scatter_3d: Use 3D scatter plots. Defaults to False.
-        scatter_smooth: Smooth scatter plot color data. Defaults to False.
-        scatter_smooth_window: Window size for scatter smoothing. Defaults to 5.
-        ate_unit_is_mm: Use millimeters for ATE units. Defaults to False.
-        ate_remove_above: Cap ATE values above this (0.0 = no cap). Defaults to 0.0.
-        hist_as_stairs: Display histogram as stairs. Defaults to False.
-        hist_percentile: Show histogram data up to this percentile. Defaults to 1.0.
-        directed_ate: Split ATE into along/cross-track directions. Defaults to False.
-        dofs_tab: Show degrees of freedom tab. Defaults to True.
-        velocity_tab: Show velocity tab. Defaults to True.
-        height_tab: Show height tab. Defaults to True.
-        font_size: Base matplotlib font size for plot text. Defaults to 10.
-        use_relative_timestamps: Plot time axes as seconds relative to the first
-            timestamp instead of absolute datetime/timestamp values. Defaults to False.
+        ate_unit_is_mm: Show position deviations in millimeters instead of meters. Defaults to False.
+        directed_ate: Show position deviations split into along-track, horizontal cross-track and
+            vertical cross-track instead of x, y and z. Defaults to False.
+        ate_remove_above: Exclude position deviations above this value in meters (0.0 = keep all). Defaults to 0.0.
+        hist_percentile: Show histogram data up to this percentile of the absolute values. Defaults to 1.0.
+        colorbar_max_std: Clip color-coded values to mean ± this many standard deviations, so that outliers
+            don't dominate the color scale (0.0 = no clipping). Defaults to 3.0.
+        smoothing_window: Moving-average window applied to color-coded values (1 = no smoothing). Defaults to 1.
+        use_relative_timestamps: Show time axes in seconds relative to the first timestamp instead of
+            absolute (UTC) time. Defaults to False.
+        line_width: Line width in pixels. Defaults to 1.5.
+        marker_size: Marker size in pixels of color-coded trajectory maps. Defaults to 4.
+        font_size: Font size in points of axis labels and titles. Defaults to 10.
+        export_format: File format for exported plots ("png", "jpg" or "svg"). Defaults to "png".
+        export_width: Width in pixels of exported raster images. Defaults to 1600.
+        background_map: Show a map below top views of georeferenced trajectories. Requires an internet
+            connection and sends the approximate area of the trajectories to the tile server; tiles are
+            cached on disk. Defaults to False.
+        map_style: Map shown by ``background_map``: "osm" (OpenStreetMap) or "satellite" (Esri World
+            Imagery). Defaults to "osm".
     """
 
-    colorbar_show_zero_crossing: bool = True
-    colorbar_steps: int = 4
-    colorbar_max_std: float = 3.0
-    scatter_hide_axes: bool = False
-    scatter_3d: bool = False
-    scatter_smooth: bool = False
-    scatter_smooth_window: int = 5
     ate_unit_is_mm: bool = False
-    ate_remove_above: float = 0.0
-    hist_as_stairs: bool = False
-    hist_percentile: float = 1.0
     directed_ate: bool = False
-    dofs_tab: bool = True
-    velocity_tab: bool = True
-    height_tab: bool = True
-    font_size: int = 12
+    ate_remove_above: float = 0.0
+    hist_percentile: float = 1.0
+    colorbar_max_std: float = 3.0
+    smoothing_window: int = 1
     use_relative_timestamps: bool = False
+    line_width: float = 1.5
+    marker_size: float = 4.0
+    font_size: int = 10
+    export_format: str = "png"
+    export_width: int = 1600
+    background_map: bool = False
+    map_style: str = "osm"
 
     @property
     def unit_multiplier(self) -> float:
-        """Gets unit multiplier for converting meters to display unit.
-
-        Returns:
-            float: 1000 if using millimeters, 1 otherwise
-        """
-        return 1000 if self.ate_unit_is_mm else 1
+        """Factor converting meters to the display unit."""
+        return 1000.0 if self.ate_unit_is_mm else 1.0
 
     @property
-    def unit_str(self) -> str:
-        """Gets unit string for display.
-
-        Returns:
-            str: "[mm]" if using millimeters, "[m]" otherwise
-        """
-        return "[mm]" if self.ate_unit_is_mm else "[m]"
-
-
-class PlotBackend(Enum):
-    """Plotting backend selection."""
-
-    PLOTLY = "plotly"
-    MPL = "mpl"
+    def unit(self) -> str:
+        """Display unit of position deviations."""
+        return "mm" if self.ate_unit_is_mm else "m"
 
 
 @dataclass
@@ -957,155 +970,3 @@ class ProcessingSettings(Settings):
     relative_comparison: RelativeComparisonSettings = field(default_factory=RelativeComparisonSettings)
     approximation: ApproximationSettings = field(default_factory=ApproximationSettings)
     sorting: SortingSettings = field(default_factory=SortingSettings)
-
-
-if __name__ == "__main__":
-    settings = ProcessingSettings()
-    settings.to_file("processing_settings.json")
-    imported_settings = ProcessingSettings.from_file("processing_settings.json")
-
-    assert imported_settings == settings
-    print(imported_settings)
-
-
-@dataclass
-class ExportSettings(Settings):
-    """Configuration for exporting plots to image files.
-
-    Attributes:
-        format: Export format ("png", "svg", "jpeg", "webp"). Defaults to "png".
-        height: Export height in pixels. Defaults to 500.
-        width: Export width in pixels. Defaults to 800.
-        scale: Export scale factor. Defaults to 1.
-    """
-
-    format: str = "png"  # one of png, svg, jpeg, webp
-    height: int = 500
-    width: int = 800
-    scale: int = 1
-
-    def to_config(self) -> dict:
-        """Converts export settings to plotly configuration dictionary.
-
-        Returns:
-            dict: Plotly toImageButtonOptions configuration
-        """
-        return {
-            "toImageButtonOptions": {
-                "format": self.format,
-                "height": self.height,
-                "width": self.width,
-                "scale": self.scale,
-            }
-        }
-
-
-@dataclass
-class ReportSettings(Settings):
-    """Configuration for interactive HTML report generation (plotly backend).
-
-    Controls visualization, styling, and export settings for trajectory comparison reports.
-    The along-track direction is positive in travel direction, horizontal cross-track is
-    positive to the right, and vertical cross-track is positive upwards.
-
-    Attributes:
-        single_plot_height: Height of single plots in pixels. Defaults to 750.
-        two_subplots_height: Height of two-subplot figures in pixels. Defaults to 750.
-        three_subplots_height: Height of three-subplot figures in pixels. Defaults to 860.
-        scatter_max_std: Upper colorbar limit as mean + this * std (prevents outlier
-            dominance). Defaults to 4.0.
-        ate_unit_is_mm: Use millimeters for ATE instead of meters. Defaults to False.
-        ate_remove_above: Cap ATE values above this (0.0 = no cap). Defaults to 0.0.
-        directed_ate: Split ATE into along-track, horizontal cross-track, and vertical
-            cross-track directions. Defaults to False.
-        histogram_opacity: Opacity of histogram bars [0-1]. Defaults to 0.7.
-        histogram_bargap: Gap between histogram bars. Defaults to 0.1.
-        histogram_barmode: Display mode for histogram bars. Defaults to "overlay".
-        histogram_yaxis_title: Y-axis label for histograms. Defaults to "Count".
-        plot_mode: Display mode for line plots. Defaults to "lines+markers".
-        scatter_mode: Display mode for scatter plots. Defaults to "markers".
-        scatter_colorscale: Colorscale for scatter plots. Defaults to "RdYlBu_r".
-        scatter_axis_order: Axes to display in scatter plots ("xy" or "xyz"). Defaults to "xy".
-        scatter_marker_size: Size of scatter plot markers. Defaults to 5.
-        scatter_show_individual_dofs: Show scatter plots for each degree of freedom. Defaults to False.
-        scatter_smooth: Smooth scatter plot color data. Defaults to False.
-        scatter_smooth_window: Window size for scatter smoothing. Defaults to 5.
-        scatter_plot_on_map: Plot trajectories on mapbox map (requires valid EPSG). Defaults to False.
-        scatter_mapbox_style: Mapbox style (some require token). Defaults to "carto-positron".
-        scatter_mapbox_zoom: Mapbox zoom level. Defaults to 15.
-        scatter_mapbox_token: Mapbox access token (optional). Defaults to "".
-        pos_x_name: Label for X position coordinate. Defaults to "x".
-        pos_y_name: Label for Y position coordinate. Defaults to "y".
-        pos_z_name: Label for Z position coordinate. Defaults to "z".
-        pos_x_unit: Unit symbol for X position. Defaults to "m".
-        pos_y_unit: Unit symbol for Y position. Defaults to "m".
-        pos_z_unit: Unit symbol for Z position. Defaults to "m".
-        directed_pos_dev_x_name: Label for along-track direction deviation. Defaults to "along".
-        directed_pos_dev_y_name: Label for horizontal cross-track deviation. Defaults to "cross-h".
-        directed_pos_dev_z_name: Label for vertical cross-track deviation. Defaults to "cross-v".
-        rot_x_name: Label for roll angle. Defaults to "roll".
-        rot_y_name: Label for pitch angle. Defaults to "pitch".
-        rot_z_name: Label for yaw angle. Defaults to "yaw".
-        rot_unit: Unit symbol for rotation angles. Defaults to "°".
-        single_plot_export: Export settings for single plots.
-        two_subplots_export: Export settings for two-subplot figures.
-        three_subplots_export: Export settings for three-subplot figures.
-    """
-
-    single_plot_height: int = 750
-    two_subplots_height: int = 750
-    three_subplots_height: int = 860
-
-    scatter_max_std: float = 4.0
-    ate_unit_is_mm: bool = False
-    ate_remove_above: float = 0.0
-    directed_ate: bool = False
-
-    histogram_opacity: float = 0.7
-    histogram_bargap: float = 0.1
-    histogram_barmode: str = "overlay"
-    histogram_yaxis_title: str = "Count"
-
-    plot_mode: str = "lines+markers"
-
-    scatter_mode: str = "markers"
-    scatter_colorscale: str = "RdYlBu_r"
-    scatter_axis_order: str = "xy"
-    scatter_marker_size: int = 5
-    scatter_show_individual_dofs: bool = False
-    scatter_smooth: bool = False
-    scatter_smooth_window: int = 5
-
-    scatter_plot_on_map: bool = False
-    scatter_mapbox_style: str = "carto-positron"
-    scatter_mapbox_zoom: int = 15
-    scatter_mapbox_token: str = ""
-
-    pos_x_name: str = "x"
-    pos_y_name: str = "y"
-    pos_z_name: str = "z"
-    pos_x_unit: str = "m"
-    pos_y_unit: str = "m"
-    pos_z_unit: str = "m"
-
-    directed_pos_dev_x_name: str = "along"
-    directed_pos_dev_y_name: str = "cross-h"
-    directed_pos_dev_z_name: str = "cross-v"
-
-    rot_x_name: str = "roll"
-    rot_y_name: str = "pitch"
-    rot_z_name: str = "yaw"
-    rot_unit: str = "°"
-
-    single_plot_export: ExportSettings = field(default_factory=lambda: ExportSettings(width=800, height=540))
-    two_subplots_export: ExportSettings = field(default_factory=lambda: ExportSettings(width=800, height=540))
-    three_subplots_export: ExportSettings = field(default_factory=lambda: ExportSettings(width=800, height=750))
-
-
-if __name__ == "__main__":
-    settings = ReportSettings()
-    settings.to_file("report_settings.json")
-    imported_settings = ReportSettings.from_file("report_settings.json")
-
-    assert imported_settings == settings
-    print(imported_settings)

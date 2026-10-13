@@ -1,9 +1,13 @@
 import unittest
-from test.testdata import generated_trajectory
-from test.util import random_number
 
 import numpy as np
 
+from test.testdata import generated_trajectory
+from test.util import random_number
+from trajectopy.core.parameters import (
+    AlignmentParameters,
+    Parameter,
+)
 from trajectopy.core.settings import (
     MatchingMethod,
     MatchingSettings,
@@ -15,10 +19,6 @@ from trajectopy.processing.evaluation import (
     _compare_trajectories_absolute,
     _compare_trajectories_relative,
     _derive_dev_directions_no_rot,
-)
-from trajectopy.processing.lib.alignment.parameters import (
-    AlignmentParameters,
-    Parameter,
 )
 from trajectopy.processing.matching import match_trajectories
 from trajectopy.results.alignment_result import AlignmentResult

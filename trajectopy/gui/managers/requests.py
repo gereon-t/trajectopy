@@ -1,15 +1,16 @@
-﻿import copy
+import copy
 import logging
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Protocol
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import SignalInstance
 
-from trajectopy.core.settings import MatchingMethod, MPLPlotSettings, ReportSettings
+from trajectopy.core.settings import MatchingMethod, PlotSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
-from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
+from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,7 @@ class FileRequestType(Enum):
 
 
 class PlotRequestType(Enum):
-    SINGLE_DEVIATIONS = auto()
-    MULTI_DEVIATIONS = auto()
+    DEVIATIONS = auto()
     TRAJECTORIES = auto()
     ALIGNMENT = auto()
 
@@ -94,12 +94,12 @@ class UIRequestType(Enum):
     DOF_ORGANIZER = auto()
     RES_PROPERTIES = auto()
     TRAJ_SETTINGS = auto()
-    SETTINGS = auto()
     EPSG_EDIT = auto()
     EPSG_TRANSFORMATION = auto()
     GRID_SELECTION = auto()
     ALIGNMENT_SELECTION = auto()
     EXPORT_TRAJ = auto()
+    EXPORT_KML = auto()
     IMPORT_TRAJ = auto()
     EXPORT_RES = auto()
     IMPORT_RES = auto()
@@ -109,13 +109,10 @@ class UIRequestType(Enum):
     IMPORT_SESSION = auto()
     EDIT_ALIGNMENT = auto()
     MANUAL_ALIGNMENT = auto()
-    EXPORT_DEV_SUMMARY = auto()
-    EXPORT_REPORT = auto()
     PLAYBACK = auto()
 
 
 class PlotSettingsRequestType(Enum):
-    SHOW = auto()
     IMPORT = auto()
     EXPORT = auto()
     RESET = auto()
@@ -123,6 +120,12 @@ class PlotSettingsRequestType(Enum):
 
 @dataclass
 class DeepCopyRequest:
+    """Base class for requests that are processed on the background worker.
+
+    The payload is deep-copied when the request is created on the UI thread, so the worker never shares
+    mutable entries (and their trajectories) with the models displayed by the UI.
+    """
+
     def __post_init__(self):
         self.__dict__ = {k: copy.deepcopy(v) for k, v in self.__dict__.items()}
 
@@ -139,11 +142,9 @@ class FileRequest(DeepCopyRequest):
 @dataclass
 class PlotRequest(DeepCopyRequest):
     type: PlotRequestType
-    report_settings: ReportSettings = field(default_factory=ReportSettings)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
-    mpl_plot_settings: MPLPlotSettings = field(default_factory=MPLPlotSettings)
-    dimension: int = 2
+    plot_settings: PlotSettings = field(default_factory=PlotSettings)
 
 
 @dataclass
@@ -191,8 +192,8 @@ class TrajectoryManagerRequest(DeepCopyRequest):
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
     matching_method: MatchingMethod = MatchingMethod.NEAREST_TEMPORAL
     dof_mapping: dict[str, dict] = field(default_factory=dict)
-    manual_parameters: AlignmentParameters | None = None
-    refine_manual: bool = False
+    # alignment chosen in the manual alignment window; applied as is instead of being estimated
+    manual_alignment: AlignmentResult | None = None
 
 
 @dataclass
@@ -201,7 +202,6 @@ class UIRequest:
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     alignment_entry: AlignmentEntry = field(default_factory=AlignmentEntry)
-    report_settings: ReportSettings = field(default_factory=ReportSettings)
     message: str = ""
     confirm_reset: bool = False
     epsg: int = 0
@@ -212,19 +212,22 @@ class UIRequest:
 class Request(Protocol):
     """Interface for requests."""
 
-    type: Any
+    @property
+    def type(self) -> Enum: ...
 
 
 class RequestHandler(Protocol):
-    """Interface for request handlers."""
+    """Interface for request handlers: a mapping from request type to a handler receiving the request."""
 
-    operation_finished: Signal
-    ui_request: Signal
-    REQUEST_MAPPING: dict
+    @property
+    def REQUEST_MAPPING(self) -> Mapping[Any, Callable[[Any], None]]: ...
+
+    @property
+    def ui_request(self) -> SignalInstance: ...
 
 
-def generic_request_handler(manager: RequestHandler, request: Request, passthrough_request: bool = True) -> None:
-    """Function to handle requests."""
+def generic_request_handler(manager: RequestHandler, request: Request) -> None:
+    """Dispatches ``request`` to the handler registered for its type and reports failures to the user."""
     func = manager.REQUEST_MAPPING.get(request.type)
     if func is None:
         logger.error(
@@ -234,7 +237,7 @@ def generic_request_handler(manager: RequestHandler, request: Request, passthrou
         )
         return
     try:
-        func(request) if passthrough_request else func()
+        func(request)
     except Exception as e:
         logger.exception(
             "%s: Error processing request of type %s: %s",

@@ -1,4 +1,5 @@
 """Utility functions and definitions."""
 
-from trajectopy.utils.common import *
-from trajectopy.utils.definitions import *
+from trajectopy.utils.definitions import Sorting, TrajectoriesSorting, Unit
+
+__all__ = ["Sorting", "TrajectoriesSorting", "Unit"]

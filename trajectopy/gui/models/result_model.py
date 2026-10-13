@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import os
 
 from PySide6.QtCore import Signal
@@ -24,7 +24,6 @@ class ResultTableModel(RequestTableModel):
 
     file_request = Signal(FileRequest)
     items: list[ResultEntry]
-    request: ResultModelRequest
 
     def __init__(self):
         REQUEST_MAPPING = {
@@ -44,10 +43,10 @@ class ResultTableModel(RequestTableModel):
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
 
-    def export_all(self) -> None:
+    def export_all(self, request: ResultModelRequest) -> None:
         """Exports all results to files named after their entry id."""
         for item in self.items:
-            filename = os.path.join(self.request.file_path, f"{item.name}_{item.entry_id}.result")
+            filename = os.path.join(request.file_path, f"{item.name}_{item.entry_id}.result")
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_RES,
@@ -55,10 +54,10 @@ class ResultTableModel(RequestTableModel):
                     file_list=[filename],
                 )
             )
-        self.write_result_order()
+        self.write_result_order(request.file_path)
 
-    def write_result_order(self):
-        result_order_filename = os.path.join(self.request.file_path, "result_order.txt")
+    def write_result_order(self, directory: str) -> None:
+        result_order_filename = os.path.join(directory, "result_order.txt")
         self.file_request.emit(
             FileRequest(
                 type=FileRequestType.WRITE_LIST,
@@ -67,8 +66,8 @@ class ResultTableModel(RequestTableModel):
             )
         )
 
-    def rename_result(self) -> None:
-        selected_entry = self.request.selection.entries[0]
+    def rename_result(self, request: ResultModelRequest) -> None:
+        selected_entry = request.selection.entries[0]
         input_name, ok = QInputDialog.getText(None, "Please enter a name", "Name:", text=selected_entry.name)
         if ok and input_name is not None:
             selected_entry.name = input_name
@@ -79,22 +78,22 @@ class ResultTableModel(RequestTableModel):
     def alignment_entries(self) -> list[AlignmentEntry]:
         return [entry for entry in self.items if isinstance(entry, AlignmentEntry)]
 
-    def pass_alignments_to_ui(self) -> None:
+    def pass_alignments_to_ui(self, request: ResultModelRequest) -> None:
         if alignment_entries := self.alignment_entries:
             self.ui_request.emit(
                 UIRequest(
                     type=UIRequestType.ALIGNMENT_SELECTION,
-                    result_selection=ResultSelection(entries=alignment_entries),
-                    trajectory_selection=self.request.trajectory_selection,
+                    result_selection=ResultSelection(entries=list[ResultEntry](alignment_entries)),
+                    trajectory_selection=request.trajectory_selection,
                 )
             )
         else:
             self.ui_request.emit(UIRequest(type=UIRequestType.MESSAGE, message="No Alignments available!"))
 
-    def edit_alignment(self) -> None:
+    def edit_alignment(self, request: ResultModelRequest) -> None:
         self.ui_request.emit(
             UIRequest(
                 type=UIRequestType.EDIT_ALIGNMENT,
-                alignment_entry=self.request.alignment,
+                alignment_entry=request.alignment,
             )
         )

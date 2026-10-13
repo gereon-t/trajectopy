@@ -1,4 +1,4 @@
-﻿import numpy as np
+import numpy as np
 import pandas as pd
 from PySide6.QtCore import Signal, Slot
 
@@ -32,7 +32,7 @@ class PropertyTableModel(BaseTableModel):
 
     @Slot(PropertyModelRequest)
     def handle_request(self, request: PropertyModelRequest) -> None:
-        generic_request_handler(self, request, passthrough_request=True)
+        generic_request_handler(self, request)
 
     def export(self, request: PropertyModelRequest) -> None:
         columns = [item.name for item in self.items]

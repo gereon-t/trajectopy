@@ -14,34 +14,12 @@ def main():
         "--single-thread",
         action="store_true",
         help="Disable multithreading",
-        default=getattr(sys, "gettrace", None)(),
+        default=sys.gettrace() is not None,
     )
     parser.add_argument(
-        "--report-settings",
+        "--plot-settings",
         type=str,
-        help="Path to JSON report settings file that will override the default settings.",
-        required=False,
-        default="",
-    )
-    parser.add_argument(
-        "--mpl-settings",
-        type=str,
-        help="Path to JSON matplotlib plot settings file that will override the default settings.",
-        required=False,
-        default="",
-    )
-    parser.add_argument(
-        "--report-path",
-        "-o",
-        type=str,
-        help="Output directory for all reports of one session. If not specified, a temporary directory will be used.",
-        required=False,
-        default="",
-    )
-    parser.add_argument(
-        "--mapbox-token",
-        type=str,
-        help="Mapbox token to use Mapbox map styles in trajectory plots.",
+        help="Path to a JSON plot settings file that overrides the default plot settings.",
         required=False,
         default="",
     )
@@ -56,10 +34,7 @@ def main():
 
         exit_code = gui_main(
             single_thread=args.single_thread,
-            report_output_path=args.report_path,
-            report_settings_path=args.report_settings,
-            mpl_plot_settings_path=args.mpl_settings,
-            mapbox_token=args.mapbox_token,
+            plot_settings_path=args.plot_settings,
         )
         if exit_code is not None:
             sys.exit(exit_code)

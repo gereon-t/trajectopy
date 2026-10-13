@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.readers.ascii import (
+from trajectopy.io.ascii import (
     HeaderData,
     extract_trajectory_rotations,
     read_string,

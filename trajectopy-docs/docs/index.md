@@ -26,7 +26,7 @@ Trajectopy offers a range of features, including:
 - __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
 - __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
-- __Customizable Visualization__: Powered by [Plotly](https://plotly.com/) or [Matplotlib](https://matplotlib.org/), trajectopy offers a range of interactive plots that can be customized to your needs. ([Demo](https://htmlpreview.github.io/?https://github.com/gereon-t/trajectopy/blob/main/example_data/report.html))
+- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories can be shown on OpenStreetMap or satellite maps and exported to Google Earth.
 
 ## Installation (with GUI)
 
@@ -44,7 +44,12 @@ To install trajectopy without the GUI, use the following command:
 pip install trajectopy
 ```
 
-Now you can use trajectopy as a Python package in your scripts.
+Now you can use trajectopy as a Python package in your scripts. To also create plots from your scripts
+(without installing the GUI), install the plotting extra:
+
+```console
+pip install "trajectopy[plot]"
+```
 
 ## Python Package Quick Start
 
@@ -79,8 +84,8 @@ trajectopy
 trajectopy --help
 ```
 
-```console	
-usage: trajectopy [-h] [--version] [--single-thread] [--report-settings REPORT_SETTINGS] [--mpl-settings MPL_SETTINGS] [--report-path REPORT_PATH] [--mapbox-token MAPBOX_TOKEN]
+```console
+usage: trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS]
 
 Trajectopy - Trajectory Evaluation in Python
 
@@ -88,23 +93,13 @@ options:
   -h, --help            show this help message and exit
   --version, -v
   --single-thread       Disable multithreading
-  --report-settings REPORT_SETTINGS
-                        Path to JSON report settings file that will override the default settings.
-  --mpl-settings MPL_SETTINGS
-                        Path to JSON matplotlib plot settings file that will override the default settings.
-  --report-path, -o REPORT_PATH
-                        Output directory for all reports of one session. If not specified, a temporary directory will be used.
-  --mapbox-token MAPBOX_TOKEN
-                        Mapbox token to use Mapbox map styles in trajectory plots.
+  --plot-settings PLOT_SETTINGS
+                        Path to a JSON plot settings file that overrides the default plot settings.
 ```
-Trajectopy allows users to customize the report output path and settings. By default, reports are stored in a temporary directory that will be deleted when the program exits. If you want to keep the reports, you can specify a custom output path using the `--report-path` option. The report settings can be customized using a JSON file.
-The report settings file must include all available settings. You can find a sample file [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/report_settings.json).
-In addition, you can customize the Matplotlib plot settings using a JSON file with the `--mpl-settings` option. A sample file can be found [here](https://github.com/gereon-t/trajectopy/blob/main/example_data/matplotlib_settings.json).
 
-Example:
-```console
-trajectopy --report-settings ./report_settings.json -o ./persistent_report_directory
-```
+The plot settings file contains the [plot settings](settings.md#plot-settings); settings that are
+missing from the file keep their default values. A session saved from the GUI contains its plot settings
+in `plot_settings.json`.
 
 ## Citation
 

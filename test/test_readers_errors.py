@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from trajectopy.readers import ascii as ascii_reader
-from trajectopy.readers.ascii import extract_trajectory_rotations, HeaderData
+from trajectopy.io import ascii as ascii_reader
+from trajectopy.io.ascii import HeaderData, extract_trajectory_rotations
 
 
 class TestReadersErrors(unittest.TestCase):

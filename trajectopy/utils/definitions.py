@@ -1,11 +1,9 @@
 import datetime
 from enum import Enum, auto
 
-import matplotlib.dates as mdates
 import numpy as np
 
 UNIX_TIME_THRESHOLD = 1_000_000
-DATE_FORMATTER = mdates.DateFormatter("%H:%M:%S")
 
 
 class Sorting(str, Enum):

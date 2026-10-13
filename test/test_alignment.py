@@ -1,9 +1,10 @@
 import unittest
-from test.testdata import open_loop_trajectory
-from test.util import transform_randomly
 
 import numpy as np
 
+from test.testdata import open_loop_trajectory
+from test.util import transform_randomly
+from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     AlignmentEstimationSettings,
@@ -17,7 +18,6 @@ from trajectopy.processing.alignment import (
     manual_alignment,
 )
 from trajectopy.processing.lib.alignment.direct import align_rotations
-from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
 
 
 class TestAlignment(unittest.TestCase):

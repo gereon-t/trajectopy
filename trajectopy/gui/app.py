@@ -1,4 +1,4 @@
-﻿"""GUI entry point for trajectopy."""
+"""GUI entry point for trajectopy."""
 
 import ctypes
 import logging
@@ -9,19 +9,18 @@ from PySide6 import QtGui
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
-from rich.logging import RichHandler
 
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 
 logging.basicConfig(
-    format="%(message)s",
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
     level=logging.INFO,
-    handlers=[RichHandler(omit_repeated_times=False, log_time_format="%Y-%m-%d %H:%M:%S")],
 )
 
 from trajectopy.__version__ import __version__ as VERSION
 from trajectopy.gui.views.main_window import TrajectopyGUI
-from trajectopy.utils.common import ICON_BG_FILE_PATH
+from trajectopy.utils.resources import ICON_BG_FILE_PATH
 
 if os.name == "nt":
     myappid = f"gereont.trajectopy.main.{VERSION}"
@@ -30,24 +29,22 @@ if os.name == "nt":
 
 def main(
     single_thread: bool = False,
-    report_output_path: str = "",
-    report_settings_path: str = "",
-    mpl_plot_settings_path: str = "",
-    mapbox_token: str = "",
+    plot_settings_path: str = "",
 ):
     """Launch the GUI application.
 
     Args:
         single_thread: Disable multithreading
-        report_output_path: Output directory for reports
-        report_settings_path: Path to JSON report settings file
-        mpl_plot_settings_path: Path to JSON matplotlib plot settings file
-        mapbox_token: Mapbox token for map styles
+        plot_settings_path: Path to a JSON plot settings file
     """
     # On Windows with fractional DPI (125%, 150%) Qt rounds the scale factor
     # by default, causing blurry UI. PassThrough keeps the exact scale factor.
     if os.name == "nt":
         QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+
+    # pyqtgraph caches compiled OpenGL shader programs per item class; sharing all OpenGL contexts keeps
+    # them valid when a 3D playback window is closed and another one is opened.
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
 
     app = QApplication([])
 
@@ -67,10 +64,7 @@ def main(
 
     _ = TrajectopyGUI(
         single_thread=single_thread,
-        report_output_path=report_output_path,
-        report_settings_path=report_settings_path,
-        mpl_plot_settings_path=mpl_plot_settings_path,
-        mapbox_token=mapbox_token,
+        plot_settings_path=plot_settings_path,
     )
     app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
     app.exec()

@@ -1,7 +1,5 @@
 import copy
-import io
 import logging
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -11,9 +9,8 @@ import pandas as pd
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.exceptions import TrajectoryError
-from trajectopy.readers import ascii
-from trajectopy.utils.common import common_span, gradient_3d, lengths_from_xyz
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
+from trajectopy.utils.geometry import common_span, gradient_3d, lengths_from_xyz
 
 logger = logging.getLogger(__name__)
 
@@ -133,26 +130,9 @@ class Trajectory:
         Returns:
             Trajectory: The loaded trajectory object.
         """
-        if io_stream:
-            header_data, trajectory_data = ascii.read_string(filename, dtype=object)
-        else:
-            header_data, trajectory_data = ascii.read_data(filename, dtype=object)
+        from trajectopy.io.trajectory_io import read_trajectory, read_trajectory_string
 
-        tstamps = ascii.extract_trajectory_timestamps(header_data=header_data, trajectory_data=trajectory_data)
-        positions = ascii.extract_trajectory_positions(header_data=header_data, trajectory_data=trajectory_data)
-        path_lengths = ascii.extract_trajectory_path_lengths(header_data=header_data, trajectory_data=trajectory_data)
-        velocity_xyz = ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
-        rotations = ascii.extract_trajectory_rotations(header_data=header_data, trajectory_data=trajectory_data)
-
-        return Trajectory(
-            timestamps=tstamps,
-            positions=positions,
-            rotations=rotations,
-            name=header_data.name,
-            path_lengths=path_lengths,
-            velocity_xyz=velocity_xyz,
-            sorting=Sorting.from_str(header_data.sorting),
-        )
+        return read_trajectory_string(filename) if io_stream else read_trajectory(filename)
 
     @classmethod
     def from_arrays(
@@ -221,11 +201,17 @@ class Trajectory:
                 epsg=self.positions.epsg,
             )
 
-    def __eq__(self, other: "Trajectory") -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Checks equality between two trajectories using `np.allclose` for numerical arrays.
         Compares positions, rotations, timestamps, path lengths, velocities, and names.
         """
+        if not isinstance(other, Trajectory):
+            return NotImplemented
+
+        if len(self) != len(other):
+            return False
+
         if self.rotations is not None and other.rotations is not None:
             rot_equal = np.allclose(self.rotations.as_quat(), other.rotations.as_quat())
         elif self.rotations is None and other.rotations is None:
@@ -335,8 +321,8 @@ class Trajectory:
 
     @property
     def datetimes(self) -> np.ndarray:
-        """Returns the timestamps converted to Pandas datetime objects (unit='s')."""
-        return pd.to_datetime(self.timestamps, unit="s")
+        """Returns the timestamps as an array of ``datetime64[ns]`` values (interpreted as seconds since epoch)."""
+        return pd.to_datetime(self.timestamps, unit="s").to_numpy()
 
     @property
     def index_unit(self) -> str:
@@ -628,34 +614,9 @@ class Trajectory:
 
         Headers included: #epsg, #name, #nframe, #sorting, #fields.
         """
+        from trajectopy.io.trajectory_io import trajectory_to_string
 
-        def write_header() -> str:
-            fields = "t,l,px,py,pz,vx,vy,vz" if self.rotations is None else "t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz"
-            header = [
-                f"#epsg {self.positions.epsg}",
-                f"#name {self.name}",
-                "#nframe enu",
-                f"#sorting {self.sorting.value}",
-                f"#fields {fields}",
-            ]
-            return "\n".join(header) + "\n"
-
-        if self.rotations is None:
-            trajectory_data = np.c_[self.timestamps, self.path_lengths, self.positions.xyz, self.velocity_xyz]
-        else:
-            trajectory_data = np.c_[
-                self.timestamps,
-                self.path_lengths,
-                self.positions.xyz,
-                self.rotations.as_quat(),
-                self.velocity_xyz,
-            ]
-
-        output = io.StringIO()
-        output.write(write_header())
-        pd.DataFrame(trajectory_data).to_csv(output, header=False, index=False, float_format="%.9f")
-
-        return output.getvalue()
+        return trajectory_to_string(self)
 
     def to_file(self, filename: str, mode: str = "w") -> None:
         """
@@ -665,10 +626,11 @@ class Trajectory:
             filename (str): The output file path.
             mode (str, optional): File open mode. Defaults to "w".
         """
-        with open(filename, mode=mode, newline="\n", encoding="utf-8") as file:
-            file.write(self.to_string())
+        from trajectopy.io.trajectory_io import write_trajectory
 
-    def to_kml(self, filename: str, precision: float = 1e-6) -> str:
+        write_trajectory(self, filename=filename, mode=mode)
+
+    def to_kml(self, filename: str, precision: float = 1e-6) -> None:
         """
         Exports the trajectory to a Google Earth KML file.
 
@@ -681,36 +643,6 @@ class Trajectory:
         Raises:
             ValueError: If the trajectory does not have a known EPSG code.
         """
-        traj = self.copy()
-        if traj.positions.local_transformer is None:
-            raise ValueError(
-                "Trajectory must be defined in a well-known coordinate system (EPSG code) to be exported to KML. "
-            )
-        traj.positions.to_epsg(4326)
+        from trajectopy.io.trajectory_io import write_kml
 
-        traj.positions = traj.positions.round_to(precision)
-        _, indices = np.unique(traj.positions.xyz[:, 0:2], return_index=True, axis=0)
-        traj.mask(np.sort(indices))
-
-        kml_file = ET.Element("kml", xmlns="http://earth.google.com/kml/2.1")
-        document = ET.SubElement(kml_file, "Document")
-
-        placemark = ET.SubElement(document, "Placemark")
-        name = ET.SubElement(placemark, "name")
-        name.text = traj.name
-
-        style = ET.SubElement(placemark, "Style")
-        line_style = ET.SubElement(style, "LineStyle")
-        color = ET.SubElement(line_style, "color")
-        color.text = "ff0000ff"
-        width = ET.SubElement(line_style, "width")
-        width.text = "2"
-
-        line_string = ET.SubElement(placemark, "LineString")
-        coordinates = ET.SubElement(line_string, "coordinates")
-
-        coordinates.text = "\n".join(f"  {pos[1]:.9f},{pos[0]:.9f},{0.00:.3f}" for pos in traj.positions.xyz)
-
-        tree = ET.ElementTree(kml_file)
-        ET.indent(tree, space="", level=0)
-        tree.write(filename, encoding="utf-8", xml_declaration=True)
+        write_kml(self, filename=filename, precision=precision)

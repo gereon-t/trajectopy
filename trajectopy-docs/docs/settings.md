@@ -148,163 +148,31 @@ For sorting, the following settings can be adjusted:
 - `k_nearest` (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.
 
 
-## Choosing the Plotting Backend
+## Plot Settings
 
-You can choose between two plotting backends: `matplotlib` and `plotly`. By default the `matplotlib` backend is used for quick and simple plotting. If you want to create advanced interactive HTML reports, you can switch to the `plotly` backend by clicking "Plotting" in the menu bar and selecting the desired backend (GUI). 
+All plots, in the GUI ("Plot Settings" in the menu bar) and in `trajectopy.visualization`, use the
+same `PlotSettings`:
 
-## Report Settings
+- `ate_unit_is_mm` (bool): Show position deviations in millimeters instead of meters. Default value is False.
+- `directed_ate` (bool): Show position deviations split into along-track, horizontal cross-track and vertical cross-track instead of x, y and z. Default value is False.
+- `ate_remove_above` (float): Exclude position deviations above this value in meters from the plots (0.0 = keep all). Default value is 0.0.
+- `hist_percentile` (float): Show histogram data up to this percentile of the absolute values. Useful for data with outliers. Default value is 1.0.
+- `colorbar_max_std` (float): Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (0.0 = no clipping). Default value is 3.0.
+- `smoothing_window` (int): Moving-average window applied to color-coded values (1 = no smoothing). Default value is 1.
+- `use_relative_timestamps` (bool): Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time. Default value is False.
+- `line_width` (float): Line width in pixels. Default value is 1.5.
+- `marker_size` (float): Marker size in pixels of color-coded trajectory maps. Default value is 4.
+- `font_size` (int): Font size in points of axis labels and titles. Default value is 10.
+- `export_format` (str): File format of exported plots ("png", "jpg" or "svg"). Default value is "png".
+- `export_width` (int): Width in pixels of exported raster images. Default value is 1600.
+- `background_map` (bool): Show a map below the top views of georeferenced trajectories (see [Maps](user_guide.md#maps)). Default value is False.
+- `map_style` (str): Map shown by `background_map`: "osm" (OpenStreetMap) or "satellite" (Esri World Imagery). Default value is "osm".
 
-### Visualization Settings
+Plot settings are saved with a GUI session (`plot_settings.json`) and can be loaded at startup with
+`trajectopy --plot-settings plot_settings.json`.
 
-- `single_plot_height` (int): The height of a single plot. Default value is 450.
-- `two_subplots_height` (int): The height of two subplots. Default value is 540.
-- `three_subplots_height` (int): The height of three subplots. Default value is 750.
-- `scatter_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 4.0.
-- `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
-- `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
-- `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
-- `histogram_opacity` (float): The opacity of the histogram bars. Default value is 0.7.
-- `histogram_bargap` (float): The gap between histogram bars. Default value is 0.1.
-- `histogram_barmode` (str): The mode of displaying histogram bars. Default value is "overlay".
-- `histogram_yaxis_title` (str): The title of the y-axis in the histogram. Default value is "Count".
-- `plot_mode` (str): The mode of displaying plots. Default value is "lines+markers".
-- `scatter_mode` (str): The mode of displaying scatter plots. Default value is "markers".
-- `scatter_colorscale` (str): The colorscale for scatter plots. Default value is "RdYlBu_r".
-- `scatter_axis_order` (str): The order of the axes in scatter plots. Default value is "xy". If 3d plotting is desired, also specify "z".
-- `scatter_marker_size` (int): The size of markers in scatter plots. Default value is 5.
-- `scatter_show_individual_dofs` (bool): Indicates whether to show scatter plots for each degree of freedom. Default value is False.
-- `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
-- `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
-
-#### ATE Frame Definition (regarding `directed_ate`)
+### ATE Frame Definition (regarding `directed_ate`)
 
 The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.
 
 <img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/>
-
-### Mapbox Settings
-
-- `scatter_plot_on_map` (bool): Indicates whether the trajectory should be plotted onto a map. Default value is False.
-- `scatter_mapbox_style` (str): The style of the map. For some styles, a Mapbox token is required. Default value is "carto-positron".
-- `scatter_mapbox_zoom` (int): The zoom level of the map. Default value is 15.
-- `scatter_mapbox_token` (str): The Mapbox token. Default value is "".
-
-The mapbox token can be obtained from [https://www.mapbox.com/](https://www.mapbox.com/) after creating a free account. The token can be set in multiple ways:
-
-- As a command line argument `--mapbox_token`.
-- As an environment variable `MAPBOX_TOKEN`.
-- Directly in the settings file.
-- In the GUI settings dialog.
-- By placing a file named `.mapbox_token` in the current working directory.
-
-### Position Units and Names
-
-- `pos_x_name` (string): Name for the X-axis position. Default: "x".
-- `pos_y_name` (string): Name for the Y-axis position. Default: "y".
-- `pos_z_name` (string): Name for the Z-axis position. Default: "z".
-- `pos_x_unit` (string): Unit for the X-axis position, Default: "m".
-- `pos_y_unit` (string): Unit for the Y-axis position, Default: "m".
-- `pos_z_unit` (string): Unit for the Z-axis position, Default: "m".
-- `directed_pos_dev_x_name` (string): Name for the directed position deviation in along-track direction. Default: "along".
-- `directed_pos_dev_y_name` (string): Name for the directed position deviation in horizontal cross-track direction. Default: "cross-h".
-- `directed_pos_dev_z_name` (string): Name for the directed position deviation in vertical cross-track direction. Default: "cross-v".
-
-### Rotation Units and Names
-
-- `rot_x_name` (string): Name for the roll rotation. Default: "roll".
-- `rot_y_name` (string): Name for the pitch rotation. Default: "pitch".
-- `rot_z_name` (string): Name for the yaw rotation. Default: "yaw".
-- `rot_unit` (string): Unit symbol for rotation. Default: "°".
-
-### Export Settings
-
-- `single_plot_export` (ExportSettings): The export settings for single plots. Default value is an instance of ExportSettings with width=800 and height=450.
-- `two_subplots_export` (ExportSettings): The export settings for two subplots. Default value is an instance of ExportSettings with width=800 and height=540.
-- `three_subplots_export` (ExportSettings): The export settings for three subplots. Default value is an instance of ExportSettings with width=800 and height=750.
-
-
-### Export Settings
-
-- `format` (string): The export format. Choices: "png", "svg", "jpeg", "webp". Default: "png".
-- `height` (integer): The export height in pixels. Default: 500.
-- `width` (integer): The export width in pixels. Default: 800.
-- `scale` (integer): The export scale. Default: 6.
-
-### Plotting Trajectories on a Map
-
-To plot trajectories on a map, several requirements must be met:
-
-- The trajectory must have valid EPSG information.
-- The plotting backend must be set to `plotly`.
-- The `scatter_plot_on_map` option must be enabled.
-- For `scatter_mapbox_style` other than `carto-positron`, a Mapbox access token (`scatter_mapbox_token`) must be provided. The mapbox token can be obtained after free registration at [Mapbox](https://www.mapbox.com/).
-
-## Matplotlib Plotting Settings (MPLPlotSettings)
-
-- `colorbar_show_zero_crossing` (bool): Indicates whether the colorbar should show zero. Default value is True.
-- `colorbar_steps` (int): The number of steps in the colorbar. Default value is 4.
-- `colorbar_max_std` (float): The upper colorbar limit is set to the mean plus this value times the standard deviation of the data. This is useful to prevent outliers from dominating the colorbar. Default value is 3.0.
-- `scatter_hide_axes` (bool): Indicates whether the axis should be hidden. Default value is False.
-- `scatter_3d` (bool): Indicates whether the scatter plot should be 3D. Default value is False.
-- `scatter_smooth` (bool): Indicates whether the data defining the color of a scatter plot should be smoothed. Default value is False.
-- `scatter_smooth_window` (int): The window size for smoothing the scatter plot. Default value is 5.
-- `ate_unit_is_mm` (bool): Indicates whether the unit of Absolute Trajectory Error (ATE) is millimeters. Default value is False.
-- `ate_remove_above` (float): Cap ATE at this value, if set to 0.0, no cap is applied. Default value is 0.0.
-- `hist_as_stairs` (bool): Indicates whether the histogram should be displayed as stairs. Default value is False.
-- `hist_percentile` (float): Only show data up to this percentile in the histogram. Useful for data with outliers. Default value is 100.0.
-- `directed_ate` (bool): Indicates whether the ATE is split into along-, horizontal-cross- and vertical-cross-track direction. Default value is False.
-- `dofs_tab` (bool): Indicates whether the degrees of freedom tab should be shown. Default value is True.
-- `velocity_tab` (bool): Indicates whether the velocity tab should be shown. Default value is True.
-- `height_tab` (bool): Indicates whether the height tab should be shown. Default value is True.
-- `font_size` (int): Base font size used by Matplotlib plots. Default value is 12.
-- `use_relative_timestamps` (bool): If enabled, time axes in Matplotlib plots are shown as seconds relative to the first timestamp instead of absolute datetime/timestamp values. Default value is False.
-
-## Custom Matplotlib Plotting
-
-You can customize the style of the plots by placing a `custom.mplstyle` file in the current working directory. The default style that Trajectopy uses is:
-
-```python
-figure.figsize: 8, 6
-figure.facecolor: white
-
-font.size: 12
-font.family: serif
-font.serif: Times New Roman, DejaVu Serif
-
-axes.facecolor: white
-axes.edgecolor: black
-axes.linewidth: 0.8
-axes.labelsize: 14
-axes.titlesize: 14
-axes.grid: True
-axes.axisbelow: True
-axes.prop_cycle: cycler("color", ["#1E88E5", "#FFC107", "#004D40", "#D81B60", "#2bd2bb", "#a3bbf1", "#3c41fd", "#cc5510", "#3b0732", "#88122b", "#bccb70", "#dc9c54"])
-
-grid.color: gray
-grid.alpha: 0.3
-grid.linewidth: 0.5
-axes.grid.which: major
-
-xtick.labelsize: 12
-ytick.labelsize: 12
-xtick.direction: in
-ytick.direction: in
-xtick.major.size: 5
-ytick.major.size: 5
-
-lines.linewidth: 1.5
-lines.linestyle: -
-lines.marker: .
-lines.markersize: 6
-
-legend.frameon: True
-legend.facecolor: white
-legend.edgecolor: black
-legend.loc: best
-legend.framealpha: 1
-
-savefig.dpi: 600
-savefig.format: pdf
-savefig.bbox: tight
-```
-

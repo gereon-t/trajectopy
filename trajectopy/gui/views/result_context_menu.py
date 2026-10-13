@@ -1,4 +1,4 @@
-﻿from PySide6 import QtWidgets
+from PySide6 import QtWidgets
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtGui import QAction, QCursor
 
@@ -78,29 +78,11 @@ class ResultContextMenu(QtWidgets.QMenu):
         ):
             plot_action = QAction("Plot", self)
 
-            if (
-                len([entry for entry in self.get_selection().entries if isinstance(entry, AbsoluteDeviationEntry)])
-                == 1
-                and len([entry for entry in self.get_selection().entries if isinstance(entry, RelativeDeviationEntry)])
-                == 1
-            ):
-                plot_action.triggered.connect(
-                    lambda: self.plot_request.emit(
-                        PlotRequest(
-                            type=PlotRequestType.SINGLE_DEVIATIONS,
-                            result_selection=self.get_selection(),
-                        )
-                    )
+            plot_action.triggered.connect(
+                lambda: self.plot_request.emit(
+                    PlotRequest(type=PlotRequestType.DEVIATIONS, result_selection=self.get_selection())
                 )
-            else:
-                plot_action.triggered.connect(
-                    lambda: self.plot_request.emit(
-                        PlotRequest(
-                            type=PlotRequestType.MULTI_DEVIATIONS,
-                            result_selection=self.get_selection(),
-                        )
-                    )
-                )
+            )
             self.addAction(plot_action)
 
     def plot_single(self):
@@ -109,7 +91,7 @@ class ResultContextMenu(QtWidgets.QMenu):
             plot_action.triggered.connect(
                 lambda: self.plot_request.emit(
                     PlotRequest(
-                        type=PlotRequestType.SINGLE_DEVIATIONS,
+                        type=PlotRequestType.DEVIATIONS,
                         result_selection=self.get_selection(),
                     )
                 )

@@ -1,12 +1,13 @@
-"""Trajectory playback animation window - PyVista 3D with body frame axes."""
+"""Trajectory playback animation window - OpenGL 3D view (pyqtgraph) with body frame axes."""
 
 import numpy as np
-import pyvista as pv
-from PySide6 import QtCore, QtWidgets
+import pyqtgraph as pg
+import pyqtgraph.opengl as gl
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from pyvistaqt import QtInteractor
 
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.visualization import style
 
 SPEED_OPTIONS = [
     ("0.1x", 0.1),
@@ -18,85 +19,55 @@ SPEED_OPTIONS = [
     ("10x", 10.0),
 ]
 DEFAULT_SPEED_IDX = 3  # 1x
-TIMER_INTERVAL_MS = 50  # ~20 fps
+TIMER_INTERVAL_MS = 33  # ~30 fps
 SLIDER_STEPS = 1000
-MAX_DISPLAY_POINTS = 10000  # subsample visual paths with more points
+MAX_DISPLAY_POINTS = 20000  # subsample visual paths with more points
 
-# Per-trajectory path colors (PyVista accepts hex strings)
-_TRAJ_COLORS = (
-    "#4fc3f7",
-    "#81c784",
-    "#ffb74d",
-    "#f06292",
-    "#ba68c8",
-    "#4dd0e1",
-    "#fff176",
-)
+PATH_COLOR = (0.35, 0.35, 0.35, 1.0)
+MARKER_COLOR = (1.0, 1.0, 1.0, 1.0)
+BACKGROUND = "#1e1e1e"
 
-# Body frame axis colors: X = red, Y = green, Z = blue
-_AXIS_COLORS = ("#ff4444", "#44cc44", "#5599ff")
+
+def _reset_gl_program_caches() -> None:
+    """Makes pyqtgraph recompile its shader programs for a new OpenGL context.
+
+    pyqtgraph caches the compiled program of each item class, regardless of the context it was compiled
+    in. Unless all contexts are shared (``Qt.AA_ShareOpenGLContexts``, set by the GUI), the cached programs
+    become invalid once the window that compiled them is closed.
+    """
+    if QtCore.QCoreApplication.testAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts):
+        return
+    for item_class in (gl.GLLinePlotItem, gl.GLScatterPlotItem):
+        item_class._shaderProgram = None
+
+
+def _rgba(hex_color: str) -> tuple[float, float, float, float]:
+    return pg.mkColor(hex_color).getRgbF()
 
 
 class _TrajData:
-    """Pre-computed data and live PyVista actor handles for one trajectory."""
+    """Pre-computed data and the OpenGL items of one trajectory."""
 
-    __slots__ = (
-        "name",
-        "color",
-        "xyz",
-        "t_rel",
-        "rot_mats",
-        "duration",
-        "n",
-        "display_xyz",
-        "display_idx_map",
-        "full_path_actor",
-        "traversed_mesh",
-        "traversed_actor",
-        "marker_mesh",
-        "marker_actor",
-        "arrow_meshes",
-        "arrow_actors",
-        "_last_trav_idx",
-        "_marker_pos",
-    )
-
-    def __init__(
-        self,
-        name: str,
-        color: str,
-        xyz: np.ndarray,
-        t_rel: np.ndarray,
-        rot_mats: np.ndarray | None,
-    ) -> None:
+    def __init__(self, name: str, color: str, xyz: np.ndarray, t_rel: np.ndarray, rot_mats: np.ndarray | None):
         self.name = name
         self.color = color
-        self.xyz = xyz  # (N, 3) full-resolution coords
+        self.xyz = xyz  # (N, 3) full-resolution local coordinates
         self.t_rel = t_rel
         self.rot_mats = rot_mats  # (N, 3, 3) or None
-        self.duration = float(t_rel[-1])
+        self.duration = float(t_rel[-1]) if len(t_rel) else 0.0
         self.n = len(t_rel)
-        self.full_path_actor = None
-        self.traversed_mesh: pv.PolyData | None = None
-        self.traversed_actor = None
-        self.marker_mesh: pv.PolyData | None = None
-        self.marker_actor = None
-        self.arrow_meshes: list[pv.PolyData] = []
-        self.arrow_actors: list = []
-        self._last_trav_idx: int = -1
-        self._marker_pos: np.ndarray = np.zeros(3)
 
-        # Subsample for display if too many points
         if self.n > MAX_DISPLAY_POINTS:
-            step = self.n / MAX_DISPLAY_POINTS
-            indices = np.unique(np.round(np.arange(0, self.n, step)).astype(int))
-            if indices[-1] != self.n - 1:
-                indices = np.append(indices, self.n - 1)
-            self.display_xyz = self.xyz[indices]
-            self.display_idx_map = indices
+            indices = np.unique(np.linspace(0, self.n - 1, MAX_DISPLAY_POINTS).round().astype(int))
         else:
-            self.display_xyz = self.xyz
-            self.display_idx_map = np.arange(self.n, dtype=int)
+            indices = np.arange(self.n, dtype=int)
+        self.display_idx_map = indices
+        self.display_xyz = self.xyz[indices]
+
+        self.traversed: gl.GLLinePlotItem | None = None
+        self.marker: gl.GLScatterPlotItem | None = None
+        self.body_axes: gl.GLLinePlotItem | None = None
+        self.last_display_idx = -1
 
     def display_idx_for_full_idx(self, full_idx: int) -> int:
         """Map a full-resolution index to the nearest display index."""
@@ -110,8 +81,8 @@ class _TrajData:
 
 
 class PlaybackWindow(QtWidgets.QDialog):
-    """Non-modal dialog that plays back one or more trajectories in 3D
-    using PyVista (GPU-rendered), with body frame axes at the current pose."""
+    """Non-modal dialog that plays back one or more trajectories in 3D (GPU-rendered via OpenGL),
+    with body frame axes at the current pose."""
 
     def __init__(self, trajectories: list[Trajectory], parent=None) -> None:
         super().__init__(parent)
@@ -121,20 +92,22 @@ class PlaybackWindow(QtWidgets.QDialog):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self._trajs = self._build_traj_data(trajectories)
-        self._max_duration = max(td.duration for td in self._trajs)
+        self._max_duration = max((td.duration for td in self._trajs), default=0.0) or 1.0
         self._axes_scale = self._compute_axes_scale()
-        self._arrow_templates = self._build_arrow_templates()
 
+        _reset_gl_program_caches()
         self._setup_ui()
         self._setup_scene()
 
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(TIMER_INTERVAL_MS)
         self._timer.timeout.connect(self._on_tick)
+        self._elapsed = QtCore.QElapsedTimer()
 
         self._sim_time: float = 0.0
         self._playing: bool = False
         self._slider_dragging: bool = False
+        self._update_frame(0.0)
 
     # ------------------------------------------------------------------ data
 
@@ -142,33 +115,20 @@ class PlaybackWindow(QtWidgets.QDialog):
     def _build_traj_data(trajectories: list[Trajectory]) -> list[_TrajData]:
         result = []
         for i, traj in enumerate(trajectories):
-            color = _TRAJ_COLORS[i % len(_TRAJ_COLORS)]
             local_xyz = traj.positions.to_local(inplace=False).xyz
-            ts = traj.timestamps
-            t_rel = ts - ts[0]
+            t_rel = traj.timestamps - traj.timestamps[0]
             rot_mats: np.ndarray | None = None
-            if traj.has_orientation:
+            if traj.rotations is not None:
                 rot_mats = np.asarray(traj.rotations.as_matrix())
                 if rot_mats.ndim == 2:
                     rot_mats = rot_mats[np.newaxis]
-            result.append(_TrajData(traj.name, color, local_xyz, t_rel, rot_mats))
+            result.append(_TrajData(traj.name, style.color(i), local_xyz, t_rel, rot_mats))
         return result
 
     def _compute_axes_scale(self) -> float:
         all_xyz = np.vstack([td.xyz for td in self._trajs])
-        ranges = all_xyz.max(axis=0) - all_xyz.min(axis=0)
-        diag = float(np.linalg.norm(ranges))
+        diag = float(np.linalg.norm(all_xyz.max(axis=0) - all_xyz.min(axis=0)))
         return max(diag * 0.05, 1.0)
-
-    def _build_arrow_templates(self) -> list[tuple[np.ndarray, np.ndarray]]:
-        """Pre-compute arrow mesh point arrays and faces for each body axis (at origin)."""
-        templates = []
-        for i in range(3):
-            direction = [0.0, 0.0, 0.0]
-            direction[i] = 1.0
-            arrow = pv.Arrow(start=(0, 0, 0), direction=direction)
-            templates.append((arrow.points.copy(), arrow.faces.copy()))
-        return templates
 
     # ------------------------------------------------------------------ UI
 
@@ -177,9 +137,9 @@ class PlaybackWindow(QtWidgets.QDialog):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # PyVista viewport embedded as a Qt widget
-        self._plotter = QtInteractor(self, auto_update=False)
-        layout.addWidget(self._plotter.interactor, stretch=1)
+        self._view = gl.GLViewWidget()
+        self._view.setBackgroundColor(BACKGROUND)
+        layout.addWidget(self._view, stretch=1)
 
         bottom = QtWidgets.QWidget()
         bottom.setContentsMargins(8, 4, 8, 8)
@@ -204,6 +164,9 @@ class PlaybackWindow(QtWidgets.QDialog):
         self._play_btn.clicked.connect(self._toggle_play)
         ctrl.addWidget(self._play_btn)
         ctrl.addStretch()
+        for td in self._trajs:
+            ctrl.addWidget(QtWidgets.QLabel(f"<span style='color:{td.color}'>&#9632;</span> {td.name}"))
+        ctrl.addStretch()
         ctrl.addWidget(QtWidgets.QLabel("Speed:"))
         self._speed_combo = QtWidgets.QComboBox()
         for label, _ in SPEED_OPTIONS:
@@ -217,70 +180,36 @@ class PlaybackWindow(QtWidgets.QDialog):
     # ------------------------------------------------------------------ scene
 
     def _setup_scene(self) -> None:
-        pl = self._plotter
-        pl.set_background("#1e1e1e")
-
         all_xyz = np.vstack([td.xyz for td in self._trajs])
         center = all_xyz.mean(axis=0)
+        extent = float(np.linalg.norm(all_xyz.max(axis=0) - all_xyz.min(axis=0))) or 1.0
+
+        grid = gl.GLGridItem(color=(255, 255, 255, 25))
+        grid_size = float(np.ceil(extent * 1.2))
+        grid.setSize(grid_size, grid_size)
+        grid.setSpacing(max(grid_size / 20, 1e-3), max(grid_size / 20, 1e-3))
+        grid.translate(center[0], center[1], float(all_xyz[:, 2].min()))
+        self._view.addItem(grid)
 
         for td in self._trajs:
-            # Full path - simple polyline (no expensive spline interpolation)
-            n_disp = len(td.display_xyz)
-            if n_disp > 1:
-                path = pv.PolyData(td.display_xyz)
-                cells = np.empty(n_disp + 1, dtype=np.int64)
-                cells[0] = n_disp
-                cells[1:] = np.arange(n_disp, dtype=np.int64)
-                path.lines = cells
-                td.full_path_actor = pl.add_mesh(
-                    path,
-                    color="#444444",
-                    line_width=1,
-                    render_lines_as_tubes=False,
-                )
+            self._view.addItem(gl.GLLinePlotItem(pos=td.display_xyz, color=PATH_COLOR, width=1.0, antialias=True))
 
-            # Traversed path - pre-allocated polyline, lines updated in-place
-            traversed = pv.PolyData(td.display_xyz.copy())
-            traversed.lines = np.array([1, 0], dtype=np.int64)  # degenerate single-point
-            td.traversed_mesh = traversed
-            td.traversed_actor = pl.add_mesh(
-                traversed,
-                color=td.color,
-                line_width=3,
-                render_lines_as_tubes=False,
-            )
+            td.traversed = gl.GLLinePlotItem(pos=td.display_xyz[:1], color=_rgba(td.color), width=3.0, antialias=True)
+            self._view.addItem(td.traversed)
 
-            # Current position marker - solid sphere for guaranteed visibility
-            # (points get occluded by lines at the same depth; a sphere mesh does not)
-            marker_sphere = pv.Sphere(radius=0.1, center=td.xyz[0].tolist())
-            td.marker_mesh = marker_sphere
-            td._marker_pos = td.xyz[0].copy()
-            td.marker_actor = pl.add_mesh(marker_sphere, color="#ffffff", lighting=False, render=False)
+            td.marker = gl.GLScatterPlotItem(pos=td.xyz[:1], color=MARKER_COLOR, size=12.0, pxMode=True)
+            self._view.addItem(td.marker)
 
-            # Body frame arrows - create meshes once, updated in-place
             if td.rot_mats is not None:
-                pos = td.xyz[0]
-                R = td.rot_mats[0]
-                for i, ax_color in enumerate(_AXIS_COLORS):
-                    tmpl_pts, tmpl_faces = self._arrow_templates[i]
-                    pts = (R @ tmpl_pts.T).T + pos
-                    mesh = pv.PolyData(pts, faces=tmpl_faces.copy())
-                    actor = pl.add_mesh(mesh, color=ax_color, render=False)
-                    td.arrow_meshes.append(mesh)
-                    td.arrow_actors.append(actor)
+                axis_colors = np.repeat([_rgba(c) for c in style.AXIS_COLORS], 2, axis=0)
+                td.body_axes = gl.GLLinePlotItem(
+                    pos=np.zeros((6, 3)), color=axis_colors, width=3.0, mode="lines", antialias=True
+                )
+                self._view.addItem(td.body_axes)
 
-        # Camera
-        pl.camera.focal_point = center.tolist()
-        ranges = all_xyz.max(axis=0) - all_xyz.min(axis=0)
-        pl.camera.position = (
-            center + np.array([0, -np.linalg.norm(ranges) * 1.5, np.linalg.norm(ranges) * 0.5])
-        ).tolist()
-        pl.camera.up = (0, 0, 1)
-
-        # Axis widget in corner
-        pl.add_axes(interactive=False)
-
-        pl.render()
+        self._view.setCameraPosition(
+            pos=QtGui.QVector3D(*center.tolist()), distance=extent * 1.2, elevation=35, azimuth=-90
+        )
 
     # ------------------------------------------------------------------ helpers
 
@@ -289,42 +218,26 @@ class PlaybackWindow(QtWidgets.QDialog):
         return SPEED_OPTIONS[self._speed_combo.currentIndex()][1]
 
     def _update_frame(self, sim_time: float) -> None:
-        needs_render = False
-
         for td in self._trajs:
+            if td.traversed is None or td.marker is None:
+                continue
             idx = td.idx_for_time(sim_time)
             pos = td.xyz[idx]
 
-            # Update traversed path line connectivity (no new objects)
-            disp_idx = td.display_idx_for_full_idx(idx)
-            if disp_idx > 0 and disp_idx != td._last_trav_idx:
-                n = disp_idx + 1
-                cells = np.empty(n + 1, dtype=np.int64)
-                cells[0] = n
-                cells[1:] = np.arange(n, dtype=np.int64)
-                td.traversed_mesh.lines = cells
-                td.traversed_mesh.Modified()
-                td._last_trav_idx = disp_idx
-                needs_render = True
+            display_idx = td.display_idx_for_full_idx(idx)
+            if display_idx != td.last_display_idx:
+                td.traversed.setData(pos=td.display_xyz[: display_idx + 1])
+                td.last_display_idx = display_idx
 
-            # Translate the sphere marker by delta to avoid regenerating it
-            delta = pos - td._marker_pos
-            td.marker_mesh.points += delta
-            td.marker_mesh.Modified()
-            td._marker_pos = pos.copy()
-            needs_render = True
+            td.marker.setData(pos=pos[np.newaxis])
 
-            # Update body frame arrows in-place via template rotation
-            if td.rot_mats is not None and td.arrow_meshes:
-                R = td.rot_mats[idx]
-                for i, mesh in enumerate(td.arrow_meshes):
-                    tmpl_pts = self._arrow_templates[i][0]
-                    mesh.points[:] = (R @ tmpl_pts.T).T + pos
-                    mesh.Modified()
-                needs_render = True
-
-        if needs_render:
-            self._plotter.render()
+            if td.body_axes is not None and td.rot_mats is not None:
+                # the columns of the rotation matrix are the body axes in the local frame
+                tips = pos + td.rot_mats[idx].T * self._axes_scale
+                segments = np.empty((6, 3))
+                segments[0::2] = pos
+                segments[1::2] = tips
+                td.body_axes.setData(pos=segments)
 
     def _update_ui(self, sim_time: float) -> None:
         self._time_label.setText(f"{sim_time:.2f} s / {self._max_duration:.2f} s")
@@ -335,7 +248,9 @@ class PlaybackWindow(QtWidgets.QDialog):
     # ------------------------------------------------------------------ slots
 
     def _on_tick(self) -> None:
-        self._sim_time = min(self._sim_time + TIMER_INTERVAL_MS / 1000.0 * self._speed, self._max_duration)
+        # advance by the actually elapsed time, so the playback speed does not depend on the frame rate
+        elapsed = self._elapsed.restart() / 1000.0
+        self._sim_time = min(self._sim_time + elapsed * self._speed, self._max_duration)
         self._update_frame(self._sim_time)
         self._update_ui(self._sim_time)
         if self._sim_time >= self._max_duration:
@@ -352,6 +267,7 @@ class PlaybackWindow(QtWidgets.QDialog):
     def _play(self) -> None:
         self._playing = True
         self._play_btn.setText("Pause")
+        self._elapsed.start()
         self._timer.start()
 
     def _pause(self) -> None:
@@ -375,5 +291,4 @@ class PlaybackWindow(QtWidgets.QDialog):
 
     def closeEvent(self, event) -> None:
         self._pause()
-        self._plotter.close()
         super().closeEvent(event)

@@ -12,7 +12,6 @@ from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
 
 logger = logging.getLogger(__name__)
-from trajectopy.core.trajectory import Trajectory
 
 
 def match_non_overlapping_stamps(trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0) -> float:
@@ -54,7 +53,7 @@ def match_stamps(trajectory: Trajectory, index: np.ndarray, inplace: bool = True
 def match_trajectories(
     trajectory: Trajectory,
     other: Trajectory,
-    matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
+    matching_settings: settings.MatchingSettings | None = None,
     inplace: bool = True,
 ) -> tuple[Trajectory, Trajectory]:
     """Matches two trajectories using the specified method.
@@ -82,6 +81,9 @@ def match_trajectories(
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
+    if matching_settings is None:
+        matching_settings = settings.MatchingSettings()
+
     trajectory = trajectory if inplace else trajectory.copy()
     other = other if inplace else other.copy()
 
@@ -283,18 +285,18 @@ def _match_trajectories_spatial_interpolation(
     for i, (dists, idxs) in enumerate(zip(distances, closest_indices)):
         valid_mask = ~np.isinf(dists)
         idxs = idxs[valid_mask]
-        if np.any(idxs) is False:
+        if idxs.size < 2:  # a 3d line needs at least two reference points
             continue
 
         test_pos = test_xyz[i, :]
         fit_line = Line3D.from_points(ref_xyz[idxs, :])
         line_point = fit_line.evaluate_at(test_pos)
 
-        if other.has_orientation:
+        if other.rotations is not None:
             ref_rots = Rotations.from_quat(other.rotations.as_quat()[idxs])
             matched_ref_rot.append(ref_rots.mean().as_quat())
 
-        if trajectory.has_orientation:
+        if trajectory.rotations is not None:
             matched_test_rot.append(trajectory.rotations.as_quat()[i])
 
         matched_test_pos.append(test_pos)

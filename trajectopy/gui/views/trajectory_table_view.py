@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal
@@ -150,7 +150,6 @@ class TrajectoryTableView(QtWidgets.QTableView):
                 PlotRequest(
                     type=PlotRequestType.TRAJECTORIES,
                     trajectory_selection=self.selection,
-                    dimension=2,
                 )
             )
         elif e.key() == Qt.Key.Key_M:

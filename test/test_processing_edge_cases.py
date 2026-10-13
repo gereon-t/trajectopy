@@ -1,8 +1,8 @@
 import unittest
-from test.testdata import open_loop_trajectory
 
 import numpy as np
 
+from test.testdata import open_loop_trajectory
 from trajectopy.core.positions import Positions
 from trajectopy.core.settings import MatchingMethod, MatchingSettings
 from trajectopy.core.trajectory import Trajectory

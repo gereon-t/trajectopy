@@ -40,7 +40,10 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
 
     merged_xyz = np.concatenate([t.positions.xyz for t in trajectories], axis=0)
     merged_quat = np.concatenate(
-        [t.rotations.as_quat() if t.has_orientation else Rotations.identity(len(t)).as_quat() for t in trajectories],
+        [
+            t.rotations.as_quat() if t.rotations is not None else Rotations.identity(len(t)).as_quat()
+            for t in trajectories
+        ],
         axis=0,
     )
     has_rot = [t.has_orientation for t in trajectories]
@@ -85,11 +88,10 @@ def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
 
     xyz_stack = np.stack([t.positions.xyz for t in trajectories], axis=0)
 
-    rots = [t.rotations.as_quat() for t in trajectories if t.has_orientation]
+    rots = [t.rotations.as_quat() for t in trajectories if t.rotations is not None]
     mean_rots = []
     for i in range(len(trajectories[0])):
-        rotations = []
-        rotations.extend(rot[i] for rot in rots)
+        rotations = [rot[i] for rot in rots]
         if not rotations:
             continue
 
@@ -101,5 +103,5 @@ def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
         name="Averaged",
         timestamps=trajectories[0].timestamps,
         positions=Positions(xyz=avg_xyz, epsg=trajectories[0].positions.epsg),
-        rotations=Rotations.from_quat(mean_rots) if mean_rots else None,
+        rotations=Rotations.from_quat(np.array(mean_rots)) if mean_rots else None,
     )

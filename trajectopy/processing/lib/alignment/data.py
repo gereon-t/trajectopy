@@ -11,7 +11,7 @@ from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentSettings, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.matching import match_trajectories
-from trajectopy.utils.common import gradient_3d
+from trajectopy.utils.geometry import gradient_3d
 
 logger = logging.getLogger(__name__)
 
@@ -142,15 +142,15 @@ class AlignmentData:
     def obs_vector(self) -> np.ndarray:
         return self._obs_vector
 
-    def __len__(self) -> int:
-        return len(self._obs_vector) // self.num_obs_per_epoch
-
     @obs_vector.setter
     def obs_vector(self, values: np.ndarray) -> None:
         if len(values) / self.num_obs_per_epoch % 1 != 0:
             raise ValueError("Observation vector is not divisible by the number of observations per epoch!")
 
         self._obs_vector = values
+
+    def __len__(self) -> int:
+        return len(self._obs_vector) // self.num_obs_per_epoch
 
     @property
     def var_vector(self) -> np.ndarray:
@@ -339,7 +339,9 @@ class AlignmentData:
     @property
     def group_stds(self) -> dict[str, float]:
         """Returns the mean standard deviation for each group"""
-        return {group_key: np.mean(np.sqrt(self.get_var_group(key=group_key))) for group_key in self.variance_groups}
+        return {
+            group_key: float(np.mean(np.sqrt(self.get_var_group(key=group_key)))) for group_key in self.variance_groups
+        }
 
     @property
     def xyz_from(self) -> np.ndarray:

@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
-from test.testdata import generated_trajectory
 
+from test.testdata import generated_trajectory
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.models.entries import (
     AbsoluteDeviationEntry,
@@ -128,3 +128,23 @@ class TestIO(unittest.TestCase):
         reimport_deviations = cls.from_file(f"{output_file}{self._file}.result")
         TestIO._file += 1
         self.assertEqual(input_deviations.deviations, reimport_deviations.deviations)
+
+
+class TestBackwardsCompatibleImports(unittest.TestCase):
+    def test_deprecated_module_paths(self):
+        from trajectopy.core.parameters import AlignmentParameters
+        from trajectopy.io.header import HeaderData
+        from trajectopy.processing.lib.alignment.parameters import AlignmentParameters as OldAlignmentParameters
+        from trajectopy.readers.ascii import HeaderData as OldHeaderData
+        from trajectopy.readers.ascii import read_data  # noqa: F401
+
+        self.assertIs(OldAlignmentParameters, AlignmentParameters)
+        self.assertIs(OldHeaderData, HeaderData)
+
+    def test_deprecated_utils_common(self):
+        from trajectopy.utils import common
+        from trajectopy.utils.numeric import rms
+        from trajectopy.visualization.axes import get_axis_label
+
+        self.assertIs(common.rms, rms)
+        self.assertIs(common.get_axis_label, get_axis_label)

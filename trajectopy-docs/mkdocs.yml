@@ -66,6 +66,7 @@ nav:
       - Positions: api/core/positions.md
       - Rotations: api/core/rotations.md
       - Settings: api/core/settings.md
+      - Parameters: api/core/parameters.md
     - Processing:
       - Alignment: api/processing/alignment.md
       - Evaluation: api/processing/evaluation.md
@@ -74,15 +75,16 @@ nav:
       - Merging: api/processing/merging.md
       - Sorting: api/processing/sorting.md
       - Approximation: api/processing/approximation.md
-      - Parameters: api/processing/parameters.md
+    - I/O:
+      - Trajectory I/O: api/io/trajectory_io.md
+      - Results I/O: api/io/results_io.md
     - Results:
       - ATE Result: api/results/ate_result.md
       - RPE Result: api/results/rpe_result.md
       - Alignment Result: api/results/alignment_result.md
     - Visualization:
-      - Matplotlib Plots: api/visualization/mpl_plots.md
-      - Plotly Plots: api/visualization/plotly_plots.md
-      - HTML Reports: api/visualization/plotly_reports.md
+      - Figures: api/visualization/figures.md
+      - Showing & Exporting: api/visualization/display.md
 
 # Plugins
 plugins:

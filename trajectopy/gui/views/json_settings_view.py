@@ -1,4 +1,4 @@
-﻿import json
+import json
 import logging
 from typing import Any
 
@@ -10,8 +10,8 @@ from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
 
 logger = logging.getLogger(__name__)
 
-EXPORT_FORMATS = ["png", "svg", "webp", "jpeg"]
-PLOT_MODES = ["lines+markers", "lines", "markers"]
+EXPORT_FORMATS = ["png", "jpg", "svg"]
+MAP_STYLES = ["osm", "satellite"]
 MATCHING_METHODS = ["nearest_spatial", "nearest_temporal", "interpolation", "nearest_spatial_interpolated"]
 PAIR_DISTANCE_UNITS = ["meter", "second"]
 POSITION_APPROXIMATION_METHODS = ["cubic"]
@@ -106,7 +106,10 @@ class JSONViewer(QtWidgets.QMainWindow):
 
     def remove_items(self):
         for i in reversed(range(self.form_layout.count())):
-            self.form_layout.itemAt(i).widget().setParent(None)
+            if (layout_item := self.form_layout.itemAt(i)) is not None and (
+                widget := layout_item.widget()
+            ) is not None:
+                widget.setParent(None)
         self.form_item_cnt = 0
 
     def load_json_file(self, filename):
@@ -143,6 +146,8 @@ class JSONViewer(QtWidgets.QMainWindow):
                 self.close()
         except json.JSONDecodeError as e:
             show_msg_box(f"Error decoding JSON: {e}")
+        except (TypeError, ValueError) as e:
+            show_msg_box(f"Invalid settings: {e}")
 
     def update_view(self):
         self.remove_items()
@@ -176,6 +181,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
             init_dict(json_content, keys)
 
+            item_value: Any
             if isinstance(item, QtWidgets.QCheckBox):
                 item_value = item.isChecked()
             elif isinstance(item, QtWidgets.QSpinBox):
@@ -239,62 +245,64 @@ class JSONViewer(QtWidgets.QMainWindow):
                 self.form_item_cnt += 1
 
 
+class _PreciseDoubleSpinBox(QtWidgets.QDoubleSpinBox):
+    """Double spin box that round-trips float settings exactly.
+
+    ``QDoubleSpinBox`` rounds its value to ``decimals()``, so a high precision is used internally,
+    while the text shows the shortest representation of the value (e.g. ``0.0175`` stays ``0.0175``).
+    """
+
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setDecimals(20)
+
+    def textFromValue(self, val: float) -> str:
+        text = repr(float(val))
+        if "e" in text:
+            text = f"{val:.{self.decimals()}f}".rstrip("0")
+        text = text.removesuffix(".0").removesuffix(".")
+        return text.replace(".", self.locale().decimalPoint())
+
+
+def _combo_box(parent_widget: QtWidgets.QWidget, options: list[str], value: str) -> QtWidgets.QComboBox:
+    combo_box = QtWidgets.QComboBox(parent_widget)
+    combo_box.addItems(options)
+    combo_box.setCurrentIndex(options.index(value))
+    return combo_box
+
+
 def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> QtWidgets.QWidget:
     if isinstance(value, bool):
-        settings_field = QtWidgets.QCheckBox(parent_widget)
-        settings_field.setChecked(value)
-        return settings_field
+        check_box = QtWidgets.QCheckBox(parent_widget)
+        check_box.setChecked(value)
+        return check_box
 
-    if value in POSITION_APPROXIMATION_METHODS:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(POSITION_APPROXIMATION_METHODS)
-        settings_field.setCurrentIndex(POSITION_APPROXIMATION_METHODS.index(value))
-        return settings_field
-
-    if value in ROTATION_APPROXIMATION_METHODS:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(ROTATION_APPROXIMATION_METHODS)
-        settings_field.setCurrentIndex(ROTATION_APPROXIMATION_METHODS.index(value))
-        return settings_field
-
-    if value in MATCHING_METHODS:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(MATCHING_METHODS)
-        settings_field.setCurrentIndex(MATCHING_METHODS.index(value))
-        return settings_field
-
-    if value in PAIR_DISTANCE_UNITS:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(PAIR_DISTANCE_UNITS)
-        settings_field.setCurrentIndex(PAIR_DISTANCE_UNITS.index(value))
-        return settings_field
+    for options in (
+        POSITION_APPROXIMATION_METHODS,
+        ROTATION_APPROXIMATION_METHODS,
+        MATCHING_METHODS,
+        PAIR_DISTANCE_UNITS,
+    ):
+        if value in options:
+            return _combo_box(parent_widget, options, value)
 
     if isinstance(value, int):
-        settings_field = QtWidgets.QSpinBox(parent_widget)
-        settings_field.setMaximum(10000)
-        settings_field.setValue(value)
-        return settings_field
+        spin_box = QtWidgets.QSpinBox(parent_widget)
+        spin_box.setMaximum(10000)
+        spin_box.setValue(value)
+        return spin_box
 
     if isinstance(value, float):
-        settings_field = QtWidgets.QDoubleSpinBox(parent_widget)
-        settings_field.setDecimals(4)
-        settings_field.setSingleStep(0.0001)
-        settings_field.setMaximum(1e15)
-        settings_field.setValue(value)
-        return settings_field
+        double_spin_box = _PreciseDoubleSpinBox(parent_widget)
+        double_spin_box.setSingleStep(0.0001)
+        double_spin_box.setMaximum(1e15)
+        double_spin_box.setValue(value)
+        return double_spin_box
 
-    if value in EXPORT_FORMATS:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(EXPORT_FORMATS)
-        settings_field.setCurrentIndex(EXPORT_FORMATS.index(value))
-        return settings_field
+    for options in (EXPORT_FORMATS, MAP_STYLES):
+        if value in options:
+            return _combo_box(parent_widget, options, value)
 
-    if value in PLOT_MODES:
-        settings_field = QtWidgets.QComboBox(parent_widget)
-        settings_field.addItems(PLOT_MODES)
-        settings_field.setCurrentIndex(PLOT_MODES.index(value))
-        return settings_field
-
-    settings_field = QtWidgets.QLineEdit(parent_widget)
-    settings_field.setText(str(value))
-    return settings_field
+    line_edit = QtWidgets.QLineEdit(parent_widget)
+    line_edit.setText(str(value))
+    return line_edit

@@ -1,26 +1,11 @@
 import logging
 
-from rich.console import Console
-from rich.table import Table
-
 from trajectopy import ProcessingSettings, Trajectory, ate
 
 logging.basicConfig(level=logging.INFO)
 
 
-def dict_to_table(data: dict):
-    """Converts a dictionary to a rich table."""
-    table_data = Table(title="ATE Results")
-    table_data.add_column("Property")
-    table_data.add_column("Value")
-    for key, value in data.items():
-        table_data.add_row(key, str(value))
-    return table_data
-
-
 def main():
-    console = Console()
-
     # Import
     gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
     est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
@@ -30,7 +15,10 @@ def main():
 
     # align = True is the default, but can be disabled if you want to evaluate the unaligned trajectories
     ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings, align=True)
-    console.print(dict_to_table(ate_result.property_dict))
+
+    width = max(len(key) for key in ate_result.property_dict)
+    for key, value in ate_result.property_dict.items():
+        print(f"{key:<{width}}  {value}")
 
 
 if __name__ == "__main__":

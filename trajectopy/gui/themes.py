@@ -25,6 +25,10 @@ _BASE = """
         QToolButton:pressed {
             background-color: %(selection)s;
         }
+        QToolButton:checked {
+            background-color: %(accent)s;
+            color: #ffffff;
+        }
         QGroupBox {
             border: 1px solid %(border)s;
             border-radius: 3px;
@@ -109,6 +113,21 @@ _BASE = """
             background-color: %(accent)s;
             border-color: %(accent)s;
         }
+        QRadioButton {
+            color: %(text)s;
+            spacing: 6px;
+        }
+        QRadioButton::indicator {
+            width: 13px;
+            height: 13px;
+            border: 1px solid %(muted)s;
+            border-radius: 7px;
+            background: %(input_bg)s;
+        }
+        QRadioButton::indicator:checked {
+            background-color: %(accent)s;
+            border-color: %(accent)s;
+        }
         QComboBox {
             background-color: %(input_bg)s;
             color: %(text)s;
@@ -165,7 +184,8 @@ _BASE = """
         }
 """
 
-DARK_STYLESHEET = """
+DARK_STYLESHEET = (
+    """
         QMainWindow, QDialog, QWidget {
             background-color: #1e1e1e;
             color: #cccccc;
@@ -258,24 +278,28 @@ DARK_STYLESHEET = """
         QDialog QLabel {
             color: #cccccc;
         }
-    """ + _BASE % dict(
-    bg="#1e1e1e",
-    chrome="#2d2d30",
-    border="#3c3c3c",
-    text="#cccccc",
-    muted="#888888",
-    accent="#007acc",
-    selection="#094771",
-    hover="#3e3e42",
-    header_hover="#3e3e42",
-    menu_bg="#252526",
-    input_bg="#3c3c3c",
-    input_border="#555555",
-    scrollbar="#424242",
-    scrollbar_hover="#686868",
+    """
+    + _BASE
+    % dict(
+        bg="#1e1e1e",
+        chrome="#2d2d30",
+        border="#3c3c3c",
+        text="#cccccc",
+        muted="#888888",
+        accent="#007acc",
+        selection="#094771",
+        hover="#3e3e42",
+        header_hover="#3e3e42",
+        menu_bg="#252526",
+        input_bg="#3c3c3c",
+        input_border="#555555",
+        scrollbar="#424242",
+        scrollbar_hover="#686868",
+    )
 )
 
-LIGHT_STYLESHEET = """
+LIGHT_STYLESHEET = (
+    """
         QMainWindow, QDialog, QWidget {
             background-color: #f3f3f3;
             color: #333333;
@@ -370,25 +394,22 @@ LIGHT_STYLESHEET = """
         QDialog QLabel {
             color: #333333;
         }
-    """ + _BASE % dict(
-    bg="#f3f3f3",
-    chrome="#e8e8e8",
-    border="#e0e0e0",
-    text="#333333",
-    muted="#666666",
-    accent="#0078d4",
-    selection="#0078d4",
-    hover="#dce9f5",
-    header_hover="#e0e0e0",
-    menu_bg="#f3f3f3",
-    input_bg="#ffffff",
-    input_border="#cccccc",
-    scrollbar="#c1c1c1",
-    scrollbar_hover="#a8a8a8",
+    """
+    + _BASE
+    % dict(
+        bg="#f3f3f3",
+        chrome="#e8e8e8",
+        border="#e0e0e0",
+        text="#333333",
+        muted="#666666",
+        accent="#0078d4",
+        selection="#0078d4",
+        hover="#dce9f5",
+        header_hover="#e0e0e0",
+        menu_bg="#f3f3f3",
+        input_bg="#ffffff",
+        input_border="#cccccc",
+        scrollbar="#c1c1c1",
+        scrollbar_hover="#a8a8a8",
+    )
 )
-
-# Matplotlib preview colours keyed by theme
-MPL_COLORS = {
-    "dark": dict(bg="#1e1e1e", spine="#3c3c3c", tick="#888888"),
-    "light": dict(bg="#ffffff", spine="#e0e0e0", tick="#888888"),
-}

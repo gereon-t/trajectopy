@@ -2,12 +2,15 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from trajectopy.core.settings import AlignmentEstimationSettings
-from trajectopy.processing.lib.alignment.parameters import (
+from trajectopy.core.parameters import (
     AlignmentParameters,
     SensorRotationParameters,
 )
-from trajectopy.readers.ascii import HeaderData
+from trajectopy.core.settings import AlignmentEstimationSettings
+
+
+def _allclose(a: np.ndarray, b: np.ndarray) -> bool:
+    return np.shape(a) == np.shape(b) and bool(np.allclose(a, b))
 
 
 @dataclass
@@ -31,55 +34,24 @@ class AlignmentResult:
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, AlignmentResult):
-            return False
+            return NotImplemented
 
-        assert np.allclose(self.position_parameters.values, other.position_parameters.values)
-        assert np.allclose(
-            self.position_parameters.covariance_matrix,
-            other.position_parameters.covariance_matrix,
+        return (
+            _allclose(self.position_parameters.values, other.position_parameters.values)
+            and _allclose(self.position_parameters.covariance_matrix, other.position_parameters.covariance_matrix)
+            and _allclose(self.rotation_parameters.values, other.rotation_parameters.values)
+            and self.estimation_of == other.estimation_of
         )
-        assert np.allclose(self.rotation_parameters.values, other.rotation_parameters.values)
-        assert self.estimation_of == other.estimation_of
-
-        return True
 
     def to_file(self, filename: str) -> None:
-        """
-        Save the result to a file.
+        """Appends the result to a file."""
+        from trajectopy.io import results_io
 
-        Args:
-            filename (str): Path to the file.
-        """
-        if self.position_parameters is None:
-            raise ValueError("No estimated parameters available!")
-
-        with open(filename, "a", newline="\n", encoding="utf-8") as file:
-            file.write(f"#name {self.name}\n")
-
-        self.position_parameters.to_dataframe().to_csv(
-            filename, header=False, index=False, mode="a", float_format="%.15f"
-        )
-        self.rotation_parameters.to_file(filename=filename)
+        results_io.write_alignment_result(self, filename)
 
     @classmethod
     def from_file(cls, filename: str) -> "AlignmentResult":
-        """
-        Load the result from a file.
+        """Loads the result from a file."""
+        from trajectopy.io import results_io
 
-        Args:
-            filename (str): Path to the file.
-
-        Returns:
-            AlignmentResult: The loaded result.
-        """
-        header_data = HeaderData.from_file(filename)
-        estimated_parameters = AlignmentParameters.from_file(filename)
-        sensor_rot_parameters = SensorRotationParameters.from_file(filename)
-        return cls(
-            name=str(header_data.data.get("name", "Alignment")),
-            position_parameters=estimated_parameters,
-            estimation_of=AlignmentEstimationSettings.from_bool_list(
-                estimated_parameters.enabled_bool_list + sensor_rot_parameters.enabled_bool_list
-            ),
-            rotation_parameters=sensor_rot_parameters,
-        )
+        return results_io.read_alignment_result(filename)

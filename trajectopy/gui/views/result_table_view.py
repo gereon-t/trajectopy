@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 
 from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal
@@ -133,28 +133,14 @@ class ResultTableView(QtWidgets.QTableView):
         elif e.key() == Qt.Key.Key_P:
             self.ui_request.emit(UIRequest(type=UIRequestType.RES_PROPERTIES, result_selection=self.selection))
         elif e.key() == Qt.Key.Key_V:
-            if len(self.selected_entries) == 1 and isinstance(
-                self.selected_entries[0], (AbsoluteDeviationEntry, RelativeDeviationEntry)
+            if self.selected_entries and all(
+                isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in self.selected_entries
             ):
-                self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.SINGLE_DEVIATIONS,
-                        result_selection=self.selection,
-                    )
-                )
+                self.plot_request.emit(PlotRequest(type=PlotRequestType.DEVIATIONS, result_selection=self.selection))
             if len(self.selected_entries) == 1 and isinstance(self.selected_entries[0], AlignmentEntry):
                 self.plot_request.emit(
                     PlotRequest(
                         type=PlotRequestType.ALIGNMENT,
-                        result_selection=self.selection,
-                    )
-                )
-            if len(self.selected_entries) > 1 and all(
-                isinstance(entry, (AbsoluteDeviationEntry, RelativeDeviationEntry)) for entry in self.selected_entries
-            ):
-                self.plot_request.emit(
-                    PlotRequest(
-                        type=PlotRequestType.MULTI_DEVIATIONS,
                         result_selection=self.selection,
                     )
                 )

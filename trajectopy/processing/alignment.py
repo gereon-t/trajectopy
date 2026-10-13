@@ -4,16 +4,16 @@ import logging
 import numpy as np
 
 from trajectopy.core import settings
+from trajectopy.core.parameters import (
+    AlignmentParameters,
+    SensorRotationParameters,
+)
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.alignment.data import AlignmentData
 from trajectopy.processing.lib.alignment.direct import align_rotations
 from trajectopy.processing.lib.alignment.equations import leverarm_time_component
 from trajectopy.processing.lib.alignment.estimation import AlignmentEstimator
-from trajectopy.processing.lib.alignment.parameters import (
-    AlignmentParameters,
-    SensorRotationParameters,
-)
 from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)
@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 def estimate_alignment(
     trajectory: Trajectory,
     other: Trajectory,
-    alignment_settings: settings.AlignmentSettings = settings.AlignmentSettings(),
-    matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
+    alignment_settings: settings.AlignmentSettings | None = None,
+    matching_settings: settings.MatchingSettings | None = None,
     initial_parameters: AlignmentParameters | None = None,
 ) -> AlignmentResult:
     """Estimates the alignment between two trajectories.
@@ -43,6 +43,11 @@ def estimate_alignment(
     Returns:
         AlignmentResult: Result of the alignment process.
     """
+    if alignment_settings is None:
+        alignment_settings = settings.AlignmentSettings()
+    if matching_settings is None:
+        matching_settings = settings.MatchingSettings()
+
     logger.info("Aligning trajectory positions ...")
 
     alignment_data = AlignmentData(
@@ -54,17 +59,15 @@ def estimate_alignment(
     ghm_alignment = AlignmentEstimator(alignment_data=alignment_data, initial_parameters=initial_parameters)
     estimated_parameters = ghm_alignment.estimate_parameters()
 
-    if (
-        alignment_data.traj_from.rotations is not None
-        and alignment_data.traj_to.rotations is not None
-        and alignment_settings.estimation_settings.sensor_rotation
-    ):
-        pre_aligned_trajectory = alignment_data.traj_from.transform(estimated_parameters.sim3_matrix, inplace=False)
+    pre_aligned_rotations = (
+        alignment_data.traj_from.transform(estimated_parameters.sim3_matrix, inplace=False).rotations
+        if alignment_settings.estimation_settings.sensor_rotation
+        else None
+    )
+    if pre_aligned_rotations is not None and alignment_data.traj_to.rotations is not None:
         logger.info("Aligning rotations ...")
-        sensor_rot_params = align_rotations(
-            rot_from=pre_aligned_trajectory.rotations, rot_to=alignment_data.traj_to.rotations
-        )
-        print(sensor_rot_params)
+        sensor_rot_params = align_rotations(rot_from=pre_aligned_rotations, rot_to=alignment_data.traj_to.rotations)
+        logger.info("Estimated sensor rotation:\n%s", sensor_rot_params)
     else:
         sensor_rot_params = SensorRotationParameters(enabled=False)
 
@@ -173,7 +176,7 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
     # instead, apply time shift as a simple shift of the timestamps
     trajectory.timestamps -= alignment_result.position_parameters.time_shift.value
     logger.info(
-        f"Applied time shift of {alignment_result.position_parameters.time_shift.value*1000:.1f} ms to timestamps."
+        f"Applied time shift of {alignment_result.position_parameters.time_shift.value * 1000:.1f} ms to timestamps."
     )
 
     # similiarity transformation
@@ -250,8 +253,8 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: 
 def align(
     trajectory: Trajectory,
     other: Trajectory,
-    alignment_settings: settings.AlignmentSettings = settings.AlignmentSettings(),
-    matching_settings: settings.MatchingSettings = settings.MatchingSettings(),
+    alignment_settings: settings.AlignmentSettings | None = None,
+    matching_settings: settings.MatchingSettings | None = None,
     inplace: bool = True,
 ) -> Trajectory:
     """Aligns the trajectory with another trajectory.
@@ -268,6 +271,11 @@ def align(
     Returns:
         Trajectory: Aligned trajectory.
     """
+    if alignment_settings is None:
+        alignment_settings = settings.AlignmentSettings()
+    if matching_settings is None:
+        matching_settings = settings.MatchingSettings()
+
     alignment = estimate_alignment(
         trajectory=trajectory,
         other=other,

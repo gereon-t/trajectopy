@@ -1,7 +1,5 @@
-from matplotlib import pyplot as plt
-
 from trajectopy import Trajectory, align
-from trajectopy.visualization.mpl_plots import plot_positions
+from trajectopy import visualization as vis
 
 
 def main():
@@ -9,10 +7,9 @@ def main():
     est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
     est_traj_aligned = align(trajectory=est_traj, other=gt_traj, inplace=False)
-    est_traj_aligned.name += " (Aligned)"
+    est_traj_aligned.name += " (aligned)"
 
-    plot_positions(trajectories=[gt_traj, est_traj, est_traj_aligned])
-    plt.show()
+    vis.show(vis.positions_figure([gt_traj, est_traj, est_traj_aligned]))
 
 
 if __name__ == "__main__":

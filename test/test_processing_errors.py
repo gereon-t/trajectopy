@@ -1,8 +1,8 @@
 import unittest
-from test.testdata import open_loop_trajectory
 
 import numpy as np
 
+from test.testdata import open_loop_trajectory
 from trajectopy.core.settings import (
     AlignmentEstimationSettings,
     AlignmentSettings,
@@ -40,8 +40,13 @@ class TestProcessingErrors(unittest.TestCase):
         traj = open_loop_trajectory.copy()
         with self.assertRaises(AttributeError):
             estimate_alignment(
-                trajectory=traj, other=traj, alignment_settings=None, matching_settings=MatchingSettings()
+                trajectory=traj, other=traj, alignment_settings="invalid", matching_settings=MatchingSettings()
             )
+
+    def test_estimate_alignment_none_settings_uses_defaults(self):
+        traj = open_loop_trajectory.copy()
+        result = estimate_alignment(trajectory=traj, other=traj, alignment_settings=None, matching_settings=None)
+        self.assertTrue(result.converged)
 
 
 if __name__ == "__main__":

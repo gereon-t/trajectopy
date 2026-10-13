@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 import os
 import uuid
 from abc import ABC, abstractmethod
@@ -7,12 +7,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
-from pyproj import Transformer
 
+from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.settings import AlignmentEstimationSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.alignment.parameters import AlignmentParameters
-from trajectopy.readers.ascii import HeaderData
+from trajectopy.io.header import HeaderData
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
@@ -82,6 +81,11 @@ class Entry(ABC):
     @abstractmethod
     def property_dict(self) -> dict[str, str]:
         pass
+
+    @property
+    @abstractmethod
+    def column(self) -> tuple:
+        """Values shown in the table columns."""
 
     def to_file(self, filename: str) -> None:
         with open(filename, "w", newline="\n", encoding="utf-8") as file:
@@ -158,7 +162,7 @@ class TrajectoryEntry(Entry):
         self.trajectory.name = name
 
     @property
-    def column(self) -> tuple[str, str, int, str, str, str]:
+    def column(self) -> tuple[str, str, int, int, str, str]:
         return (
             self.name,
             bool_to_str(self.set_as_reference),
@@ -376,7 +380,7 @@ class AlignmentEntry(ResultEntry):
             "Rotation x [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_x.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_x.variance)):<10.4f}",
             "Rotation y [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_y.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_y.variance)):<10.4f}",
             "Rotation z [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_z.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_z.variance)):<10.4f}",
-            "Scale [-]": f"{self.alignment_result.position_parameters.helmert.scale.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.scale.variance)*1e6:<10.4f} ppm",
+            "Scale [-]": f"{self.alignment_result.position_parameters.helmert.scale.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.scale.variance) * 1e6:<10.4f} ppm",
             "Time Shift [s]": f"{self.alignment_result.position_parameters.time_shift.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.time_shift.variance):<10.4f}",
             "Leverarm x [m]": f"{self.alignment_result.position_parameters.leverarm.x.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.leverarm.x.variance):<10.4f}",
             "Leverarm y [m]": f"{self.alignment_result.position_parameters.leverarm.y.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.leverarm.y.variance):<10.4f}",

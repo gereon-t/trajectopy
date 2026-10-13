@@ -1,5 +1,6 @@
 import logging
-from functools import lru_cache
+from functools import cache
+from typing import Literal, overload
 
 import numpy as np
 from scipy.spatial import KDTree
@@ -8,14 +9,14 @@ from trajectopy.core.settings import SortingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
 from trajectopy.processing.lib.approximation.voxelizer import Voxelizer
-from trajectopy.utils.common import lengths_from_xyz
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.geometry import lengths_from_xyz
 
 logger = logging.getLogger(__name__)
 
 
 def sort_spatially(
-    trajectory: Trajectory, sorting_settings: SortingSettings = SortingSettings(), inplace: bool = True
+    trajectory: Trajectory, sorting_settings: SortingSettings | None = None, inplace: bool = True
 ) -> Trajectory:
     """
     Sorts the trajectory spatially. This is only useful for trajectories
@@ -30,11 +31,24 @@ def sort_spatially(
         Trajectory: Sorted trajectory.
 
     """
+    if sorting_settings is None:
+        sorting_settings = SortingSettings()
+
     sort_idx, arc_lengths = _sort_xyz(xyz=trajectory.positions.xyz, settings=sorting_settings)
     trajectory = trajectory.mask(sort_idx, inplace=inplace)
     trajectory.path_lengths = arc_lengths
     trajectory.set_sorting(Sorting.PATH_LENGTH)
     return trajectory
+
+
+@overload
+def divide_into_laps(trajectory: Trajectory, return_lap_indices: Literal[False] = False) -> list[Trajectory]: ...
+
+
+@overload
+def divide_into_laps(
+    trajectory: Trajectory, return_lap_indices: Literal[True]
+) -> tuple[list[Trajectory], np.ndarray]: ...
 
 
 def divide_into_laps(
@@ -98,7 +112,7 @@ def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> tuple[np.
     return mls_approx, avg_point_movement
 
 
-@lru_cache(maxsize=None)
+@cache
 def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: frozenset[str]) -> Line3D | None:
     """Approximates a 3D line from a set of points and returns it as a Line3D object.
 
@@ -156,7 +170,7 @@ def _moving_least_squares(
     return xyz
 
 
-def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) -> tuple[list[int], np.ndarray]:
+def _sort_xyz(xyz: np.ndarray, settings: SortingSettings | None = None) -> tuple[list[int], np.ndarray]:
     """Reconstructs the spatial sorting of the given points.
 
     Smooths positions using Moving Least Squares, then
@@ -174,6 +188,9 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings = SortingSettings()) ->
         list: Sort index
         np.ndarray: Arc lengths along the path
     """
+    if settings is None:
+        settings = SortingSettings()
+
     mls_unsorted = _moving_least_squares(
         xyz=xyz,
         voxel_size=settings.voxel_size,

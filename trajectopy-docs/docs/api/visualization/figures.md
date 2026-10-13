@@ -1,0 +1,3 @@
+# Figures
+
+::: trajectopy.visualization.plots

@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 
 from PySide6 import QtCore, QtWidgets
 from PySide6.QtGui import QAction, QCursor
@@ -112,6 +112,16 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
             )
         )
         self.addAction(export_action)
+
+        kml_action = QAction("Export to Google Earth (KML)", self)
+        kml_action.triggered.connect(
+            lambda: self.ui_request.emit(
+                UIRequest(type=UIRequestType.EXPORT_KML, trajectory_selection=self.get_selection())
+            )
+        )
+        kml_action.setEnabled(self.get_selection().entries[0].trajectory.positions.epsg != 0)
+        kml_action.setToolTip("Requires a trajectory with a known EPSG code.")
+        self.addAction(kml_action)
 
     def multi_context(self) -> None:
         """These options are shown for single and multiple trajectories"""
@@ -268,7 +278,6 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
                 PlotRequest(
                     type=PlotRequestType.TRAJECTORIES,
                     trajectory_selection=self.get_selection(),
-                    dimension=2,
                 )
             )
         )
@@ -327,10 +336,8 @@ class TrajectoryContextMenu(QtWidgets.QMenu):
 
         self.process_context_menu.addMenu(self.other_context())
 
-        if not self.get_selection().reference_is_set:
-            return
-
-        if self.get_selection().reference_entry.trajectory.positions.local_transformer is None:
+        reference_entry = self.get_selection().reference_entry
+        if reference_entry is None or reference_entry.trajectory.positions.local_transformer is None:
             return
 
     def other_context(self) -> QtWidgets.QMenu:

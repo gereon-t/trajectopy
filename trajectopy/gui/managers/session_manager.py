@@ -1,4 +1,4 @@
-﻿import glob
+import glob
 import logging
 import os
 from collections.abc import Callable
@@ -41,7 +41,7 @@ class SessionManager(QObject):
     file_request = Signal(FileRequest)
     operation_started = Signal()
     operation_finished = Signal()
-    report_settings_request = Signal(PlotSettingsRequest)
+    plot_settings_request = Signal(PlotSettingsRequest)
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -54,12 +54,12 @@ class SessionManager(QObject):
     @show_progress
     @Slot(SessionManagerRequest)
     def handle_request(self, request: SessionManagerRequest) -> None:
-        generic_request_handler(self, request, passthrough_request=True)
+        generic_request_handler(self, request)
 
     def new_session(self, _: SessionManagerRequest) -> None:
         self.trajectory_model_request.emit(TrajectoryModelRequest(type=TrajectoryModelRequestType.RESET))
         self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.RESET))
-        self.report_settings_request.emit(PlotSettingsRequest(type=PlotSettingsRequestType.RESET))
+        self.plot_settings_request.emit(PlotSettingsRequest(type=PlotSettingsRequestType.RESET))
         logger.info("Cleared application and started a new session.")
 
     def import_session(self, request: SessionManagerRequest) -> None:
@@ -82,7 +82,7 @@ class SessionManager(QObject):
                 file_list=[os.path.join(request.file_path, "result_order.txt")],
             )
         )
-        self.report_settings_request.emit(
+        self.plot_settings_request.emit(
             PlotSettingsRequest(type=PlotSettingsRequestType.IMPORT, file_path=request.file_path)
         )
 
@@ -94,6 +94,6 @@ class SessionManager(QObject):
         self.result_model_request.emit(
             ResultModelRequest(type=ResultModelRequestType.EXPORT_ALL, file_path=request.file_path)
         )
-        self.report_settings_request.emit(
+        self.plot_settings_request.emit(
             PlotSettingsRequest(type=PlotSettingsRequestType.EXPORT, file_path=request.file_path)
         )
