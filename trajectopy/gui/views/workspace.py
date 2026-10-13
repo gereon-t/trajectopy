@@ -13,6 +13,7 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from trajectopy.core.settings import PlotSettings
+from trajectopy.gui import themes
 from trajectopy.gui.models.entries import (
     AbsoluteDeviationEntry,
     AlignmentEntry,
@@ -115,8 +116,10 @@ class ComparisonContent(ViewContent):
         self._message = _message_label("")
         self._stack.addWidget(self._message)
         self._ids: list[str] = []
+        self._data: WorkspaceData | None = None
 
     def set_data(self, data: WorkspaceData) -> None:
+        self._data = data
         rows = sorted(data.evaluated, key=lambda t: t.ate.deviations.pos_dev_rms if t.ate else np.inf)
         if not rows:
             self._message.setText(
@@ -137,16 +140,18 @@ class ComparisonContent(ViewContent):
             name = QtWidgets.QTableWidgetItem(trajectory.entry.name)
             name.setIcon(_swatch(trajectory.color))
             if len(rows) > 1 and row == 0 and numbers[0] is not None:
-                name.setText(f"{trajectory.entry.name}   (best)")
+                name.setText(f"{trajectory.entry.name}  ·  best")
+                name.setToolTip("Lowest ATE RMS")
             self._table.setItem(row, 0, name)
             for column, value in enumerate(numbers):
                 text = "–" if value is None else self._format(column, value, trajectory)
                 item = QtWidgets.QTableWidgetItem(text)
                 item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                font = _monospace()
                 if value is not None and len(rows) > 1 and value == best[column]:
-                    font = item.font()
                     font.setBold(True)
-                    item.setFont(font)
+                    item.setForeground(QtGui.QColor(themes.color("success")))
+                item.setFont(font)
                 self._table.setItem(row, column + 1, item)
             if trajectory.entry.entry_id in data.selected_ids:
                 self._table.selectRow(row)
@@ -168,6 +173,10 @@ class ComparisonContent(ViewContent):
         if column == 4 and t.rpe is not None:
             return f"{value:.3f} {t.rpe.deviations.pos_drift_unit}"
         return f"{value:.3f}"
+
+    def apply_theme(self) -> None:
+        if self._data is not None:
+            self.set_data(self._data)  # the highlight of the best values uses a theme color
 
     def _on_clicked(self, row: int, _: int) -> None:
         if row < len(self._ids):
@@ -251,6 +260,8 @@ class FigureContent(ViewContent):
             self._widget = _message_label(message)
         else:
             self._widget = _colored(figure, colors).create_widget()
+            if (graphics := getattr(self._widget, "graphics", None)) is not None:
+                graphics.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)  # the card draws the border
             selector = getattr(self._widget, "selector", None)
             if selector is not None and self._variant and selector.findText(self._variant) >= 0:
                 selector.setCurrentText(self._variant)
@@ -279,11 +290,16 @@ def _colored(figure: Figure, colors: list[str]) -> Figure:
 
 def _message_label(text: str) -> QtWidgets.QLabel:
     label = QtWidgets.QLabel(text)
+    label.setObjectName("emptyMessage")
     label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
     label.setWordWrap(True)
-    label.setEnabled(False)  # muted text
     label.setMinimumSize(160, 80)
     return label
+
+
+def _monospace() -> QtGui.QFont:
+    """Numbers in tables line up in a fixed-width font."""
+    return QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.SystemFont.FixedFont)
 
 
 def _swatch(color: str) -> QtGui.QIcon:
@@ -417,8 +433,9 @@ class ViewDock(QtWidgets.QDockWidget):
 
         bar = QtWidgets.QWidget()
         bar.setObjectName("viewTitleBar")
+        bar.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
         bar_layout = QtWidgets.QHBoxLayout(bar)
-        bar_layout.setContentsMargins(6, 3, 4, 3)
+        bar_layout.setContentsMargins(8, 6, 6, 6)
         bar_layout.setSpacing(4)
         self._type_box = QtWidgets.QComboBox()
         self._type_box.setToolTip("What this view shows")
@@ -458,6 +475,9 @@ class ViewDock(QtWidgets.QDockWidget):
         if self.content is not None:
             self.content.deleteLater()
         self.content = VIEW_TYPE[view_type].create()
+        self.content.setObjectName("viewContent")  # drawn as the body of a card below the title bar
+        self.content.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground)
+        self.content.setContentsMargins(1, 0, 1, 1)
         self.setWidget(self.content)
         if notify:
             self.type_changed.emit(self)

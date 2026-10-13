@@ -53,8 +53,8 @@ class Theme:
     diverging_colormap: str
 
 
-LIGHT = Theme(background="#ffffff", foreground="#3c3c3c", grid_alpha=0.25, diverging_colormap="CET-D1")
-DARK = Theme(background="#1e1e1e", foreground="#bbbbbb", grid_alpha=0.2, diverging_colormap="CET-D4")
+LIGHT = Theme(background="#ffffff", foreground="#424a53", grid_alpha=0.25, diverging_colormap="CET-D1")
+DARK = Theme(background="#1f2328", foreground="#aab3bd", grid_alpha=0.2, diverging_colormap="CET-D4")
 
 _current_theme = LIGHT
 

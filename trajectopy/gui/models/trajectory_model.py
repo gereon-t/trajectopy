@@ -3,7 +3,7 @@ import logging
 import os
 
 from PySide6.QtCore import QModelIndex, QPersistentModelIndex, Qt, Signal
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtGui import QColor, QFont, QFontDatabase
 from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
@@ -89,6 +89,8 @@ class TrajectoryTableModel(RequestTableModel):
                 return self.badges.get(self.items[index.row()].entry_id, "")
             if role == Qt.ItemDataRole.TextAlignmentRole:
                 return Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            if role == Qt.ItemDataRole.FontRole:
+                return QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
             return None
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
             return QColor(_row_color(index.row()))

@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
+from trajectopy.gui import themes
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 
 logging.basicConfig(
@@ -62,6 +63,7 @@ def main(
     app.setFont(font)
 
     is_dark = app.styleHints().colorScheme() == Qt.ColorScheme.Dark
+    themes.set_dark(is_dark)
     app.setStyleSheet(DARK_STYLESHEET if is_dark else LIGHT_STYLESHEET)
 
     _ = TrajectopyGUI(

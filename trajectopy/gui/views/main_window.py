@@ -1,15 +1,17 @@
+import html
 import json
 import logging
 import os
 from collections.abc import Callable
 from typing import cast
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
 from trajectopy.core.settings import PlotSettings
+from trajectopy.gui import themes
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
@@ -104,6 +106,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         }
 
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
+        themes.set_dark(self._dark_theme)
         self._settings = QtCore.QSettings()  # organization and application name are set by the app
         self._color_modes: dict[str, str] = {}  # trajectory entry id -> scalar field shown in the 3D view
         self._known_results: set[str] = set()
@@ -221,10 +224,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._dark_theme = dark
         self._dark_theme_action.setChecked(dark)
         self._light_theme_action.setChecked(not dark)
+        themes.set_dark(dark)
         _application().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
         set_dark_titlebar(self, dark)
         plot_style.set_theme(dark)
         self.workspace.apply_theme()
+        self._update_selection_panel()  # the title's color swatch
         self._timeline_dialog.apply_theme(dark)
 
     # ---------------------------------------------------------------------------------------- window state
@@ -551,9 +556,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def _update_selection_panel(self) -> None:
         entries = self._selected_trajectories
         if not entries:
-            self._selection_title.setText("No trajectory selected")
+            self._selection_title.setText(
+                f"<span style='color:{themes.color('muted')}; font-weight:400'>No trajectory selected</span>"
+            )
         elif len(entries) == 1:
-            self._selection_title.setText(entries[0].name)
+            swatch = self.trajectory_table_model.color(entries[0])
+            self._selection_title.setText(f"<span style='color:{swatch}'>■</span>&nbsp;{html.escape(entries[0].name)}")
         else:
             self._selection_title.setText(f"{len(entries)} trajectories selected")
         self._properties.show_entries(entries)
@@ -744,13 +752,20 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         toolbar.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly)
         self.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, toolbar)
 
+        title = QtWidgets.QLabel("trajectopy")
+        title.setObjectName("appTitle")
+        toolbar.addWidget(title)
         self._add_trajectories_action = toolbar.addAction("Add Trajectories…")
         self._add_trajectories_action.setToolTip("Load trajectory files (or drop them onto the list)")
         self._add_results_action = toolbar.addAction("Add Results…")
         self._add_results_action.setToolTip("Load result files of earlier evaluations")
-        toolbar.addSeparator()
+        for action in (self._add_trajectories_action, self._add_results_action):
+            toolbar.widgetForAction(action).setObjectName("outlineButton")
+        spacer = QtWidgets.QLabel()  # labels are transparent in the toolbar
+        spacer.setFixedWidth(12)
+        toolbar.addWidget(spacer)
 
-        toolbar.addWidget(QtWidgets.QLabel(" Reference "))
+        toolbar.addWidget(QtWidgets.QLabel("Reference"))
         self._reference_box = QtWidgets.QComboBox()
         self._reference_box.setMinimumContentsLength(18)
         self._reference_box.setSizeAdjustPolicy(
@@ -762,7 +777,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._update_reference_box()
 
         evaluate_button = QtWidgets.QToolButton()
-        evaluate_button.setObjectName("evaluateAllButton")
+        evaluate_button.setObjectName("primaryButton")
         evaluate_button.setText("Evaluate All")
         evaluate_button.setToolTip("Compute ATE and RPE of every trajectory against the reference")
         evaluate_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
@@ -802,18 +817,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         list_panel = QtWidgets.QWidget()
         list_layout = QtWidgets.QVBoxLayout(list_panel)
-        list_layout.setContentsMargins(8, 8, 4, 4)
+        list_layout.setContentsMargins(12, 14, 12, 6)
+        list_layout.setSpacing(6)
         list_layout.addWidget(_section_label("TRAJECTORIES"))
         list_layout.addWidget(self.trajectoryTableView)
 
         details = QtWidgets.QWidget()
         details_layout = QtWidgets.QVBoxLayout(details)
-        details_layout.setContentsMargins(8, 4, 4, 8)
-        details_layout.setSpacing(6)
+        details_layout.setContentsMargins(12, 12, 12, 12)
+        details_layout.setSpacing(10)
         self._selection_title = QtWidgets.QLabel("No trajectory selected")
-        font = self._selection_title.font()
-        font.setBold(True)
-        self._selection_title.setFont(font)
+        self._selection_title.setObjectName("selectionTitle")
+        self._selection_title.setTextFormat(QtCore.Qt.TextFormat.RichText)
         details_layout.addWidget(self._selection_title)
 
         self._color_by = QtWidgets.QComboBox()
@@ -822,7 +837,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._color_by_row = QtWidgets.QWidget()
         color_by_layout = QtWidgets.QHBoxLayout(self._color_by_row)
         color_by_layout.setContentsMargins(0, 0, 0, 0)
-        color_by_layout.addWidget(QtWidgets.QLabel("Color by"))
+        color_by_label = QtWidgets.QLabel("Color by")
+        color_by_label.setObjectName("mutedLabel")
+        color_by_layout.addWidget(color_by_label)
         color_by_layout.addWidget(self._color_by, stretch=1)
         self._color_by_row.setEnabled(False)
         details_layout.addWidget(self._color_by_row)
@@ -842,6 +859,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         details_layout.addWidget(self.resultTableView, stretch=2)
 
         sidebar = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
+        sidebar.setObjectName("sidebar")
+        sidebar.setHandleWidth(1)
         sidebar.addWidget(list_panel)
         sidebar.addWidget(details)
         sidebar.setStretchFactor(0, 2)
@@ -852,17 +871,22 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def _create_workspace_panel(self) -> QtWidgets.QWidget:
         self.workspace = Workspace()
 
-        bar = QtWidgets.QHBoxLayout()
-        bar.setContentsMargins(8, 6, 8, 2)
-        bar.addWidget(QtWidgets.QLabel("Layout"))
+        bar_frame = QtWidgets.QFrame()
+        bar_frame.setObjectName("layoutBar")
+        bar = QtWidgets.QHBoxLayout(bar_frame)
+        bar.setContentsMargins(12, 8, 12, 8)
+        bar.setSpacing(8)
+        layout_label = QtWidgets.QLabel("Layout")
+        layout_label.setObjectName("mutedLabel")
+        bar.addWidget(layout_label)
         self._layout_box = QtWidgets.QComboBox()
         self._layout_box.setMinimumContentsLength(16)
         self._layout_box.setToolTip("Saved arrangements of views")
         self._layout_box.activated.connect(self._on_layout_chosen)
         bar.addWidget(self._layout_box)
         self._modified_label = QtWidgets.QLabel("modified")
+        self._modified_label.setObjectName("warningLabel")
         self._modified_label.setToolTip("The views were changed since the layout was loaded or saved")
-        self._modified_label.setEnabled(False)
         self._modified_label.hide()
         bar.addWidget(self._modified_label)
         for text, tip, slot in (
@@ -880,7 +904,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         bar.addStretch()
 
         add_view = QtWidgets.QToolButton()
-        add_view.setText("Add View")
+        add_view.setObjectName("outlineButton")
+        add_view.setText("+  Add View")
         add_view.setToolTip("Add a table, the 3D view or a plot to the workspace")
         add_view.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
         add_menu = QtWidgets.QMenu(add_view)
@@ -890,18 +915,19 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         bar.addWidget(add_view)
 
         panel = QtWidgets.QWidget()
+        panel.setObjectName("workspacePanel")
         layout = QtWidgets.QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.addLayout(bar)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(12)
+        layout.addWidget(bar_frame)
         layout.addWidget(self.workspace, stretch=1)
         return panel
 
 
 def _section_label(text: str) -> QtWidgets.QLabel:
     label = QtWidgets.QLabel(text)
+    label.setObjectName("sectionLabel")
     font = label.font()
-    font.setBold(True)
+    font.setLetterSpacing(QtGui.QFont.SpacingType.AbsoluteSpacing, 0.6)
     label.setFont(font)
-    label.setEnabled(False)  # muted
     return label
