@@ -22,6 +22,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.managers.session_manager import SessionManager
 from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
+from trajectopy.gui.models.entries import AbsoluteDeviationEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
@@ -38,6 +39,8 @@ from trajectopy.utils.resources import YEAR
 from trajectopy.visualization import style as plot_style
 
 logger = logging.getLogger(__name__)
+
+PREVIEW_SETTINGS_KEY = "details/preview_enabled"
 
 PLOT_SETTINGS_FILENAME = "plot_settings.json"
 
@@ -73,6 +76,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         }
 
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
+        self._settings = QtCore.QSettings("trajectopy", "trajectopy")
+        self._preview_enabled = self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool)
+        # selection handler whose content the details panel currently shows; re-run when the preview is turned on
+        self._refresh_details: Callable[[], None] | None = None
         plot_style.set_theme(self._dark_theme)
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
@@ -179,6 +186,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         plot_style.set_theme(dark)
         self._preview.apply_theme()
         self._timeline_dialog.apply_theme(dark)
+
+    @Slot(bool)
+    def _set_preview_enabled(self, enabled: bool) -> None:
+        self._preview_enabled = enabled
+        self._settings.setValue(PREVIEW_SETTINGS_KEY, enabled)
+        self._preview.setVisible(enabled)
+        if not enabled:
+            self._preview.clear_preview()
+        elif self._refresh_details is not None:
+            self._refresh_details()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         if not self.worker.shutdown(timeout=5.0):
@@ -294,6 +311,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             self._preview.clear_preview()
             return
 
+        self._refresh_details = self._on_trajectory_selection_changed
         lines = []
         for entry in entries:
             t = entry.trajectory
@@ -309,7 +327,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 lines.append("\u2500" * 36)
         self.details_text.setPlainText("\n".join(lines))
 
-        self._preview.show_trajectories([entry.trajectory for entry in entries])
+        if self._preview_enabled:
+            self._preview.show_trajectories([entry.trajectory for entry in entries])
 
     @QtCore.Slot()
     def _on_result_selection_changed(self) -> None:
@@ -320,7 +339,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         if not items:
             return
 
-        self._preview.clear_preview()
+        self._refresh_details = self._on_result_selection_changed
+        ate_results = [item.deviations for item in items if isinstance(item, AbsoluteDeviationEntry)]
+        if self._preview_enabled and ate_results:
+            self._preview.show_ate_results(ate_results)
+        else:
+            self._preview.clear_preview()
 
         lines = []
         for item in items:
@@ -464,7 +488,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         details_header = QtWidgets.QLabel("Details")
         details_header.setStyleSheet("color: {muted}; padding: 4px;".format(muted="#888888"))
-        details_layout.addWidget(details_header)
+        self._preview_toggle = QtWidgets.QCheckBox("Preview")
+        self._preview_toggle.setChecked(self._preview_enabled)
+        self._preview_toggle.setToolTip("Plots the selected trajectories and ATE results. Disable on slow systems.")
+        self._preview_toggle.toggled.connect(self._set_preview_enabled)
+        header_layout = QtWidgets.QHBoxLayout()
+        header_layout.addWidget(details_header)
+        header_layout.addStretch()
+        header_layout.addWidget(self._preview_toggle)
+        details_layout.addLayout(header_layout)
 
         details_v_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
 
@@ -475,6 +507,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self._preview = PreviewPlot()
         self._preview.setMinimumHeight(150)
+        self._preview.setVisible(self._preview_enabled)
         details_v_splitter.addWidget(self._preview)
         details_v_splitter.setStretchFactor(0, 1)
         details_v_splitter.setStretchFactor(1, 2)
