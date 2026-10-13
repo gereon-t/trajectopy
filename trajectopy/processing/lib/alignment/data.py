@@ -60,6 +60,11 @@ class AlignmentData:
             self.alignment_settings.preprocessing.time_start != 0
             or self.alignment_settings.preprocessing.time_end != 0
         ):
+            if self.alignment_settings.preprocessing.time_end == 0.0:
+                self.alignment_settings.preprocessing.time_end = (
+                    self.traj_from.timestamps[-1] - self.traj_from.timestamps[0]
+                )
+
             time_span = (
                 self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_start,
                 self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_end,
