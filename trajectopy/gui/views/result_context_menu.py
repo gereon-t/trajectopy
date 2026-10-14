@@ -103,14 +103,8 @@ class ResultContextMenu(SelectionMenu):
                 "Export to Google Earth (KML)…",
                 self._ui(UIRequestType.EXPORT_KML),
                 hint="Saves the evaluated trajectory for Google Earth, colored by a deviation of your choice "
-                "(e.g. position, along-track or yaw), with playback in Google Earth's time slider.",
-                unavailable=kml_unavailable,
-            )
-            add_action(
-                self,
-                "3D Playback in the Browser…",
-                self._ui(UIRequestType.CESIUM_PLAYBACK),
-                hint="Opens a 3D globe in the web browser (CesiumJS) that plays the evaluated trajectory, colored by a deviation of your choice, back with a timeline. Also saves it as a web page.",
+                "(e.g. position, along-track or yaw), on the terrain or at its heights, with playback in "
+                "Google Earth's time slider.",
                 unavailable=kml_unavailable,
             )
         self.addSeparator()

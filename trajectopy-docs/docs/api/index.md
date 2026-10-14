@@ -25,7 +25,6 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 - **[Trajectory I/O](io/trajectory_io.md)** - Read and write trajectories (ASCII)
 - **[Results I/O](io/results_io.md)** - Read and write ATE/RPE/alignment results and parameters
 - **[Google Earth (KML)](io/kml.md)** - Export trajectories and ATE results to Google Earth
-- **[3D Playback (CesiumJS)](io/cesium.md)** - 3D playback of trajectories and ATE results in the browser
 
 ## Results
 

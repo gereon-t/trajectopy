@@ -146,81 +146,52 @@ Available figures:
 | `rpe_figures` | Relative pose error over the pair distance |
 | `parameter_matrix_figure` | Covariance / correlation of estimated alignment parameters |
 
-### Maps
-
-Top views of georeferenced trajectories (trajectories with an EPSG code) can be drawn on a map, in the GUI
-and in scripts:
-
-```python
-settings = tpy.PlotSettings(background_map=True, map_style="satellite")  # or "osm"
-vis.show(vis.ate_map_figure(ate_results, settings))
-```
-
-- Map tiles are loaded from OpenStreetMap or Esri World Imagery without an API key. This requires an
-  internet connection and sends the approximate area of your trajectories to the tile server. Tiles are
-  cached on disk (`%LOCALAPPDATA%\trajectopy\tiles` on Windows, `$XDG_CACHE_HOME/trajectopy/tiles` or
-  `~/.cache/trajectopy/tiles` otherwise) and
-  refreshed after 30 days.
-- With a map, positions are shown in local east/north meters around the center of the trajectories
-  (true north; the axes can be rotated slightly against a UTM grid due to meridian convergence).
-- Trajectories without an EPSG code are drawn without a map.
-
 ### Google Earth
 
-Georeferenced trajectories can be exported as KML and opened in Google Earth: `trajectory.to_kml("track.kml")`
-or "Export to Google Earth (KML)…" in the trajectory context menu of the GUI, which asks for the color.
+Georeferenced trajectories (trajectories with an EPSG code) and ATE results can be exported as KML and opened in
+Google Earth, which shows them in their real-world context: on imagery and terrain, and, where available,
+between photorealistic 3D buildings. In the GUI, choose "Export to Google Earth (KML)…" in the context menu of a
+trajectory or an ATE result; the dialog offers all options below and remembers them.
 
 ```python
-trajectory.to_kml("track.kml", color="#1f77b4")  # "#RRGGBB" or "#RRGGBBAA"
+trajectory.to_kml("track.kml", color="#1f77b4")  # one color: "#RRGGBB" or "#RRGGBBAA"
+trajectory.to_kml("track.kml", field="speed", heights="ellipsoidal", extrude=True)
+ate_result.to_kml("ate.kml", field="along_track", colormap="viridis", value_range=(-0.5, 0.5))
 ```
 
 The trajectory is exported as a time-stamped track: the time slider of Google Earth plays it back in real
-time order (also for spatially sorted trajectories). Positions are clamped to the ground.
+time order (also for spatially sorted trajectories). Playback needs Google Earth Pro (desktop); Google Earth on
+the web shows the trajectory, but has no time slider.
 
-ATE results can be exported colored by one of their deviations, in the colors of the plots (blue = low,
-red = high). In the GUI, choose "Export to Google Earth (KML)…" in the context menu of an ATE result.
+**Colors**
 
-```python
-ate_result.to_kml("ate.kml", field="along_track")
-```
+- Trajectories are drawn in one color (`color`), or colored by a field (`field`): `speed`, `height` or `time`.
+- ATE results are colored by one of their deviations (`field`): `position`, `x`, `y`, `z`, `along_track`,
+  `horizontal_cross_track`, `vertical_cross_track` and, for trajectories with orientations, `rotation`, `roll`,
+  `pitch` and `yaw`.
+- `colormap`: `"rdylbu"` (blue = low, red = high, like the plots) or `"viridis"` (colorblind-safe).
+- Like in the plots, the color scale is clipped to the mean ± 3 standard deviations (`max_std`, 0 = minimum to
+  maximum). With `value_range=(lower, upper)`, it has fixed limits instead, so that the colors of several
+  exports are comparable.
+- `color_classes`: number of colors (default 11). The Places panel of Google Earth lists them with their value
+  ranges (the legend); each class can be switched on and off. During playback, the colored line grows with the
+  time slider.
+- `line_width`: line width in pixels.
 
-Available fields: `position`, `x`, `y`, `z`, `along_track`, `horizontal_cross_track`, `vertical_cross_track`
-and, for trajectories with orientations, `rotation`, `roll`, `pitch` and `yaw`. Like in the plots, the color
-scale is clipped to the mean ± 3 standard deviations (`max_std`). The Places panel of Google Earth lists the
-color classes with their value ranges (the legend); each class can be switched on and off. During playback,
-the colored line grows with the time slider.
+**Heights**
 
-### 3D Playback in the Browser
-
-Google Earth plays KML files back only in its desktop version. As an alternative, trajectories and ATE results
-can be played back on a 3D globe in any browser (CesiumJS): choose "3D Playback in the Browser…" in their
-context menu. The page has a timeline and play controls; a point moves along the trajectory and the (colored)
-line grows behind it. ATE results can be colored by the same fields as the Google Earth export.
-
-```python
-from trajectopy.io import cesium
-
-cesium.write_ate_html(ate_result, "ate.html", field="along_track", map_style="satellite")
-cesium.show_in_browser("ate.html")
-```
-
-- The camera follows the moving position during playback ("Follow the position" on the page); rotate and
-  zoom around it with the mouse, or uncheck the box to move the camera freely.
-- The map is OpenStreetMap or Esri World Imagery. With a free
-  [Cesium ion access token](https://ion.cesium.com/tokens) (`ion_token`), the globe also shows terrain and 3D
-  buildings, or - `map_style="photorealistic"` - Google's photorealistic 3D tiles (textured 3D cities and
-  landscapes, as in Google Earth). The token is written into the page, so don't share pages that contain it.
-- The map can be switched on the page (*Map*): OpenStreetMap, satellite or photorealistic 3D. `map_style`
-  only sets the map shown first.
-- By default, the trajectory is drawn on the ground (terrain or 3D tiles). To draw it at its own heights, choose
-  *Heights* in the dialog (`heights=` in Python): `"ellipsoidal"` for heights above the WGS84 ellipsoid (e.g.
-  from GNSS) or `"geoid"` for heights above sea level, which are converted with the EGM2008 geoid model
-  (downloaded once from cdn.proj.org). With the wrong choice, the trajectory floats about 30-50 m above the
-  ground or sinks into it.
-- Browsers don't run CesiumJS on pages opened directly from disk. `show_in_browser` (and the GUI) therefore
-  open the page through a local web server that only serves this page. To open a saved page later, serve its
-  folder, e.g. with `python -m http.server`, and open `http://localhost:8000/ate.html`.
-- The page loads CesiumJS and the map tiles from the internet.
+- `heights="ground"` (default): the trajectory is clamped to the terrain of Google Earth; its own heights are
+  ignored. With a `height_offset`, it floats that many meters above the terrain.
+- `heights="ellipsoidal"`: the trajectory is drawn at its own heights, which are heights above the WGS84
+  ellipsoid (e.g. from GNSS). Google Earth expects heights above sea level, so they are converted with the
+  EGM96 geoid model (downloaded once from cdn.proj.org).
+- `heights="sea_level"`: the trajectory is drawn at its own heights, which are already heights above sea
+  level (e.g. orthometric or normal heights of a national height system). They are used as they are; the
+  difference between national height systems and Google Earth's EGM96 is usually below a meter or two.
+- With the wrong choice, the trajectory floats about 30-50 m above the ground or sinks into it.
+  `height_offset` (meters) is added in all modes, e.g. to correct for the antenna height.
+- `extrude=True` connects the trajectory to the ground with a semi-transparent vertical curtain, which makes
+  heights easy to read (not for trajectories clamped to the ground).
 
 ## 5. GUI Application
 

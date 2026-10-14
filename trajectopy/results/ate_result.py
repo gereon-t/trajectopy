@@ -501,7 +501,7 @@ class ATEResult:
 
         return pd.DataFrame(all_data, columns=self.columns)
 
-    def to_kml(self, filename: str, field: str = "position", max_std: float = 3.0) -> None:
+    def to_kml(self, filename: str, field: str = "position", max_std: float = 3.0, **options) -> None:
         """Exports the result to a Google Earth KML file: the trajectory colored by a deviation field, with
         playback in Google Earth's time slider. Requires a trajectory with a known EPSG code.
 
@@ -512,10 +512,12 @@ class ATEResult:
                 Defaults to "position".
             max_std (float, optional): The color scale is clipped to mean ± ``max_std`` standard deviations
                 (0 = minimum to maximum). Defaults to 3.0.
+            **options: Further options of :func:`trajectopy.io.kml.write_ate_kml`, e.g. ``colormap="viridis"``,
+                ``value_range=(0.0, 0.5)``, ``heights="ellipsoidal"`` or ``extrude=True``.
         """
         from trajectopy.io.kml import write_ate_kml
 
-        write_ate_kml(self, filename, field=field, max_std=max_std)
+        write_ate_kml(self, filename, field=field, max_std=max_std, **options)
 
     def to_file(self, filename: str, mode: str = "a") -> None:
         """Exports the result as CSV with a metadata header."""

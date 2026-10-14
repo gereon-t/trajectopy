@@ -1,7 +1,7 @@
 import functools
 import logging
 
-from PySide6 import QtGui, QtWidgets
+from PySide6 import QtWidgets
 from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
@@ -31,7 +31,7 @@ from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.manual_alignment_window import ManualAlignmentWindow
 from trajectopy.gui.views.playback_window import PlaybackWindow
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
-from trajectopy.io.kml import ate_kml_fields
+from trajectopy.io.kml import ate_kml_fields, trajectory_kml_fields
 from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)
@@ -69,8 +69,6 @@ class UIManager(QObject):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._sub_windows: list[QtWidgets.QWidget] = []
-        self._kml_color = QtGui.QColor("#ff0000")  # last color chosen for Google Earth exports
-        self._ate_kml_field = "position"  # last field chosen to color ATE results in Google Earth
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
             UIRequestType.EPSG_EDIT: self.epsg_input_edit,
@@ -79,7 +77,6 @@ class UIManager(QObject):
             UIRequestType.IMPORT_RES: self.result_import_dialog,
             UIRequestType.EXPORT_TRAJ: self.trajectory_export_dialog,
             UIRequestType.EXPORT_KML: self.kml_export_dialog,
-            UIRequestType.CESIUM_PLAYBACK: self.cesium_playback_dialog,
             UIRequestType.EXPORT_RES: self.result_export_dialog,
             UIRequestType.MESSAGE: self.message_box,
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
@@ -209,81 +206,27 @@ class UIManager(QObject):
             return
 
     def kml_export_dialog(self, request: UIRequest) -> None:
-        """Google Earth export: of a trajectory in a chosen color, or of an ATE result colored by a chosen field."""
-        if request.result_selection.entries:
-            self._ate_kml_export_dialog(request)
-            return
-        trajectory = request.trajectory_selection.entries[0].trajectory
-        color = QtWidgets.QColorDialog.getColor(self._kml_color, self._dialog_parent(), "Track Color in Google Earth")
-        if not color.isValid():  # canceled
-            return
-        self._kml_color = color
-        if selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)"):
-            try:
-                trajectory.to_kml(selected_file, color=color.name())
-            except ValueError as error:
-                show_msg_box(str(error))
-
-    def _ate_kml_export_dialog(self, request: UIRequest) -> None:
-        entry = request.result_selection.entries[0]
-        if not isinstance(entry, AbsoluteDeviationEntry):
-            return
-        fields = ate_kml_fields(entry.deviations)
-        labels = [f"{field.label} [{field.unit}]" for field in fields]
-        keys = [field.key for field in fields]
-        current = keys.index(self._ate_kml_field) if self._ate_kml_field in keys else 0
-        label, accepted = QtWidgets.QInputDialog.getItem(
-            self._dialog_parent(), "Google Earth Export", "Color the trajectory by:", labels, current, False
-        )
-        if not accepted:
-            return
-        self._ate_kml_field = keys[labels.index(label)]
-        if selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)"):
-            try:
-                entry.deviations.to_kml(selected_file, field=self._ate_kml_field)
-            except ValueError as error:
-                show_msg_box(str(error))
-
-    def cesium_playback_dialog(self, request: UIRequest) -> None:
-        """3D playback in the browser (CesiumJS) of a trajectory or an ATE result."""
-        from trajectopy.gui.views.cesium_dialog import CesiumPlaybackDialog
-        from trajectopy.io import cesium
+        """Google Earth export of a trajectory (one color or colored by a field) or of an ATE result."""
+        from trajectopy.gui.views.kml_dialog import KmlExportDialog
 
         ate_entry = next(iter(request.result_selection.entries), None)
-        if isinstance(ate_entry, AbsoluteDeviationEntry):
-            fields = [(field.key, f"{field.label} [{field.unit}]") for field in ate_kml_fields(ate_entry.deviations)]
-            dialog = CesiumPlaybackDialog(self._dialog_parent(), fields=fields, field=self._ate_kml_field)
+        if ate_entry is not None and not isinstance(ate_entry, AbsoluteDeviationEntry):
+            return
+        if ate_entry is not None:
+            dialog = KmlExportDialog(self._dialog_parent(), fields=ate_kml_fields(ate_entry.deviations), ate=True)
         else:
-            dialog = CesiumPlaybackDialog(self._dialog_parent(), color=self._kml_color)
+            dialog = KmlExportDialog(self._dialog_parent(), fields=trajectory_kml_fields())
         if dialog.exec() != QtWidgets.QDialog.DialogCode.Accepted:
             return
-        if not (selected_file := save_file_dialog(None, file_filter="Web page (*.html)")):
+        if not (selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)")):
             return
         try:
-            if isinstance(ate_entry, AbsoluteDeviationEntry):
-                self._ate_kml_field = dialog.field
-                cesium.write_ate_html(
-                    ate_entry.deviations,
-                    selected_file,
-                    field=dialog.field,
-                    map_style=dialog.map_style,
-                    ion_token=dialog.ion_token,
-                    heights=dialog.heights,
-                )
+            if ate_entry is not None:
+                ate_entry.deviations.to_kml(selected_file, **dialog.options())
             else:
-                self._kml_color = dialog.color
-                cesium.write_trajectory_html(
-                    request.trajectory_selection.entries[0].trajectory,
-                    selected_file,
-                    color=dialog.color.name(),
-                    map_style=dialog.map_style,
-                    ion_token=dialog.ion_token,
-                    heights=dialog.heights,
-                )
+                request.trajectory_selection.entries[0].trajectory.to_kml(selected_file, **dialog.options())
         except ValueError as error:
             show_msg_box(str(error))
-            return
-        cesium.show_in_browser(selected_file, wait=0)
 
     def _dialog_parent(self) -> QtWidgets.QWidget | None:
         parent = self.parent()

@@ -21,7 +21,7 @@ from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.utils.colors import color_range
 from trajectopy.utils.numeric import rms
-from trajectopy.visualization import basemap, style
+from trajectopy.visualization import style
 from trajectopy.visualization.axes import get_axis_label, index_axis
 from trajectopy.visualization.figure import Figure, RenderFunction
 
@@ -92,19 +92,9 @@ class _TopView:
 
     xy: list[np.ndarray]
     labels: tuple[str, str]
-    mercator_xy: list[np.ndarray] | None = None
-    frame: basemap.MapFrame | None = None
 
 
-def _top_view(trajectories: Sequence[Trajectory], settings: PlotSettings) -> _TopView:
-    """Uses a local frame on a map if requested and possible, otherwise the trajectories' own x/y."""
-    if settings.background_map:
-        mercator_xy = [basemap.web_mercator_xy(trajectory) for trajectory in trajectories]
-        valid = [xy for xy in mercator_xy if xy is not None]
-        if len(valid) == len(mercator_xy):
-            frame = basemap.MapFrame.around(np.vstack(valid))
-            return _TopView([frame.to_local(xy) for xy in valid], ("east [m]", "north [m]"), valid, frame)
-        logger.warning("No map background: the trajectories need a known EPSG code to be placed on a map.")
+def _top_view(trajectories: Sequence[Trajectory]) -> _TopView:
     x_label, y_label, _ = get_axis_label(trajectories)
     return _TopView([trajectory.xyz[:, :2] for trajectory in trajectories], (x_label, y_label))
 
@@ -115,10 +105,6 @@ def _top_view_plot(layout: pg.GraphicsLayout, settings: PlotSettings, view: _Top
     plot.setAspectLocked(True)
     plot.setClipToView(False)
     plot.setDownsampling(auto=False)
-    if view.frame is not None and view.mercator_xy is not None:
-        plot.showGrid(x=False, y=False)
-        mercator_xy = [_thin(xy, MAX_PATH_POINTS) for xy in view.mercator_xy]
-        basemap.add_map_background(plot, view.frame, mercator_xy, settings.map_style)
     return plot
 
 
@@ -156,7 +142,7 @@ def _value_map(
     values = _smooth(np.asarray(values, dtype=float), settings.smoothing_window)
     lower, upper = color_range(values, settings.colorbar_max_std)
 
-    view = _top_view([trajectory], settings)
+    view = _top_view([trajectory])
     xy, values = _thin(view.xy[0], MAX_MAP_POINTS), _thin(values, MAX_MAP_POINTS)
 
     plot = _top_view_plot(layout, settings, view, title=title)
@@ -252,7 +238,7 @@ def positions_figure(trajectories: Sequence[Trajectory], settings: PlotSettings 
     settings = _settings(settings)
 
     def render(layout: pg.GraphicsLayout) -> None:
-        view = _top_view(trajectories, settings)
+        view = _top_view(trajectories)
         plot = _top_view_plot(layout, settings, view, legend=True)
         for index, (trajectory, xy) in enumerate(zip(trajectories, view.xy)):
             xy = _thin(xy, MAX_PATH_POINTS)

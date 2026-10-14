@@ -172,8 +172,6 @@ same `PlotSettings`:
 - `font_size` (int): Font size in points of axis labels and titles. Default value is 10.
 - `export_format` (str): File format of exported plots ("png", "jpg" or "svg"). Default value is "png".
 - `export_width` (int): Width in pixels of exported raster images. Default value is 1600.
-- `background_map` (bool): Show a map below the top views of georeferenced trajectories (see [Maps](user_guide.md#maps)). Default value is False.
-- `map_style` (str): Map shown by `background_map`: "osm" (OpenStreetMap) or "satellite" (Esri World Imagery). Default value is "osm".
 
 Plot settings are saved with a GUI session (`plot_settings.json`) and can be loaded at startup with
 `trajectopy --plot-settings plot_settings.json`.

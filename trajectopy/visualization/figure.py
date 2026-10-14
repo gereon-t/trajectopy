@@ -16,7 +16,7 @@ from collections.abc import Callable, Sequence
 import pyqtgraph as pg
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from trajectopy.visualization import basemap, style
+from trajectopy.visualization import style
 from trajectopy.visualization._svg_export import export_svg
 
 logger = logging.getLogger(__name__)
@@ -77,11 +77,7 @@ class Figure:
         app = ensure_app()
         render = self.variants[variant if variant is not None else next(iter(self.variants))]
         graphics = pg.GraphicsLayoutWidget()
-        token = basemap.load_synchronously.set(True)  # an export has to contain the map tiles
-        try:
-            render(graphics.ci)
-        finally:
-            basemap.load_synchronously.reset(token)
+        render(graphics.ci)
         _settle_layout(app, graphics)
         _render_to_file(graphics, path, width)
 

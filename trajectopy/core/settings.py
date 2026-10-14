@@ -904,11 +904,6 @@ class PlotSettings(Settings):
         font_size: Font size in points of axis labels and titles. Defaults to 10.
         export_format: File format for exported plots ("png", "jpg" or "svg"). Defaults to "png".
         export_width: Width in pixels of exported raster images. Defaults to 1600.
-        background_map: Show a map below top views of georeferenced trajectories. Requires an internet
-            connection and sends the approximate area of the trajectories to the tile server; tiles are
-            cached on disk. Defaults to False.
-        map_style: Map shown by ``background_map``: "osm" (OpenStreetMap) or "satellite" (Esri World
-            Imagery). Defaults to "osm".
     """
 
     ate_unit_is_mm: bool = False
@@ -923,8 +918,6 @@ class PlotSettings(Settings):
     font_size: int = 10
     export_format: str = "png"
     export_width: int = 1600
-    background_map: bool = False
-    map_style: str = "osm"
 
     @property
     def unit_multiplier(self) -> float:

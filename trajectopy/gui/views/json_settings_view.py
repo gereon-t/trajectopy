@@ -11,7 +11,6 @@ from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
 logger = logging.getLogger(__name__)
 
 EXPORT_FORMATS = ["png", "jpg", "svg"]
-MAP_STYLES = ["osm", "satellite"]
 MATCHING_METHODS = ["nearest_spatial", "nearest_temporal", "interpolation", "nearest_spatial_interpolated"]
 PAIR_DISTANCE_UNITS = ["meter", "second"]
 POSITION_APPROXIMATION_METHODS = ["cubic"]
@@ -299,9 +298,8 @@ def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> Qt
         double_spin_box.setValue(value)
         return double_spin_box
 
-    for options in (EXPORT_FORMATS, MAP_STYLES):
-        if value in options:
-            return _combo_box(parent_widget, options, value)
+    if value in EXPORT_FORMATS:
+        return _combo_box(parent_widget, EXPORT_FORMATS, value)
 
     line_edit = QtWidgets.QLineEdit(parent_widget)
     line_edit.setText(str(value))

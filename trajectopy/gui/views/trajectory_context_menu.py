@@ -365,14 +365,7 @@ class TrajectoryContextMenu(SelectionMenu):
             "Export to Google Earth (KML)…",
             self._ui(UIRequestType.EXPORT_KML),
             hint="Saves the trajectory as a time-stamped track for Google Earth (playback with its time slider), "
-            "in a color of your choice.",
-            unavailable=kml_unavailable,
-        )
-        add_action(
-            self,
-            "3D Playback in the Browser…",
-            self._ui(UIRequestType.CESIUM_PLAYBACK),
-            hint="Opens a 3D globe in the web browser (CesiumJS) that plays the trajectory back with a timeline. Also saves it as a web page.",
+            "in one color or colored by speed, height or time, on the terrain or at its heights.",
             unavailable=kml_unavailable,
         )
         self.addSeparator()

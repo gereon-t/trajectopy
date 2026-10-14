@@ -26,7 +26,7 @@ Trajectopy offers a range of features, including:
 - __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
 - __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
-- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories can be shown on OpenStreetMap or satellite maps and exported to Google Earth.
+- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.
 
 ## Installation (with GUI)
 
