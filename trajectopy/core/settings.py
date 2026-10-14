@@ -914,8 +914,8 @@ class PlotSettings(Settings):
     colorbar_max_std: float = 3.0
     smoothing_window: int = 1
     use_relative_timestamps: bool = False
-    line_width: float = 2.5
-    marker_size: float = 4.0
+    line_width: float = 5
+    marker_size: float = 5.0
     font_size: int = 10
     export_format: str = "png"
     export_width: int = 1600

@@ -16,6 +16,8 @@ from trajectopy.visualization.plots import _value_brushes
 logger = logging.getLogger(__name__)
 
 MAX_PREVIEW_POINTS = 5000
+LINE_WIDTH = 4.0  # pixels, trajectories
+MARKER_SIZE = 6  # pixels, ATE results (color-coded points)
 COLORBAR_MAX_STD = 3.0  # same default as PlotSettings.colorbar_max_std
 COLORBAR_GAP = 14  # pixels
 
@@ -73,7 +75,7 @@ class PreviewPlot(pg.PlotWidget):
             self.plotItem.plot(
                 xyz[:, 0],
                 xyz[:, 1],
-                pen=style.pen(index, 2.5),
+                pen=style.pen(index, LINE_WIDTH),
                 name=trajectory.name if len(trajectories) > 1 else None,
                 antialias=True,  # at most MAX_PREVIEW_POINTS points
             )
@@ -96,7 +98,9 @@ class PreviewPlot(pg.PlotWidget):
         for ate_result, indices, ate in zip(ate_results, samples, values):
             xyz = self._local_xyz(ate_result.trajectory, local_transformer, indices)
             self.plotItem.addItem(
-                pg.ScatterPlotItem(x=xyz[:, 0], y=xyz[:, 1], size=4, pen=None, brush=_value_brushes(ate, lower, upper))
+                pg.ScatterPlotItem(
+                    x=xyz[:, 0], y=xyz[:, 1], size=MARKER_SIZE, pen=None, brush=_value_brushes(ate, lower, upper)
+                )
             )
 
         self._colorbar.setLevels(values=(lower, upper))
