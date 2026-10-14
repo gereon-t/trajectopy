@@ -26,11 +26,12 @@ from trajectopy.gui.models.entries import AbsoluteDeviationEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
-from trajectopy.gui.utils import center_window, set_dark_titlebar
+from trajectopy.gui.utils import app_settings, center_window, set_dark_titlebar
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.preview_plot import PreviewPlot
 from trajectopy.gui.views.progress_window import ProgressWindow
+from trajectopy.gui.views.properties_panel import PropertiesPanel
 from trajectopy.gui.views.result_table_view import ResultTableView
 from trajectopy.gui.views.timeline_widget import TimelineDialog
 from trajectopy.gui.views.trajectory_table_view import TrajectoryTableView
@@ -76,10 +77,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         }
 
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
-        self._settings = QtCore.QSettings("trajectopy", "trajectopy")
-        self._preview_enabled = self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool)
-        # selection handler whose content the details panel currently shows; re-run when the preview is turned on
-        self._refresh_details: Callable[[], None] | None = None
+        self._settings = app_settings()
+        self._preview_enabled = bool(self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool))
+        # handler of the selection that the properties and the preview currently show
+        self._show_selection: Callable[[], None] = self._on_trajectory_selection_changed
         plot_style.set_theme(self._dark_theme)
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
@@ -150,6 +151,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         about_action.triggered.connect(self.about_window.show)
         menubar.addAction(about_action)
 
+        # outside of the preview panel: stays reachable while the preview is hidden
+        # (kept as attribute: PySide does not pass the ownership of corner widgets to the menu bar)
+        self._preview_corner = QtWidgets.QWidget()
+        self._preview_corner.setObjectName("previewToggleCorner")  # transparent on the menu bar (themes)
+        toggle_layout = QtWidgets.QHBoxLayout(self._preview_corner)
+        toggle_layout.setContentsMargins(0, 0, 10, 0)
+        toggle_layout.addWidget(self._preview_toggle, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        # as high as the menu bar, so that the check box is vertically centered with the menu entries
+        self._preview_corner.setFixedHeight(menubar.sizeHint().height())
+        menubar.setCornerWidget(self._preview_corner, QtCore.Qt.Corner.TopRightCorner)
+
         self._timeline_dialog = TimelineDialog(parent=self)
 
         theme_menu = QtWidgets.QMenu("Theme", parent=self)
@@ -191,11 +203,11 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def _set_preview_enabled(self, enabled: bool) -> None:
         self._preview_enabled = enabled
         self._settings.setValue(PREVIEW_SETTINGS_KEY, enabled)
-        self._preview.setVisible(enabled)
-        if not enabled:
+        self._preview_panel.setVisible(enabled)
+        if enabled:
+            self._show_selection()
+        else:
             self._preview.clear_preview()
-        elif self._refresh_details is not None:
-            self._refresh_details()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         if not self.worker.shutdown(timeout=5.0):
@@ -304,61 +316,24 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @QtCore.Slot()
     def _on_trajectory_selection_changed(self) -> None:
+        self._show_selection = self._on_trajectory_selection_changed
         entries = self.trajectoryTableView.selected_entries
-        if not entries:
-            self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
-            self.details_text.clear()
-            self._preview.clear_preview()
-            return
-
-        self._refresh_details = self._on_trajectory_selection_changed
-        lines = []
-        for entry in entries:
-            t = entry.trajectory
-            lines.append(f"Name:              {t.name}")
-            lines.append(f"Poses:             {len(t)}")
-            lines.append(f"Length [m]:        {t.total_length:.3f}")
-            lines.append(f"Data rate [Hz]:    {t.data_rate:.3f}")
-            lines.append(f"EPSG:              {t.positions.epsg}")
-            lines.append(f"Orientation:       {'yes' if t.has_orientation else 'no'}")
-            lines.append(f"Function of:       {t.index_label}")
-            lines.append(f"Reference:         {'yes' if entry.set_as_reference else 'no'}")
-            if len(entries) > 1:
-                lines.append("\u2500" * 36)
-        self.details_text.setPlainText("\n".join(lines))
-
-        if self._preview_enabled:
+        self._properties.show_entries(entries)
+        if entries and self._preview_enabled:
             self._preview.show_trajectories([entry.trajectory for entry in entries])
-
-    @QtCore.Slot()
-    def _on_result_selection_changed(self) -> None:
-        if (sel := self.resultTableView.selectionModel()) is None or not sel.selectedRows():
-            return
-        rows = [r.row() for r in sel.selectedRows()]
-        items = [self.result_table_model.items[r] for r in rows if r < len(self.result_table_model.items)]
-        if not items:
-            return
-
-        self._refresh_details = self._on_result_selection_changed
-        ate_results = [item.deviations for item in items if isinstance(item, AbsoluteDeviationEntry)]
-        if self._preview_enabled and ate_results:
-            self._preview.show_ate_results(ate_results)
         else:
             self._preview.clear_preview()
 
-        lines = []
-        for item in items:
-            prop = getattr(item, "property_dict", {})
-            if prop:
-                longest_key = max((len(k) for k in prop), default=0)
-                for k, v in prop.items():
-                    lines.append(f"{k:<{longest_key}}  {v}")
-            else:
-                lines.append(f"Name:  {item.name}")
-                lines.append(f"Type:  {type(item).__name__}")
-            if len(items) > 1:
-                lines.append("─" * 48)
-        self.details_text.setPlainText("\n".join(lines))
+    @QtCore.Slot()
+    def _on_result_selection_changed(self) -> None:
+        self._show_selection = self._on_result_selection_changed
+        items = self.resultTableView.selected_entries
+        self._properties.show_entries(items)
+        ate_results = [item.deviations for item in items if isinstance(item, AbsoluteDeviationEntry)]
+        if ate_results and self._preview_enabled:
+            self._preview.show_ate_results(ate_results)
+        else:
+            self._preview.clear_preview()
 
     @QtCore.Slot(object)
     def _show_timeline(self, entries) -> None:
@@ -414,115 +389,82 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setupUi(self):
         """This method sets up the GUI"""
         self.setObjectName("MainWindow")
-        self.resize(1150, 700)
+        # large enough for the three stacked tables and a useful preview, but never larger than the screen
+        available = self.screen().availableGeometry()
+        self.resize(min(1600, int(available.width() * 0.9)), min(1000, int(available.height() * 0.9)))
         self.center()
         self.setMinimumSize(QtCore.QSize(800, 500))
 
-        # --- Central widget ---
-        self.centralwidget = QtWidgets.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-        main_layout = QtWidgets.QHBoxLayout(self.centralwidget)
-        main_layout.setContentsMargins(8, 8, 8, 8)
-        main_layout.setSpacing(8)
-
-        # Horizontal splitter: left (tables) | right (details panel)
-        self.h_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal, self.centralwidget)
-
-        # --- LEFT PANE: vertical splitter with Trajectories + Results ---
-        left_widget = QtWidgets.QWidget()
-        left_layout = QtWidgets.QVBoxLayout(left_widget)
-        left_layout.setContentsMargins(0, 0, 8, 0)
-        left_layout.setSpacing(0)
-
-        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical, left_widget)
-
-        traj_group = QtWidgets.QGroupBox("Trajectories")
-        traj_layout = QtWidgets.QVBoxLayout(traj_group)
-        traj_layout.setContentsMargins(6, 6, 6, 6)
-
-        self.trajectoryTableView = TrajectoryTableView(
-            parent=traj_group,
-            trajectory_table_model=self.trajectory_table_model,
-        )
-        header = self.trajectoryTableView.horizontalHeader()
-        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
-        header.setStretchLastSection(True)
-        header.resizeSections(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        traj_layout.addWidget(self.trajectoryTableView)
-
-        traj_button_layout = QtWidgets.QHBoxLayout()
-        traj_button_layout.addStretch()
+        self.trajectoryTableView = TrajectoryTableView(parent=None, trajectory_table_model=self.trajectory_table_model)
         self.addTrajectoryButton = QtWidgets.QPushButton("Add")
         self.addTrajectoryButton.setObjectName("addTrajectoryButton")
-        traj_button_layout.addWidget(self.addTrajectoryButton)
-        traj_layout.addLayout(traj_button_layout)
-        self.splitter.addWidget(traj_group)
+        self.addTrajectoryButton.setToolTip("Loads trajectory files (or drop them onto the table).")
 
-        result_group = QtWidgets.QGroupBox("Results")
-        result_layout = QtWidgets.QVBoxLayout(result_group)
-        result_layout.setContentsMargins(6, 6, 6, 6)
-
-        self.resultTableView = ResultTableView(parent=result_group, result_table_model=self.result_table_model)
+        self.resultTableView = ResultTableView(parent=None, result_table_model=self.result_table_model)
         self.trajectoryTableView.trajectory_context_menu.alignments_available = lambda: bool(
             self.result_table_model.alignment_entries
         )
-        result_layout.addWidget(self.resultTableView)
-
-        result_button_layout = QtWidgets.QHBoxLayout()
-        result_button_layout.addStretch()
         self.addResultButton = QtWidgets.QPushButton("Add")
         self.addResultButton.setObjectName("addResultButton")
-        result_button_layout.addWidget(self.addResultButton)
-        result_layout.addLayout(result_button_layout)
-        self.splitter.addWidget(result_group)
+        self.addResultButton.setToolTip("Loads result files (or drop them onto the table).")
 
-        left_layout.addWidget(self.splitter)
-        self.h_splitter.addWidget(left_widget)
+        self._properties = PropertiesPanel()
 
-        # --- RIGHT PANE: details panel (text + 2D preview) ---
-        details_widget = QtWidgets.QWidget()
-        details_widget.setMinimumWidth(200)
-        details_layout = QtWidgets.QVBoxLayout(details_widget)
-        details_layout.setContentsMargins(8, 0, 0, 0)
-        details_layout.setSpacing(4)
+        # left: trajectories, results and the properties of the selection
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
+        self.splitter.addWidget(self._group("Trajectories", self.trajectoryTableView, self.addTrajectoryButton))
+        self.splitter.addWidget(self._group("Results", self.resultTableView, self.addResultButton))
+        self.splitter.addWidget(self._group("Properties", self._properties))
+        height = self.height()
+        self.splitter.setSizes([int(height * 0.35), int(height * 0.25), int(height * 0.4)])
 
-        details_header = QtWidgets.QLabel("Details")
-        details_header.setStyleSheet("color: {muted}; padding: 4px;".format(muted="#888888"))
+        # right: preview
         self._preview_toggle = QtWidgets.QCheckBox("Preview")
         self._preview_toggle.setChecked(self._preview_enabled)
         self._preview_toggle.setToolTip("Plots the selected trajectories and ATE results. Disable on slow systems.")
         self._preview_toggle.toggled.connect(self._set_preview_enabled)
-        header_layout = QtWidgets.QHBoxLayout()
-        header_layout.addWidget(details_header)
-        header_layout.addStretch()
-        header_layout.addWidget(self._preview_toggle)
-        details_layout.addLayout(header_layout)
-
-        details_v_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
-
-        self.details_text = QtWidgets.QTextEdit()
-        self.details_text.setReadOnly(True)
-        self.details_text.setPlaceholderText("Select a trajectory or result to see details.")
-        details_v_splitter.addWidget(self.details_text)
-
         self._preview = PreviewPlot()
         self._preview.setMinimumHeight(150)
-        self._preview.setVisible(self._preview_enabled)
-        details_v_splitter.addWidget(self._preview)
-        details_v_splitter.setStretchFactor(0, 1)
-        details_v_splitter.setStretchFactor(1, 2)
+        # hidden together with the preview, so that the tables use the whole width
+        self._preview_panel = QtWidgets.QWidget()
+        self._preview_panel.setMinimumWidth(200)
+        preview_layout = QtWidgets.QVBoxLayout(self._preview_panel)
+        preview_layout.setContentsMargins(0, 0, 0, 0)
+        preview_layout.addWidget(self._preview)
+        self._preview_panel.setVisible(self._preview_enabled)
 
-        details_layout.addWidget(details_v_splitter)
-        self.h_splitter.addWidget(details_widget)
-        self.h_splitter.setStretchFactor(0, 3)
-        self.h_splitter.setStretchFactor(1, 1)
+        self.h_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
+        self.h_splitter.addWidget(self.splitter)
+        self.h_splitter.addWidget(self._preview_panel)
+        # the preview gets most of the width (also when the window is resized)
+        self.h_splitter.setStretchFactor(0, 1)
+        self.h_splitter.setStretchFactor(1, 4)
+        self.h_splitter.setSizes([int(self.width() * 0.2), int(self.width() * 0.8)])
 
+        central = QtWidgets.QWidget(self)
+        main_layout = QtWidgets.QHBoxLayout(central)
+        main_layout.setContentsMargins(8, 8, 8, 8)
         main_layout.addWidget(self.h_splitter)
-        self.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(central)
         self.statusBar().showMessage("Ready")
         self.statusBar().setSizeGripEnabled(False)
 
         self.retranslateUi()
+
+    @staticmethod
+    def _group(
+        title: str, widget: QtWidgets.QWidget, add_button: QtWidgets.QPushButton | None = None
+    ) -> QtWidgets.QGroupBox:
+        group = QtWidgets.QGroupBox(title)
+        layout = QtWidgets.QVBoxLayout(group)
+        layout.setContentsMargins(6, 6, 6, 6)
+        layout.addWidget(widget)
+        if add_button is not None:
+            buttons = QtWidgets.QHBoxLayout()
+            buttons.addStretch()
+            buttons.addWidget(add_button)
+            layout.addLayout(buttons)
+        return group
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate

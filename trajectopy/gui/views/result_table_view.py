@@ -28,9 +28,6 @@ class ResultTableView(EntryTableView):
         )
         self.result_table_model = result_table_model
         self.setObjectName("resultTableView")
-        if (header := self.horizontalHeader()) is not None:
-            header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Interactive)
-            header.setStretchLastSection(True)
 
         menu = self.result_context_menu
         menu.result_model_request.connect(self.result_model_request.emit)

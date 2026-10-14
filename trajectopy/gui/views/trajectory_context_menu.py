@@ -112,13 +112,6 @@ class TrajectoryContextMenu(SelectionMenu):
             lambda: self.show_timeline.emit(self.get_selection().entries),
             hint="Shows the time spans of the trajectories, e.g. to check that they overlap.",
         )
-        add_action(
-            self,
-            "Properties",
-            self._ui(UIRequestType.TRAJ_PROPERTIES),
-            hint="Shows details like the number of poses, length, data rate and coordinate system.",
-            shortcuts=("P",),
-        )
 
     def _reference_section(self) -> None:
         if len(self._selection) == 1 and self._selection.entries[0].set_as_reference:
@@ -371,7 +364,8 @@ class TrajectoryContextMenu(SelectionMenu):
             self,
             "Export to Google Earth (KML)…",
             self._ui(UIRequestType.EXPORT_KML),
-            hint="Saves the trajectory as a line that can be opened in Google Earth.",
+            hint="Saves the trajectory as a time-stamped track for Google Earth (playback with its time slider), "
+            "in a color of your choice.",
             unavailable=kml_unavailable,
         )
         self.addSeparator()

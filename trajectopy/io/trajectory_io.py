@@ -1,7 +1,6 @@
-"""Reading and writing of trajectories (trajectopy ASCII format and KML)."""
+"""Reading and writing of trajectories (trajectopy ASCII format). For KML, see :mod:`trajectopy.io.kml`."""
 
 import io
-import xml.etree.ElementTree as ET
 
 import numpy as np
 import pandas as pd
@@ -91,51 +90,3 @@ def write_trajectory(trajectory: Trajectory, filename: str, mode: str = "w") -> 
     """
     with open(filename, mode=mode, newline="\n", encoding="utf-8") as file:
         file.write(trajectory_to_string(trajectory))
-
-
-def write_kml(trajectory: Trajectory, filename: str, precision: float = 1e-6) -> None:
-    """Exports a trajectory to a Google Earth KML file.
-
-    Requires the trajectory to have a valid EPSG code so it can be converted to WGS84 (EPSG:4326).
-
-    Args:
-        trajectory (Trajectory): Trajectory to export.
-        filename (str): The output filename (e.g., "track.kml").
-        precision (float, optional): Coordinate precision in degrees for rounding/simplification. Defaults to 1e-6.
-
-    Raises:
-        ValueError: If the trajectory does not have a known EPSG code.
-    """
-    traj = trajectory.copy()
-    if traj.positions.local_transformer is None:
-        raise ValueError(
-            "Trajectory must be defined in a well-known coordinate system (EPSG code) to be exported to KML. "
-        )
-    traj.positions.to_epsg(4326)
-
-    traj.positions = traj.positions.round_to(precision)
-    _, indices = np.unique(traj.positions.xyz[:, 0:2], return_index=True, axis=0)
-    traj.mask(np.sort(indices))
-
-    kml_file = ET.Element("kml", xmlns="http://earth.google.com/kml/2.1")
-    document = ET.SubElement(kml_file, "Document")
-
-    placemark = ET.SubElement(document, "Placemark")
-    name = ET.SubElement(placemark, "name")
-    name.text = traj.name
-
-    style = ET.SubElement(placemark, "Style")
-    line_style = ET.SubElement(style, "LineStyle")
-    color = ET.SubElement(line_style, "color")
-    color.text = "ff0000ff"
-    width = ET.SubElement(line_style, "width")
-    width.text = "2"
-
-    line_string = ET.SubElement(placemark, "LineString")
-    coordinates = ET.SubElement(line_string, "coordinates")
-
-    coordinates.text = "\n".join(f"  {pos[1]:.9f},{pos[0]:.9f},{0.00:.3f}" for pos in traj.positions.xyz)
-
-    tree = ET.ElementTree(kml_file)
-    ET.indent(tree, space="", level=0)
-    tree.write(filename, encoding="utf-8", xml_declaration=True)

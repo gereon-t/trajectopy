@@ -6,6 +6,8 @@ import numpy as np
 import pyqtgraph as pg
 from PySide6 import QtGui
 
+from trajectopy.utils.colors import VALUE_COLORS
+
 # Qualitative palette for lines of different trajectories / results (Tableau 10).
 PALETTE = (
     "#1f77b4",
@@ -23,23 +25,8 @@ PALETTE = (
 # Colors of the three components of a vector (x/roll, y/pitch, z/yaw).
 AXIS_COLORS = ("#d62728", "#2ca02c", "#1f77b4")
 
-# Sequential map for color-coded magnitudes (reversed ColorBrewer RdYlBu: blue = low, red = high).
-VALUE_COLORMAP = pg.ColorMap(
-    pos=np.linspace(0.0, 1.0, 11),
-    color=[
-        "#313695",
-        "#4575b4",
-        "#74add1",
-        "#abd9e9",
-        "#e0f3f8",
-        "#ffffbf",
-        "#fee090",
-        "#fdae61",
-        "#f46d43",
-        "#d73027",
-        "#a50026",
-    ],
-)
+# Sequential map for color-coded magnitudes (blue = low, red = high), shared with the Google Earth export.
+VALUE_COLORMAP = pg.ColorMap(pos=np.linspace(0.0, 1.0, len(VALUE_COLORS)), color=list(VALUE_COLORS))
 
 
 @dataclass(frozen=True)

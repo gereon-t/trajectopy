@@ -39,7 +39,7 @@ class ResultTableModel(RequestTableModel):
             ResultModelRequestType.SORT: self.sort_items,
         }
         super().__init__(
-            headers=["Name", "Type", "# Values", "ID"],
+            headers=["Name", "Result Type"],
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
 

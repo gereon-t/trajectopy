@@ -35,6 +35,10 @@ class EntryTableView(QtWidgets.QTableView):
         self.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.setSortingEnabled(False)
         self.verticalHeader().setVisible(False)
+        # the name takes the free space; the other (short) columns fit their content
+        header = self.horizontalHeader()
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
 
         # the menu is a child of the view: its status tips reach the main window's status bar
         context_menu.setParent(self, context_menu.windowFlags())

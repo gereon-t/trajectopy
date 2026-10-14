@@ -5,16 +5,19 @@ from collections.abc import Sequence
 
 import numpy as np
 import pyqtgraph as pg
+from PySide6 import QtGui
 
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
+from trajectopy.utils.colors import color_range
 from trajectopy.visualization import style
-from trajectopy.visualization.plots import _color_range, _value_brushes
+from trajectopy.visualization.plots import _value_brushes
 
 logger = logging.getLogger(__name__)
 
 MAX_PREVIEW_POINTS = 5000
 COLORBAR_MAX_STD = 3.0  # same default as PlotSettings.colorbar_max_std
+COLORBAR_GAP = 14  # pixels
 
 
 class PreviewPlot(pg.PlotWidget):
@@ -30,8 +33,11 @@ class PreviewPlot(pg.PlotWidget):
         self.plotItem.layout.setContentsMargins(4, 10, 18, 4)
         self._legend = self.plotItem.addLegend(offset=(-5, 5), labelTextSize="8pt")
         # created once and only shown/hidden: re-adding it to the layout makes the plot flicker while switching results
-        self._colorbar = pg.ColorBarItem(colorMap=style.VALUE_COLORMAP, label="ATE [m]", interactive=False, width=12)
+        self._colorbar = pg.ColorBarItem(colorMap=style.VALUE_COLORMAP, interactive=False, width=12)
+        # label next to the tick values (pyqtgraph would put it on the narrow left side, between plot and color bar)
+        self._colorbar.axis.setLabel("ATE [m]")
         self.plotItem.layout.addItem(self._colorbar, 2, 3)
+        self.plotItem.layout.setColumnSpacing(2, COLORBAR_GAP)  # between the plot area and the color bar
         self._colorbar.hide()
         self.apply_theme()
         self.clear_preview()
@@ -84,7 +90,7 @@ class PreviewPlot(pg.PlotWidget):
 
         samples = [_sample_indices(len(ate_result.trajectory)) for ate_result in ate_results]
         values = [ate_result.pos_dev_comb[indices] for ate_result, indices in zip(ate_results, samples)]
-        lower, upper = _color_range(np.concatenate(values), COLORBAR_MAX_STD)
+        lower, upper = color_range(np.concatenate(values), COLORBAR_MAX_STD)
 
         local_transformer = ate_results[0].trajectory.positions.local_transformer
         for ate_result, indices, ate in zip(ate_results, samples, values):
@@ -94,8 +100,18 @@ class PreviewPlot(pg.PlotWidget):
             )
 
         self._colorbar.setLevels(values=(lower, upper))
+        self._fit_colorbar_axis(lower, upper)
         self._colorbar.show()
         self.plotItem.autoRange()
+
+    def _fit_colorbar_axis(self, lower: float, upper: float) -> None:
+        """Fixes the width of the color bar axis to its tick labels plus the full label height. pyqtgraph sizes it
+        with 80 % of the label height and only while visible, which lets the label overlap the tick labels."""
+        axis = self._colorbar.axis
+        metrics = QtGui.QFontMetrics(axis.style["tickFont"] or axis.font())
+        widest = max(metrics.horizontalAdvance(f"{value:.3g}0") for value in (lower, upper))
+        label_height = axis.label.boundingRect().height()
+        axis.setWidth(int(widest + axis.style["tickTextOffset"][0] + max(0, axis.style["tickLength"]) + label_height))
 
     @staticmethod
     def _local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | None = None) -> np.ndarray:

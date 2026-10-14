@@ -168,7 +168,27 @@ vis.show(vis.ate_map_figure(ate_results, settings))
 ### Google Earth
 
 Georeferenced trajectories can be exported as KML and opened in Google Earth: `trajectory.to_kml("track.kml")`
-or "Export to Google Earth (KML)" in the trajectory context menu of the GUI.
+or "Export to Google Earth (KML)…" in the trajectory context menu of the GUI, which asks for the color.
+
+```python
+trajectory.to_kml("track.kml", color="#1f77b4")  # "#RRGGBB" or "#RRGGBBAA"
+```
+
+The trajectory is exported as a time-stamped track: the time slider of Google Earth plays it back in real
+time order (also for spatially sorted trajectories). Positions are clamped to the ground.
+
+ATE results can be exported colored by one of their deviations, in the colors of the plots (blue = low,
+red = high). In the GUI, choose "Export to Google Earth (KML)…" in the context menu of an ATE result.
+
+```python
+ate_result.to_kml("ate.kml", field="along_track")
+```
+
+Available fields: `position`, `x`, `y`, `z`, `along_track`, `horizontal_cross_track`, `vertical_cross_track`
+and, for trajectories with orientations, `rotation`, `roll`, `pitch` and `yaw`. Like in the plots, the color
+scale is clipped to the mean ± 3 standard deviations (`max_std`). The Places panel of Google Earth lists the
+color classes with their value ranges (the legend); each class can be switched on and off. During playback,
+the colored line grows with the time slider.
 
 ## 5. GUI Application
 
@@ -179,6 +199,12 @@ trajectopy
 ```
 
 This opens the application where you can drag & drop files, align them, and view results interactively.
+
+The left side lists the trajectories (name, EPSG code, reference) and the results (name, type). Below them,
+the properties table shows all properties of the selected trajectories or results side by side; *Export…* saves
+them as CSV. The preview on the right plots the selected trajectories, or the selected ATE results colored by
+their deviations. On slow systems, it can be turned off with the *Preview* checkbox in the top right corner;
+the tables and the properties then use the whole width.
 
 ### Manual Alignment
 
@@ -216,7 +242,7 @@ explains why, e.g. *Compare with Reference* needs a reference: right-click the r
 
 The trajectory context menu is grouped by task:
 
-- **Plot**, **Playback in 3D**, **Timeline** and **Properties**
+- **Plot**, **Playback in 3D** and **Timeline**
 - **Set as Reference**, **Compare with Reference** (ATE, RPE, extracting matching poses) and
   **Align with Reference** (estimated, interactive, first pose, or applying an existing alignment)
 - **Coordinate System**: transforming positions or declaring their EPSG code
@@ -231,7 +257,6 @@ table has focus and do what the menu entry does for the selected rows.
 | Shortcut | Trajectories table | Results table |
 | --- | --- | --- |
 | `V` | Plot | Plot |
-| `P` | Properties | Properties |
 | `R` / `Shift+R` | Set as reference / unset reference | |
 | `T` | Transform to EPSG | |
 | `M` | Merge (two or more trajectories) | |

@@ -20,15 +20,16 @@ class PropertyTableModel(BaseTableModel):
     ui_request = Signal(UIRequest)
     operation_finished = Signal()
 
-    def __init__(self, num_cols: int = 2):
+    def __init__(self) -> None:
         self.REQUEST_MAPPING = {
             PropertyModelRequestType.EXPORT: self.export,
         }
-
-        header_list = ["Name"]
-        header_list.extend(["Value"] * (num_cols - 1))
-        super().__init__(headers=header_list)
+        super().__init__(headers=["Property"])
         self.items: list[PropertyEntry] = []
+
+    def set_headers(self, headers: list[str]) -> None:
+        """Sets the column headers: the property name, then one column per entry."""
+        self._headers = headers
 
     @Slot(PropertyModelRequest)
     def handle_request(self, request: PropertyModelRequest) -> None:

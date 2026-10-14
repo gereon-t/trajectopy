@@ -172,15 +172,8 @@ class TrajectoryEntry(Entry):
         self.trajectory.name = name
 
     @property
-    def column(self) -> tuple[str, str, int, int, str, str]:
-        return (
-            self.name,
-            bool_to_str(self.set_as_reference),
-            len(self.trajectory),
-            self.trajectory.positions.epsg,
-            self.trajectory.sorting.value,
-            self.full_filename,
-        )
+    def column(self) -> tuple[str, int, str]:
+        return self.name, self.trajectory.positions.epsg, "yes" if self.set_as_reference else ""
 
     @property
     def has_orientations(self) -> str:
@@ -204,6 +197,7 @@ class TrajectoryEntry(Entry):
                 else "local / unknown"
             ),
             "Orientation available": "yes" if self.trajectory.rotations is not None else "no",
+            "Reference": "yes" if self.set_as_reference else "no",
             "Number of Poses": str(len(self.trajectory)),
             "Sort By:": self.trajectory.sorting.value,
             "Length [m]": f"{self.trajectory.total_length:.3f}",
@@ -240,8 +234,22 @@ class ResultEntry(Entry, ABC):
         pass
 
     @property
-    def column(self) -> tuple[str, str, int, str]:
-        return self.name, self.type, len(self), self.entry_id
+    def column(self) -> tuple[str, str]:
+        return self.name, self.type
+
+    @property
+    def property_dict(self) -> dict[str, str]:
+        return {
+            "Result Type": self.type,
+            **self.result_properties,
+            "Number of Values": str(len(self)),
+            "UUID": self.entry_id,
+        }
+
+    @property
+    def result_properties(self) -> dict[str, str]:
+        """Properties specific to the kind of result."""
+        return {}
 
     @classmethod
     def from_file(cls, filename: str) -> "ResultEntry":
@@ -292,8 +300,8 @@ class DeviationsEntry(ResultEntry, ABC):
         self.deviations.name = name
 
     @property
-    def property_dict(self) -> dict[str, str]:
-        return self.deviations.property_dict
+    def result_properties(self) -> dict[str, str]:
+        return {key: value for key, value in self.deviations.property_dict.items() if key != "Type"}
 
 
 @dataclass
@@ -379,7 +387,7 @@ class AlignmentEntry(ResultEntry):
         self.alignment_result.name = name
 
     @property
-    def property_dict(self) -> dict[str, str]:
+    def result_properties(self) -> dict[str, str]:
         if self.alignment_result.position_parameters is None:
             return {}
 

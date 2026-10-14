@@ -30,6 +30,18 @@ class TestGuiSmoke(unittest.TestCase):
         cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
     def setUp(self) -> None:
+        # Never touch the user's real GUI settings (window layout): use a temporary settings file.
+        import tempfile
+
+        settings_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(settings_dir.cleanup)
+        settings_file = os.path.join(settings_dir.name, "settings.ini")
+        patcher = mock.patch(
+            "trajectopy.gui.views.main_window.app_settings",
+            side_effect=lambda: QtCore.QSettings(settings_file, QtCore.QSettings.Format.IniFormat),
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
         # Never block on modal dialogs; record messages instead.
         self.messages: list[str] = []
         for target in (
@@ -219,6 +231,49 @@ class TestGuiSmoke(unittest.TestCase):
             )
             self._wait_until(lambda: len(window.trajectory_table_model.items) >= 1)
             self.assertEqual(self.messages, [])
+        finally:
+            window.close()
+
+    def test_disabled_preview_frees_its_space(self):
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            window.resize(1200, 700)
+            self.app.processEvents()
+            preview_width = window.h_splitter.sizes()[1]
+            self.assertGreater(preview_width, 0)
+
+            window._preview_toggle.setChecked(False)  # the toggle stays reachable in the menu bar
+            self.app.processEvents()
+            self.assertEqual(window.h_splitter.sizes()[1], 0)
+
+            window._preview_toggle.setChecked(True)
+            self.app.processEvents()
+            self.assertEqual(window.h_splitter.sizes()[1], preview_width)
+        finally:
+            window.close()
+
+    def test_properties_panel_shows_the_selection(self):
+        from trajectopy.gui.models.entries import TrajectoryEntry
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+        from trajectopy.io import read_trajectory
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            for file in TRAJECTORY_FILES:
+                window.trajectory_table_model.add(
+                    TrajectoryEntry(full_filename=file, trajectory=read_trajectory(file))
+                )
+            window.trajectoryTableView.selectAll()
+            self.app.processEvents()
+            model = window._properties.model
+            names = [entry.name for entry in window.trajectory_table_model.items]
+            self.assertEqual(
+                [model.headerData(i, QtCore.Qt.Orientation.Horizontal) for i in range(3)], ["Property", *names]
+            )
+            self.assertIn("Number of Poses", [item.name for item in model.items])
+
         finally:
             window.close()
 

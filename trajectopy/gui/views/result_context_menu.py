@@ -52,13 +52,6 @@ class ResultContextMenu(SelectionMenu):
             shortcuts=("V",),
             unavailable="" if self._plot_type is not None else "Select deviations, or a single alignment.",
         )
-        add_action(
-            self,
-            "Properties",
-            self._ui(UIRequestType.RES_PROPERTIES),
-            hint="Shows the statistics of the result, e.g. RMS and maximum deviation or the estimated parameters.",
-            shortcuts=("P",),
-        )
         if isinstance(alignment := entries[0], AlignmentEntry) and all(
             isinstance(entry, AlignmentEntry) for entry in entries
         ):
@@ -99,6 +92,20 @@ class ResultContextMenu(SelectionMenu):
             shortcuts=("E",),
             unavailable=single,
         )
+        if isinstance(first := entries[0], AbsoluteDeviationEntry) and all(
+            isinstance(entry, AbsoluteDeviationEntry) for entry in entries
+        ):
+            kml_unavailable = single
+            if not kml_unavailable and first.deviations.trajectory.positions.local_transformer is None:
+                kml_unavailable = "The coordinate system of the evaluated trajectory is unknown (EPSG 0)."
+            add_action(
+                self,
+                "Export to Google Earth (KML)…",
+                self._ui(UIRequestType.EXPORT_KML),
+                hint="Saves the evaluated trajectory for Google Earth, colored by a deviation of your choice "
+                "(e.g. position, along-track or yaw), with playback in Google Earth's time slider.",
+                unavailable=kml_unavailable,
+            )
         self.addSeparator()
         add_action(
             self,

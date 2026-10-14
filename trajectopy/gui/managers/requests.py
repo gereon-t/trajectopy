@@ -90,9 +90,7 @@ class TrajectoryModelRequestType(Enum):
 
 
 class UIRequestType(Enum):
-    TRAJ_PROPERTIES = auto()
     DOF_ORGANIZER = auto()
-    RES_PROPERTIES = auto()
     TRAJ_SETTINGS = auto()
     EPSG_EDIT = auto()
     EPSG_TRANSFORMATION = auto()

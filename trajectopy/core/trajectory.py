@@ -644,19 +644,22 @@ class Trajectory:
 
         write_trajectory(self, filename=filename, mode=mode)
 
-    def to_kml(self, filename: str, precision: float = 1e-6) -> None:
+    def to_kml(self, filename: str, precision: float = 1e-6, color: str = "#ff0000") -> None:
         """
-        Exports the trajectory to a Google Earth KML file.
+        Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
+        Google Earth plays back.
 
         Requires the trajectory to have a valid EPSG code so it can be converted to WGS84 (EPSG:4326).
 
         Args:
             filename (str): The output filename (e.g., "track.kml").
-            precision (float, optional): Coordinate precision in degrees for rounding/simplification. Defaults to 1e-6.
+            precision (float, optional): Coordinate precision in degrees. Defaults to 1e-6 (about 0.1 m).
+            color (str, optional): Color of the track and its points as "#RRGGBB" or "#RRGGBBAA".
+                Defaults to red.
 
         Raises:
-            ValueError: If the trajectory does not have a known EPSG code.
+            ValueError: If the trajectory does not have a known EPSG code or the color is invalid.
         """
-        from trajectopy.io.trajectory_io import write_kml
+        from trajectopy.io.kml import write_kml
 
-        write_kml(self, filename=filename, precision=precision)
+        write_kml(self, filename=filename, precision=precision, color=color)

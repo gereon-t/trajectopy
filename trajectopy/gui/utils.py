@@ -1,7 +1,12 @@
 import os
 from functools import wraps
 
-from PySide6 import QtWidgets
+from PySide6 import QtCore, QtWidgets
+
+
+def app_settings() -> QtCore.QSettings:
+    """Persistent user settings of the GUI (window layout, preferences)."""
+    return QtCore.QSettings("trajectopy", "trajectopy")
 
 
 def set_dark_titlebar(window: QtWidgets.QWidget, use_dark: bool) -> None:

@@ -40,14 +40,7 @@ class TrajectoryTableModel(RequestTableModel):
         }
 
         super().__init__(
-            headers=[
-                "Name",
-                "Reference",
-                "# Poses",
-                "EPSG",
-                "Sorted by",
-                "Filename",
-            ],
+            headers=["Name", "EPSG", "Reference"],
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
 

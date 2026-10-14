@@ -19,6 +19,7 @@ from trajectopy.core.settings import PairDistanceUnit, PlotSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
+from trajectopy.utils.colors import color_range
 from trajectopy.utils.numeric import rms
 from trajectopy.visualization import basemap, style
 from trajectopy.visualization.axes import get_axis_label, index_axis
@@ -125,19 +126,6 @@ def _thin(array: np.ndarray, max_points: int) -> np.ndarray:
     return array[:: max(1, int(np.ceil(len(array) / max_points)))]
 
 
-def _color_range(values: np.ndarray, max_std: float) -> tuple[float, float]:
-    finite = values[np.isfinite(values)]
-    if finite.size == 0:
-        return 0.0, 1.0
-    lower, upper = float(finite.min()), float(finite.max())
-    if max_std > 0:
-        mean, std = float(finite.mean()), float(finite.std())
-        lower, upper = max(lower, mean - max_std * std), min(upper, mean + max_std * std)
-    if upper <= lower:
-        upper = lower + 1e-9
-    return lower, upper
-
-
 def _smooth(values: np.ndarray, window: int) -> np.ndarray:
     if window <= 1 or len(values) < window:
         return values
@@ -166,7 +154,7 @@ def _value_map(
 ) -> None:
     """Draws the top view of ``trajectory`` colored by ``values`` with a colorbar."""
     values = _smooth(np.asarray(values, dtype=float), settings.smoothing_window)
-    lower, upper = _color_range(values, settings.colorbar_max_std)
+    lower, upper = color_range(values, settings.colorbar_max_std)
 
     view = _top_view([trajectory], settings)
     xy, values = _thin(view.xy[0], MAX_MAP_POINTS), _thin(values, MAX_MAP_POINTS)

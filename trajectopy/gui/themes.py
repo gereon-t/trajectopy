@@ -90,13 +90,19 @@ _BASE = """
             width: 0;
         }
         QSplitter::handle {
-            background-color: %(border)s;
+            background: transparent;
+        }
+        QSplitter::handle:hover {
+            background-color: %(hover)s;
         }
         QSplitter::handle:horizontal {
-            width: 1px;
+            width: 8px;
         }
         QSplitter::handle:vertical {
-            height: 1px;
+            height: 8px;
+        }
+        #previewToggleCorner, #previewToggleCorner QCheckBox {
+            background: transparent;
         }
         QCheckBox {
             color: %(text)s;

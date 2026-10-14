@@ -1,8 +1,7 @@
 import functools
 import logging
-from typing import Any
 
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
@@ -18,7 +17,7 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
     generic_request_handler,
 )
-from trajectopy.gui.models.entries import AlignmentEntry
+from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.utils import (
     browse_dir_dialog,
@@ -31,31 +30,11 @@ from trajectopy.gui.views.dof_organizer import DOFOrganizer
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.manual_alignment_window import ManualAlignmentWindow
 from trajectopy.gui.views.playback_window import PlaybackWindow
-from trajectopy.gui.views.properties_window import PropertiesGUI
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
+from trajectopy.io.kml import ate_kml_fields
 from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)
-
-
-def merge_dicts(dicts: tuple[dict[str, str], ...]):
-    """
-    Merges multiple dictionaries into a single dictionary, where each key in the merged dictionary
-    corresponds to a list of values from each input dictionary.
-
-    Args:
-        dicts (Tuple[dict]): A tuple of dictionaries to be merged.
-
-    Returns:
-        dict: A dictionary containing the merged key-value pairs.
-    """
-    merged_dict: dict[Any, Any] = {}
-    for i, d in enumerate(dicts):
-        for k, v in d.items():
-            if k not in merged_dict:
-                merged_dict[k] = ["-"] * len(dicts)
-            merged_dict[k][i] = v
-    return merged_dict
 
 
 class UIManager(QObject):
@@ -90,6 +69,8 @@ class UIManager(QObject):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self._sub_windows: list[QtWidgets.QWidget] = []
+        self._kml_color = QtGui.QColor("#ff0000")  # last color chosen for Google Earth exports
+        self._ate_kml_field = "position"  # last field chosen to color ATE results in Google Earth
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
             UIRequestType.EPSG_EDIT: self.epsg_input_edit,
@@ -100,9 +81,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_KML: self.kml_export_dialog,
             UIRequestType.EXPORT_RES: self.result_export_dialog,
             UIRequestType.MESSAGE: self.message_box,
-            UIRequestType.TRAJ_PROPERTIES: self.show_trajectory_properties,
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
-            UIRequestType.RES_PROPERTIES: self.show_result_properties,
             UIRequestType.TRAJ_SETTINGS: self.show_trajectory_settings,
             UIRequestType.CONFIRM_RESET: self.show_reset_question,
             UIRequestType.EXPORT_SESSION: self.session_export_dialog,
@@ -127,14 +106,6 @@ class UIManager(QObject):
         self._sub_windows.clear()
         self._sub_windows.append(window)
 
-    def show_trajectory_properties(self, request: UIRequest) -> None:
-        property_window = PropertiesGUI(parent=self.parent(), num_cols=len(request.trajectory_selection.entries) + 1)
-        property_window.reset()
-        merged_properties = merge_dicts(tuple(entry.property_dict for entry in request.trajectory_selection.entries))
-        property_window.add_from_dict(merged_properties)
-        self._track_window(property_window)
-        property_window.show()
-
     def show_dof_organizer(self, request: UIRequest) -> None:
         dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
         dof_organizer.selection_made.connect(
@@ -142,14 +113,6 @@ class UIManager(QObject):
         )
         self._track_window(dof_organizer)
         dof_organizer.show()
-
-    def show_result_properties(self, request: UIRequest) -> None:
-        property_window = PropertiesGUI(parent=self.parent(), num_cols=len(request.result_selection.entries) + 1)
-        property_window.reset()
-        merged_properties = merge_dicts(tuple(entry.property_dict for entry in request.result_selection.entries))
-        property_window.add_from_dict(merged_properties)
-        self._track_window(property_window)
-        property_window.show()
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
         settings_window = JSONViewer(
@@ -245,13 +208,44 @@ class UIManager(QObject):
             return
 
     def kml_export_dialog(self, request: UIRequest) -> None:
-        """Exports the selected trajectory as a line that can be opened in Google Earth."""
+        """Google Earth export: of a trajectory in a chosen color, or of an ATE result colored by a chosen field."""
+        if request.result_selection.entries:
+            self._ate_kml_export_dialog(request)
+            return
         trajectory = request.trajectory_selection.entries[0].trajectory
+        color = QtWidgets.QColorDialog.getColor(self._kml_color, self._dialog_parent(), "Track Color in Google Earth")
+        if not color.isValid():  # canceled
+            return
+        self._kml_color = color
         if selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)"):
             try:
-                trajectory.to_kml(selected_file)
+                trajectory.to_kml(selected_file, color=color.name())
             except ValueError as error:
                 show_msg_box(str(error))
+
+    def _ate_kml_export_dialog(self, request: UIRequest) -> None:
+        entry = request.result_selection.entries[0]
+        if not isinstance(entry, AbsoluteDeviationEntry):
+            return
+        fields = ate_kml_fields(entry.deviations)
+        labels = [f"{field.label} [{field.unit}]" for field in fields]
+        keys = [field.key for field in fields]
+        current = keys.index(self._ate_kml_field) if self._ate_kml_field in keys else 0
+        label, accepted = QtWidgets.QInputDialog.getItem(
+            self._dialog_parent(), "Google Earth Export", "Color the trajectory by:", labels, current, False
+        )
+        if not accepted:
+            return
+        self._ate_kml_field = keys[labels.index(label)]
+        if selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)"):
+            try:
+                entry.deviations.to_kml(selected_file, field=self._ate_kml_field)
+            except ValueError as error:
+                show_msg_box(str(error))
+
+    def _dialog_parent(self) -> QtWidgets.QWidget | None:
+        parent = self.parent()
+        return parent if isinstance(parent, QtWidgets.QWidget) else None
 
     def result_export_dialog(self, request: UIRequest) -> None:
         if selected_file := save_file_dialog(None, file_filter="Result File (*.result)"):
