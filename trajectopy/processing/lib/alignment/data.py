@@ -75,6 +75,7 @@ class AlignmentData:
             raise ValueError("At least one trajectory is empty after preprocessing!")
 
         match_trajectories(trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings)
+        self._subsample()
 
         logger.info(
             "Using timespan of %.3f seconds between %.3f and %.3f.",
@@ -95,6 +96,18 @@ class AlignmentData:
         logger.debug("Variance vector created.")
         self.res_vector = self.build_res_vector()
         logger.debug("Residual vector created.")
+
+    def _subsample(self) -> None:
+        """Randomly draws at most `max_samples` matched poses to bound the size of the adjustment."""
+        max_samples = self.alignment_settings.preprocessing.max_samples
+        if max_samples <= 0 or len(self.traj_from) <= max_samples:
+            return
+
+        rng = np.random.default_rng()
+        indices = np.sort(rng.choice(len(self.traj_from), size=max_samples, replace=False))
+        logger.info("Randomly sampled %i of %i matched poses for alignment.", max_samples, len(self.traj_from))
+        self.traj_from.mask(indices)
+        self.traj_to.mask(indices)
 
     @cached_property
     def observation_groups(

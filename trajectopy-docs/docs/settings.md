@@ -17,6 +17,7 @@ The processing settings allow you to configure various processing steps that can
 - `min_speed` (float): Only poses with a speed above this threshold are considered for alignment (meters/second).
 - `time_start` (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
 - `time_end` (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
+- `max_samples` (integer): Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly. Set to `0` to use all poses. Default: `5000`.
 
 #### Alignment Estimation Settings
 

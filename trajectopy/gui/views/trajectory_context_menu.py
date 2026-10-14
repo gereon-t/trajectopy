@@ -251,7 +251,7 @@ class TrajectoryContextMenu(SelectionMenu):
             unavailable = ""
         add_action(
             menu,
-            "Transform to Reference System",
+            "Adapt EPSG from Reference",
             self._manager(TrajectoryManagerRequestType.EPSG_TO_REF),
             hint="Transforms the positions into the coordinate system of the reference.",
             unavailable=unavailable,

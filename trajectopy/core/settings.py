@@ -203,11 +203,15 @@ class AlignmentPreprocessing(Settings):
             Timestamp is in seconds relative to first common timestamp. Defaults to 0.0.
         time_end: Only poses with timestamp below this threshold are considered.
             Timestamp is in seconds relative to first common timestamp. Defaults to 0.0.
+        max_samples: Maximum number of matched poses used for the alignment. If more poses are
+            available, a new random subset of this size is drawn on each run. Set to 0
+            to use all poses. Defaults to 5000.
     """
 
     min_speed: float = 0.0
     time_start: float = 0.0
     time_end: float = 0.0
+    max_samples: int = 5000
 
 
 @dataclass
