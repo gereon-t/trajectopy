@@ -282,15 +282,6 @@ QToolButton#iconButton {
     border-radius: 6px;
 }
 QToolButton#iconButton:hover { color: %(text)s; background-color: %(hover)s; }
-QToolButton#disclosureButton {
-    color: %(muted)s;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 2px;
-    border: none;
-}
-QToolButton#disclosureButton:hover { color: %(text)s; background: transparent; }
-QToolButton#disclosureButton:checked { background: transparent; border: none; color: %(text)s; }
 
 /* top bar */
 QToolButton#layoutButton {

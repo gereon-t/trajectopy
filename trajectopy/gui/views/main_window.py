@@ -454,7 +454,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         )
 
         self.trajectoryTableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
-        self.resultTableView.selectionModel().selectionChanged.connect(self._schedule_refresh)
         self.result_table_model.layoutChanged.connect(self._color_new_ate_results)
         for model in (self.trajectory_table_model, self.result_table_model):
             model.layoutChanged.connect(self._on_selection_changed)
@@ -469,7 +468,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 FileRequest(type=FileRequestType.READ_TRAJ, file_list=paths)
             )
         )
-        self.workspace.trajectory_activated.connect(self._select_trajectory)
+        self.workspace.trajectories_chosen.connect(self._select_trajectories)
 
     # ----------------------------------------------------------------------------------- selection & data
 
@@ -482,11 +481,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._update_selection_panel()
         self._schedule_refresh()
 
-    def _select_trajectory(self, entry_id: str) -> None:
+    def _select_trajectories(self, entry_ids: list[str]) -> None:
+        """Selects exactly these trajectories in the list (e.g. the rows selected in the comparison table)."""
+        model = self.trajectoryTableView.model()
+        selection = QtCore.QItemSelection()
         for row, entry in enumerate(self.trajectory_table_model.items):
-            if entry.entry_id == entry_id:
-                self.trajectoryTableView.selectRow(row)
-                return
+            if entry.entry_id in entry_ids:
+                selection.select(model.index(row, 0), model.index(row, model.columnCount() - 1))
+        self.trajectoryTableView.selectionModel().select(
+            selection,
+            QtCore.QItemSelectionModel.SelectionFlag.ClearAndSelect | QtCore.QItemSelectionModel.SelectionFlag.Rows,
+        )
 
     @Slot()
     def _schedule_refresh(self) -> None:
@@ -552,13 +557,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         if not trajectories.items:
             self._color_modes.clear()
 
-        selected = {entry.entry_id for entry in self._selected_trajectories}
-        selected |= {r.source_id for r in self.resultTableView.selected_entries if r.source_id}
+        listed = {entry.entry_id for entry in self._selected_trajectories}
+        compared = [t for t in checked if (t.ate or t.rpe) and t.entry.entry_id in listed]
+        self._filter_results(compared)
         self.workspace.set_data(
             WorkspaceData(
                 trajectories=checked,
                 reference=trajectories.reference_entry,
-                selected_ids=frozenset(selected),
+                selected_ids=frozenset(listed),
+                compared_ids=frozenset(t.entry.entry_id for t in compared),
                 scene=scene,
                 plot_settings=self.plot_settings,
                 settings_version=self._plot_settings_version,
@@ -584,7 +591,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             self._selection_title.setText(f"{len(entries)} trajectories")
         self._update_summary(entries)
         self._update_color_by(entries)
-        self._filter_results()
 
     def _update_summary(self, entries: list[TrajectoryEntry]) -> None:
         """A few key numbers of the selected trajectory; everything else is in its "Properties"."""
@@ -643,25 +649,21 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 if self._color_modes.get(entry.source_id, scalar_fields.SOLID) == scalar_fields.SOLID:
                     self._color_modes[entry.source_id] = scalar_fields.ATE
 
-    @Slot()
-    def _filter_results(self) -> None:
-        """Shows the results of the selected trajectories (and those whose trajectory is not loaded)."""
-        loaded = {entry.entry_id for entry in self.trajectory_table_model.items}
-        selected = {entry.entry_id for entry in self._selected_trajectories}
+    def _filter_results(self, compared: list[WorkspaceTrajectory]) -> None:
+        """Shows the results in the rows selected in the comparison table; all results if no row is selected."""
+        results = self.result_table_model.items
+        wanted = {result.entry_id for t in compared for result in (t.ate, t.rpe) if result is not None}
         shown = 0
-        for row, result in enumerate(self.result_table_model.items):
-            visible = not selected or result.source_id in selected or result.source_id not in loaded
+        for row, result in enumerate(results):
+            visible = not wanted or result.entry_id in wanted
             self.resultTableView.setRowHidden(row, not visible)
             shown += visible
-        self._results_toggle.setText(f"Results  {shown}" if shown else "Results")
-        self._results_toggle.setVisible(bool(self.result_table_model.items))
-        self.resultTableView.setVisible(self._results_toggle.isVisible() and self._results_toggle.isChecked())
-
-    def _toggle_results(self, expanded: bool) -> None:
-        self.resultTableView.setVisible(expanded)
-        self._results_toggle.setArrowType(
-            QtCore.Qt.ArrowType.DownArrow if expanded else QtCore.Qt.ArrowType.RightArrow
+        self._results_count.setText(f"{shown} of {len(results)}" if wanted else str(len(results)))
+        self._results_count.setToolTip(
+            "The results in the rows selected in the comparison table" if wanted else "All results"
         )
+        self._results_header.setVisible(bool(results))
+        self.resultTableView.setVisible(bool(results))
 
     # ------------------------------------------------------------------------------- reference & evaluation
 
@@ -941,17 +943,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         layout.addWidget(self._details)
         self._details.hide()
 
-        # results, collapsed: they are mostly needed for their context menus (export, plots, alignments)
-        self._results_toggle = QtWidgets.QToolButton()
-        self._results_toggle.setObjectName("disclosureButton")
-        self._results_toggle.setText("Results")
-        self._results_toggle.setToolButtonStyle(QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self._results_toggle.setArrowType(QtCore.Qt.ArrowType.RightArrow)
-        self._results_toggle.setCheckable(True)
-        self._results_toggle.toggled.connect(self._toggle_results)
-        self._results_toggle.hide()
-        layout.addSpacing(8)
-        layout.addWidget(self._results_toggle)
+        # results: those in the rows selected in the comparison table, or all
+        self._results_header = QtWidgets.QWidget()
+        results_header = QtWidgets.QHBoxLayout(self._results_header)
+        results_header.setContentsMargins(4, 8, 0, 0)
+        results_header.addWidget(_section_label("Results"))
+        results_header.addStretch()
+        self._results_count = QtWidgets.QLabel()
+        self._results_count.setObjectName("mutedLabel")
+        results_header.addWidget(self._results_count)
+        self._results_header.hide()
+        layout.addWidget(self._results_header)
         layout.addWidget(self.resultTableView, stretch=2)
         self.resultTableView.hide()
         layout.addStretch()

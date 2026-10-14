@@ -50,12 +50,13 @@ class WorkspaceData:
     trajectories: Sequence[WorkspaceTrajectory] = ()
     reference: TrajectoryEntry | None = None
     selected_ids: frozenset[str] = frozenset()
+    compared_ids: frozenset[str] = frozenset()  # trajectories whose rows are selected in the comparison table
     scene: Sequence[SceneTrajectory] = ()
     plot_settings: PlotSettings = field(default_factory=PlotSettings)
     settings_version: int = 0  # increased when the plot settings were edited in place
 
-    def content_key(self, with_selection: bool = False) -> tuple:
-        """Identifies what plots show: they are only redrawn when it changes (not on every selection change)."""
+    def content_key(self) -> tuple:
+        """Identifies what plots show: they are only redrawn when it changes."""
         trajectories = tuple(
             (
                 t.entry.entry_id,
@@ -63,14 +64,22 @@ class WorkspaceData:
                 t.color,
                 *(r.entry_id if r is not None else None for r in (t.ate, t.rpe, t.alignment)),
             )
-            for t in self.trajectories
+            for t in self.shown
         )
-        selection = tuple(sorted(self.selected_ids)) if with_selection else ()
-        return trajectories, id(self.plot_settings), self.settings_version, selection
+        return trajectories, id(self.plot_settings), self.settings_version
 
     @property
     def evaluated(self) -> list[WorkspaceTrajectory]:
         return [t for t in self.trajectories if t.ate is not None or t.rpe is not None]
+
+    @property
+    def shown(self) -> list[WorkspaceTrajectory]:
+        """What the views (except the comparison table) show: the trajectories selected in the comparison
+        table and the reference, or all checked trajectories while no row is selected."""
+        if not self.compared_ids:
+            return list(self.trajectories)
+        reference_id = self.reference.entry_id if self.reference is not None else None
+        return [t for t in self.trajectories if t.entry.entry_id in self.compared_ids | {reference_id}]
 
 
 # -------------------------------------------------------------------------------------------- view contents
@@ -79,7 +88,7 @@ class WorkspaceData:
 class ViewContent(QtWidgets.QWidget):
     """Base of what a view shows."""
 
-    trajectory_activated = QtCore.Signal(str)  # entry id, e.g. a row clicked in the comparison table
+    trajectories_chosen = QtCore.Signal(list)  # entry ids, e.g. the rows selected in the comparison table
 
     def set_data(self, data: WorkspaceData) -> None:
         raise NotImplementedError
@@ -105,7 +114,7 @@ class ComparisonContent(ViewContent):
         self._table.verticalHeader().setVisible(False)
         self._table.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self._table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        self._table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self._table.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
         self._table.setShowGrid(False)
         self._table.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self._table.verticalHeader().setDefaultSectionSize(36)
@@ -115,7 +124,7 @@ class ComparisonContent(ViewContent):
         header = self._table.horizontalHeader()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        self._table.cellClicked.connect(self._on_clicked)
+        self._table.selectionModel().selectionChanged.connect(self._on_selection_changed)
         self._stack.addWidget(self._table)
 
         self._message = _message_label("")
@@ -138,6 +147,9 @@ class ComparisonContent(ViewContent):
             for column in range(len(self.COLUMNS) - 1)
         ]
         self._ids = [t.entry.entry_id for t in rows]
+        selection_model = self._table.selectionModel()
+        selection_model.blockSignals(True)  # only selections by the user are passed on
+        self._table.clearSelection()
         self._table.setRowCount(len(rows))
         for row, (trajectory, numbers) in enumerate(zip(rows, values)):
             name = QtWidgets.QTableWidgetItem(trajectory.entry.name)
@@ -156,8 +168,13 @@ class ComparisonContent(ViewContent):
                     item.setForeground(QtGui.QColor(themes.color("success")))
                 item.setFont(font)
                 self._table.setItem(row, column + 1, item)
-            if trajectory.entry.entry_id in data.selected_ids:
-                self._table.selectRow(row)
+            if trajectory.entry.entry_id in data.compared_ids:
+                selection_model.select(
+                    self._table.model().index(row, 0),
+                    QtCore.QItemSelectionModel.SelectionFlag.Select | QtCore.QItemSelectionModel.SelectionFlag.Rows,
+                )
+        selection_model.blockSignals(False)
+        self._table.viewport().update()
 
     @staticmethod
     def _row_values(t: WorkspaceTrajectory) -> list[float | None]:
@@ -181,9 +198,9 @@ class ComparisonContent(ViewContent):
         if self._data is not None:
             self.set_data(self._data)  # the highlight of the best values uses a theme color
 
-    def _on_clicked(self, row: int, _: int) -> None:
-        if row < len(self._ids):
-            self.trajectory_activated.emit(self._ids[row])
+    def _on_selection_changed(self) -> None:
+        rows = sorted(index.row() for index in self._table.selectionModel().selectedRows())
+        self.trajectories_chosen.emit([self._ids[row] for row in rows if row < len(self._ids)])
 
 
 class SceneContent(ViewContent):
@@ -220,7 +237,12 @@ class SceneContent(ViewContent):
         if not data.scene:
             self.scene.clear_data()
             return
-        self.scene.set_content(data.scene, selected=data.selected_ids)
+        shown = {t.entry.entry_id for t in data.shown}
+        scene = [s for s in data.scene if s.key in shown]
+        if not scene:
+            self.scene.clear_data()
+            return
+        self.scene.set_content(scene, selected=data.selected_ids)
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
@@ -234,12 +256,9 @@ class SceneContent(ViewContent):
 class FigureContent(ViewContent):
     """One of the figures of trajectopy.visualization, rebuilt when the data changes."""
 
-    def __init__(
-        self, build: Callable[[WorkspaceData], tuple[Figure | None, list[str], str]], uses_selection: bool = False
-    ) -> None:
+    def __init__(self, build: Callable[[WorkspaceData], tuple[Figure | None, list[str], str]]) -> None:
         super().__init__()
         self._build = build
-        self._uses_selection = uses_selection
         self._key: tuple | None = None
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -249,7 +268,7 @@ class FigureContent(ViewContent):
 
     def set_data(self, data: WorkspaceData, force: bool = False) -> None:
         self._data = data
-        key = data.content_key(with_selection=self._uses_selection)
+        key = data.content_key()
         if key == self._key and not force:
             return
         self._key = key
@@ -358,20 +377,21 @@ EVALUATE_FIRST = "Nothing evaluated yet.\nChoose a reference and click “Evalua
 
 def _trajectory_figure(title: str):
     def build(data: WorkspaceData):
-        if not data.trajectories:
+        shown = data.shown
+        if not shown:
             return None, [], CHECK_TRAJECTORIES
-        trajectories = [t.entry.trajectory for t in data.trajectories]
+        trajectories = [t.entry.trajectory for t in shown]
         figure = _pick(trajectory_figures(trajectories, data.plot_settings), title)
         if figure is None:
             return None, [], f"“{title}” is not available for the checked trajectories (e.g. no orientations)."
-        return figure, [t.color for t in data.trajectories], ""
+        return figure, [t.color for t in shown], ""
 
     return build
 
 
 def _ate_figure(title: str):
     def build(data: WorkspaceData):
-        with_ate = [t for t in data.trajectories if t.ate is not None]
+        with_ate = [t for t in data.shown if t.ate is not None]
         if not with_ate:
             return None, [], EVALUATE_FIRST
         figure = _pick(deviation_figures([t.ate.deviations for t in with_ate], (), data.plot_settings), title)
@@ -384,7 +404,7 @@ def _ate_figure(title: str):
 
 def _rpe_figure(title: str):
     def build(data: WorkspaceData):
-        with_rpe = [t for t in data.trajectories if t.rpe is not None]
+        with_rpe = [t for t in data.shown if t.rpe is not None]
         if not with_rpe:
             return None, [], EVALUATE_FIRST
         figure = _pick(deviation_figures((), [t.rpe.deviations for t in with_rpe], data.plot_settings), title)
@@ -396,9 +416,8 @@ def _rpe_figure(title: str):
 
 
 def _chosen_alignment(data: WorkspaceData) -> WorkspaceTrajectory | None:
-    """The alignment of the selected trajectory, else of the first checked one that has one."""
-    aligned = [t for t in data.trajectories if t.alignment is not None]
-    return next((t for t in aligned if t.entry.entry_id in data.selected_ids), aligned[0] if aligned else None)
+    """The alignment of the first shown trajectory (selected in the comparison table) that has one."""
+    return next((t for t in data.shown if t.alignment is not None), None)
 
 
 def _alignment_figure(title: str):
@@ -408,7 +427,7 @@ def _alignment_figure(title: str):
             return (
                 None,
                 [],
-                "No checked trajectory has an alignment.\nIt is estimated by “Evaluate” with “Align to the Reference First”.",
+                "None of these trajectories has an alignment.\nIt is estimated by “Evaluate” with “Align to the Reference First”.",
             )
         return _pick(alignment_figures(chosen.alignment.estimated_parameters, data.plot_settings), title), [], ""
 
@@ -423,15 +442,15 @@ Usage = list[tuple[WorkspaceTrajectory, str]]  # the trajectories a view shows a
 
 
 def _uses_trajectories(data: WorkspaceData) -> Usage:
-    return [(t, "positions and orientations") for t in data.trajectories]
+    return [(t, "positions and orientations") for t in data.shown]
 
 
 def _uses_ate(data: WorkspaceData) -> Usage:
-    return [(t, f"ATE: {t.ate.name}") for t in data.trajectories if t.ate is not None]
+    return [(t, f"ATE: {t.ate.name}") for t in data.shown if t.ate is not None]
 
 
 def _uses_rpe(data: WorkspaceData) -> Usage:
-    return [(t, f"RPE: {t.rpe.name}") for t in data.trajectories if t.rpe is not None]
+    return [(t, f"RPE: {t.rpe.name}") for t in data.shown if t.rpe is not None]
 
 
 def _uses_evaluation(data: WorkspaceData) -> Usage:
@@ -474,13 +493,13 @@ VIEW_TYPES: tuple[ViewType, ...] = (
     ViewType(
         "alignment_covariance",
         "Alignment · Parameter covariance",
-        lambda: FigureContent(_alignment_figure("Parameter Covariance"), uses_selection=True),
+        lambda: FigureContent(_alignment_figure("Parameter Covariance")),
         _uses_alignment,
     ),
     ViewType(
         "alignment_correlation",
         "Alignment · Parameter correlation",
-        lambda: FigureContent(_alignment_figure("Parameter Correlation"), uses_selection=True),
+        lambda: FigureContent(_alignment_figure("Parameter Correlation")),
         _uses_alignment,
     ),
 )
@@ -562,11 +581,16 @@ class ViewDock(QtWidgets.QDockWidget):
             parts.append(f"+{len(usage) - len(shown)}")
         self._caption.setText("&nbsp;&nbsp;&nbsp;".join(parts))
         lines = [f"● {t.entry.name}: {what}" for t, what in usage]
-        self._caption.setToolTip(
-            "Shows the trajectories with a visible eye in the list:\n" + "\n".join(lines)
-            if VIEW_TYPE[self.view_type].uses is _uses_trajectories
-            else "Shows the newest results of the trajectories with a visible eye:\n" + "\n".join(lines)
-        )
+        if self.view_type == "comparison":
+            intro = (
+                "Lists the newest results of the trajectories with a visible eye.\n"
+                "Select rows to show only them in the other views:"
+            )
+        elif data.compared_ids:
+            intro = "Shows the rows selected in the comparison table (and the reference):"
+        else:
+            intro = "Shows the trajectories with a visible eye (select rows in the comparison table to narrow it):"
+        self._caption.setToolTip(intro + "\n" + "\n".join(lines))
 
     def enterEvent(self, event: QtCore.QEvent) -> None:
         for button in self._actions:
@@ -602,7 +626,7 @@ class Workspace(QtWidgets.QMainWindow):
     """Arranges the views; knows how to save and restore their arrangement."""
 
     changed = QtCore.Signal()  # the arrangement or the views were changed by the user
-    trajectory_activated = QtCore.Signal(str)
+    trajectories_chosen = QtCore.Signal(list)
 
     def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent)
@@ -665,7 +689,7 @@ class Workspace(QtWidgets.QMainWindow):
         return f"view{self._next_id - 1}"
 
     def _connect_content(self, dock: ViewDock) -> None:
-        dock.content.trajectory_activated.connect(self.trajectory_activated)
+        dock.content.trajectories_chosen.connect(self.trajectories_chosen)
 
     def _on_type_changed(self, dock: ViewDock) -> None:
         self._connect_content(dock)
