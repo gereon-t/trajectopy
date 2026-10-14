@@ -98,6 +98,7 @@ class UIRequestType(Enum):
     ALIGNMENT_SELECTION = auto()
     EXPORT_TRAJ = auto()
     EXPORT_KML = auto()
+    CESIUM_PLAYBACK = auto()
     IMPORT_TRAJ = auto()
     EXPORT_RES = auto()
     IMPORT_RES = auto()

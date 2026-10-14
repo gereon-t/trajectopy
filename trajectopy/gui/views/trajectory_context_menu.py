@@ -368,6 +368,13 @@ class TrajectoryContextMenu(SelectionMenu):
             "in a color of your choice.",
             unavailable=kml_unavailable,
         )
+        add_action(
+            self,
+            "3D Playback in the Browser…",
+            self._ui(UIRequestType.CESIUM_PLAYBACK),
+            hint="Opens a 3D globe in the web browser (CesiumJS) that plays the trajectory back with a timeline. Also saves it as a web page.",
+            unavailable=kml_unavailable,
+        )
         self.addSeparator()
         add_action(
             self,

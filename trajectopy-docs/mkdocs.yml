@@ -79,6 +79,7 @@ nav:
       - Trajectory I/O: api/io/trajectory_io.md
       - Results I/O: api/io/results_io.md
       - Google Earth (KML): api/io/kml.md
+      - 3D Playback (CesiumJS): api/io/cesium.md
     - Results:
       - ATE Result: api/results/ate_result.md
       - RPE Result: api/results/rpe_result.md

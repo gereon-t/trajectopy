@@ -190,6 +190,38 @@ scale is clipped to the mean ± 3 standard deviations (`max_std`). The Places pa
 color classes with their value ranges (the legend); each class can be switched on and off. During playback,
 the colored line grows with the time slider.
 
+### 3D Playback in the Browser
+
+Google Earth plays KML files back only in its desktop version. As an alternative, trajectories and ATE results
+can be played back on a 3D globe in any browser (CesiumJS): choose "3D Playback in the Browser…" in their
+context menu. The page has a timeline and play controls; a point moves along the trajectory and the (colored)
+line grows behind it. ATE results can be colored by the same fields as the Google Earth export.
+
+```python
+from trajectopy.io import cesium
+
+cesium.write_ate_html(ate_result, "ate.html", field="along_track", map_style="satellite")
+cesium.show_in_browser("ate.html")
+```
+
+- The camera follows the moving position during playback ("Follow the position" on the page); rotate and
+  zoom around it with the mouse, or uncheck the box to move the camera freely.
+- The map is OpenStreetMap or Esri World Imagery. With a free
+  [Cesium ion access token](https://ion.cesium.com/tokens) (`ion_token`), the globe also shows terrain and 3D
+  buildings, or - `map_style="photorealistic"` - Google's photorealistic 3D tiles (textured 3D cities and
+  landscapes, as in Google Earth). The token is written into the page, so don't share pages that contain it.
+- The map can be switched on the page (*Map*): OpenStreetMap, satellite or photorealistic 3D. `map_style`
+  only sets the map shown first.
+- By default, the trajectory is drawn on the ground (terrain or 3D tiles). To draw it at its own heights, choose
+  *Heights* in the dialog (`heights=` in Python): `"ellipsoidal"` for heights above the WGS84 ellipsoid (e.g.
+  from GNSS) or `"geoid"` for heights above sea level, which are converted with the EGM2008 geoid model
+  (downloaded once from cdn.proj.org). With the wrong choice, the trajectory floats about 30-50 m above the
+  ground or sinks into it.
+- Browsers don't run CesiumJS on pages opened directly from disk. `show_in_browser` (and the GUI) therefore
+  open the page through a local web server that only serves this page. To open a saved page later, serve its
+  folder, e.g. with `python -m http.server`, and open `http://localhost:8000/ate.html`.
+- The page loads CesiumJS and the map tiles from the internet.
+
 ## 5. GUI Application
 
 For a graphical interface, simply run:

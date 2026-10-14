@@ -106,6 +106,13 @@ class ResultContextMenu(SelectionMenu):
                 "(e.g. position, along-track or yaw), with playback in Google Earth's time slider.",
                 unavailable=kml_unavailable,
             )
+            add_action(
+                self,
+                "3D Playback in the Browser…",
+                self._ui(UIRequestType.CESIUM_PLAYBACK),
+                hint="Opens a 3D globe in the web browser (CesiumJS) that plays the evaluated trajectory, colored by a deviation of your choice, back with a timeline. Also saves it as a web page.",
+                unavailable=kml_unavailable,
+            )
         self.addSeparator()
         add_action(
             self,

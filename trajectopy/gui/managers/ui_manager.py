@@ -79,6 +79,7 @@ class UIManager(QObject):
             UIRequestType.IMPORT_RES: self.result_import_dialog,
             UIRequestType.EXPORT_TRAJ: self.trajectory_export_dialog,
             UIRequestType.EXPORT_KML: self.kml_export_dialog,
+            UIRequestType.CESIUM_PLAYBACK: self.cesium_playback_dialog,
             UIRequestType.EXPORT_RES: self.result_export_dialog,
             UIRequestType.MESSAGE: self.message_box,
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
@@ -242,6 +243,47 @@ class UIManager(QObject):
                 entry.deviations.to_kml(selected_file, field=self._ate_kml_field)
             except ValueError as error:
                 show_msg_box(str(error))
+
+    def cesium_playback_dialog(self, request: UIRequest) -> None:
+        """3D playback in the browser (CesiumJS) of a trajectory or an ATE result."""
+        from trajectopy.gui.views.cesium_dialog import CesiumPlaybackDialog
+        from trajectopy.io import cesium
+
+        ate_entry = next(iter(request.result_selection.entries), None)
+        if isinstance(ate_entry, AbsoluteDeviationEntry):
+            fields = [(field.key, f"{field.label} [{field.unit}]") for field in ate_kml_fields(ate_entry.deviations)]
+            dialog = CesiumPlaybackDialog(self._dialog_parent(), fields=fields, field=self._ate_kml_field)
+        else:
+            dialog = CesiumPlaybackDialog(self._dialog_parent(), color=self._kml_color)
+        if dialog.exec() != QtWidgets.QDialog.DialogCode.Accepted:
+            return
+        if not (selected_file := save_file_dialog(None, file_filter="Web page (*.html)")):
+            return
+        try:
+            if isinstance(ate_entry, AbsoluteDeviationEntry):
+                self._ate_kml_field = dialog.field
+                cesium.write_ate_html(
+                    ate_entry.deviations,
+                    selected_file,
+                    field=dialog.field,
+                    map_style=dialog.map_style,
+                    ion_token=dialog.ion_token,
+                    heights=dialog.heights,
+                )
+            else:
+                self._kml_color = dialog.color
+                cesium.write_trajectory_html(
+                    request.trajectory_selection.entries[0].trajectory,
+                    selected_file,
+                    color=dialog.color.name(),
+                    map_style=dialog.map_style,
+                    ion_token=dialog.ion_token,
+                    heights=dialog.heights,
+                )
+        except ValueError as error:
+            show_msg_box(str(error))
+            return
+        cesium.show_in_browser(selected_file, wait=0)
 
     def _dialog_parent(self) -> QtWidgets.QWidget | None:
         parent = self.parent()
