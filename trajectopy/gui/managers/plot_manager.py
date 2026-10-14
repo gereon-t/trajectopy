@@ -16,7 +16,6 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
     ResultEntry,
 )
-from trajectopy.gui.utils import show_progress
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.visualization import (
@@ -41,8 +40,6 @@ class PlotManager(QObject):
     """
 
     ui_request = Signal(UIRequest)
-    operation_started = Signal()
-    operation_finished = Signal()
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -53,7 +50,6 @@ class PlotManager(QObject):
         }
         self._windows: list[PlotWindow] = []
 
-    @show_progress
     @Slot(PlotRequest)
     def handle_request(self, request: PlotRequest) -> None:
         """Logic for handling a request."""
@@ -73,6 +69,8 @@ class PlotManager(QObject):
         window.destroyed.connect(lambda _=None, w=window: self._windows.remove(w) if w in self._windows else None)
         self._windows.append(window)
         window.show()
+        window.raise_()
+        window.activateWindow()
 
     def plot_trajectories(self, request: PlotRequest) -> None:
         trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]

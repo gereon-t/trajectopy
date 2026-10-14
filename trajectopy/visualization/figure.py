@@ -130,13 +130,14 @@ class _FigureWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.selector = QtWidgets.QComboBox()
+        # Parent it right away: a parentless widget made visible becomes a top-level window of its own
+        self.selector = QtWidgets.QComboBox(self)
         self.selector.addItems(list(figure.variants))
         self.selector.setVisible(figure.has_variants)
         self.selector.currentTextChanged.connect(self._render)
         layout.addWidget(self.selector)
 
-        self.graphics = pg.GraphicsLayoutWidget()
+        self.graphics = pg.GraphicsLayoutWidget(self)
         layout.addWidget(self.graphics)
         self._render(self.selector.currentText())
 

@@ -282,11 +282,10 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectoryTableView.show_timeline.connect(self._show_timeline)
 
     def setup_progress_connections(self):
-        status_messages: dict[TrajectoryManager | FileManager | SessionManager | PlotManager, str] = {
+        status_messages: dict[TrajectoryManager | FileManager | SessionManager, str] = {
             self.trajectory_manager: "Processing...",
             self.file_manager: "Loading...",
             self.session_manager: "Session operation...",
-            self.plot_manager: "Generating plot...",
         }
         for manager, message in status_messages.items():
             manager.operation_started.connect(self.progress_window.handle_show_request)
@@ -431,11 +430,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         preview_layout = QtWidgets.QVBoxLayout(self._preview_panel)
         preview_layout.setContentsMargins(0, 0, 0, 0)
         preview_layout.addWidget(self._preview)
-        self._preview_panel.setVisible(self._preview_enabled)
 
         self.h_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
         self.h_splitter.addWidget(self.splitter)
         self.h_splitter.addWidget(self._preview_panel)
+        # only once it has a parent, otherwise showing it opens a window of its own
+        self._preview_panel.setVisible(self._preview_enabled)
         # the preview gets most of the width (also when the window is resized)
         self.h_splitter.setStretchFactor(0, 1)
         self.h_splitter.setStretchFactor(1, 4)
