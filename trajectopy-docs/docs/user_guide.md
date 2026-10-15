@@ -271,8 +271,9 @@ Start the GUI from the Start menu (Windows app) or with `trajectopy` (Python pac
 The left side lists the trajectories (name, EPSG code, reference) and the results (name, type). Below them,
 the properties table shows all properties of the selected trajectories or results side by side; *Export…* saves
 them as CSV. The preview on the right plots the selected trajectories, or the selected ATE results colored by
-their deviations. On slow systems, it can be turned off with the *Preview* checkbox in the top right corner;
-the tables and the properties then use the whole width.
+their deviations. The drop-down next to the *Preview* checkbox in the top right corner switches between the top
+view (*2D*) and an orbitable *3D* view (drag to rotate, wheel to zoom, middle-drag to pan). On slow systems, the
+preview can be turned off with the checkbox; the tables and the properties then use the whole width.
 
 Trajectory files (`.traj` and other ASCII files, ROS1 `.bag` files) are loaded into the trajectory table,
 `.result` files into the results table. Long operations run in the background; a progress window shows that

@@ -269,6 +269,33 @@ class TestGuiSmoke(unittest.TestCase):
         finally:
             window.close()
 
+    def test_3d_preview(self):
+        from test.testdata import generated_trajectory, noisy_trajectory
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+        from trajectopy.processing.evaluation import ate
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            window.show()
+            self.assertIsNone(window._preview_3d)  # no OpenGL until the 3D view is chosen
+            window._preview_mode.setCurrentText("3D")
+            self.app.processEvents()
+            preview_3d = window._preview_3d
+            self.assertIs(window._preview_stack.currentWidget(), preview_3d)
+
+            preview_3d.show_trajectories([generated_trajectory, noisy_trajectory])
+            self.assertTrue(preview_3d._legend.isVisibleTo(preview_3d))
+            ate_result = ate(noisy_trajectory.copy(), generated_trajectory.copy())
+            preview_3d.show_ate_results([ate_result])
+            self.assertTrue(preview_3d._colorbar_widget.isVisibleTo(preview_3d))
+            preview_3d._view.grabFramebuffer()  # forces a paint of the OpenGL scene
+            window._apply_theme(dark=not window._dark_theme)
+
+            window._preview_mode.setCurrentText("2D")
+            self.assertIs(window._preview_stack.currentWidget(), window._preview)
+        finally:
+            window.close()
+
     def test_properties_panel_shows_the_selection(self):
         from trajectopy.gui.models.entries import TrajectoryEntry
         from trajectopy.gui.views.main_window import TrajectopyGUI

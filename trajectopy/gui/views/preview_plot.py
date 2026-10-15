@@ -1,4 +1,4 @@
-"""Top-view preview of the selected trajectories and ATE results in the details panel."""
+"""Top-view (2D) preview of the selected trajectories and ATE results in the details panel."""
 
 import logging
 from collections.abc import Sequence
@@ -71,7 +71,7 @@ class PreviewPlot(pg.PlotWidget):
         for index, trajectory in enumerate(trajectories):
             if local_transformer is None:
                 local_transformer = trajectory.positions.local_transformer
-            xyz = self._local_xyz(trajectory, local_transformer)
+            xyz = local_xyz(trajectory, local_transformer)
             self.plotItem.plot(
                 xyz[:, 0],
                 xyz[:, 1],
@@ -90,13 +90,11 @@ class PreviewPlot(pg.PlotWidget):
             self._colorbar.hide()
             return
 
-        samples = [_sample_indices(len(ate_result.trajectory)) for ate_result in ate_results]
-        values = [ate_result.pos_dev_comb[indices] for ate_result, indices in zip(ate_results, samples)]
-        lower, upper = color_range(np.concatenate(values), COLORBAR_MAX_STD)
+        samples, values, lower, upper = ate_preview_values(ate_results)
 
         local_transformer = ate_results[0].trajectory.positions.local_transformer
         for ate_result, indices, ate in zip(ate_results, samples, values):
-            xyz = self._local_xyz(ate_result.trajectory, local_transformer, indices)
+            xyz = local_xyz(ate_result.trajectory, local_transformer, indices)
             self.plotItem.addItem(
                 pg.ScatterPlotItem(
                     x=xyz[:, 0], y=xyz[:, 1], size=MARKER_SIZE, pen=None, brush=_value_brushes(ate, lower, upper)
@@ -104,34 +102,43 @@ class PreviewPlot(pg.PlotWidget):
             )
 
         self._colorbar.setLevels(values=(lower, upper))
-        self._fit_colorbar_axis(lower, upper)
+        fit_colorbar_axis(self._colorbar, lower, upper)
         self._colorbar.show()
         self.plotItem.autoRange()
 
-    def _fit_colorbar_axis(self, lower: float, upper: float) -> None:
-        """Fixes the width of the color bar axis to its tick labels plus the full label height. pyqtgraph sizes it
-        with 80 % of the label height and only while visible, which lets the label overlap the tick labels."""
-        axis = self._colorbar.axis
-        metrics = QtGui.QFontMetrics(axis.style["tickFont"] or axis.font())
-        widest = max(metrics.horizontalAdvance(f"{value:.3g}0") for value in (lower, upper))
-        label_height = axis.label.boundingRect().height()
-        axis.setWidth(int(widest + axis.style["tickTextOffset"][0] + max(0, axis.style["tickLength"]) + label_height))
 
-    @staticmethod
-    def _local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | None = None) -> np.ndarray:
-        """Positions (thinned out to the preview resolution) in the local frame shared by all trajectories."""
-        positions = trajectory.positions.copy()
-        positions.xyz = positions.xyz[_sample_indices(len(positions.xyz)) if indices is None else indices]
-        try:
-            positions.local_transformer = local_transformer
-            return positions.to_local(inplace=False).xyz
-        except Exception:
-            logger.exception("Preview: could not transform '%s' to a local frame", trajectory.name)
-            return positions.xyz
-
-
-def _sample_indices(num_points: int) -> np.ndarray:
+def sample_indices(num_points: int) -> np.ndarray:
     """Indices of at most MAX_PREVIEW_POINTS evenly spread points."""
     if num_points <= MAX_PREVIEW_POINTS:
         return np.arange(num_points)
     return np.linspace(0, num_points - 1, MAX_PREVIEW_POINTS, dtype=int)
+
+
+def local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | None = None) -> np.ndarray:
+    """Positions (thinned out to the preview resolution) in the local frame shared by all trajectories."""
+    positions = trajectory.positions.copy()
+    positions.xyz = positions.xyz[sample_indices(len(positions.xyz)) if indices is None else indices]
+    try:
+        positions.local_transformer = local_transformer
+        return positions.to_local(inplace=False).xyz
+    except Exception:
+        logger.exception("Preview: could not transform '%s' to a local frame", trajectory.name)
+        return positions.xyz
+
+
+def ate_preview_values(ate_results: Sequence[ATEResult]) -> tuple[list[np.ndarray], list[np.ndarray], float, float]:
+    """Sample indices and position deviations of each result, and their shared color range."""
+    samples = [sample_indices(len(ate_result.trajectory)) for ate_result in ate_results]
+    values = [ate_result.pos_dev_comb[indices] for ate_result, indices in zip(ate_results, samples)]
+    lower, upper = color_range(np.concatenate(values), COLORBAR_MAX_STD)
+    return samples, values, lower, upper
+
+
+def fit_colorbar_axis(colorbar: pg.ColorBarItem, lower: float, upper: float) -> None:
+    """Fixes the width of the color bar axis to its tick labels plus the full label height. pyqtgraph sizes it
+    with 80 % of the label height and only while visible, which lets the label overlap the tick labels."""
+    axis = colorbar.axis
+    metrics = QtGui.QFontMetrics(axis.style["tickFont"] or axis.font())
+    widest = max(metrics.horizontalAdvance(f"{value:.3g}0") for value in (lower, upper))
+    label_height = axis.label.boundingRect().height()
+    axis.setWidth(int(widest + axis.style["tickTextOffset"][0] + max(0, axis.style["tickLength"]) + label_height))

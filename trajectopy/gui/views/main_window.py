@@ -3,7 +3,7 @@ import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot
@@ -44,9 +44,14 @@ from trajectopy.gui.worker import BackgroundWorker
 from trajectopy.utils.resources import YEAR
 from trajectopy.visualization import style as plot_style
 
+if TYPE_CHECKING:
+    from trajectopy.gui.views.preview_plot_3d import PreviewPlot3D
+
 logger = logging.getLogger(__name__)
 
 PREVIEW_SETTINGS_KEY = "details/preview_enabled"
+PREVIEW_3D_SETTINGS_KEY = "details/preview_3d"
+PREVIEW_MODES = ("2D", "3D")
 
 RECENT_PROJECTS_KEY = "projects/recent"
 MAX_RECENT_PROJECTS = 10
@@ -95,6 +100,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
         self._settings = app_settings()
         self._preview_enabled = bool(self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool))
+        self._preview_3d_enabled = bool(self._settings.value(PREVIEW_3D_SETTINGS_KEY, False, type=bool))
+        self._preview_3d: PreviewPlot3D | None = None  # created on first use
         self._check_updates_at_startup = bool(self._settings.value(UPDATE_CHECK_SETTINGS_KEY, True, type=bool))
         # handler of the selection that the properties and the preview currently show
         self._show_selection: Callable[[], None] = self._on_trajectory_selection_changed
@@ -190,7 +197,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._preview_corner.setObjectName("previewToggleCorner")  # transparent on the menu bar (themes)
         toggle_layout = QtWidgets.QHBoxLayout(self._preview_corner)
         toggle_layout.setContentsMargins(0, 0, 10, 0)
+        toggle_layout.setSpacing(6)
         toggle_layout.addWidget(self._preview_toggle, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
+        toggle_layout.addWidget(self._preview_mode, 0, QtCore.Qt.AlignmentFlag.AlignVCenter)
         # as high as the menu bar, so that the check box is vertically centered with the menu entries
         self._preview_corner.setFixedHeight(menubar.sizeHint().height())
         menubar.setCornerWidget(self._preview_corner, QtCore.Qt.Corner.TopRightCorner)
@@ -294,6 +303,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         set_dark_titlebar(self, dark)
         plot_style.set_theme(dark)
         self._preview.apply_theme()
+        if self._preview_3d is not None:
+            self._preview_3d.apply_theme()
         self._timeline_dialog.apply_theme(dark)
 
     @Slot(bool)
@@ -301,10 +312,32 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._preview_enabled = enabled
         self._settings.setValue(PREVIEW_SETTINGS_KEY, enabled)
         self._preview_panel.setVisible(enabled)
+        self._preview_mode.setEnabled(enabled)
         if enabled:
             self._show_selection()
         else:
-            self._preview.clear_preview()
+            self._active_preview.clear_preview()
+
+    @Slot(int)
+    def _set_preview_mode(self, index: int) -> None:
+        self._active_preview.clear_preview()
+        self._preview_3d_enabled = PREVIEW_MODES[index] == "3D"
+        self._settings.setValue(PREVIEW_3D_SETTINGS_KEY, self._preview_3d_enabled)
+        self._preview_stack.setCurrentWidget(self._active_preview)
+        if self._preview_enabled:
+            self._show_selection()
+
+    @property
+    def _active_preview(self) -> "PreviewPlot | PreviewPlot3D":
+        if not self._preview_3d_enabled:
+            return self._preview
+        if self._preview_3d is None:
+            # created on first use only: needs OpenGL, which is not available (or slow) on every system
+            from trajectopy.gui.views.preview_plot_3d import PreviewPlot3D
+
+            self._preview_3d = PreviewPlot3D()
+            self._preview_stack.addWidget(self._preview_3d)
+        return self._preview_3d
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
         if not self._closing and not self._confirm_quit():
@@ -322,6 +355,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             QtWidgets.QApplication.restoreOverrideCursor()
 
         self._preview.dispose()
+        if self._preview_3d is not None:
+            self._preview_3d.dispose()
         if a0 is not None:
             super().closeEvent(a0)
 
@@ -450,9 +485,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         entries = self.trajectoryTableView.selected_entries
         self._properties.show_entries(entries)
         if entries and self._preview_enabled:
-            self._preview.show_trajectories([entry.trajectory for entry in entries])
+            self._active_preview.show_trajectories([entry.trajectory for entry in entries])
         else:
-            self._preview.clear_preview()
+            self._active_preview.clear_preview()
 
     @QtCore.Slot()
     def _on_result_selection_changed(self) -> None:
@@ -461,9 +496,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._properties.show_entries(items)
         ate_results = [item.deviations for item in items if isinstance(item, AbsoluteDeviationEntry)]
         if ate_results and self._preview_enabled:
-            self._preview.show_ate_results(ate_results)
+            self._active_preview.show_ate_results(ate_results)
         else:
-            self._preview.clear_preview()
+            self._active_preview.clear_preview()
 
     @QtCore.Slot(object)
     def _show_timeline(self, entries) -> None:
@@ -742,14 +777,23 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._preview_toggle.setChecked(self._preview_enabled)
         self._preview_toggle.setToolTip("Plots the selected trajectories and ATE results. Disable on slow systems.")
         self._preview_toggle.toggled.connect(self._set_preview_enabled)
+        self._preview_mode = QtWidgets.QComboBox()
+        self._preview_mode.addItems(PREVIEW_MODES)
+        self._preview_mode.setToolTip("Top view (2D) or orbitable 3D view (OpenGL)")
+        self._preview_mode.setEnabled(self._preview_enabled)
         self._preview = PreviewPlot()
-        self._preview.setMinimumHeight(150)
+        self._preview_stack = QtWidgets.QStackedWidget()
+        self._preview_stack.setMinimumHeight(150)
+        self._preview_stack.addWidget(self._preview)
         # hidden together with the preview, so that the tables use the whole width
         self._preview_panel = QtWidgets.QWidget()
         self._preview_panel.setMinimumWidth(200)
         preview_layout = QtWidgets.QVBoxLayout(self._preview_panel)
         preview_layout.setContentsMargins(0, 0, 0, 0)
-        preview_layout.addWidget(self._preview)
+        preview_layout.addWidget(self._preview_stack)
+        self._preview_mode.setCurrentIndex(PREVIEW_MODES.index("3D" if self._preview_3d_enabled else "2D"))
+        self._preview_stack.setCurrentWidget(self._active_preview)
+        self._preview_mode.currentIndexChanged.connect(self._set_preview_mode)
 
         self.h_splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
         self.h_splitter.addWidget(self.splitter)
