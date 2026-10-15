@@ -2274,7 +2274,8 @@ the web shows the trajectory, but has no time slider.</p>
    <em>Compare with Reference → Absolute Error (ATE), Aligned First</em>. The result appears in the results table.</li>
 <li><strong>Inspect</strong>: select the result to see its statistics in the properties table and its deviations in the
    preview; press <code>V</code> (or <em>Plot</em>) for all plots.</li>
-<li><strong>Save</strong>: <em>Session → Save</em> keeps everything for later; <em>Export…</em> (<code>E</code>) saves single trajectories or results.</li>
+<li><strong>Save</strong>: <em>File → Save</em> (<code>Ctrl+S</code>) keeps everything for later in a project file; <em>Export…</em> (<code>E</code>) saves single
+   trajectories or results.</li>
 </ol>
 <h3 id="main-window">Main Window<a class="headerlink" href="#main-window" title="Permanent link">&para;</a></h3>
 <p>The left side lists the trajectories (name, EPSG code, reference) and the results (name, type). Below them,
@@ -2296,19 +2297,39 @@ Trajectopy is busy.</p>
 </thead>
 <tbody>
 <tr>
-<td>Session</td>
-<td>New</td>
-<td>Removes all trajectories and results and resets the plot settings (asks first).</td>
+<td>File</td>
+<td>New (<code>Ctrl+N</code>)</td>
+<td>Starts a new, empty project with default plot settings.</td>
 </tr>
 <tr>
 <td></td>
-<td>Load</td>
-<td>Loads a session folder; replaces the current session.</td>
+<td>Open… (<code>Ctrl+O</code>)</td>
+<td>Opens a project file (<code>.tpy</code>); replaces the current project.</td>
 </tr>
 <tr>
 <td></td>
-<td>Save</td>
-<td>Saves all trajectories, results and settings to a folder (see below).</td>
+<td>Open Recent</td>
+<td>The last ten projects.</td>
+</tr>
+<tr>
+<td></td>
+<td>Save (<code>Ctrl+S</code>)</td>
+<td>Saves the project to its file (asks for a file the first time).</td>
+</tr>
+<tr>
+<td></td>
+<td>Save As… (<code>Ctrl+Shift+S</code>)</td>
+<td>Saves the project to a new file.</td>
+</tr>
+<tr>
+<td></td>
+<td>Import Session Folder…</td>
+<td>Opens a session folder saved by earlier versions of Trajectopy as a new project.</td>
+</tr>
+<tr>
+<td></td>
+<td>Exit (<code>Ctrl+Q</code>)</td>
+<td>Closes Trajectopy.</td>
 </tr>
 <tr>
 <td>Plot Settings</td>
@@ -2337,13 +2358,16 @@ Trajectopy is busy.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Sessions</strong> are folders. <em>Save</em> writes one <code>.traj</code> file per trajectory together with its processing settings
-(<code>.json</code>), one <code>.result</code> file per result, the order of the tables and the plot settings
-(<code>plot_settings.json</code>). <em>Load</em> restores all of it.</p>
+<p><strong>Projects</strong> keep everything in one file (<code>.tpy</code>): all trajectories with their processing settings, the
+reference, all results, the order of the tables and the plot settings. The title bar shows the name of the
+project and a <code>*</code> while it has unsaved changes. Before these are lost (<em>New</em>, <em>Open</em>, closing Trajectopy),
+Trajectopy offers to save them. A project file can also be opened by dropping it onto one of the tables, by
+double-click on Windows (if chosen during installation) or on the command line. It is a zip archive of the
+same <code>.traj</code>, <code>.json</code> and <code>.result</code> files that <em>Export…</em> writes, so these can be extracted, too.</p>
 <p><strong>Updates</strong>: the update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Python installations are updated with
 <code>pip install --upgrade "trajectopy[gui]"</code>, the Windows app with the installer of the new version.</p>
-<p>Closing Trajectopy asks for confirmation if trajectories or results would be lost.</p>
+<p>Closing Trajectopy offers to save unsaved changes and asks for confirmation while an operation is running.</p>
 <h3 id="processing-settings-of-a-trajectory">Processing Settings of a Trajectory<a class="headerlink" href="#processing-settings-of-a-trajectory" title="Permanent link">&para;</a></h3>
 <p>Every trajectory has its own <a href="../settings/#processing-settings">processing settings</a> (alignment, matching,
 relative comparison, approximation, sorting), which are used when it is processed. Edit them with <em>Settings…</em>

@@ -1989,7 +1989,7 @@ then right-click another trajectory and choose <em>Compare with Reference</em>. 
 <tbody>
 <tr>
 <td><code>files</code></td>
-<td>Trajectory (<code>.traj</code>, <code>.bag</code>) or result (<code>.result</code>) files to open at start.</td>
+<td>Project (<code>.tpy</code>), trajectory (<code>.traj</code>, <code>.bag</code>) or result (<code>.result</code>) files to open at start. Trajectories and results are added to the project.</td>
 </tr>
 <tr>
 <td><code>--version</code>, <code>-v</code></td>
@@ -2011,9 +2011,10 @@ then right-click another trajectory and choose <em>Compare with Reference</em>. 
 </table>
 <p>Examples:</p>
 <div class="language-console highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="go">trajectopy ground_truth.traj slam.traj</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="go">trajectopy --plot-settings my_session/plot_settings.json</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="go">trajectopy flight.tpy</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="go">trajectopy --plot-settings plot_settings.json</span>
 </span></code></pre></div>
-<p>A session saved from the GUI contains its plot settings in <code>plot_settings.json</code>.</p>
+<p>A project contains its own plot settings, which replace those given with <code>--plot-settings</code> when it is opened.</p>
 <h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permanent link">&para;</a></h2>
 <p>If you use Trajectopy for academic work, please cite our <a href="https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html">paper</a>:</p>
 <div class="language-bibtex highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">Tombrink2024</span><span class="p">,</span>

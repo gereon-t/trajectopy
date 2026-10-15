@@ -2099,8 +2099,9 @@ headers. Messages of other types are skipped.</p>
   <code>AlignmentResult.to_file</code>). They are text files with a header, too, and can be opened in the GUI.</li>
 <li><strong>Settings</strong> (<code>.json</code>): <a href="../settings/#processing-settings">processing settings</a> and
   <a href="../settings/#plot-settings">plot settings</a>.</li>
-<li><strong>Sessions</strong> (GUI): a folder with all trajectories, results and settings, see
-  <a href="../user_guide/#menu-bar">Using the GUI</a>.</li>
+<li><strong>Projects</strong> (<code>.tpy</code>, GUI): a zip archive with all trajectories, results and settings, see
+  <a href="../user_guide/#menu-bar">Using the GUI</a>. Besides the files above, it contains a manifest (<code>project.json</code>)
+  with the order of the tables and the state of the entries (e.g. the reference).</li>
 </ul>
 <h2 id="creating-trajectories-in-python">Creating Trajectories in Python<a class="headerlink" href="#creating-trajectories-in-python" title="Permanent link">&para;</a></h2>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
