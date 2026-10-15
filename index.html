@@ -459,6 +459,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#windows-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows App
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation-with-gui" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -474,6 +485,17 @@
     <span class="md-ellipsis">
       
         Installation (without GUI)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faster-loading-of-large-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Faster Loading of Large Files
       
     </span>
   </a>
@@ -1677,6 +1699,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#windows-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows App
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation-with-gui" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1692,6 +1725,17 @@
     <span class="md-ellipsis">
       
         Installation (without GUI)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#faster-loading-of-large-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Faster Loading of Large Files
       
     </span>
   </a>
@@ -1812,6 +1856,10 @@
 <li><strong>Data Import/Export</strong>: Support for importing and exporting data, ensuring compatibility with your existing workflows.</li>
 <li><strong>Fast, Interactive Visualization</strong>: Powered by <a href="https://www.pyqtgraph.org/">pyqtgraph</a>, the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.</li>
 </ul>
+<h2 id="windows-app">Windows App<a class="headerlink" href="#windows-app" title="Permanent link">&para;</a></h2>
+<p>Download <code>Trajectopy-&lt;version&gt;-setup.exe</code> from the <a href="https://github.com/gereon-t/trajectopy/releases/latest">latest release</a>
+and run it. No Python installation or administrator rights are needed. <code>.traj</code> files can then be opened by
+double-click, and the app reports new versions (Help → Check for Updates).</p>
 <h2 id="installation-with-gui">Installation (with GUI)<a class="headerlink" href="#installation-with-gui" title="Permanent link">&para;</a></h2>
 <p>It is recommended to install trajectopy with the GUI using the following command:</p>
 <div class="language-console highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="go">pip install &quot;trajectopy[gui]&quot;</span>
@@ -1824,53 +1872,58 @@
 (without installing the GUI), install the plotting extra:</p>
 <div class="language-console highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="go">pip install &quot;trajectopy[plot]&quot;</span>
 </span></code></pre></div>
+<h2 id="faster-loading-of-large-files">Faster Loading of Large Files<a class="headerlink" href="#faster-loading-of-large-files" title="Permanent link">&para;</a></h2>
+<p>Trajectory files with millions of poses load several times faster with the optional <code>fast</code> extra
+(it installs <a href="https://arrow.apache.org/docs/python/">pyarrow</a> for reading). It can be combined with the other extras:</p>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="go">pip install &quot;trajectopy[gui,fast]&quot;</span>
+</span></code></pre></div>
 <h2 id="python-package-quick-start">Python Package Quick Start<a class="headerlink" href="#python-package-quick-start" title="Permanent link">&para;</a></h2>
 <p>Here is a minimal example to load two trajectories, align them, and calculate the Absolute Trajectory Error (ATE).</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tpy</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># 1. Load trajectories</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">traj_ref</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">traj_est</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_ORB.traj&quot;</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># 2. Evaluate (ATE already includes alignment)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">ate_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ate</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">traj_ref</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="n">traj_est</span><span class="p">)</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># 3. Print results</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position ATE: </span><span class="si">{</span><span class="n">ate_result</span><span class="o">.</span><span class="n">pos_ate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m&quot;</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tpy</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># 1. Load trajectories</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">traj_ref</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_gt.traj&quot;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">traj_est</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">Trajectory</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;./example_data/KITTI_ORB.traj&quot;</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># 2. Evaluate (ATE already includes alignment)</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">ate_result</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ate</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">traj_ref</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="n">traj_est</span><span class="p">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># 3. Print results</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position ATE: </span><span class="si">{</span><span class="n">ate_result</span><span class="o">.</span><span class="n">pos_ate</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>For more detailed usage, see the <a href="user_guide/">User Guide</a>.</p>
 <h2 id="gui-application">GUI Application<a class="headerlink" href="#gui-application" title="Permanent link">&para;</a></h2>
 <p>Trajectopy also includes a graphical user interface. To launch it, run:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>trajectopy
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>trajectopy
 </span></code></pre></div>
 <h2 id="command-line-options-gui-version-only">Command Line Options (GUI version only)<a class="headerlink" href="#command-line-options-gui-version-only" title="Permanent link">&para;</a></h2>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="go">trajectopy --help</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="go">trajectopy --help</span>
 </span></code></pre></div>
-<div class="language-console highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="go">usage: trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS]</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="go">Trajectopy - Trajectory Evaluation in Python</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="go">options:</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="go">  -h, --help            show this help message and exit</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="go">  --version, -v</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="go">  --single-thread       Disable multithreading</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="go">  --plot-settings PLOT_SETTINGS</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="go">                        Path to a JSON plot settings file that overrides the default plot settings.</span>
+<div class="language-console highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="go">usage: trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS]</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="go">Trajectopy - Trajectory Evaluation in Python</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="go">options:</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="go">  -h, --help            show this help message and exit</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="go">  --version, -v</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="go">  --single-thread       Disable multithreading</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="go">  --plot-settings PLOT_SETTINGS</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="go">                        Path to a JSON plot settings file that overrides the default plot settings.</span>
 </span></code></pre></div>
 <p>The plot settings file contains the <a href="settings/#plot-settings">plot settings</a>; settings that are
 missing from the file keep their default values. A session saved from the GUI contains its plot settings
 in <code>plot_settings.json</code>.</p>
 <h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permanent link">&para;</a></h2>
 <p>If you use Trajectopy for academic work, please cite our <a href="https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html">paper</a>:</p>
-<div class="language-bibtex highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">Tombrink2024</span><span class="p">,</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Spatio-temporal trajectory alignment for trajectory evaluation}</span><span class="p">,</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Gereon Tombrink and Ansgar Dreier and Lasse Klingbeil and Heiner Kuhlmann}</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Applied Geodesy}</span><span class="p">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2024}</span><span class="p">,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{10.1515/jag-2024-0040}</span><span class="p">,</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://doi.org/10.1515/jag-2024-0040}</span><span class="p">,</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="na">codeurl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/gereon-t/trajectopy}</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
+<div class="language-bibtex highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">Tombrink2024</span><span class="p">,</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Spatio-temporal trajectory alignment for trajectory evaluation}</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Gereon Tombrink and Ansgar Dreier and Lasse Klingbeil and Heiner Kuhlmann}</span><span class="p">,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Applied Geodesy}</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2024}</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{10.1515/jag-2024-0040}</span><span class="p">,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://doi.org/10.1515/jag-2024-0040}</span><span class="p">,</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="na">codeurl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/gereon-t/trajectopy}</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permanent link">&para;</a></h2>
 <p>Trajectopy is released under the GNU General Public License v3.0.</p>
