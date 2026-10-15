@@ -22,7 +22,7 @@ from trajectopy.__version__ import __version__ as VERSION
 from trajectopy.gui.views.main_window import TrajectopyGUI
 from trajectopy.utils.resources import ICON_BG_FILE_PATH
 
-if os.name == "nt":
+if sys.platform == "win32":
     myappid = f"gereont.trajectopy.main.{VERSION}"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
