@@ -66,6 +66,65 @@ HANDLER_MAPPING: dict[str, Callable[[str], str | int | float]] = {
 }
 
 
+_SCAN_CHUNK_SIZE = 1 << 24  # bytes
+
+
+@dataclass(frozen=True)
+class HeaderScan:
+    """Header lines of a file, found without parsing the data lines in Python.
+
+    Attributes:
+        lines: All lines starting with ``#`` (in file order, decoded, ending with a newline).
+        leading_lines: Number of lines before the first data line (header, comments and blank lines).
+        lines_after_data: Whether any ``#`` line follows the first data line.
+    """
+
+    lines: list[str]
+    leading_lines: int
+    lines_after_data: bool
+
+
+def scan_header(filename: str) -> HeaderScan:
+    """Collects the ``#`` lines of a file. Equivalent to iterating over all lines, but the data part is
+    searched with ``bytes.find`` in large chunks, which matters for files with millions of lines."""
+    lines: list[bytes] = []
+    leading_lines = 0
+    with open(filename, "rb") as file:
+        # leading header, comments and blank lines
+        for line in file:
+            if line.startswith(b"#"):
+                lines.append(line)
+            elif line.strip():
+                break
+            leading_lines += 1
+        else:
+            return HeaderScan([_decode(line) for line in lines], leading_lines, False)
+
+        num_leading = len(lines)
+        # "\n#" marks a header line after the first data line; a chunk may end in the middle of such a line
+        rest = b"\n"
+        while chunk := file.read(_SCAN_CHUNK_SIZE):
+            rest += chunk
+            position = rest.find(b"\n#")
+            while position != -1:
+                end = rest.find(b"\n", position + 1)
+                if end == -1:
+                    break
+                lines.append(rest[position + 1 : end + 1])
+                position = rest.find(b"\n#", end)
+            # keep a possibly incomplete header line (or the last newline) for the next chunk
+            keep_from = position if position != -1 else max(rest.rfind(b"\n"), 0)
+            rest = rest[keep_from:]
+        if (position := rest.find(b"\n#")) != -1:
+            lines.append(rest[position + 1 :])
+
+    return HeaderScan([_decode(line) for line in lines], leading_lines, len(lines) > num_leading)
+
+
+def _decode(line: bytes) -> str:
+    return line.decode("utf-8").replace("\r\n", "\n")
+
+
 @dataclass
 class HeaderData:
     """Class to store the header data of a trajectopy file."""
@@ -180,12 +239,16 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
-        metadata: dict[str, str | int | float] = {}
-        with open(filename, encoding="utf-8") as file:
-            for line in file:
-                cls.handle_line(metadata, line)
+        return cls.from_lines(scan_header(filename).lines, source=filename)
 
-        logger.info("Read header of %s", filename)
+    @classmethod
+    def from_lines(cls, lines: list[str], source: str = "") -> "HeaderData":
+        """Builds the header data from the lines of a file (lines without a leading ``#`` are ignored)."""
+        metadata: dict[str, str | int | float] = {}
+        for line in lines:
+            cls.handle_line(metadata, line)
+
+        logger.info("Read header of %s", source)
         return cls(metadata)
 
     @classmethod

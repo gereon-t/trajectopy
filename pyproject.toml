@@ -60,6 +60,8 @@ dependencies = [
 plot = ["PySide6-Essentials>=6.8", "pyqtgraph>=0.13.7"]
 # The GUI additionally renders the 3D playback with OpenGL.
 gui = ["trajectopy[plot]", "PyOpenGL>=3.1.7"]
+# Several times faster reading of large trajectory files (multithreaded CSV parser).
+fast = ["pyarrow>=25.0.1"]
 
 [project.urls]
 Homepage = "https://gereon-t.github.io/trajectopy/"

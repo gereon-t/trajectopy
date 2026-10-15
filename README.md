@@ -40,6 +40,12 @@ Python package only:
 pip install trajectopy
 ```
 
+Loading large trajectory files (millions of poses) is several times faster with the `fast` extra, which can be combined with the others:
+
+```bash
+pip install "trajectopy[gui,fast]"
+```
+
 ## Documentation
 
 <a href="https://gereon-t.github.io/trajectopy/" target="_blank">https://gereon-t.github.io/trajectopy/</a>

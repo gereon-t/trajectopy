@@ -1,6 +1,8 @@
 """Reading of ASCII (CSV-like) trajectory files."""
 
 import logging
+import os
+import sys
 from io import StringIO
 
 import numpy as np
@@ -8,13 +10,14 @@ import pandas as pd
 
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
-from trajectopy.io.header import HeaderData
+from trajectopy.io.header import HeaderData, HeaderScan, scan_header
 from trajectopy.io.utils import get_rot_matrix
 from trajectopy.utils.definitions import GPS_LEAP_SECONDS, GPS_WEEK_ZERO, TimeFormat
 
 __all__ = [
     "HeaderData",
     "read_data",
+    "read_trajectory_data",
     "read_string",
     "extract_trajectory_rotations",
     "extract_trajectory_timestamps",
@@ -22,6 +25,12 @@ __all__ = [
     "extract_trajectory_path_lengths",
     "extract_trajectory_positions",
 ]
+
+try:  # optional: much faster reading of large files
+    import pyarrow as pa
+    import pyarrow.csv as pacsv
+except ImportError:
+    pa = pacsv = None
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +68,67 @@ def read_data(filename: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
             logger.warning("Could not read file using pandas. Trying numpy instead.")
             data = np.loadtxt(filename, comments="#")
     return header_data, data
+
+
+def read_trajectory_data(filename: str) -> tuple[HeaderData, np.ndarray]:
+    """Reads the header and the data of a trajectory file, limited to the columns that are used.
+
+    Columns named ``-`` in the ``#fields`` header are skipped and the others are read directly as floats
+    (with pyarrow's multithreaded CSV reader if installed), which is several times faster than
+    :func:`read_data` for large files. The returned header lists only the fields that were read, in the
+    order of the returned columns. Files the fast path cannot read (e.g. date/time strings) are read with
+    :func:`read_data`.
+
+    Args:
+        filename (str): File to read
+
+    Returns:
+        Tuple[HeaderData, np.ndarray]: Header data and data
+    """
+    scan = scan_header(filename)
+    header_data = HeaderData.from_lines(scan.lines, source=filename)
+    _suggest_fast_extra(filename)
+    if header_data.time_format != TimeFormat.DATETIME:
+        used = [index for index, field in enumerate(header_data.fields) if field != "-"]
+        used_fields = ",".join(header_data.fields[index] for index in used)
+        try:
+            data = _read_float_columns(filename, header_data.delimiter, used, scan)
+            return HeaderData({**header_data.data, "fields": used_fields}), data
+        except Exception as error:
+            logger.debug("Fast reading of %s failed (%s), using the general reader.", filename, error)
+
+    return read_data(filename, dtype=object)
+
+
+LARGE_FILE_BYTES = 100_000_000
+
+
+def _suggest_fast_extra(filename: str) -> None:
+    """Points out the optional pyarrow reader when a large file is read without it (not in the frozen
+    executable, where packages cannot be installed)."""
+    if pacsv is not None or getattr(sys, "frozen", False) or os.path.getsize(filename) < LARGE_FILE_BYTES:
+        return
+    logger.info(
+        'Reading a large file. Install the optional pyarrow reader to load it several times faster: pip install "trajectopy[fast]"'
+    )
+
+
+def _read_float_columns(filename: str, delimiter: str, columns: list[int], scan: HeaderScan) -> np.ndarray:
+    """The given columns of the data lines as floats. Raises if the file does not match this layout."""
+    if pacsv is not None and not scan.lines_after_data:
+        table = pacsv.read_csv(
+            filename,
+            read_options=pacsv.ReadOptions(skip_rows=scan.leading_lines, autogenerate_column_names=True),
+            parse_options=pacsv.ParseOptions(delimiter=delimiter),
+            convert_options=pacsv.ConvertOptions(
+                include_columns=[f"f{column}" for column in columns],
+                column_types={f"f{column}": pa.float64() for column in columns},
+            ),
+        )
+        return np.column_stack([table.column(f"f{column}").to_numpy() for column in columns])
+
+    data = pd.read_csv(filename, comment="#", header=None, sep=delimiter, usecols=columns, dtype=float)
+    return data[columns].to_numpy()
 
 
 def read_string(input_str: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
@@ -123,8 +193,11 @@ def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.nd
     if rot is None:
         return rot
 
-    enu_rot = Rotations.from_matrix(get_rot_matrix(header_data.nframe))
-    return enu_rot * rot
+    rot_matrix = get_rot_matrix(header_data.nframe)
+    if np.array_equal(rot_matrix, np.eye(3)):
+        return rot  # already ENU (multiplying millions of rotations by the identity takes seconds)
+
+    return Rotations.from_matrix(rot_matrix) * rot
 
 
 def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:

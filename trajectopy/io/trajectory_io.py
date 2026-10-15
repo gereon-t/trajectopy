@@ -32,7 +32,7 @@ def read_trajectory(filename: str) -> Trajectory:
     Returns:
         Trajectory: The loaded trajectory.
     """
-    return _trajectory_from_data(*ascii.read_data(filename, dtype=object))
+    return _trajectory_from_data(*ascii.read_trajectory_data(filename))
 
 
 def read_trajectory_string(content: str) -> Trajectory:

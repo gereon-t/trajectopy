@@ -51,6 +51,15 @@ Now you can use trajectopy as a Python package in your scripts. To also create p
 pip install "trajectopy[plot]"
 ```
 
+## Faster Loading of Large Files
+
+Trajectory files with millions of poses load several times faster with the optional `fast` extra
+(it installs [pyarrow](https://arrow.apache.org/docs/python/) for reading). It can be combined with the other extras:
+
+```console
+pip install "trajectopy[gui,fast]"
+```
+
 ## Python Package Quick Start
 
 Here is a minimal example to load two trajectories, align them, and calculate the Absolute Trajectory Error (ATE).

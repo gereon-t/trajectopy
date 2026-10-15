@@ -33,7 +33,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3
-      - run: uv sync --group dev --extra gui
+      # with the optional pyarrow reader; the core-only job covers reading without it
+      - run: uv sync --group dev --extra gui --extra fast
       - run: uv run pytest -q --cov=trajectopy --cov-report=term
 
   core-only:

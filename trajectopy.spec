@@ -24,7 +24,8 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    # optional speed-up for large files; kept out of the exe (it doubles the start-up time of the one-file build)
+    excludes=["pyarrow"],
     noarchive=False,
     optimize=1,
 )
