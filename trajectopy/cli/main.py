@@ -9,6 +9,11 @@ from trajectopy.__version__ import __version__ as VERSION
 def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Trajectopy - Trajectory Evaluation in Python")
+    parser.add_argument(
+        "files",
+        nargs="*",
+        help="Trajectory (.traj, .bag) or result (.result) files to open (also used when opening files from Windows).",
+    )
     parser.add_argument("--version", "-v", action="store_true")
     parser.add_argument(
         "--single-thread",
@@ -35,6 +40,7 @@ def main():
         exit_code = gui_main(
             single_thread=args.single_thread,
             plot_settings_path=args.plot_settings,
+            files=args.files,
         )
         if exit_code is not None:
             sys.exit(exit_code)

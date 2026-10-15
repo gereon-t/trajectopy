@@ -54,6 +54,10 @@ class TestGuiSmoke(unittest.TestCase):
         patcher = mock.patch("trajectopy.gui.views.main_window.TrajectopyGUI._confirm_quit", return_value=True)
         self.confirm_quit = patcher.start()
         self.addCleanup(patcher.stop)
+        # never contact GitHub from the tests
+        patcher = mock.patch("trajectopy.gui.update_check.UpdateChecker.check")
+        self.update_check = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def _wait_until(self, condition: Callable[[], bool], timeout: float = 60.0) -> None:
         deadline = time.monotonic() + timeout
@@ -311,6 +315,61 @@ class TestGuiSmoke(unittest.TestCase):
             with mock.patch.object(QtWidgets.QInputDialog, "getText", return_value=("Other", False)):
                 window.ui_manager.handle_request(request)
             self.assertEqual(window.trajectory_table_model.items[0].name, "Renamed")  # cancelled
+        finally:
+            window.close()
+
+    def test_files_given_at_start_are_opened(self):
+        import tempfile
+
+        from trajectopy.gui.models.entries import AbsoluteDeviationEntry
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        result_file = os.path.join(directory.name, "ate.result")  # in the format the GUI writes
+        AbsoluteDeviationEntry.from_file("./test/data/abs_dev.result").to_file(result_file)
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            with mock.patch("trajectopy.gui.views.main_window.show_msg_box") as message:
+                window.open_files([TRAJECTORY_FILES[0], result_file, "missing.traj"])
+            self.assertIn("missing.traj", message.call_args.args[0])
+            self.assertEqual(window.trajectory_table_model.rowCount(), 1)
+            self.assertEqual(window.result_table_model.rowCount(), 1)
+        finally:
+            window.close()
+
+    def test_available_update_is_shown_in_the_status_bar(self):
+        import json
+
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            self.update_check.assert_not_called()  # at startup, the check waits until the window is up
+            self._wait_until(lambda: self.update_check.called, timeout=10)
+            self.assertFalse(window._update_label.isVisible())
+            url = "https://github.com/gereon-t/trajectopy/releases/tag/v999.0.0"
+            window._update_checker.handle_response(json.dumps({"tag_name": "v999.0.0", "html_url": url}).encode())
+            self.assertTrue(window._update_label.isVisible())
+            self.assertIn("999.0.0", window._update_label.text())
+            self.assertIn(url, window._update_label.text())
+        finally:
+            window.close()
+
+    def test_manual_update_check_reports_up_to_date(self):
+        import json
+
+        from trajectopy.__version__ import __version__
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            window.check_for_updates()
+            with mock.patch("trajectopy.gui.views.main_window.show_msg_box") as message:
+                window._update_checker.handle_response(json.dumps({"tag_name": f"v{__version__}"}).encode())
+            self.assertIn("up to date", message.call_args.args[0])
+            self.assertFalse(window._update_label.isVisible())
         finally:
             window.close()
 

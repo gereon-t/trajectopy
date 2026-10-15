@@ -1,9 +1,10 @@
 import logging
 import os
+import sys
 from collections.abc import Callable
 from typing import cast
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
@@ -12,6 +13,8 @@ from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.requests import (
+    FileRequest,
+    FileRequestType,
     PlotRequest,
     PlotSettingsRequest,
     PlotSettingsRequestType,
@@ -26,7 +29,8 @@ from trajectopy.gui.models.entries import AbsoluteDeviationEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
-from trajectopy.gui.utils import app_settings, center_window, set_dark_titlebar
+from trajectopy.gui.update_check import Release, UpdateChecker
+from trajectopy.gui.utils import app_settings, center_window, set_dark_titlebar, show_msg_box
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.preview_plot import PreviewPlot
@@ -44,6 +48,9 @@ logger = logging.getLogger(__name__)
 PREVIEW_SETTINGS_KEY = "details/preview_enabled"
 
 PLOT_SETTINGS_FILENAME = "plot_settings.json"
+
+UPDATE_CHECK_SETTINGS_KEY = "updates/check_at_startup"
+UPDATE_CHECK_DELAY_MS = 2000  # after start-up, so that the request does not compete with it
 
 
 def _application() -> QtWidgets.QApplication:
@@ -83,6 +90,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
         self._settings = app_settings()
         self._preview_enabled = bool(self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool))
+        self._check_updates_at_startup = bool(self._settings.value(UPDATE_CHECK_SETTINGS_KEY, True, type=bool))
         # handler of the selection that the properties and the preview currently show
         self._show_selection: Callable[[], None] = self._on_trajectory_selection_changed
         plot_style.set_theme(self._dark_theme)
@@ -109,6 +117,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_worker_connections()
         self.setup_progress_connections()
         self.setup_menu_bar()
+
+        self.setup_update_check()
 
         set_dark_titlebar(self, self._dark_theme)
         self.show()
@@ -151,9 +161,19 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         plot_settings_action.triggered.connect(self.handle_show_plot_settings)
         menubar.addAction(plot_settings_action)
 
+        help_menu = QtWidgets.QMenu("Help", parent=self)
+        check_updates_action = QAction("Check for Updates…", parent=self)
+        check_updates_action.triggered.connect(self.check_for_updates)
+        help_menu.addAction(check_updates_action)
+        self._check_updates_at_startup_action = QAction("Check for Updates at Startup", parent=self, checkable=True)
+        self._check_updates_at_startup_action.setChecked(self._check_updates_at_startup)
+        self._check_updates_at_startup_action.toggled.connect(self._set_check_updates_at_startup)
+        help_menu.addAction(self._check_updates_at_startup_action)
+        help_menu.addSeparator()
         about_action = QAction("About", parent=self)
         about_action.triggered.connect(self.about_window.show)
-        menubar.addAction(about_action)
+        help_menu.addAction(about_action)
+        menubar.addMenu(help_menu)
 
         # outside of the preview panel: stays reachable while the preview is hidden
         # (kept as attribute: PySide does not pass the ownership of corner widgets to the menu bar)
@@ -187,6 +207,70 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         app = _application()
         if hasattr(app.styleHints(), "colorSchemeChanged"):
             app.styleHints().colorSchemeChanged.connect(self._on_system_theme_changed)
+
+    def setup_update_check(self) -> None:
+        self._update_checker = UpdateChecker(self)
+        self._update_checker.update_available.connect(self._show_update_available)
+        self._update_checker.up_to_date.connect(self._report_up_to_date)
+        self._update_checker.failed.connect(self._report_update_check_failure)
+        self._manual_update_check = False
+
+        # stays in the status bar (unlike messages, which are replaced by the next one)
+        self._update_label = QtWidgets.QLabel()
+        self._update_label.setOpenExternalLinks(True)
+        self._update_label.hide()
+        self.statusBar().addPermanentWidget(self._update_label)
+
+        if self._check_updates_at_startup:
+            QtCore.QTimer.singleShot(UPDATE_CHECK_DELAY_MS, self._update_checker.check)
+
+    @Slot()
+    def check_for_updates(self) -> None:
+        """Checks for a newer release and reports the result in any case."""
+        self._manual_update_check = True
+        self._update_checker.check()
+
+    @Slot(bool)
+    def _set_check_updates_at_startup(self, enabled: bool) -> None:
+        self._check_updates_at_startup = enabled
+        self._settings.setValue(UPDATE_CHECK_SETTINGS_KEY, enabled)
+
+    @Slot(object)
+    def _show_update_available(self, release: Release) -> None:
+        how = (
+            "Download the installer from GitHub."
+            if getattr(sys, "frozen", False)
+            else 'Update with: pip install --upgrade "trajectopy[gui]"'
+        )
+        self._update_label.setText(f'<a href="{release.url}">Trajectopy {release.version} is available</a>')
+        self._update_label.setToolTip(how)
+        self._update_label.show()
+        if self._manual_update_check:
+            self._manual_update_check = False
+            box = QtWidgets.QMessageBox(
+                QtWidgets.QMessageBox.Icon.Information,
+                "Update Available",
+                f"Trajectopy {release.version} is available (installed: {VERSION}).",
+                parent=self,
+            )
+            box.setInformativeText(how)
+            open_button = box.addButton("Open Download Page", QtWidgets.QMessageBox.ButtonRole.AcceptRole)
+            box.addButton(QtWidgets.QMessageBox.StandardButton.Close)
+            box.exec()
+            if box.clickedButton() is open_button:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl(release.url))
+
+    @Slot()
+    def _report_up_to_date(self) -> None:
+        if self._manual_update_check:
+            self._manual_update_check = False
+            show_msg_box(f"Trajectopy {VERSION} is up to date.", self)
+
+    @Slot(str)
+    def _report_update_check_failure(self, reason: str) -> None:
+        if self._manual_update_check:  # a failed check at startup (e.g. offline) is not worth a dialog
+            self._manual_update_check = False
+            show_msg_box(f"Could not check for updates:\n\n{reason}", self, error=True)
 
     @Slot(QtCore.Qt.ColorScheme)
     def _on_system_theme_changed(self, scheme: QtCore.Qt.ColorScheme) -> None:
@@ -413,6 +497,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         logger.debug("Injecting plotting settings into plot request of type %s", plot_request.type)
         plot_request.plot_settings = self.plot_settings
         self.plot_manager.handle_request(plot_request)
+
+    def open_files(self, paths: list[str]) -> None:
+        """Loads the given trajectory (.traj, .bag, ...) and result (.result) files."""
+        if missing := [path for path in paths if not os.path.isfile(path)]:
+            show_msg_box("File not found:\n" + "\n".join(missing), self, error=True)
+        existing = [os.path.abspath(path) for path in paths if path not in missing]
+        results = [path for path in existing if path.lower().endswith(".result")]
+        trajectories = [path for path in existing if path not in results]
+        if trajectories:
+            self.file_manager.handle_request(FileRequest(type=FileRequestType.READ_TRAJ, file_list=trajectories))
+        if results:
+            self.file_manager.handle_request(FileRequest(type=FileRequestType.READ_RES, file_list=results))
 
     @QtCore.Slot()
     def handle_import_session(self) -> None:

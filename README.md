@@ -22,6 +22,8 @@
 
 ## Installation
 
+Windows app: download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or administrator rights are needed; `.traj` files can then be opened by double-click, and the app reports new versions (Help → Check for Updates).
+
 Full version (with GUI):
 
 ```bash

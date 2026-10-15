@@ -30,12 +30,14 @@ if os.name == "nt":
 def main(
     single_thread: bool = False,
     plot_settings_path: str = "",
+    files: list[str] | None = None,
 ):
     """Launch the GUI application.
 
     Args:
         single_thread: Disable multithreading
         plot_settings_path: Path to a JSON plot settings file
+        files: Trajectory or result files to open
     """
     # On Windows with fractional DPI (125%, 150%) Qt rounds the scale factor
     # by default, causing blurry UI. PassThrough keeps the exact scale factor.
@@ -62,12 +64,14 @@ def main(
     is_dark = app.styleHints().colorScheme() == Qt.ColorScheme.Dark
     app.setStyleSheet(DARK_STYLESHEET if is_dark else LIGHT_STYLESHEET)
 
-    _ = TrajectopyGUI(
+    window = TrajectopyGUI(
         single_thread=single_thread,
         plot_settings_path=plot_settings_path,
     )
     app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
-    app.exec()
+    if files:
+        window.open_files(files)
+    return app.exec()
 
 
 if __name__ == "__main__":

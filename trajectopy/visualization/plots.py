@@ -140,7 +140,7 @@ def _align_left_axes(plots: Sequence[pg.PlotItem]) -> None:
                 other.setMinimumWidth(width)
                 other.setMaximumWidth(width)
 
-        axis._updateWidth = update_width  # type: ignore[method-assign]
+        axis._updateWidth = update_width
         update_width()
 
 

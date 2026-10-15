@@ -121,15 +121,15 @@ class JSONViewer(QtWidgets.QMainWindow):
             show_msg_box(f"Error loading JSON file: {e}", self, error=True)
 
     def export_json(self):
-        if not (file := save_file_dialog(parent=self, file_filter="Settings File (*.json)")):
+        if not (filename := save_file_dialog(parent=self, file_filter="Settings File (*.json)")):
             return
 
         try:
             json_content = self.populate_json()
-            with open(file, "w", encoding="utf-8") as file:
+            with open(filename, "w", encoding="utf-8") as file:
                 file.write(json_content)
 
-            logger.info("Saved processing settings file %s", file.name)
+            logger.info("Saved processing settings file %s", filename)
         except Exception as e:
             show_msg_box(f"Error saving JSON file: {e}", self, error=True)
 

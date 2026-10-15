@@ -28,6 +28,12 @@ Trajectopy offers a range of features, including:
 - __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
 - __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.
 
+## Windows App
+
+Download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest)
+and run it. No Python installation or administrator rights are needed. `.traj` files can then be opened by
+double-click, and the app reports new versions (Help → Check for Updates).
+
 ## Installation (with GUI)
 
 It is recommended to install trajectopy with the GUI using the following command:
