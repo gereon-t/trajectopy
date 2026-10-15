@@ -48,9 +48,12 @@ class TestGuiSmoke(unittest.TestCase):
             "trajectopy.gui.managers.ui_manager.show_msg_box",
             "trajectopy.gui.views.json_settings_view.show_msg_box",
         ):
-            patcher = mock.patch(target, side_effect=self.messages.append)
+            patcher = mock.patch(target, side_effect=lambda message, *_, **__: self.messages.append(message))
             patcher.start()
             self.addCleanup(patcher.stop)
+        patcher = mock.patch("trajectopy.gui.views.main_window.TrajectopyGUI._confirm_quit", return_value=True)
+        self.confirm_quit = patcher.start()
+        self.addCleanup(patcher.stop)
 
     def _wait_until(self, condition: Callable[[], bool], timeout: float = 60.0) -> None:
         deadline = time.monotonic() + timeout
@@ -276,6 +279,59 @@ class TestGuiSmoke(unittest.TestCase):
 
         finally:
             window.close()
+
+    def test_quit_can_be_cancelled(self):
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        self.confirm_quit.return_value = False
+        window.close()
+        self.assertTrue(window.isVisible())
+        self.confirm_quit.return_value = True
+        window.close()
+        self.assertFalse(window.isVisible())
+
+    def test_rename_asks_for_the_name_in_the_main_window(self):
+        from trajectopy.gui.managers.requests import UIRequest, UIRequestType
+        from trajectopy.gui.models.entries import TrajectoryEntry
+        from trajectopy.gui.models.selection import TrajectorySelection
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+        from trajectopy.io import read_trajectory
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            entry = TrajectoryEntry(full_filename=TRAJECTORY_FILES[0], trajectory=read_trajectory(TRAJECTORY_FILES[0]))
+            window.trajectory_table_model.add(entry)
+            request = UIRequest(type=UIRequestType.RENAME_TRAJ, trajectory_selection=TrajectorySelection([entry]))
+            with mock.patch.object(QtWidgets.QInputDialog, "getText", return_value=("  Renamed  ", True)) as ask:
+                window.ui_manager.handle_request(request)
+            self.assertIs(ask.call_args.args[0], window)  # modal to the main window, not a free-floating dialog
+            self.assertEqual(window.trajectory_table_model.items[0].name, "Renamed")
+
+            with mock.patch.object(QtWidgets.QInputDialog, "getText", return_value=("Other", False)):
+                window.ui_manager.handle_request(request)
+            self.assertEqual(window.trajectory_table_model.items[0].name, "Renamed")  # cancelled
+        finally:
+            window.close()
+
+    def test_failed_requests_are_reported_as_errors(self):
+        from trajectopy.gui.managers.requests import UIRequest, UIRequestType, generic_request_handler
+
+        class FailingHandler(QtCore.QObject):
+            ui_request = QtCore.Signal(UIRequest)
+
+            def __init__(self) -> None:
+                super().__init__()
+                self.REQUEST_MAPPING = {UIRequestType.PLAYBACK: self.fail}
+
+            def fail(self, _) -> None:
+                raise ValueError("no poses")
+
+        handler, reported = FailingHandler(), []
+        handler.ui_request.connect(reported.append)
+        generic_request_handler(handler, UIRequest(type=UIRequestType.PLAYBACK))
+        self.assertTrue(reported[0].error)
+        self.assertEqual(reported[0].message, "Playback failed:\n\nno poses")
 
     def test_workflow_multi_threaded(self):
         self._run_workflow(single_thread=False)

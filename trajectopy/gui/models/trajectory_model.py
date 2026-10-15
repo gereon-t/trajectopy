@@ -3,7 +3,6 @@ import logging
 import os
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -45,8 +44,7 @@ class TrajectoryTableModel(RequestTableModel):
         )
 
     def remove_group(self, group_id: str) -> None:
-        self.items = [item for item in self.items if item.group_id not in group_id]
-        self.layoutChanged.emit()
+        self.remove([item.entry_id for item in self.items if item.group_id == group_id])
 
     def export_all(self, request: TrajectoryModelRequest) -> None:
         for item in self.items:
@@ -83,13 +81,10 @@ class TrajectoryTableModel(RequestTableModel):
         return next((item for item in self.items if item.set_as_reference), None)
 
     def rename_trajectories(self, request: TrajectoryModelRequest) -> None:
-        if not isinstance((selection := request.selection), TrajectorySelection):
-            raise ValueError("No trajectory selection provided")
-
-        input_name, ok = QInputDialog.getText(None, "Please enter a name", "Name:", text=selection.entries[0].name)
-        if ok and input_name is not None:
-            selection.entries[0].trajectory.name = input_name
-        self.layoutChanged.emit()
+        """Renames the (first) selected trajectory to ``request.name``."""
+        if request.name and request.selection and (entry := self.get(request.selection.entries[0].entry_id)):
+            entry.trajectory.name = request.name
+            self.refresh()
 
     def remove_related_trajectories(self, request: TrajectoryModelRequest) -> None:
         """Remove all trajectories that are related"""
@@ -118,10 +113,10 @@ class TrajectoryTableModel(RequestTableModel):
         selected_id = selection.entries[0].entry_id
         for entry in self.items:
             entry.set_as_reference = entry.entry_id == selected_id
-        self.layoutChanged.emit()
+        self.refresh()
 
     def unset_as_reference(self, request: TrajectoryModelRequest) -> None:
         """Removes the reference status from the selected trajectory"""
         for entry in self.items:
             entry.set_as_reference = False
-        self.layoutChanged.emit()
+        self.refresh()

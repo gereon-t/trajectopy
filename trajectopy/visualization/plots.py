@@ -44,6 +44,13 @@ def _settings(settings: PlotSettings | None) -> PlotSettings:
     return settings if settings is not None else PlotSettings()
 
 
+class _TightXViewBox(pg.ViewBox):
+    """View box whose x range fits the data exactly when auto-ranging; only the y range is padded."""
+
+    def suggestPadding(self, axis: int) -> float:
+        return 0.0 if axis == 0 else super().suggestPadding(axis)
+
+
 def _add_plot(
     layout: pg.GraphicsLayout,
     row: int,
@@ -55,9 +62,11 @@ def _add_plot(
     y_label: str = "",
     datetime_axis: bool = False,
     legend: bool = False,
+    tight_x: bool = True,
 ) -> pg.PlotItem:
     axis_items = {"bottom": pg.DateAxisItem(orientation="bottom", utcOffset=0)} if datetime_axis else None
-    plot = layout.addPlot(row=row, col=col, axisItems=axis_items)
+    view_box = _TightXViewBox() if tight_x else None
+    plot = layout.addPlot(row=row, col=col, axisItems=axis_items, viewBox=view_box)
     if title:
         plot.setTitle(title, size=f"{settings.font_size + 1}pt", color=style.theme().foreground)
     # Passing a style replaces pyqtgraph's default label style, so the color has to be given as well.
@@ -82,8 +91,57 @@ def _line(plot: pg.PlotItem, x: np.ndarray, y: np.ndarray, index: int, name: str
 
 
 def _link_x(plots: Sequence[pg.PlotItem]) -> None:
-    for plot in plots[1:]:
-        plot.setXLink(plots[0])
+    """Shares the x range of stacked plots; the first plot (which shows all data) determines the auto range.
+
+    pyqtgraph's own ``setXLink`` maps ranges by screen position. Since the plots have y axes of different
+    widths, the linked views keep widening each other's range and auto-ranging gets switched off, which
+    leaves blank borders. Linking the values directly avoids that.
+    """
+    views = [plot.getViewBox() for plot in plots]
+    syncing = False
+
+    def sync(source: pg.ViewBox, x_range: Sequence[float]) -> None:
+        nonlocal syncing
+        if syncing:
+            return
+        syncing = True
+        try:
+            for view in views:
+                if view is not source:
+                    view.setXRange(*x_range, padding=0)
+        finally:
+            syncing = False
+
+    for view in views[1:]:
+        view.enableAutoRange(x=False)
+    for view in views:
+        view.sigXRangeChanged.connect(sync)
+    _align_left_axes(plots)
+
+
+def _align_left_axes(plots: Sequence[pg.PlotItem]) -> None:
+    """Gives the y axes of stacked plots the width of the widest one, so that their x axes line up."""
+    axes = [plot.getAxis("left") for plot in plots]
+    natural_widths: dict[pg.AxisItem, float] = {}
+
+    # pyqtgraph recomputes an axis' width from its tick labels in _updateWidth; widen all axes afterwards.
+    # This hooks into a private method, so a pyqtgraph version without it only loses the alignment.
+    if not all(callable(getattr(axis, "_updateWidth", None)) for axis in axes):
+        logger.warning("pyqtgraph has no AxisItem._updateWidth anymore; stacked plots will not be aligned.")
+        return
+
+    for axis in axes:
+
+        def update_width(axis: pg.AxisItem = axis, update: Callable[[], None] = axis._updateWidth) -> None:
+            update()
+            natural_widths[axis] = axis.minimumWidth()
+            width = max(natural_widths.values())
+            for other in axes:
+                other.setMinimumWidth(width)
+                other.setMaximumWidth(width)
+
+        axis._updateWidth = update_width  # type: ignore[method-assign]
+        update_width()
 
 
 @dataclass
@@ -101,7 +159,8 @@ def _top_view(trajectories: Sequence[Trajectory]) -> _TopView:
 
 def _top_view_plot(layout: pg.GraphicsLayout, settings: PlotSettings, view: _TopView, **kwargs) -> pg.PlotItem:
     """Plot for x/y paths: equal axis scaling and no clipping/downsampling, which assume increasing x values."""
-    plot = _add_plot(layout, 0, settings, x_label=view.labels[0], y_label=view.labels[1], **kwargs)
+    # With locked aspect ratio, a tight x range would only shift the padding to the y axis.
+    plot = _add_plot(layout, 0, settings, x_label=view.labels[0], y_label=view.labels[1], tight_x=False, **kwargs)
     plot.setAspectLocked(True)
     plot.setClipToView(False)
     plot.setDownsampling(auto=False)
@@ -648,7 +707,7 @@ def parameter_matrix_figure(
         limit, value_format = (float(finite.max()) if finite.size else 0.0) or 1.0, "{:.2e}"
 
     def render(layout: pg.GraphicsLayout) -> None:
-        plot = _add_plot(layout, 0, settings)
+        plot = _add_plot(layout, 0, settings, tight_x=False)
         plot.showGrid(x=False, y=False)
         plot.setClipToView(False)
         plot.setMouseEnabled(x=False, y=False)

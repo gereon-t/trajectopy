@@ -108,6 +108,8 @@ class UIRequestType(Enum):
     EDIT_ALIGNMENT = auto()
     MANUAL_ALIGNMENT = auto()
     PLAYBACK = auto()
+    RENAME_TRAJ = auto()
+    RENAME_RES = auto()
 
 
 class PlotSettingsRequestType(Enum):
@@ -159,6 +161,7 @@ class ResultModelRequest:
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
     index_list: list[str] = field(default_factory=list)
     file_path: str = ""
+    name: str = ""  # new name (RENAME)
 
 
 @dataclass
@@ -179,6 +182,7 @@ class TrajectoryModelRequest:
     selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     index_list: list[str] = field(default_factory=list)
     file_path: str = ""
+    name: str = ""  # new name (RENAME)
 
 
 @dataclass
@@ -200,6 +204,7 @@ class UIRequest:
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     alignment_entry: AlignmentEntry = field(default_factory=AlignmentEntry)
     message: str = ""
+    error: bool = False  # the message reports a failure
     epsg: int = 0
     grid: int = 0
     file_path: str = ""
@@ -244,7 +249,8 @@ def generic_request_handler(manager: RequestHandler, request: Request) -> None:
         manager.ui_request.emit(
             UIRequest(
                 type=UIRequestType.MESSAGE,
-                message=f"{manager.__class__.__name__}: Error processing request: {request.type.name} ({e})",
+                message=f"{request.type.name.replace('_', ' ').capitalize()} failed:\n\n{e}",
+                error=True,
             )
         )
     finally:

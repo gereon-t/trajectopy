@@ -338,7 +338,7 @@ class TrajectoryContextMenu(SelectionMenu):
         add_action(
             self,
             "Rename",
-            self._model(TrajectoryModelRequestType.RENAME),
+            self._ui(UIRequestType.RENAME_TRAJ),
             shortcuts=("F2", "U"),
             unavailable=self._single,
         )

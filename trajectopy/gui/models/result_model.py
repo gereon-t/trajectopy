@@ -2,7 +2,6 @@ import logging
 import os
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QInputDialog
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -67,12 +66,10 @@ class ResultTableModel(RequestTableModel):
         )
 
     def rename_result(self, request: ResultModelRequest) -> None:
-        selected_entry = request.selection.entries[0]
-        input_name, ok = QInputDialog.getText(None, "Please enter a name", "Name:", text=selected_entry.name)
-        if ok and input_name is not None:
-            selected_entry.name = input_name
-
-        self.layoutChanged.emit()
+        """Renames the (first) selected result to ``request.name``."""
+        if request.name and request.selection and (entry := self.get(request.selection.entries[0].entry_id)):
+            entry.name = request.name
+            self.refresh()
 
     @property
     def alignment_entries(self) -> list[AlignmentEntry]:

@@ -13,6 +13,8 @@ from trajectopy.gui.managers.requests import (
     SessionManagerRequestType,
     TrajectoryManagerRequest,
     TrajectoryManagerRequestType,
+    TrajectoryModelRequest,
+    TrajectoryModelRequestType,
     UIRequest,
     UIRequestType,
     generic_request_handler,
@@ -60,6 +62,7 @@ class UIManager(QObject):
     """
 
     trajectory_manager_request = Signal(TrajectoryManagerRequest)
+    trajectory_model_request = Signal(TrajectoryModelRequest)
     result_model_request = Signal(ResultModelRequest)
     file_request = Signal(FileRequest)
     session_manager_request = Signal(SessionManagerRequest)
@@ -68,7 +71,6 @@ class UIManager(QObject):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self._sub_windows: list[QtWidgets.QWidget] = []
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
             UIRequestType.EPSG_EDIT: self.epsg_input_edit,
@@ -88,28 +90,44 @@ class UIManager(QObject):
             UIRequestType.MANUAL_ALIGNMENT: self.manual_alignment,
             UIRequestType.GRID_SELECTION: self.grid_selection,
             UIRequestType.PLAYBACK: self.trajectory_playback,
+            UIRequestType.RENAME_TRAJ: self.rename_trajectory,
+            UIRequestType.RENAME_RES: self.rename_result,
         }
 
     @Slot(UIRequest)
     def handle_request(self, request: UIRequest) -> None:
         generic_request_handler(self, request)
 
-    def message_box(self, request: UIRequest) -> None:
-        show_msg_box(request.message)
+    def rename_trajectory(self, request: UIRequest) -> None:
+        entry = request.trajectory_selection.entries[0]
+        if name := self._ask_name(entry.name):
+            self.trajectory_model_request.emit(
+                TrajectoryModelRequest(
+                    type=TrajectoryModelRequestType.RENAME, selection=request.trajectory_selection, name=name
+                )
+            )
 
-    def _track_window(self, window: QtWidgets.QWidget) -> None:
-        """Close any previously tracked sub-windows and track the new one."""
-        for w in self._sub_windows:
-            w.close()
-        self._sub_windows.clear()
-        self._sub_windows.append(window)
+    def rename_result(self, request: UIRequest) -> None:
+        entry = request.result_selection.entries[0]
+        if name := self._ask_name(entry.name):
+            self.result_model_request.emit(
+                ResultModelRequest(type=ResultModelRequestType.RENAME, selection=request.result_selection, name=name)
+            )
+
+    def _ask_name(self, current: str) -> str:
+        """Asks for a new name; returns an empty string if cancelled or unchanged."""
+        name, ok = QtWidgets.QInputDialog.getText(self._dialog_parent(), "Rename", "Name:", text=current)
+        name = name.strip()
+        return name if ok and name != current else ""
+
+    def message_box(self, request: UIRequest) -> None:
+        show_msg_box(request.message, self._dialog_parent(), error=request.error)
 
     def show_dof_organizer(self, request: UIRequest) -> None:
         dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
         dof_organizer.selection_made.connect(
             functools.partial(self.handle_dof_selection, selection=request.trajectory_selection)
         )
-        self._track_window(dof_organizer)
         dof_organizer.show()
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
@@ -117,7 +135,6 @@ class UIManager(QObject):
             parent=self.parent(),
             settings=request.trajectory_selection.entries[0].settings,
         )
-        self._track_window(settings_window)
         settings_window.show()
 
     def trajectory_playback(self, request: UIRequest) -> None:
@@ -128,12 +145,12 @@ class UIManager(QObject):
     def manual_alignment(self, request: UIRequest) -> None:
         selection = request.trajectory_selection
         if (reference_entry := selection.reference_entry) is None:
-            show_msg_box("No reference trajectory selected.")
+            show_msg_box("No reference trajectory selected.", self._dialog_parent())
             return
 
         entry = next((e for e in selection.entries if not e.set_as_reference), None)
         if entry is None:
-            show_msg_box("Select a trajectory that is not the reference.")
+            show_msg_box("Select a trajectory that is not the reference.", self._dialog_parent())
             return
 
         manual_window = ManualAlignmentWindow(
@@ -146,7 +163,6 @@ class UIManager(QObject):
         manual_window.alignment_accepted.connect(
             functools.partial(self.handle_manual_alignment, selection=request.trajectory_selection)
         )
-        self._track_window(manual_window)
         manual_window.show()
 
     def handle_manual_alignment(self, alignment_result: AlignmentResult, *, selection: TrajectorySelection) -> None:
@@ -164,7 +180,6 @@ class UIManager(QObject):
         result_selection.selection_made.connect(
             functools.partial(self.handle_alignment_selection, selection=request.trajectory_selection)
         )
-        self._track_window(result_selection)
         result_selection.show()
 
     def handle_alignment_selection(
@@ -188,13 +203,15 @@ class UIManager(QObject):
         )
 
     def trajectory_import_dialog(self, _: UIRequest) -> None:
-        if selected_files := read_file_dialog(None, file_filter="Trajectory Files (*.traj);;All Files (*.*)"):
+        if selected_files := read_file_dialog(
+            self._dialog_parent(), file_filter="Trajectory Files (*.traj);;All Files (*.*)"
+        ):
             self.file_request.emit(FileRequest(type=FileRequestType.READ_TRAJ, file_list=selected_files))
         else:
             return
 
     def trajectory_export_dialog(self, request: UIRequest) -> None:
-        if selected_file := save_file_dialog(None, file_filter="Trajectory File (*.traj)"):
+        if selected_file := save_file_dialog(self._dialog_parent(), file_filter="Trajectory File (*.traj)"):
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_TRAJ,
@@ -218,7 +235,7 @@ class UIManager(QObject):
             dialog = KmlExportDialog(self._dialog_parent(), fields=trajectory_kml_fields())
         if dialog.exec() != QtWidgets.QDialog.DialogCode.Accepted:
             return
-        if not (selected_file := save_file_dialog(None, file_filter="Google Earth (*.kml)")):
+        if not (selected_file := save_file_dialog(self._dialog_parent(), file_filter="Google Earth (*.kml)")):
             return
         try:
             if ate_entry is not None:
@@ -226,14 +243,14 @@ class UIManager(QObject):
             else:
                 request.trajectory_selection.entries[0].trajectory.to_kml(selected_file, **dialog.options())
         except ValueError as error:
-            show_msg_box(str(error))
+            show_msg_box(str(error), self._dialog_parent(), error=True)
 
     def _dialog_parent(self) -> QtWidgets.QWidget | None:
         parent = self.parent()
         return parent if isinstance(parent, QtWidgets.QWidget) else None
 
     def result_export_dialog(self, request: UIRequest) -> None:
-        if selected_file := save_file_dialog(None, file_filter="Result File (*.result)"):
+        if selected_file := save_file_dialog(self._dialog_parent(), file_filter="Result File (*.result)"):
             self.file_request.emit(
                 FileRequest(
                     type=FileRequestType.WRITE_RES,
@@ -245,14 +262,16 @@ class UIManager(QObject):
             return
 
     def result_import_dialog(self, _: UIRequest) -> None:
-        if selected_files := read_file_dialog(None, file_filter="Result Files (*.result);;All Files (*.*)"):
+        if selected_files := read_file_dialog(
+            self._dialog_parent(), file_filter="Result Files (*.result);;All Files (*.*)"
+        ):
             self.file_request.emit(FileRequest(type=FileRequestType.READ_RES, file_list=selected_files))
         else:
             return
 
     def show_reset_question(self, _: UIRequest) -> None:
         reply = QtWidgets.QMessageBox.question(
-            None,
+            self._dialog_parent(),
             "Confirmation",
             "The current Session will be lost. Continue?",
             QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
@@ -262,7 +281,7 @@ class UIManager(QObject):
             self.session_manager_request.emit(SessionManagerRequest(type=SessionManagerRequestType.NEW))
 
     def session_export_dialog(self, _: UIRequest) -> None:
-        if selected_file := browse_dir_dialog(None):
+        if selected_file := browse_dir_dialog(self._dialog_parent()):
             self.session_manager_request.emit(
                 SessionManagerRequest(type=SessionManagerRequestType.EXPORT, file_path=selected_file)
             )
@@ -270,7 +289,7 @@ class UIManager(QObject):
             return
 
     def session_import_dialog(self, _: UIRequest) -> None:
-        if selected_file := browse_dir_dialog(None):
+        if selected_file := browse_dir_dialog(self._dialog_parent()):
             self.session_manager_request.emit(
                 SessionManagerRequest(type=SessionManagerRequestType.NEW, file_path=selected_file)
             )
@@ -282,7 +301,9 @@ class UIManager(QObject):
 
     def epsg_input(self, request: UIRequest) -> None:
         epsg, ok = QtWidgets.QInputDialog.getInt(
-            None, "EPSG Dialog", "Please enter the EPSG code to which the trajectory should be transformed:"
+            self._dialog_parent(),
+            "EPSG Dialog",
+            "Please enter the EPSG code to which the trajectory should be transformed:",
         )
 
         if not ok or epsg is None:
@@ -298,7 +319,7 @@ class UIManager(QObject):
 
     def grid_selection(self, request: UIRequest) -> None:
         step, ok = QtWidgets.QInputDialog.getDouble(
-            None,
+            self._dialog_parent(),
             "Interpolate to Grid",
             "Enter the grid step size (seconds):",
             0.1,
@@ -320,7 +341,7 @@ class UIManager(QObject):
 
     def epsg_input_edit(self, request: UIRequest) -> None:
         epsg, ok = QtWidgets.QInputDialog.getInt(
-            None,
+            self._dialog_parent(),
             "EPSG Dialog",
             "Please enter the new EPSG code. The trajectory WILL NOT be transformed (use Action -> Transform to EPSG instead):",
         )
@@ -346,5 +367,4 @@ class UIManager(QObject):
                 )
             )
         )
-        self._track_window(alignment_window)
         alignment_window.show()

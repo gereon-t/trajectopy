@@ -73,10 +73,11 @@ class TestContextMenus(unittest.TestCase):
                 self.assertTrue(action.toolTip() and action.toolTip() != text.replace("&", ""), text)
 
     def test_shortcuts_trigger_the_menu_entries(self):
-        from trajectopy.gui.managers.requests import TrajectoryModelRequestType
+        from trajectopy.gui.managers.requests import TrajectoryModelRequestType, UIRequestType
 
         received = []
         self.menu.trajectory_model_request.connect(received.append)
+        self.menu.ui_request.connect(received.append)
         selection = self._selection(self.trajectory)
 
         def press(key, modifiers=QtCore.Qt.KeyboardModifier.NoModifier) -> bool:
@@ -93,7 +94,7 @@ class TestContextMenus(unittest.TestCase):
             [request.type for request in received],
             [
                 TrajectoryModelRequestType.SET_REFERENCE,
-                TrajectoryModelRequestType.RENAME,
+                UIRequestType.RENAME_TRAJ,  # asks for the name first
                 TrajectoryModelRequestType.REMOVE,
                 TrajectoryModelRequestType.COPY,
             ],

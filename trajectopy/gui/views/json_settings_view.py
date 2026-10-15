@@ -37,6 +37,8 @@ SPECIAL_WORDS = {
 class JSONViewer(QtWidgets.QMainWindow):
     def __init__(self, parent, settings: Settings, name: str = "Settings Viewer"):
         super().__init__(parent=parent)
+        # a child of the main window: without this, closing only hides it and it is never freed
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.form_item_cnt = 0
         self.settings = settings
         self.setWindowTitle(name)
@@ -96,9 +98,7 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.vlayout.addLayout(self.hlayout)
 
     def open_file_dialog(self):
-        file_dialog = QtWidgets.QFileDialog(self)
-        file_dialog.setNameFilter("JSON Files (*.json)")
-        filename, _ = file_dialog.getOpenFileName()
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Settings", "", "JSON Files (*.json)")
         if filename:
             self.load_json_file(filename)
             logger.info("Loaded processing settings file %s", filename)
@@ -118,7 +118,7 @@ class JSONViewer(QtWidgets.QMainWindow):
                 json_content = file.read()
                 self.populate_form("root", json.loads(json_content))
         except Exception as e:
-            show_msg_box(f"Error loading JSON file: {e}")
+            show_msg_box(f"Error loading JSON file: {e}", self, error=True)
 
     def export_json(self):
         if not (file := save_file_dialog(parent=self, file_filter="Settings File (*.json)")):
@@ -131,7 +131,7 @@ class JSONViewer(QtWidgets.QMainWindow):
 
             logger.info("Saved processing settings file %s", file.name)
         except Exception as e:
-            show_msg_box(f"Error saving JSON file: {e}")
+            show_msg_box(f"Error saving JSON file: {e}", self, error=True)
 
     def apply_changes(self, close_after: bool = False):
         try:
@@ -144,9 +144,9 @@ class JSONViewer(QtWidgets.QMainWindow):
             if close_after:
                 self.close()
         except json.JSONDecodeError as e:
-            show_msg_box(f"Error decoding JSON: {e}")
+            show_msg_box(f"Error decoding JSON: {e}", self, error=True)
         except (TypeError, ValueError) as e:
-            show_msg_box(f"Invalid settings: {e}")
+            show_msg_box(f"Invalid settings: {e}", self, error=True)
 
     def update_view(self):
         self.remove_items()

@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Qt, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     PlotRequest,
@@ -66,6 +66,7 @@ class PlotManager(QObject):
             export_width=request.plot_settings.export_width,
             parent=self.parent(),  # type: ignore[arg-type]
         )
+        window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)  # otherwise closing only hides it
         window.destroyed.connect(lambda _=None, w=window: self._windows.remove(w) if w in self._windows else None)
         self._windows.append(window)
         window.show()

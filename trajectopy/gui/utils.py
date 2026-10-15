@@ -56,31 +56,22 @@ def show_progress(func):
     return wrapper
 
 
-def show_msg_box(message: str):
-    message_box = QtWidgets.QMessageBox()
-    message_box.setText(message)
+def show_msg_box(message: str, parent: QtWidgets.QWidget | None = None, error: bool = False) -> None:
+    """Shows a message in a dialog that is modal to (and centered on) ``parent``."""
+    icon = QtWidgets.QMessageBox.Icon.Warning if error else QtWidgets.QMessageBox.Icon.Information
+    message_box = QtWidgets.QMessageBox(icon, "Error" if error else "Trajectopy", message, parent=parent)
     message_box.exec()
 
 
-def read_file_dialog(
-    parent,
-    file_filter: str = "All (*.*)",
-    mode: QtWidgets.QFileDialog.FileMode = QtWidgets.QFileDialog.FileMode.ExistingFiles,
-):
-    file_dialog = QtWidgets.QFileDialog(parent=parent)
-    file_dialog.setFileMode(mode)
-    fileName, _ = file_dialog.getOpenFileNames(caption="Open File", dir="", filter=file_filter)
-    return fileName
+def read_file_dialog(parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)") -> list[str]:
+    file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(parent, "Open File", "", file_filter)
+    return file_names
 
 
-def save_file_dialog(parent, file_filter: str = "All (*.*)"):
-    file_dialog = QtWidgets.QFileDialog()
-    file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.AnyFile)
-    fileName, _ = file_dialog.getSaveFileName(parent, caption="Select Output File", dir="", filter=file_filter)
-    return fileName
+def save_file_dialog(parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)") -> str:
+    file_name, _ = QtWidgets.QFileDialog.getSaveFileName(parent, "Select Output File", "", file_filter)
+    return file_name
 
 
-def browse_dir_dialog(parent) -> str:
-    file_dialog = QtWidgets.QFileDialog()
-    file_dialog.setFileMode(QtWidgets.QFileDialog.FileMode.Directory)
-    return file_dialog.getExistingDirectory(parent, caption="Select Directory", dir="")
+def browse_dir_dialog(parent: QtWidgets.QWidget | None) -> str:
+    return QtWidgets.QFileDialog.getExistingDirectory(parent, "Select Directory", "")

@@ -9,6 +9,8 @@ class DOFOrganizer(QtWidgets.QMainWindow):
 
     def __init__(self, parent, selection: TrajectorySelection) -> None:
         super().__init__(parent=parent)
+        # a child of the main window: without this, closing only hides it and it is never freed
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setupUi()
         self.selection = selection
         self.pushButton.clicked.connect(self.handle_ok)

@@ -13,6 +13,8 @@ class AlignmentEditWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent, alignment_entry: AlignmentEntry) -> None:
         super().__init__(parent=parent)
+        # a child of the main window: without this, closing only hides it and it is never freed
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setupUi()
         self.alignment_entry = alignment_entry
         self.setWindowTitle(f"Alignment Parameter Settings for: {alignment_entry.name}")

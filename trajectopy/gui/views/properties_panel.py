@@ -66,7 +66,7 @@ class PropertiesPanel(QtWidgets.QWidget):
             self.table.resizeColumnsToContents()
 
     def _export(self) -> None:
-        if selected_file := save_file_dialog(None, file_filter="CSV file (*.csv);;All Files (*)"):
+        if selected_file := save_file_dialog(self, file_filter="CSV file (*.csv);;All Files (*)"):
             self.model.handle_request(
                 PropertyModelRequest(type=PropertyModelRequestType.EXPORT, file_path=selected_file)
             )

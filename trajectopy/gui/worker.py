@@ -41,6 +41,11 @@ class BackgroundWorker:
         self._futures.add(future)
         future.add_done_callback(self._futures.discard)
 
+    @property
+    def is_busy(self) -> bool:
+        """Whether an operation is running or waiting to run."""
+        return any(not future.done() for future in self._futures)
+
     @staticmethod
     def _run(function: Callable[..., Any], *args: Any) -> None:
         try:

@@ -69,8 +69,8 @@ class ResultContextMenu(SelectionMenu):
         add_action(
             self,
             "Rename",
-            lambda: self.result_model_request.emit(
-                ResultModelRequest(type=ResultModelRequestType.RENAME, selection=self.get_selection())
+            lambda: self.ui_request.emit(
+                UIRequest(type=UIRequestType.RENAME_RES, result_selection=self.get_selection())
             ),
             shortcuts=("F2", "U"),
             unavailable=single,

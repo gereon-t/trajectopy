@@ -5,6 +5,7 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
+    import pyqtgraph as pg
     from PySide6 import QtGui
 
     from trajectopy import visualization as vis
@@ -143,6 +144,35 @@ class TestVisualization(unittest.TestCase):
         self.assertIsNone(window.figure_widget(1))
         window.tabs.setCurrentIndex(1)
         self.assertIsNotNone(window.figure_widget(1))
+        window.close()
+
+    def test_stacked_plots_fit_data_and_are_aligned(self):
+        """Guards the x-range linking and y-axis alignment in plots.py against pyqtgraph changes."""
+        figure = vis.xyz_figure([generated_trajectory], PlotSettings(use_relative_timestamps=True))
+        window = vis.PlotWindow([figure])
+        window.resize(900, 700)
+        window.show()
+        app = ensure_app()
+        for _ in range(20):
+            app.processEvents()
+
+        plot_items = [item for item in window.figure_widget(0).graphics.ci.items if isinstance(item, pg.PlotItem)]
+        self.assertEqual(len(plot_items), 3)
+
+        duration = generated_trajectory.timestamps[-1] - generated_trajectory.timestamps[0]
+        for plot in plot_items:
+            x_min, x_max = plot.getViewBox().viewRange()[0]
+            # only the few pixels pyqtgraph reserves for the line width may exceed the data
+            self.assertAlmostEqual(x_min, 0.0, delta=0.02 * duration)
+            self.assertAlmostEqual(x_max, duration, delta=0.02 * duration)
+
+        widths = {plot.getAxis("left").width() for plot in plot_items}
+        self.assertEqual(len(widths), 1, f"left axes differ in width: {widths}")
+
+        # zooming one plot moves the others along
+        plot_items[2].getViewBox().setXRange(0.2 * duration, 0.4 * duration, padding=0)
+        for plot in plot_items:
+            np.testing.assert_allclose(plot.getViewBox().viewRange()[0], [0.2 * duration, 0.4 * duration])
         window.close()
 
 

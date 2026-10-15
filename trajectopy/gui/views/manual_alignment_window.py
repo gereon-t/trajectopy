@@ -19,8 +19,8 @@ georeferenced coordinates.
 
 import copy
 import logging
+import threading
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -48,8 +48,6 @@ JOG_TICK_MS = 30
 JOG_RANGE = 100
 JOG_DECADES = 3.0  # full deflection changes the value 10**JOG_DECADES - 1 steps per second
 DEG = float(np.rad2deg(1.0))
-
-_alignment_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="TrajectopyAlignment")
 
 
 @dataclass(frozen=True)
@@ -427,6 +425,8 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         parent=None,
     ) -> None:
         super().__init__(parent=parent)
+        # a child of the main window: without this, closing only hides it and it is never freed
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setWindowTitle(f"Manual Alignment: {trajectory.name} to {reference.name}")
         self.matching_settings = matching_settings or MatchingSettings()
         self.alignment_settings = alignment_settings or AlignmentSettings()
@@ -660,7 +660,12 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         self._alignment_signals = signals  # keep alive until finished
         # read the widgets here, on the GUI thread, not in the worker
         parameters, estimation = self.parameters, self.estimation_settings
-        _alignment_executor.submit(lambda: signals.finished.emit(self.estimate(parameters, estimation)))
+        # a daemon thread: only computes (writes nothing), so a fit still running must not keep the app alive on exit
+        threading.Thread(
+            target=lambda: signals.finished.emit(self.estimate(parameters, estimation)),
+            name="TrajectopyAlignment",
+            daemon=True,
+        ).start()
 
     @property
     def estimation_settings(self) -> AlignmentEstimationSettings:

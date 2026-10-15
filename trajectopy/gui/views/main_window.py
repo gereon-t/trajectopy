@@ -50,6 +50,10 @@ def _application() -> QtWidgets.QApplication:
     return cast(QtWidgets.QApplication, QtWidgets.QApplication.instance())
 
 
+def _count(number: int, singular: str, plural: str) -> str:
+    return f"{number} {singular if number == 1 else plural}"
+
+
 class TrajectopyGUI(QtWidgets.QMainWindow):
     """
     Class representing the main window of the GUI
@@ -210,16 +214,49 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             self._preview.clear_preview()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
-        if not self.worker.shutdown(timeout=5.0):
-            logger.warning("Background operation did not finish within timeout; close request aborted.")
+        if not self._confirm_quit():
             if a0 is not None:
                 a0.ignore()
-            self.statusBar().showMessage("Background work still running. Please try closing again.")
             return
+
+        self.statusBar().showMessage("Finishing the running operation …")
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
+        try:
+            if not self.worker.shutdown(timeout=5.0):
+                # cannot be interrupted; the process exits as soon as it is done
+                logger.warning("Background operation still running; the application exits once it has finished.")
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
         self._preview.dispose()
         if a0 is not None:
             super().closeEvent(a0)
+
+    def _confirm_quit(self) -> bool:
+        """Asks before discarding a session with entries or a running operation. Returns True to quit."""
+        trajectories, results = self.trajectory_table_model.rowCount(), self.result_table_model.rowCount()
+        busy = self.worker.is_busy
+        if not (trajectories or results or busy):
+            return True
+
+        lines = []
+        if trajectories or results:
+            lines.append(
+                f"The current session ({_count(trajectories, 'trajectory', 'trajectories')}, "
+                f"{_count(results, 'result', 'results')}) will be lost. "
+                "Use Session → Save to keep it."
+            )
+        if busy:
+            lines.append("An operation is still running; its result will be discarded.")
+        box = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Icon.Question, "Quit Trajectopy", "Quit Trajectopy?", parent=self
+        )
+        box.setInformativeText("\n\n".join(lines))
+        quit_button = box.addButton("Quit", QtWidgets.QMessageBox.ButtonRole.DestructiveRole)
+        box.addButton(QtWidgets.QMessageBox.StandardButton.Cancel)
+        box.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Cancel)
+        box.exec()
+        return box.clickedButton() is quit_button
 
     def setup_worker_connections(self):
         """This method sets up the signal connections between the worker thread and the main thread"""
@@ -263,6 +300,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
+        self.ui_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.ui_manager.file_request.connect(self.file_manager.handle_request)
         self.ui_manager.session_manager_request.connect(self.session_manager.handle_request)
         self.ui_manager.ui_request.connect(self.ui_manager.handle_request)
@@ -309,9 +347,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         # Update details panel on selection change
         self.trajectoryTableView.selectionModel().selectionChanged.connect(self._on_trajectory_selection_changed)
         self.resultTableView.selectionModel().selectionChanged.connect(self._on_result_selection_changed)
-        # Also refresh details whenever layout changes (e.g., new items loaded)
-        self.trajectory_table_model.layoutChanged.connect(self._on_trajectory_selection_changed)
-        self.result_table_model.layoutChanged.connect(self._on_result_selection_changed)
+        # Also refresh details when the shown entries change (processed, renamed, removed, ...); coalesced, so that
+        # removing many rows redraws the preview only once
+        self._selection_refresh = QtCore.QTimer(self)
+        self._selection_refresh.setSingleShot(True)
+        self._selection_refresh.setInterval(0)
+        self._selection_refresh.timeout.connect(lambda: self._show_selection())
+        for model in (self.trajectory_table_model, self.result_table_model):
+            for signal in (model.dataChanged, model.rowsRemoved, model.modelReset, model.layoutChanged):
+                signal.connect(lambda *_: self._selection_refresh.start())
 
     @QtCore.Slot()
     def _on_trajectory_selection_changed(self) -> None:
@@ -342,8 +386,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @QtCore.Slot()
     def refresh(self) -> None:
-        self.trajectory_table_model.layoutChanged.emit()
-        self.result_table_model.layoutChanged.emit()
+        self.trajectory_table_model.refresh()
+        self.result_table_model.refresh()
 
     @Slot(PlotSettingsRequest)
     def handle_plot_settings_request(self, request: PlotSettingsRequest) -> None:
