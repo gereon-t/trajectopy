@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#processing-settings" class="md-skip">
+        <a href="#settings" class="md-skip">
           Skip to content
         </a>
       
@@ -481,6 +481,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -523,6 +525,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -558,17 +562,6 @@
     <span class="md-ellipsis">
       
         Matching Settings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#matching-methods" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Matching Methods
       
     </span>
   </a>
@@ -1231,6 +1224,8 @@
       
         
       
+        
+      
     
     
     
@@ -1349,6 +1344,34 @@
     
   
     Google Earth (KML)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/io/rosbag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ROS Bags
   
 
     
@@ -1672,6 +1695,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1707,17 +1732,6 @@
     <span class="md-ellipsis">
       
         Matching Settings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#matching-methods" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Matching Methods
       
     </span>
   </a>
@@ -1810,116 +1824,294 @@
   
 
 
-  <h1>Settings</h1>
-
+<h1 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">&para;</a></h1>
+<p>Trajectopy has two kinds of settings:</p>
+<ul>
+<li><strong>Processing settings</strong> (<code>ProcessingSettings</code>): how trajectories are aligned, matched, compared, smoothed
+  and sorted. In the GUI, every trajectory has its own (<em>Settings…</em> in its context menu).</li>
+<li><strong>Plot settings</strong> (<code>PlotSettings</code>): how results are plotted. In the GUI, they apply to all plots
+  (<em>Plot Settings</em> in the menu bar).</li>
+</ul>
+<p>Both can be created in Python, changed attribute by attribute, and saved to or loaded from JSON files:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trajectopy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tpy</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ProcessingSettings</span><span class="p">()</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">settings</span><span class="o">.</span><span class="n">alignment</span><span class="o">.</span><span class="n">estimation_settings</span><span class="o">.</span><span class="n">time_shift</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">settings</span><span class="o">.</span><span class="n">matching</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">MatchingMethod</span><span class="o">.</span><span class="n">NEAREST_TEMPORAL</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">settings</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s2">&quot;settings.json&quot;</span><span class="p">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">ProcessingSettings</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;settings.json&quot;</span><span class="p">)</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">plot_settings</span> <span class="o">=</span> <span class="n">tpy</span><span class="o">.</span><span class="n">PlotSettings</span><span class="p">(</span><span class="n">ate_unit_is_mm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">line_width</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span></code></pre></div>
+<p>In a JSON file, the settings are nested like the attributes; options of enumerations are written in lower case
+(e.g. <code>"method": "nearest_temporal"</code>). Settings missing in a file keep their default values.</p>
 <h2 id="processing-settings">Processing Settings<a class="headerlink" href="#processing-settings" title="Permanent link">&para;</a></h2>
-<p>The processing settings allow you to configure various processing steps that can be applied to trajectories before or during analysis. The available processing options are summarized in the table below:</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Setting</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Contents</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align: left;"><code>alignment</code></td>
-<td style="text-align: left;">Settings for trajectory alignment (Similarity transformation (helmert), time shift, lever arm, etc.)</td>
+<td style="text-align: left;">Trajectory alignment: similarity transformation, time shift, leverarm</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>matching</code></td>
-<td style="text-align: left;">Settings for matching poses between two trajectories</td>
+<td style="text-align: left;">Matching of corresponding poses of two trajectories</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>relative_comparison</code></td>
-<td style="text-align: left;">Settings for relative trajectory comparison (RPE)</td>
+<td style="text-align: left;">Relative trajectory comparison (RPE)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>approximation</code></td>
-<td style="text-align: left;">Settings for trajectory approximation and smoothing</td>
+<td style="text-align: left;">Smoothing (approximation) of trajectories</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>sorting</code></td>
-<td style="text-align: left;">Settings for spatially sorting trajectories</td>
+<td style="text-align: left;">Spatial sorting of trajectories</td>
 </tr>
 </tbody>
 </table>
 <h3 id="alignment-settings">Alignment Settings<a class="headerlink" href="#alignment-settings" title="Permanent link">&para;</a></h3>
-<h4 id="alignment-preprocessing-settings">Alignment Preprocessing Settings<a class="headerlink" href="#alignment-preprocessing-settings" title="Permanent link">&para;</a></h4>
-<ul>
-<li><code>min_speed</code> (float): Only poses with a speed above this threshold are considered for alignment (meters/second).</li>
-<li><code>time_start</code> (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
-<li><code>time_end</code> (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.</li>
-<li><code>max_samples</code> (integer): Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly. Set to <code>0</code> to use all poses. Default: <code>5000</code>.</li>
-</ul>
-<h4 id="alignment-estimation-settings">Alignment Estimation Settings<a class="headerlink" href="#alignment-estimation-settings" title="Permanent link">&para;</a></h4>
-<ul>
-<li><code>translation_x</code> (boolean): Enable or disable x-translation of the similarity transformation.</li>
-<li><code>translation_y</code> (boolean): Enable or disable y-translation of the similarity transformation.</li>
-<li><code>translation_z</code> (boolean): Enable or disable z-translation of the similarity transformation.</li>
-<li><code>rotation_x</code> (boolean): Enable or disable rotation around the X-axis of the similarity transformation.</li>
-<li><code>rotation_y</code> (boolean): Enable or disable rotation around the Y-axis of the similarity transformation.</li>
-<li><code>rotation_z</code> (boolean): Enable or disable rotation around the Z-axis of the similarity transformation.</li>
-<li><code>scale</code> (boolean): Enable or disable scaling of the similarity transformation.</li>
-<li><code>time_shift</code> (boolean): Enable or disable the estimation of time shift.</li>
-<li><code>leverarm_x</code> (boolean): Enable or disable estimation of lever arm in the X-axis.</li>
-<li><code>leverarm_y</code> (boolean): Enable or disable estimation of lever arm in the Y-axis.</li>
-<li><code>leverarm_z</code> (boolean): Enable or disable estimation of lever arm in the Z-axis.</li>
-<li><code>sensor_rotation</code> (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.</li>
-</ul>
-<h4 id="alignment-stochastics-settings">Alignment Stochastics Settings<a class="headerlink" href="#alignment-stochastics-settings" title="Permanent link">&para;</a></h4>
-<ul>
-<li><code>std_xy_from</code> (float): Standard deviation of XY source position components in meters.</li>
-<li><code>std_z_from</code> (float): Standard deviation of Z source position component in meters.</li>
-<li><code>std_xy_to</code> (float): Standard deviation of XY target position components in meters.</li>
-<li><code>std_z_to</code> (float): Standard deviation of Z target position component in meters.</li>
-<li><code>std_roll_pitch</code> (float): Standard deviation of roll and pitch in radians.</li>
-<li><code>std_yaw</code> (float): Standard deviation of yaw in radians.</li>
-<li><code>std_speed</code> (float): Standard deviation of the platform speed in meters per second.</li>
-<li><code>error_probability</code> (float): Probability of error used for stochastic testing.</li>
-<li><code>variance_estimation</code> (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.</li>
-</ul>
-<h4 id="alignment-threshold-settings">Alignment Threshold Settings<a class="headerlink" href="#alignment-threshold-settings" title="Permanent link">&para;</a></h4>
-<p>Usually, these settings can be left at their default values.</p>
-<ul>
-<li><code>metric_threshold</code> (float): Iteration threshold for the least squares adjustment regarding the metric parameters.</li>
-<li><code>time_threshold</code> (float): Iteration threshold in seconds for the least squares adjustment regarding the time shift parameter.</li>
-</ul>
+<p>The alignment estimates the parameters that transform a trajectory onto a reference with a least squares
+adjustment of matched poses. Its settings have four parts.</p>
+<h4 id="preprocessing-alignmentpreprocessing">Preprocessing (<code>alignment.preprocessing</code>)<a class="headerlink" href="#preprocessing-alignmentpreprocessing" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>min_speed</code></td>
+<td>Only poses faster than this (m/s) are used.</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>time_start</code></td>
+<td>Only poses after this time are used, in seconds relative to the first common timestamp of both trajectories.</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>time_end</code></td>
+<td>Only poses before this time are used, in seconds relative to the first common timestamp (<code>0</code> = until the end).</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>max_samples</code></td>
+<td>Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly (<code>0</code> = all poses).</td>
+<td><code>5000</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="estimated-parameters-alignmentestimation_settings">Estimated Parameters (<code>alignment.estimation_settings</code>)<a class="headerlink" href="#estimated-parameters-alignmentestimation_settings" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>translation_x</code>, <code>translation_y</code>, <code>translation_z</code></td>
+<td>Translation of the similarity transformation</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>rotation_x</code>, <code>rotation_y</code>, <code>rotation_z</code></td>
+<td>Rotation of the similarity transformation</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>scale</code></td>
+<td>Scale of the similarity transformation</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>time_shift</code></td>
+<td>Time shift between both trajectories</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>leverarm_x</code>, <code>leverarm_y</code>, <code>leverarm_z</code></td>
+<td>Leverarm between both trajectories (needs orientations)</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>sensor_rotation</code></td>
+<td>Constant offsets between the roll, pitch and yaw angles of both trajectories. They are computed independently of the least squares adjustment.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="stochastics-alignmentstochastics">Stochastics (<code>alignment.stochastics</code>)<a class="headerlink" href="#stochastics-alignmentstochastics" title="Permanent link">&para;</a></h4>
+<p>Standard deviations of the observations, which weight them in the least squares adjustment.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>std_xy_from</code>, <code>std_z_from</code></td>
+<td>Horizontal / vertical position of the trajectory to align (m)</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>std_xy_to</code>, <code>std_z_to</code></td>
+<td>Horizontal / vertical position of the reference (m)</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>std_roll_pitch</code></td>
+<td>Roll and pitch (rad)</td>
+<td><code>0.01745</code> (1°)</td>
+</tr>
+<tr>
+<td><code>std_yaw</code></td>
+<td>Yaw (rad)</td>
+<td><code>0.01745</code> (1°)</td>
+</tr>
+<tr>
+<td><code>std_speed</code></td>
+<td>Speed (m/s)</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>error_probability</code></td>
+<td>Error probability of the statistical tests</td>
+<td><code>0.05</code></td>
+</tr>
+<tr>
+<td><code>variance_estimation</code></td>
+<td>Estimate the variance factor a posteriori</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="convergence-alignment">Convergence (<code>alignment</code>)<a class="headerlink" href="#convergence-alignment" title="Permanent link">&para;</a></h4>
+<p>Usually, these can be left at their default values.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>metric_threshold</code></td>
+<td>Iteration threshold of the least squares adjustment for the metric parameters</td>
+<td><code>0.0001</code></td>
+</tr>
+<tr>
+<td><code>time_threshold</code></td>
+<td>Iteration threshold of the least squares adjustment for the time shift (s)</td>
+<td><code>0.0001</code></td>
+</tr>
+</tbody>
+</table>
 <h3 id="matching-settings">Matching Settings<a class="headerlink" href="#matching-settings" title="Permanent link">&para;</a></h3>
+<p>Matching finds the corresponding poses of two trajectories, for the alignment and for the ATE.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>matching.method</code></td>
+<td>Matching method (<code>MatchingMethod</code>), see below</td>
+<td><code>INTERPOLATION</code></td>
+</tr>
+<tr>
+<td><code>matching.max_time_diff</code></td>
+<td>Maximum time difference of poses matched by their timestamps (s)</td>
+<td><code>0.01</code></td>
+</tr>
+<tr>
+<td><code>matching.max_distance</code></td>
+<td>Maximum distance of poses matched spatially (m; <code>0</code> = no limit)</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>matching.max_gap_size</code></td>
+<td>Maximum gap within a trajectory that is bridged by interpolation (s; <code>INTERPOLATION</code> method)</td>
+<td><code>10.0</code></td>
+</tr>
+<tr>
+<td><code>matching.k_nearest</code></td>
+<td>Number of nearest neighbors for <code>NEAREST_SPATIAL_INTERPOLATED</code></td>
+<td><code>2</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="matching-methods">Matching Methods<a class="headerlink" href="#matching-methods" title="Permanent link">&para;</a></h4>
 <ul>
-<li><code>method</code> (<code>MatchingMethod</code>): The method used for trajectory matching. Choices: <code>MatchingMethod.NEAREST_SPATIAL</code>, <code>MatchingMethod.NEAREST_TEMPORAL</code>, <code>MatchingMethod.INTERPOLATION</code>, <code>MatchingMethod.NEAREST_SPATIAL_INTERPOLATED</code>. The methods are described below.</li>
-<li><code>max_time_diff</code> (float): Maximum allowed time difference in seconds when matching two trajectories using their timestamps.</li>
-<li><code>max_distance</code> (float): Maximum allowed distance in meters between matched positions during spatial matching.</li>
-<li><code>max_gap_size</code> (float): Maximum allowed gap size in seconds within a trajectory during matching.</li>
-<li><code>k_nearest</code> (integer): The number of nearest neighbors to consider during spatial interpolation matching.</li>
+<li><strong><code>INTERPOLATION</code></strong>: the poses of one trajectory are interpolated at the timestamps of the other. Positions are
+  interpolated linearly, rotations with SLERP.</li>
+<li><strong><code>NEAREST_TEMPORAL</code></strong>: each pose is matched with the pose of the other trajectory with the nearest timestamp
+  (within <code>max_time_diff</code>).</li>
+<li><strong><code>NEAREST_SPATIAL</code></strong>: each pose is matched with the nearest position of the other trajectory (Euclidean distance,
+  within <code>max_distance</code>). This needs no common time reference.</li>
+<li><strong><code>NEAREST_SPATIAL_INTERPOLATED</code></strong>: for each pose of the trajectory to evaluate, the <code>k_nearest</code> positions of the
+  reference are requested and a 3D line is fitted through them; the pose is matched with its projection onto that
+  line. The matched rotations are the chordal L2 mean of the neighbors' rotations. Afterwards, both trajectories
+  have the length of the trajectory to evaluate.</li>
 </ul>
-<h3 id="matching-methods">Matching Methods<a class="headerlink" href="#matching-methods" title="Permanent link">&para;</a></h3>
-<h4 id="nearest-spatial">Nearest Spatial<a class="headerlink" href="#nearest-spatial" title="Permanent link">&para;</a></h4>
-<p>This method matches two trajectories by finding the nearest pose in the target trajectory for each pose in the source trajectory. The distance between two poses is computed using the Euclidean distance between their positions.</p>
-<h4 id="nearest-temporal">Nearest Temporal<a class="headerlink" href="#nearest-temporal" title="Permanent link">&para;</a></h4>
-<p>This method matches two trajectories using their timestamps by finding the nearest timestamp in the target trajectory for each timestamp in the source trajectory.</p>
-<h4 id="interpolation">Interpolation<a class="headerlink" href="#interpolation" title="Permanent link">&para;</a></h4>
-<p>This method matches two trajectories by interpolating the timestamps of one trajectory to the timestamps of the other trajectory. The interpolation is linear for both positions and rotations (SLERP).</p>
-<h4 id="nearest-spatial-interpolated">Nearest Spatial Interpolated<a class="headerlink" href="#nearest-spatial-interpolated" title="Permanent link">&para;</a></h4>
-<p>This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. The matched rotations are computed by averaging the quaternions of the k nearest neighbors using the chordal L2 mean.</p>
 <h3 id="relative-comparison-settings">Relative Comparison Settings<a class="headerlink" href="#relative-comparison-settings" title="Permanent link">&para;</a></h3>
-<ul>
-<li>
-<p><code>pair_min_distance</code> (float): Minimum pose pair distance to be considered during RPE (Relative Pose Error) computation.</p>
-</li>
-<li>
-<p><code>pair_max_distance</code> (float): Maximum pose pair distance to be considered during RPE computation.</p>
-</li>
-<li>
-<p><code>pair_distance_step</code> (float): Step in which the pose pair distance increases.</p>
-</li>
-<li>
-<p><code>pair_distance_unit</code> (<code>PairDistanceUnit</code>): Unit of the pose pair distance. Choices: <code>PairDistanceUnit.METER</code>, <code>PairDistanceUnit.SECOND</code>.</p>
-</li>
-<li>
-<p><code>use_all_pose_pairs</code> (boolean): If enabled, overlapping pose pairs will be used for relative metrics calculation.</p>
-</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>relative_comparison.pair_min_distance</code></td>
+<td>Smallest distance between the poses of a pair</td>
+<td><code>100.0</code></td>
+</tr>
+<tr>
+<td><code>relative_comparison.pair_max_distance</code></td>
+<td>Largest distance between the poses of a pair</td>
+<td><code>800.0</code></td>
+</tr>
+<tr>
+<td><code>relative_comparison.pair_distance_step</code></td>
+<td>Step between the pair distances</td>
+<td><code>100.0</code></td>
+</tr>
+<tr>
+<td><code>relative_comparison.pair_distance_unit</code></td>
+<td>Unit of the pair distances (<code>PairDistanceUnit</code>): <code>METER</code> or <code>SECOND</code></td>
+<td><code>METER</code></td>
+</tr>
+<tr>
+<td><code>relative_comparison.use_all_pose_pairs</code></td>
+<td>Use all (overlapping) pose pairs instead of consecutive (non-overlapping) ones</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
 <h4 id="rpe-background">RPE Background<a class="headerlink" href="#rpe-background" title="Permanent link">&para;</a></h4>
 <p>For this metric, relative pose-pair differences are compared. The distance between two poses can be specified by the user and can be either time- or distance-based. The comparison involves finding pose pairs separated by a specific distance or time interval, computing the relative translation and rotation between the reference and estimated pose pairs, and calculating the translational and rotational difference normalized by the distance or time that separated the poses.</p>
 <ol>
@@ -1943,57 +2135,160 @@
 <p>Divide 6) by the distance or the time that separated both poses (e.g. 100 m).</p>
 </li>
 </ol>
-<p>This metric does not require both trajectories to be aligned. Units are m/m: %, deg/m for distance based comparison and m/s, deg/s for time-based comparison. </p>
-<p>Example:</p>
-<ul>
-<li>Minimum pose distance: 100</li>
-<li>Maximum pose distance: 800</li>
-<li>Distance step: 100</li>
-<li>Distance unit: Meter</li>
-</ul>
-<p>Results in pose distances: [100 m, 200 m, 300 m, 400 m, 500 m, 600 m, 700 m, 800 m]</p>
-<p>Furthermore, the user can choose to either use consecutive pose pairs (non-overlapping) or all posible pairs (overlapping).</p>
+<p>This metric does not require both trajectories to be aligned. Units are m/m (%) and deg/m for distance-based
+comparison, and m/s and deg/s for time-based comparison.</p>
+<p>Example: with the default settings (100 m to 800 m in steps of 100 m), pose pairs are formed for the distances
+100 m, 200 m, …, 800 m.</p>
 <h3 id="approximation-settings">Approximation Settings<a class="headerlink" href="#approximation-settings" title="Permanent link">&para;</a></h3>
 <p>Trajectopy currently supports piece-wise cubic approximation for position components and moving average for rotation components. Piece-wise cubic means that the trajectory is divided into intervals of a specified size, and within each interval, a cubic polynomial is fitted to the position data. The fitted polynomial is then used to approximate the position values within that interval.</p>
 <p>The interval and window sizes refer to the index of the trajectory: seconds for trajectories sorted by time,
 meters for spatially sorted trajectories.</p>
-<ul>
-<li><code>position_approximation_method</code> (<code>PositionApproximationMethod</code>): Method for the positions. Choices: <code>PositionApproximationMethod.CUBIC</code>. Default value is <code>CUBIC</code>.</li>
-<li><code>position_interval_size</code> (float): Size of the intervals of the piece-wise cubic approximation. Default value is 0.15.</li>
-<li><code>position_min_observations</code> (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.</li>
-<li><code>rotation_approximation_method</code> (<code>RotationApproximationMethod</code>): Method for the rotations. Choices: <code>RotationApproximationMethod.AVERAGE_IN_WINDOW</code> (moving average, see <code>rotation_window_size</code>) and <code>RotationApproximationMethod.AVERAGE_PER_PATH_LENGTH</code> (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see <code>max_path_length_gap</code>). Default value is <code>AVERAGE_IN_WINDOW</code>.</li>
-<li><code>rotation_window_size</code> (float): Size of the moving average window for the rotations. Default value is 0.15.</li>
-<li><code>max_path_length_gap</code> (float): Maximum path length gap in meters that is bridged when the rotations of several laps are averaged (<code>AVERAGE_PER_PATH_LENGTH</code>). Default value is 0.15.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>approximation.position_approximation_method</code></td>
+<td>Method for the positions (<code>PositionApproximationMethod</code>): <code>CUBIC</code></td>
+<td><code>CUBIC</code></td>
+</tr>
+<tr>
+<td><code>approximation.position_interval_size</code></td>
+<td>Size of the intervals of the piece-wise cubic approximation</td>
+<td><code>0.15</code></td>
+</tr>
+<tr>
+<td><code>approximation.position_min_observations</code></td>
+<td>Minimum number of observations per interval</td>
+<td><code>25</code></td>
+</tr>
+<tr>
+<td><code>approximation.rotation_approximation_method</code></td>
+<td>Method for the rotations (<code>RotationApproximationMethod</code>): <code>AVERAGE_IN_WINDOW</code> (moving average, see <code>rotation_window_size</code>) or <code>AVERAGE_PER_PATH_LENGTH</code> (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see <code>max_path_length_gap</code>)</td>
+<td><code>AVERAGE_IN_WINDOW</code></td>
+</tr>
+<tr>
+<td><code>approximation.rotation_window_size</code></td>
+<td>Size of the moving average window for the rotations</td>
+<td><code>0.15</code></td>
+</tr>
+<tr>
+<td><code>approximation.max_path_length_gap</code></td>
+<td>Maximum path length gap (m) that is bridged when the rotations of several laps are averaged</td>
+<td><code>0.15</code></td>
+</tr>
+</tbody>
+</table>
 <h3 id="sorting-settings">Sorting Settings<a class="headerlink" href="#sorting-settings" title="Permanent link">&para;</a></h3>
 <p>Sorting involves two steps:</p>
 <ol>
 <li>Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.</li>
 <li>Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.</li>
 </ol>
-<p>For sorting, the following settings can be adjusted:</p>
-<ul>
-<li><code>voxel_size</code> (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.</li>
-<li><code>movement_threshold</code> (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.</li>
-<li><code>k_nearest</code> (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sorting.voxel_size</code></td>
+<td>Size of the voxel grid (m). Instead of the raw points, the centroids of the occupied voxels are used for the nearest neighbor searches of the MLS.</td>
+<td><code>0.05</code></td>
+</tr>
+<tr>
+<td><code>sorting.movement_threshold</code></td>
+<td>The MLS iterations stop when all points move less than this (m).</td>
+<td><code>0.005</code></td>
+</tr>
+<tr>
+<td><code>sorting.k_nearest</code></td>
+<td>Number of nearest voxels used by the MLS</td>
+<td><code>4</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="plot-settings">Plot Settings<a class="headerlink" href="#plot-settings" title="Permanent link">&para;</a></h2>
-<p>All plots, in the GUI ("Plot Settings" in the menu bar) and in <code>trajectopy.visualization</code>, use the
-same <code>PlotSettings</code>:</p>
-<ul>
-<li><code>ate_unit_is_mm</code> (bool): Show position deviations in millimeters instead of meters. Default value is False.</li>
-<li><code>directed_ate</code> (bool): Show position deviations split into along-track, horizontal cross-track and vertical cross-track instead of x, y and z. Default value is False.</li>
-<li><code>ate_remove_above</code> (float): Exclude position deviations above this value in meters from the plots (0.0 = keep all). Default value is 0.0.</li>
-<li><code>hist_percentile</code> (float): Show histogram data up to this percentile of the absolute values. Useful for data with outliers. Default value is 1.0.</li>
-<li><code>colorbar_max_std</code> (float): Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (0.0 = no clipping). Default value is 3.0.</li>
-<li><code>smoothing_window</code> (int): Moving-average window applied to color-coded values (1 = no smoothing). Default value is 1.</li>
-<li><code>use_relative_timestamps</code> (bool): Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time. Default value is False.</li>
-<li><code>line_width</code> (float): Line width in pixels. Default value is 1.5.</li>
-<li><code>marker_size</code> (float): Marker size in pixels of color-coded trajectory maps. Default value is 4.</li>
-<li><code>font_size</code> (int): Font size in points of axis labels and titles. Default value is 10.</li>
-<li><code>export_format</code> (str): File format of exported plots ("png", "jpg" or "svg"). Default value is "png".</li>
-<li><code>export_width</code> (int): Width in pixels of exported raster images. Default value is 1600.</li>
-</ul>
+<p>All plots, in the GUI and in <code>trajectopy.visualization</code>, use the same <code>PlotSettings</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ate_unit_is_mm</code></td>
+<td>Show position deviations in millimeters instead of meters</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>directed_ate</code></td>
+<td>Split position deviations into along-track, horizontal cross-track and vertical cross-track instead of x, y and z (see below)</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>ate_remove_above</code></td>
+<td>Exclude position deviations above this value (m) from the plots (<code>0</code> = keep all)</td>
+<td><code>0.0</code></td>
+</tr>
+<tr>
+<td><code>hist_percentile</code></td>
+<td>Show histogram data up to this percentile of the absolute values; useful for data with outliers</td>
+<td><code>1.0</code></td>
+</tr>
+<tr>
+<td><code>colorbar_max_std</code></td>
+<td>Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (<code>0</code> = no clipping)</td>
+<td><code>3.0</code></td>
+</tr>
+<tr>
+<td><code>smoothing_window</code></td>
+<td>Moving-average window applied to color-coded values (<code>1</code> = no smoothing)</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>use_relative_timestamps</code></td>
+<td>Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>line_width</code></td>
+<td>Line width (pixels)</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>marker_size</code></td>
+<td>Marker size of color-coded trajectory maps (pixels)</td>
+<td><code>5.0</code></td>
+</tr>
+<tr>
+<td><code>font_size</code></td>
+<td>Font size of axis labels and titles (points)</td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td><code>export_format</code></td>
+<td>File format of exported plots: <code>png</code>, <code>jpg</code> or <code>svg</code></td>
+<td><code>png</code></td>
+</tr>
+<tr>
+<td><code>export_width</code></td>
+<td>Width of exported raster images (pixels)</td>
+<td><code>1600</code></td>
+</tr>
+</tbody>
+</table>
 <p>Plot settings are saved with a GUI session (<code>plot_settings.json</code>) and can be loaded at startup with
 <code>trajectopy --plot-settings plot_settings.json</code>.</p>
 <h3 id="ate-frame-definition-regarding-directed_ate">ATE Frame Definition (regarding <code>directed_ate</code>)<a class="headerlink" href="#ate-frame-definition-regarding-directed_ate" title="Permanent link">&para;</a></h3>
