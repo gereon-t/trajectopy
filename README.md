@@ -22,31 +22,31 @@
 
 ## Installation
 
-Windows app: download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or administrator rights are needed; `.traj` files can then be opened by double-click, and the app reports new versions (Help → Check for Updates).
+**Windows app**: download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or administrator rights are needed; `.traj` files can then be opened by double-click, and the app reports new versions (Help → Check for Updates).
 
-Full version (with GUI):
+**Python package** (Python 3.10 or newer):
 
-```bash
-pip install "trajectopy[gui]"
+| Command | Contents |
+| --- | --- |
+| `pip install "trajectopy[gui]"` | Python package and GUI (recommended) |
+| `pip install "trajectopy[plot]"` | Python package with plotting, without the GUI |
+| `pip install trajectopy` | Python package only |
+
+Loading large trajectory files (millions of poses) is several times faster with the `fast` extra, which can be combined with the others: `pip install "trajectopy[gui,fast]"`.
+
+## Quick Start
+
+```python
+import trajectopy as tpy
+
+reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+
+ate_result = tpy.ate(trajectory=estimate, other=reference)  # aligns the estimate first
+print(f"Position ATE: {ate_result.pos_ate:.3f} m")
 ```
 
-Python package with plotting (no GUI):
-
-```bash
-pip install "trajectopy[plot]"
-```
-
-Python package only:
-
-```bash
-pip install trajectopy
-```
-
-Loading large trajectory files (millions of poses) is several times faster with the `fast` extra, which can be combined with the others:
-
-```bash
-pip install "trajectopy[gui,fast]"
-```
+Or start the GUI with `trajectopy` (or from the Start menu), drop trajectory files onto it, right-click the ground truth → *Set as Reference*, then right-click another trajectory → *Compare with Reference*.
 
 ## Documentation
 
@@ -54,12 +54,10 @@ pip install "trajectopy[gui,fast]"
 
 ## Key Features
 
-Trajectopy offers a range of features, including:
-
-- __Interactive GUI__: A user-friendly interface that enables seamless interaction with your trajectory data, making it easy to visualize, align, and compare trajectories.
-- __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
-- __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
-- __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
+- __Interactive GUI__: Load, plot, align and compare trajectories without writing code. Every action explains itself in the context menus, and trajectories can be aligned interactively if an automatic alignment is not possible.
+- __Alignment__: A spatio-temporal least squares alignment that can be tailored to the application: similarity transformation, leverarm and time shift, each of them optional.
+- __Comparison__: Absolute and relative trajectory error (__ATE and RPE__), computed with various pose-matching methods.
+- __Data Import/Export__: ASCII files with configurable columns, time formats and coordinate systems (any EPSG code), and ROS bags.
 - __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.
 
 ## Web Application (Docker)

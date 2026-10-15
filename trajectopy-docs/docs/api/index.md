@@ -25,6 +25,7 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 - **[Trajectory I/O](io/trajectory_io.md)** - Read and write trajectories (ASCII)
 - **[Results I/O](io/results_io.md)** - Read and write ATE/RPE/alignment results and parameters
 - **[Google Earth (KML)](io/kml.md)** - Export trajectories and ATE results to Google Earth
+- **[ROS Bags](io/rosbag.md)** - Read trajectories from ROS1 bag files
 
 ## Results
 

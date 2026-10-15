@@ -8,13 +8,13 @@ from trajectopy.__version__ import __version__ as VERSION
 
 def main():
     """Main CLI entry point."""
-    parser = argparse.ArgumentParser(description="Trajectopy - Trajectory Evaluation in Python")
+    parser = argparse.ArgumentParser(prog="trajectopy", description="Trajectopy - Trajectory Evaluation in Python")
     parser.add_argument(
         "files",
         nargs="*",
         help="Trajectory (.traj, .bag) or result (.result) files to open (also used when opening files from Windows).",
     )
-    parser.add_argument("--version", "-v", action="store_true")
+    parser.add_argument("--version", "-v", action="store_true", help="Show the version and exit")
     parser.add_argument(
         "--single-thread",
         action="store_true",

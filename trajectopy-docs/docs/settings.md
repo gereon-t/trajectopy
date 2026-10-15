@@ -1,98 +1,121 @@
+# Settings
+
+Trajectopy has two kinds of settings:
+
+- **Processing settings** (`ProcessingSettings`): how trajectories are aligned, matched, compared, smoothed
+  and sorted. In the GUI, every trajectory has its own (*Settings…* in its context menu).
+- **Plot settings** (`PlotSettings`): how results are plotted. In the GUI, they apply to all plots
+  (*Plot Settings* in the menu bar).
+
+Both can be created in Python, changed attribute by attribute, and saved to or loaded from JSON files:
+
+```python
+import trajectopy as tpy
+
+settings = tpy.ProcessingSettings()
+settings.alignment.estimation_settings.time_shift = True
+settings.matching.method = tpy.MatchingMethod.NEAREST_TEMPORAL
+settings.to_file("settings.json")
+
+settings = tpy.ProcessingSettings.from_file("settings.json")
+plot_settings = tpy.PlotSettings(ate_unit_is_mm=True, line_width=2)
+```
+
+In a JSON file, the settings are nested like the attributes; options of enumerations are written in lower case
+(e.g. `"method": "nearest_temporal"`). Settings missing in a file keep their default values.
+
 ## Processing Settings
 
-The processing settings allow you to configure various processing steps that can be applied to trajectories before or during analysis. The available processing options are summarized in the table below:
-
-| Setting | Description |
+| Attribute | Contents |
 | :--- | :--- |
-| `alignment` | Settings for trajectory alignment (Similarity transformation (helmert), time shift, lever arm, etc.) |
-| `matching` | Settings for matching poses between two trajectories |
-| `relative_comparison` | Settings for relative trajectory comparison (RPE) |
-| `approximation` | Settings for trajectory approximation and smoothing |
-| `sorting` | Settings for spatially sorting trajectories |
+| `alignment` | Trajectory alignment: similarity transformation, time shift, leverarm |
+| `matching` | Matching of corresponding poses of two trajectories |
+| `relative_comparison` | Relative trajectory comparison (RPE) |
+| `approximation` | Smoothing (approximation) of trajectories |
+| `sorting` | Spatial sorting of trajectories |
 
 ### Alignment Settings
 
-#### Alignment Preprocessing Settings
+The alignment estimates the parameters that transform a trajectory onto a reference with a least squares
+adjustment of matched poses. Its settings have four parts.
 
-- `min_speed` (float): Only poses with a speed above this threshold are considered for alignment (meters/second).
-- `time_start` (float): Only poses with a timestamp above this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
-- `time_end` (float): Only poses with a timestamp below this threshold are considered for alignment. The timestamp is given in seconds and is relative to the first common timestamp of both matched trajectories.
-- `max_samples` (integer): Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly. Set to `0` to use all poses. Default: `5000`.
+#### Preprocessing (`alignment.preprocessing`)
 
-#### Alignment Estimation Settings
+| Setting | Description | Default |
+| --- | --- | --- |
+| `min_speed` | Only poses faster than this (m/s) are used. | `0.0` |
+| `time_start` | Only poses after this time are used, in seconds relative to the first common timestamp of both trajectories. | `0.0` |
+| `time_end` | Only poses before this time are used, in seconds relative to the first common timestamp (`0` = until the end). | `0.0` |
+| `max_samples` | Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly (`0` = all poses). | `5000` |
 
-- `translation_x` (boolean): Enable or disable x-translation of the similarity transformation.
-- `translation_y` (boolean): Enable or disable y-translation of the similarity transformation.
-- `translation_z` (boolean): Enable or disable z-translation of the similarity transformation.
-- `rotation_x` (boolean): Enable or disable rotation around the X-axis of the similarity transformation.
-- `rotation_y` (boolean): Enable or disable rotation around the Y-axis of the similarity transformation.
-- `rotation_z` (boolean): Enable or disable rotation around the Z-axis of the similarity transformation.
-- `scale` (boolean): Enable or disable scaling of the similarity transformation.
-- `time_shift` (boolean): Enable or disable the estimation of time shift.
-- `leverarm_x` (boolean): Enable or disable estimation of lever arm in the X-axis.
-- `leverarm_y` (boolean): Enable or disable estimation of lever arm in the Y-axis.
-- `leverarm_z` (boolean): Enable or disable estimation of lever arm in the Z-axis.
-- `sensor_rotation` (boolean): Enable or disable computation of sensor rotation offsets. Independent of the least squares adjustment, constant offsets between the roll, pitch and yaw angles of both trajectories are computed.
+#### Estimated Parameters (`alignment.estimation_settings`)
 
-#### Alignment Stochastics Settings
+| Setting | Description | Default |
+| --- | --- | --- |
+| `translation_x`, `translation_y`, `translation_z` | Translation of the similarity transformation | `True` |
+| `rotation_x`, `rotation_y`, `rotation_z` | Rotation of the similarity transformation | `True` |
+| `scale` | Scale of the similarity transformation | `False` |
+| `time_shift` | Time shift between both trajectories | `False` |
+| `leverarm_x`, `leverarm_y`, `leverarm_z` | Leverarm between both trajectories (needs orientations) | `False` |
+| `sensor_rotation` | Constant offsets between the roll, pitch and yaw angles of both trajectories. They are computed independently of the least squares adjustment. | `False` |
 
-- `std_xy_from` (float): Standard deviation of XY source position components in meters.
-- `std_z_from` (float): Standard deviation of Z source position component in meters.
-- `std_xy_to` (float): Standard deviation of XY target position components in meters.
-- `std_z_to` (float): Standard deviation of Z target position component in meters.
-- `std_roll_pitch` (float): Standard deviation of roll and pitch in radians.
-- `std_yaw` (float): Standard deviation of yaw in radians.
-- `std_speed` (float): Standard deviation of the platform speed in meters per second.
-- `error_probability` (float): Probability of error used for stochastic testing.
-- `variance_estimation` (boolean): Enable or disable the estimation of the variance factor for a-posteriori variance computation.
+#### Stochastics (`alignment.stochastics`)
 
-#### Alignment Threshold Settings
+Standard deviations of the observations, which weight them in the least squares adjustment.
 
-Usually, these settings can be left at their default values.
+| Setting | Description | Default |
+| --- | --- | --- |
+| `std_xy_from`, `std_z_from` | Horizontal / vertical position of the trajectory to align (m) | `1.0` |
+| `std_xy_to`, `std_z_to` | Horizontal / vertical position of the reference (m) | `1.0` |
+| `std_roll_pitch` | Roll and pitch (rad) | `0.01745` (1°) |
+| `std_yaw` | Yaw (rad) | `0.01745` (1°) |
+| `std_speed` | Speed (m/s) | `1.0` |
+| `error_probability` | Error probability of the statistical tests | `0.05` |
+| `variance_estimation` | Estimate the variance factor a posteriori | `False` |
 
-- `metric_threshold` (float): Iteration threshold for the least squares adjustment regarding the metric parameters.
-- `time_threshold` (float): Iteration threshold in seconds for the least squares adjustment regarding the time shift parameter.
+#### Convergence (`alignment`)
 
+Usually, these can be left at their default values.
+
+| Setting | Description | Default |
+| --- | --- | --- |
+| `metric_threshold` | Iteration threshold of the least squares adjustment for the metric parameters | `0.0001` |
+| `time_threshold` | Iteration threshold of the least squares adjustment for the time shift (s) | `0.0001` |
 
 ### Matching Settings
 
-- `method` (`MatchingMethod`): The method used for trajectory matching. Choices: `MatchingMethod.NEAREST_SPATIAL`, `MatchingMethod.NEAREST_TEMPORAL`, `MatchingMethod.INTERPOLATION`, `MatchingMethod.NEAREST_SPATIAL_INTERPOLATED`. The methods are described below.
-- `max_time_diff` (float): Maximum allowed time difference in seconds when matching two trajectories using their timestamps.
-- `max_distance` (float): Maximum allowed distance in meters between matched positions during spatial matching.
-- `max_gap_size` (float): Maximum allowed gap size in seconds within a trajectory during matching.
-- `k_nearest` (integer): The number of nearest neighbors to consider during spatial interpolation matching.
+Matching finds the corresponding poses of two trajectories, for the alignment and for the ATE.
 
-### Matching Methods
+| Setting | Description | Default |
+| --- | --- | --- |
+| `matching.method` | Matching method (`MatchingMethod`), see below | `INTERPOLATION` |
+| `matching.max_time_diff` | Maximum time difference of poses matched by their timestamps (s) | `0.01` |
+| `matching.max_distance` | Maximum distance of poses matched spatially (m; `0` = no limit) | `0.0` |
+| `matching.max_gap_size` | Maximum gap within a trajectory that is bridged by interpolation (s; `INTERPOLATION` method) | `10.0` |
+| `matching.k_nearest` | Number of nearest neighbors for `NEAREST_SPATIAL_INTERPOLATED` | `2` |
 
-#### Nearest Spatial
+#### Matching Methods
 
-This method matches two trajectories by finding the nearest pose in the target trajectory for each pose in the source trajectory. The distance between two poses is computed using the Euclidean distance between their positions.
-
-#### Nearest Temporal
-
-This method matches two trajectories using their timestamps by finding the nearest timestamp in the target trajectory for each timestamp in the source trajectory.
-
-#### Interpolation
-
-This method matches two trajectories by interpolating the timestamps of one trajectory to the timestamps of the other trajectory. The interpolation is linear for both positions and rotations (SLERP).
-
-#### Nearest Spatial Interpolated
-
-This method matches both trajectories spatially by requesting the nearest k positions from the reference trajectory for each pose in the test trajectory. Then, an interpolation is performed using a 3d line fit of the k nearest positions. After this operation, both trajectories will have the length of the test trajectory. The matched rotations are computed by averaging the quaternions of the k nearest neighbors using the chordal L2 mean.
-
+- **`INTERPOLATION`**: the poses of one trajectory are interpolated at the timestamps of the other. Positions are
+  interpolated linearly, rotations with SLERP.
+- **`NEAREST_TEMPORAL`**: each pose is matched with the pose of the other trajectory with the nearest timestamp
+  (within `max_time_diff`).
+- **`NEAREST_SPATIAL`**: each pose is matched with the nearest position of the other trajectory (Euclidean distance,
+  within `max_distance`). This needs no common time reference.
+- **`NEAREST_SPATIAL_INTERPOLATED`**: for each pose of the trajectory to evaluate, the `k_nearest` positions of the
+  reference are requested and a 3D line is fitted through them; the pose is matched with its projection onto that
+  line. The matched rotations are the chordal L2 mean of the neighbors' rotations. Afterwards, both trajectories
+  have the length of the trajectory to evaluate.
 
 ### Relative Comparison Settings
 
-- `pair_min_distance` (float): Minimum pose pair distance to be considered during RPE (Relative Pose Error) computation.
-
-- `pair_max_distance` (float): Maximum pose pair distance to be considered during RPE computation.
-
-- `pair_distance_step` (float): Step in which the pose pair distance increases.
-
-- `pair_distance_unit` (`PairDistanceUnit`): Unit of the pose pair distance. Choices: `PairDistanceUnit.METER`, `PairDistanceUnit.SECOND`.
-
-- `use_all_pose_pairs` (boolean): If enabled, overlapping pose pairs will be used for relative metrics calculation.
-
+| Setting | Description | Default |
+| --- | --- | --- |
+| `relative_comparison.pair_min_distance` | Smallest distance between the poses of a pair | `100.0` |
+| `relative_comparison.pair_max_distance` | Largest distance between the poses of a pair | `800.0` |
+| `relative_comparison.pair_distance_step` | Step between the pair distances | `100.0` |
+| `relative_comparison.pair_distance_unit` | Unit of the pair distances (`PairDistanceUnit`): `METER` or `SECOND` | `METER` |
+| `relative_comparison.use_all_pose_pairs` | Use all (overlapping) pose pairs instead of consecutive (non-overlapping) ones | `True` |
 
 #### RPE Background
 
@@ -114,18 +137,11 @@ For this metric, relative pose-pair differences are compared. The distance betwe
 
 7. Divide 6) by the distance or the time that separated both poses (e.g. 100 m).
 
-This metric does not require both trajectories to be aligned. Units are m/m: %, deg/m for distance based comparison and m/s, deg/s for time-based comparison. 
+This metric does not require both trajectories to be aligned. Units are m/m (%) and deg/m for distance-based
+comparison, and m/s and deg/s for time-based comparison.
 
-Example:
-
-- Minimum pose distance: 100
-- Maximum pose distance: 800
-- Distance step: 100
-- Distance unit: Meter
-
-Results in pose distances: [100 m, 200 m, 300 m, 400 m, 500 m, 600 m, 700 m, 800 m]
-
-Furthermore, the user can choose to either use consecutive pose pairs (non-overlapping) or all posible pairs (overlapping).
+Example: with the default settings (100 m to 800 m in steps of 100 m), pose pairs are formed for the distances
+100 m, 200 m, …, 800 m.
 
 ### Approximation Settings
 
@@ -134,12 +150,14 @@ Trajectopy currently supports piece-wise cubic approximation for position compon
 The interval and window sizes refer to the index of the trajectory: seconds for trajectories sorted by time,
 meters for spatially sorted trajectories.
 
-- `position_approximation_method` (`PositionApproximationMethod`): Method for the positions. Choices: `PositionApproximationMethod.CUBIC`. Default value is `CUBIC`.
-- `position_interval_size` (float): Size of the intervals of the piece-wise cubic approximation. Default value is 0.15.
-- `position_min_observations` (int): Minimum number of observations required in each position interval for cubic approximation. Default value is 25.
-- `rotation_approximation_method` (`RotationApproximationMethod`): Method for the rotations. Choices: `RotationApproximationMethod.AVERAGE_IN_WINDOW` (moving average, see `rotation_window_size`) and `RotationApproximationMethod.AVERAGE_PER_PATH_LENGTH` (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see `max_path_length_gap`). Default value is `AVERAGE_IN_WINDOW`.
-- `rotation_window_size` (float): Size of the moving average window for the rotations. Default value is 0.15.
-- `max_path_length_gap` (float): Maximum path length gap in meters that is bridged when the rotations of several laps are averaged (`AVERAGE_PER_PATH_LENGTH`). Default value is 0.15.
+| Setting | Description | Default |
+| --- | --- | --- |
+| `approximation.position_approximation_method` | Method for the positions (`PositionApproximationMethod`): `CUBIC` | `CUBIC` |
+| `approximation.position_interval_size` | Size of the intervals of the piece-wise cubic approximation | `0.15` |
+| `approximation.position_min_observations` | Minimum number of observations per interval | `25` |
+| `approximation.rotation_approximation_method` | Method for the rotations (`RotationApproximationMethod`): `AVERAGE_IN_WINDOW` (moving average, see `rotation_window_size`) or `AVERAGE_PER_PATH_LENGTH` (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see `max_path_length_gap`) | `AVERAGE_IN_WINDOW` |
+| `approximation.rotation_window_size` | Size of the moving average window for the rotations | `0.15` |
+| `approximation.max_path_length_gap` | Maximum path length gap (m) that is bridged when the rotations of several laps are averaged | `0.15` |
 
 ### Sorting Settings
 
@@ -148,30 +166,30 @@ Sorting involves two steps:
 1. Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.
 2. Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.
 
-For sorting, the following settings can be adjusted:
-
-- `voxel_size` (float): Moving Least Squares (MLS) setting. Instead of querying the raw input points, a voxel grid is created and the centroids of the occupied voxels are used for nearest neighbor searches. This setting specifies the size of the voxel grid for downsampling. Default value is 0.05 meters.
-- `movement_threshold` (float): Moving Least Squares (MLS) setting. This threshold defines the maximum allowed movement of points between two iterations of the MLS algorithm. If all points move less than this threshold, the MLS algorithm terminates. Default value is 0.005 meters.
-- `k_nearest` (int): Number of nearest voxels to consider during Moving Least Squares (MLS) smoothing. Default value is 4.
-
+| Setting | Description | Default |
+| --- | --- | --- |
+| `sorting.voxel_size` | Size of the voxel grid (m). Instead of the raw points, the centroids of the occupied voxels are used for the nearest neighbor searches of the MLS. | `0.05` |
+| `sorting.movement_threshold` | The MLS iterations stop when all points move less than this (m). | `0.005` |
+| `sorting.k_nearest` | Number of nearest voxels used by the MLS | `4` |
 
 ## Plot Settings
 
-All plots, in the GUI ("Plot Settings" in the menu bar) and in `trajectopy.visualization`, use the
-same `PlotSettings`:
+All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSettings`:
 
-- `ate_unit_is_mm` (bool): Show position deviations in millimeters instead of meters. Default value is False.
-- `directed_ate` (bool): Show position deviations split into along-track, horizontal cross-track and vertical cross-track instead of x, y and z. Default value is False.
-- `ate_remove_above` (float): Exclude position deviations above this value in meters from the plots (0.0 = keep all). Default value is 0.0.
-- `hist_percentile` (float): Show histogram data up to this percentile of the absolute values. Useful for data with outliers. Default value is 1.0.
-- `colorbar_max_std` (float): Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (0.0 = no clipping). Default value is 3.0.
-- `smoothing_window` (int): Moving-average window applied to color-coded values (1 = no smoothing). Default value is 1.
-- `use_relative_timestamps` (bool): Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time. Default value is False.
-- `line_width` (float): Line width in pixels. Default value is 1.5.
-- `marker_size` (float): Marker size in pixels of color-coded trajectory maps. Default value is 4.
-- `font_size` (int): Font size in points of axis labels and titles. Default value is 10.
-- `export_format` (str): File format of exported plots ("png", "jpg" or "svg"). Default value is "png".
-- `export_width` (int): Width in pixels of exported raster images. Default value is 1600.
+| Setting | Description | Default |
+| --- | --- | --- |
+| `ate_unit_is_mm` | Show position deviations in millimeters instead of meters | `False` |
+| `directed_ate` | Split position deviations into along-track, horizontal cross-track and vertical cross-track instead of x, y and z (see below) | `False` |
+| `ate_remove_above` | Exclude position deviations above this value (m) from the plots (`0` = keep all) | `0.0` |
+| `hist_percentile` | Show histogram data up to this percentile of the absolute values; useful for data with outliers | `1.0` |
+| `colorbar_max_std` | Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (`0` = no clipping) | `3.0` |
+| `smoothing_window` | Moving-average window applied to color-coded values (`1` = no smoothing) | `1` |
+| `use_relative_timestamps` | Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time | `False` |
+| `line_width` | Line width (pixels) | `5` |
+| `marker_size` | Marker size of color-coded trajectory maps (pixels) | `5.0` |
+| `font_size` | Font size of axis labels and titles (points) | `10` |
+| `export_format` | File format of exported plots: `png`, `jpg` or `svg` | `png` |
+| `export_width` | Width of exported raster images (pixels) | `1600` |
 
 Plot settings are saved with a GUI session (`plot_settings.json`) and can be loaded at startup with
 `trajectopy --plot-settings plot_settings.json`.

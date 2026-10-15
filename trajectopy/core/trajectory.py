@@ -644,7 +644,7 @@ class Trajectory:
 
         write_trajectory(self, filename=filename, mode=mode)
 
-    def to_kml(self, filename: str, precision: float = 1e-6, color: str = "#ff0000", **options) -> None:
+    def to_kml(self, filename: str, precision: float = 1e-6, color: str = "#ff0000", **options: Any) -> None:
         """
         Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
         Google Earth plays back.

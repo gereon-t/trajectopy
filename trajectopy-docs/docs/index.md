@@ -20,101 +20,105 @@
 
 ## Key Features
 
-Trajectopy offers a range of features, including:
+- __Interactive GUI__: Load, plot, align and compare trajectories without writing code. Every action explains
+  itself in the context menus, and trajectories can be aligned interactively if an automatic alignment is not possible.
+- __Alignment__: A spatio-temporal least squares alignment that can be tailored to the application: similarity
+  transformation, leverarm and time shift, each of them optional.
+- __Comparison__: Absolute and relative trajectory error (__ATE and RPE__), computed with various pose-matching methods.
+- __Data Import/Export__: ASCII files with configurable columns, time formats and coordinate systems
+  (any EPSG code), and ROS bags.
+- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are
+  available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG
+  or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or
+  deviations, on the terrain or at their own heights, with playback.
 
-- __Interactive GUI__: A user-friendly interface that enables seamless interaction with your trajectory data, making it easy to visualize, align, and compare trajectories.
-- __Alignment__: An advanced trajectory alignment algorithm that can be tailored to the specific application and supports a similarity transformation, a leverarm and a time shift estimation.
-- __Comparison__: Absolute and relative trajectory comparison metrics (__ATE and RPE__) that can be computed using various pose-matching methods.
-- __Data Import/Export__: Support for importing and exporting data, ensuring compatibility with your existing workflows.
-- __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.
+## Installation
 
-## Windows App
+### Windows App
 
 Download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest)
-and run it. No Python installation or administrator rights are needed. `.traj` files can then be opened by
-double-click, and the app reports new versions (Help → Check for Updates).
+and run it. No Python installation or administrator rights are needed. The installer adds Trajectopy to the Start
+menu and, optionally, opens `.traj` files with it on double-click. The app reports new versions (Help → Check for
+Updates); installing a newer version over an existing one updates it.
 
-## Installation (with GUI)
+As the installer is not signed, Windows SmartScreen may warn about an unknown publisher: choose
+*More info → Run anyway*.
 
-It is recommended to install trajectopy with the GUI using the following command:
+### Python Package
 
-```console
-pip install "trajectopy[gui]"
-```
+| Command | Contents |
+| --- | --- |
+| `pip install "trajectopy[gui]"` | Python package and GUI (recommended) |
+| `pip install "trajectopy[plot]"` | Python package with plotting, without the GUI |
+| `pip install trajectopy` | Python package only |
 
-## Installation (without GUI)
+Trajectopy requires Python 3.10 or newer.
 
-To install trajectopy without the GUI, use the following command:
-
-```console
-pip install trajectopy
-```
-
-Now you can use trajectopy as a Python package in your scripts. To also create plots from your scripts
-(without installing the GUI), install the plotting extra:
-
-```console
-pip install "trajectopy[plot]"
-```
-
-## Faster Loading of Large Files
-
-Trajectory files with millions of poses load several times faster with the optional `fast` extra
-(it installs [pyarrow](https://arrow.apache.org/docs/python/) for reading). It can be combined with the other extras:
+**Faster loading of large files**: trajectory files with millions of poses load several times faster with the
+optional `fast` extra, which installs [pyarrow](https://arrow.apache.org/docs/python/) for reading. It can be
+combined with the other extras:
 
 ```console
 pip install "trajectopy[gui,fast]"
 ```
 
-## Python Package Quick Start
+## Quick Start
 
-Here is a minimal example to load two trajectories, align them, and calculate the Absolute Trajectory Error (ATE).
+### Python
+
+Load two trajectories and compute the absolute and relative trajectory error. The example files are in the
+[`example_data`](https://github.com/gereon-t/trajectopy/tree/main/example_data) folder of the repository.
 
 ```python
 import trajectopy as tpy
 
-# 1. Load trajectories
-traj_ref = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
-traj_est = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
-# 2. Evaluate (ATE already includes alignment)
-ate_result = tpy.ate(other=traj_ref, trajectory=traj_est)
-
-# 3. Print results
+# ATE: the estimate is aligned to the reference first (similarity transformation)
+ate_result = tpy.ate(trajectory=estimate, other=reference)
 print(f"Position ATE: {ate_result.pos_ate:.3f} m")
+
+# RPE: drift per 100 m to 800 m (see the relative comparison settings)
+rpe_result = tpy.rpe(trajectory=estimate, other=reference)
+print(f"Position RPE: {rpe_result.pos_rpe:.3f} {rpe_result.pos_drift_unit}")
 ```
 
-For more detailed usage, see the [User Guide](user_guide.md).
+The [User Guide](user_guide.md) covers alignment, evaluation, plots and the GUI in detail.
 
-## GUI Application
+### GUI
 
-Trajectopy also includes a graphical user interface. To launch it, run:
+Start the Windows app from the Start menu, or run:
 
-```bash
+```console
 trajectopy
 ```
 
-## Command Line Options (GUI version only)
-```console
-trajectopy --help
-```
+Drop trajectory files onto the trajectory table, right-click the ground truth and choose *Set as Reference*,
+then right-click another trajectory and choose *Compare with Reference*. See [Using the GUI](user_guide.md#6-using-the-gui).
+
+## Command Line
 
 ```console
-usage: trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS]
-
-Trajectopy - Trajectory Evaluation in Python
-
-options:
-  -h, --help            show this help message and exit
-  --version, -v
-  --single-thread       Disable multithreading
-  --plot-settings PLOT_SETTINGS
-                        Path to a JSON plot settings file that overrides the default plot settings.
+trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS] [files ...]
 ```
 
-The plot settings file contains the [plot settings](settings.md#plot-settings); settings that are
-missing from the file keep their default values. A session saved from the GUI contains its plot settings
-in `plot_settings.json`.
+| Argument | Description |
+| --- | --- |
+| `files` | Trajectory (`.traj`, `.bag`) or result (`.result`) files to open at start. |
+| `--version`, `-v` | Show the version and exit. |
+| `--single-thread` | Process in the GUI thread instead of a background thread, e.g. for debugging. The GUI does not respond while processing. |
+| `--plot-settings PLOT_SETTINGS` | JSON file with [plot settings](settings.md#plot-settings); settings missing in the file keep their default values. |
+| `-h`, `--help` | Show the help and exit. |
+
+Examples:
+
+```console
+trajectopy ground_truth.traj slam.traj
+trajectopy --plot-settings my_session/plot_settings.json
+```
+
+A session saved from the GUI contains its plot settings in `plot_settings.json`.
 
 ## Citation
 

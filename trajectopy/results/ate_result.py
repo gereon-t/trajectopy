@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import cached_property
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -501,7 +502,7 @@ class ATEResult:
 
         return pd.DataFrame(all_data, columns=self.columns)
 
-    def to_kml(self, filename: str, field: str = "position", max_std: float = 3.0, **options) -> None:
+    def to_kml(self, filename: str, field: str = "position", max_std: float = 3.0, **options: Any) -> None:
         """Exports the result to a Google Earth KML file: the trajectory colored by a deviation field, with
         playback in Google Earth's time slider. Requires a trajectory with a known EPSG code.
 

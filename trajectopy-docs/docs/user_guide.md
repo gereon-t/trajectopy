@@ -1,91 +1,139 @@
 # User Guide
 
-This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation, and visualization. All functionality is available both via the Python API and the GUI application. The examples below use the Python API.
+This guide covers the core functionality of Trajectopy: loading data, alignment, evaluation and visualization,
+first with the Python API and then in the [GUI](#6-using-the-gui), which offers the same functionality.
+The examples use the files in the [`example_data`](https://github.com/gereon-t/trajectopy/tree/main/example_data)
+folder of the repository.
 
-## 1. Loading Data
+In all functions that compare two trajectories, `trajectory` is the trajectory to evaluate (or align) and `other`
+is the reference (ground truth).
 
-Trajectories are loaded using the `Trajectory` class. All ASCII text files are supported as long as they meet the requirements described in [File Formats](./file_formats.md).
+## 1. Loading and Saving Trajectories
+
+Trajectories are loaded with the `Trajectory` class. ASCII files with any column layout can be read, as long as
+their header describes it (see [File Formats](file_formats.md)).
 
 ```python
-from trajectopy import Trajectory
+import trajectopy as tpy
 
-# Load from file
-traj = Trajectory.from_file("path/to/trajectory.traj")
+trajectory = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+print(trajectory.name, len(trajectory), trajectory.has_orientation)
+
+trajectory.to_file("copy.traj")  # trajectopy ASCII format
+```
+
+Trajectories can also be created from NumPy arrays (`Trajectory.from_arrays`, see
+[File Formats](file_formats.md#creating-trajectories-in-python)) and read from ROS bags:
+
+```python
+from trajectopy.io.rosbag import trajectories_from_rosbag
+
+trajectories = trajectories_from_rosbag("recording.bag")  # one trajectory per topic
 ```
 
 ## 2. Alignment
 
-To compare two trajectories (e.g., estimated vs. ground truth), they often need to be aligned first.
+To compare two trajectories (e.g., estimated vs. ground truth) that are given in different coordinate frames,
+they have to be aligned first. The alignment is estimated with a least squares adjustment from matched poses;
+which parameters are estimated (similarity transformation, leverarm, time shift) is defined by the
+[alignment settings](settings.md#alignment-settings).
 
 ```python
-from trajectopy import Trajectory, ProcessingSettings, estimate_alignment, apply_alignment
+import trajectopy as tpy
 
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
-# default settings
-processing_settings = ProcessingSettings()
+settings = tpy.ProcessingSettings()  # default settings
 
-# Estimate alignment
-alignment_result = estimate_alignment(
+# Estimate the alignment of est_traj to gt_traj
+alignment_result = tpy.estimate_alignment(
     trajectory=est_traj,
     other=gt_traj,
-    alignment_settings=processing_settings.alignment,
-    matching_settings=processing_settings.matching,
+    alignment_settings=settings.alignment,
+    matching_settings=settings.matching,
 )
+print(alignment_result.position_parameters)
 
-# Apply alignment
-est_traj_aligned = apply_alignment(est_traj, alignment_result)
+# Apply it; inplace=False returns an aligned copy and leaves est_traj unchanged
+est_traj_aligned = tpy.apply_alignment(est_traj, alignment_result, inplace=False)
 ```
 
-The function `align` combines these two steps:
+The function `align` combines both steps:
 
 ```python
-from trajectopy import Trajectory, align
-
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
-
-est_traj_aligned = align(trajectory=est_traj, other=gt_traj, inplace=False)
+est_traj_aligned = tpy.align(trajectory=est_traj, other=gt_traj, inplace=False)
 ```
+
+`apply_alignment` and `align` modify the given trajectory unless `inplace=False` is passed.
 
 ## 3. Evaluation
 
-Trajectopy provides standard metrics for trajectory evaluation.
-
 ### Absolute Trajectory Error (ATE)
 
-ATE measures the global consistency of the trajectory by building differences between corresponding poses. Note that `ate()` already includes alignment by default. This can be disabled by setting the function parameter `align=False`.
+The ATE measures the global consistency of a trajectory with the differences between corresponding poses of
+both trajectories. `ate()` aligns the trajectory to the reference first; pass `align=False` to evaluate it as it is.
 
 ```python
-from trajectopy import Trajectory, ate, ProcessingSettings
+import trajectopy as tpy
 
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+gt_traj = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 
-# default settings
-processing_settings = ProcessingSettings()
+ate_result = tpy.ate(trajectory=est_traj, other=gt_traj)
+print(f"Position ATE: {ate_result.pos_ate:.3f} m, rotation ATE: {ate_result.rot_ate:.3f} rad")
 
-# align = True is the default, but can be disabled if you want to evaluate the unaligned trajectories
-ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings, align=True)
-print(f"Position ATE: {ate_result.pos_ate}")
+# Also return the alignment that was used
+ate_result, alignment_result = tpy.ate(trajectory=est_traj, other=gt_traj, return_alignment=True)
 ```
+
+The result contains the deviations of each matched pose (e.g. `pos_dev_x`, `pos_dev_along`) and their
+statistics (e.g. `pos_dev_rms`, `pos_dev_max`, `pos_bias_x`); `to_dataframe()` returns the deviations as a table.
 
 ### Relative Pose Error (RPE)
 
-RPE measures the pose drift over fixed time or distance intervals.
+The RPE measures the drift of a trajectory: the deviations between the relative poses of pose pairs that are a
+given distance or time apart, normalized by that distance or time (see
+[relative comparison settings](settings.md#relative-comparison-settings)). It does not require the trajectories to
+be aligned.
 
 ```python
-from trajectopy import Trajectory, rpe, ProcessingSettings
+rpe_result = tpy.rpe(trajectory=est_traj, other=gt_traj)
+print(f"Position RPE: {rpe_result.pos_rpe:.3f} {rpe_result.pos_drift_unit}")
+print(f"Rotation RPE: {rpe_result.rot_rpe:.5f} {rpe_result.rot_drift_unit}")
+```
 
-gt_traj = Trajectory.from_file("./example_data/KITTI_gt.traj")
-est_traj = Trajectory.from_file("./example_data/KITTI_ORB.traj")
+### Custom Settings
 
-# default settings
-processing_settings = ProcessingSettings()
+All processing steps are configured with `ProcessingSettings`; see [Settings](settings.md) for all options.
 
-rpe_result = rpe(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
-print(f"Position RPE: {rpe_result.pos_rpe}")
+```python
+settings = tpy.ProcessingSettings()
+settings.alignment.estimation_settings.scale = False
+settings.alignment.estimation_settings.time_shift = True
+settings.matching.method = tpy.MatchingMethod.NEAREST_TEMPORAL
+settings.relative_comparison.pair_distance_unit = tpy.PairDistanceUnit.SECOND
+settings.relative_comparison.pair_min_distance = 10.0
+settings.relative_comparison.pair_max_distance = 60.0
+settings.relative_comparison.pair_distance_step = 10.0
+
+ate_result = tpy.ate(trajectory=est_traj, other=gt_traj, processing_settings=settings)
+rpe_result = tpy.rpe(trajectory=est_traj, other=gt_traj, processing_settings=settings)
+
+settings.to_file("settings.json")  # the GUI reads this format, too
+settings = tpy.ProcessingSettings.from_file("settings.json")
+```
+
+### Saving Results
+
+Results and alignments are saved as text files, which the GUI can open, too:
+
+```python
+ate_result.to_file("ate.result")
+ate_result = tpy.ATEResult.from_file("ate.result")
+
+rpe_result.to_file("rpe.result")
+alignment_result.to_file("alignment.result")
 ```
 
 ## 4. Visualization
@@ -130,6 +178,11 @@ vis.show(vis.ate_figure(ate_results, settings))
 vis.ate_map_figure([ate_result], settings).export("ate_map.png", variant="Position", width=2400)
 ```
 
+In the plot window, the mouse wheel zooms, dragging with the left button pans, dragging with the right button
+zooms the x and y axes separately, and the *A* button in the lower left corner fits the plot to the data again.
+Stacked plots (e.g. x, y and z over time) share their x-axis. *Export Plot…* and *Export All…* in the toolbar
+save the figures.
+
 Available figures:
 
 | Function | Content |
@@ -146,14 +199,17 @@ Available figures:
 | `rpe_figures` | Relative pose error over the pair distance |
 | `parameter_matrix_figure` | Covariance / correlation of estimated alignment parameters |
 
-### Google Earth
+All figures use the [plot settings](settings.md#plot-settings).
+
+## 5. Google Earth
 
 Georeferenced trajectories (trajectories with an EPSG code) and ATE results can be exported as KML and opened in
 Google Earth, which shows them in their real-world context: on imagery and terrain, and, where available,
-between photorealistic 3D buildings. In the GUI, choose "Export to Google Earth (KML)…" in the context menu of a
+between photorealistic 3D buildings. In the GUI, choose *Export to Google Earth (KML)…* in the context menu of a
 trajectory or an ATE result; the dialog offers all options below and remembers them.
 
 ```python
+# trajectory and ate_result must be georeferenced (EPSG code other than 0); the KITTI example data is not
 trajectory.to_kml("track.kml", color="#1f77b4")  # one color: "#RRGGBB" or "#RRGGBBAA"
 trajectory.to_kml("track.kml", field="speed", heights="ellipsoidal", extrude=True)
 ate_result.to_kml("ate.kml", field="along_track", colormap="viridis", value_range=(-0.5, 0.5))
@@ -176,7 +232,7 @@ the web shows the trajectory, but has no time slider.
 - `color_classes`: number of colors (default 11). The Places panel of Google Earth lists them with their value
   ranges (the legend); each class can be switched on and off. During playback, the colored line grows with the
   time slider.
-- `line_width`: line width in pixels.
+- `line_width`: line width in pixels (default 3 for trajectories, 4 for ATE results).
 
 **Heights**
 
@@ -193,15 +249,23 @@ the web shows the trajectory, but has no time slider.
 - `extrude=True` connects the trajectory to the ground with a semi-transparent vertical curtain, which makes
   heights easy to read (not for trajectories clamped to the ground).
 
-## 5. GUI Application
+## 6. Using the GUI
 
-For a graphical interface, simply run:
+Start the GUI from the Start menu (Windows app) or with `trajectopy` (Python package, see
+[Command Line](index.md#command-line)).
 
-```bash
-trajectopy
-```
+### A Typical Workflow
 
-This opens the application where you can drag & drop files, align them, and view results interactively.
+1. **Load trajectories**: drop files onto the trajectory table or press *Add*. On Windows, `.traj` files can also be
+   opened by double-click (if chosen during installation), and files can be passed on the command line.
+2. **Set the reference**: right-click the ground truth and choose *Set as Reference* (`R`).
+3. **Compare**: select one or more other trajectories, right-click and choose
+   *Compare with Reference → Absolute Error (ATE), Aligned First*. The result appears in the results table.
+4. **Inspect**: select the result to see its statistics in the properties table and its deviations in the
+   preview; press `V` (or *Plot*) for all plots.
+5. **Save**: *Session → Save* keeps everything for later; *Export…* (`E`) saves single trajectories or results.
+
+### Main Window
 
 The left side lists the trajectories (name, EPSG code, reference) and the results (name, type). Below them,
 the properties table shows all properties of the selected trajectories or results side by side; *Export…* saves
@@ -209,7 +273,85 @@ them as CSV. The preview on the right plots the selected trajectories, or the se
 their deviations. On slow systems, it can be turned off with the *Preview* checkbox in the top right corner;
 the tables and the properties then use the whole width.
 
-### Manual Alignment
+Trajectory files (`.traj` and other ASCII files, ROS1 `.bag` files) are loaded into the trajectory table,
+`.result` files into the results table. Long operations run in the background; a progress window shows that
+Trajectopy is busy.
+
+### Menu Bar
+
+| Menu | Entry | Description |
+| --- | --- | --- |
+| Session | New | Removes all trajectories and results and resets the plot settings (asks first). |
+| | Load | Loads a session folder; replaces the current session. |
+| | Save | Saves all trajectories, results and settings to a folder (see below). |
+| Plot Settings | | Opens the [plot settings](settings.md#plot-settings), which apply to all plots opened afterwards. |
+| Help | Check for Updates… | Checks GitHub for a newer version. |
+| | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
+| | About | Version and license information. |
+| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes. |
+
+**Sessions** are folders. *Save* writes one `.traj` file per trajectory together with its processing settings
+(`.json`), one `.result` file per result, the order of the tables and the plot settings
+(`plot_settings.json`). *Load* restores all of it.
+
+**Updates**: the update check only contacts GitHub (it sends no data except the installed version in the request
+header); it can be turned off in the Help menu. Python installations are updated with
+`pip install --upgrade "trajectopy[gui]"`, the Windows app with the installer of the new version.
+
+Closing Trajectopy asks for confirmation if trajectories or results would be lost.
+
+### Processing Settings of a Trajectory
+
+Every trajectory has its own [processing settings](settings.md#processing-settings) (alignment, matching,
+relative comparison, approximation, sorting), which are used when it is processed. Edit them with *Settings…*
+(`S`) in its context menu; the editor can also import and export them as JSON. When a trajectory file is
+loaded, a JSON file with the same name in the same folder (e.g. `run1.json` next to `run1.traj`) is used as its
+settings.
+
+### Context Menus
+
+All actions are in the context menus of the selected trajectories or results (right-click). Hover over an entry
+to see what it does. Entries that are not available for the current selection are greyed out and their hint
+explains why, e.g. *Compare with Reference* needs a reference: right-click the reference trajectory and choose
+*Set as Reference*.
+
+The trajectory context menu is grouped by task:
+
+| Group | Entries |
+| --- | --- |
+| View | *Plot*, *Playback in 3D* (body frame axes at the current pose), *Timeline* (time spans of the trajectories, e.g. to check their overlap) |
+| Reference | *Set as Reference* / *Unset Reference* |
+| Compare with Reference | *Absolute Error (ATE), Aligned First*, *Absolute Error (ATE), as Is*, *Relative Pose Error (RPE)*, *Extract Matching Poses* |
+| Align with Reference | *Estimate Alignment*, *Interactive Alignment…* (see below), *Match First Pose*, *Apply Existing Alignment…* |
+| Coordinate System | *Transform to EPSG…*, *Adapt EPSG from Reference*, *Set EPSG Code (No Transformation)…* |
+| Process | *Smooth (Approximate)*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
+| Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Remove*, *Remove Including Derived* |
+
+Processing adds new trajectories (e.g. *Smooth* adds a smoothed copy) and comparisons add results; only the
+coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
+
+The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Remove* and, for ATE results,
+*Export to Google Earth (KML)…*. For alignments, *Choose Parameters to Apply…* selects which of the estimated
+parameters are used when the alignment is applied to a trajectory (*Apply Existing Alignment…*).
+
+### Keyboard Shortcuts
+
+Keyboard shortcuts are shown next to the entries of the context menus. They are active when the corresponding
+table has focus and do what the menu entry does for the selected rows.
+
+| Shortcut | Trajectories table | Results table |
+| --- | --- | --- |
+| `V` | Plot | Plot |
+| `R` / `Shift+R` | Set as reference / unset reference | |
+| `T` | Transform to EPSG | |
+| `M` | Merge (two or more trajectories) | |
+| `S` | Settings | |
+| `F2` (or `U`) | Rename | Rename |
+| `Ctrl+D` (or `Ctrl+C`) | Duplicate | Duplicate |
+| `E` | Export | Export |
+| `Delete` | Remove | Remove |
+
+### Interactive Alignment
 
 If the automatic alignment cannot find a solution on its own (e.g. trajectories in unrelated frames or
 with a large time offset), a trajectory can be aligned manually: set a reference, then choose
@@ -235,36 +377,3 @@ with a large time offset), a trajectory can be aligned manually: set a reference
 
 Position, heading and scale are relative to the trajectory's center, so rotating does not move the
 trajectory away even for georeferenced coordinates.
-
-### Context Menus
-
-All actions are in the context menu of the selected trajectories or results (right-click). Hover over an entry
-to see what it does. Entries that are not available for the current selection are greyed out and their hint
-explains why, e.g. *Compare with Reference* needs a reference: right-click the reference trajectory and choose
-*Set as Reference*.
-
-The trajectory context menu is grouped by task:
-
-- **Plot**, **Playback in 3D** and **Timeline**
-- **Set as Reference**, **Compare with Reference** (ATE, RPE, extracting matching poses) and
-  **Align with Reference** (estimated, interactive, first pose, or applying an existing alignment)
-- **Coordinate System**: transforming positions or declaring their EPSG code
-- **Process**: smoothing, resampling, rearranging axes, sorting, dividing into laps, merging and averaging
-- **Settings**, **Rename**, **Duplicate**, **Export** and **Remove**
-
-### Keyboard Shortcuts
-
-Keyboard shortcuts are shown next to the entries of the context menus. They are active when the corresponding
-table has focus and do what the menu entry does for the selected rows.
-
-| Shortcut | Trajectories table | Results table |
-| --- | --- | --- |
-| `V` | Plot | Plot |
-| `R` / `Shift+R` | Set as reference / unset reference | |
-| `T` | Transform to EPSG | |
-| `M` | Merge (two or more trajectories) | |
-| `S` | Settings | |
-| `F2` (or `U`) | Rename | Rename |
-| `Ctrl+D` (or `Ctrl+C`) | Duplicate | Duplicate |
-| `E` | Export | Export |
-| `Delete` | Remove | Remove |

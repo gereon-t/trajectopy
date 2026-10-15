@@ -141,7 +141,7 @@ class TrajectoryEntry(Entry):
             traj_settings = ProcessingSettings.from_file(str(settings_filename))
         else:
             logger.info(
-                "No settings file found. Settings can be provided by storing a yaml file with the same name in the same directory."
+                "No settings file found. Settings can be provided by storing a JSON file with the same name in the same directory."
             )
             traj_settings = ProcessingSettings()
 

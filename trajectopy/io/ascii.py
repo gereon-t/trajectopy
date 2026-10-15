@@ -309,19 +309,20 @@ def _parse_datetime(trajectory_data: np.ndarray, time_columns: list[int], header
 
     datetime_strings = np.apply_along_axis(concatenate_strings, 1, trajectory_data[:, time_columns])
 
-    ts_datetime = pd.to_datetime(datetime_strings, format=header_data.datetime_format, utc=True)
+    # Date/time strings are UTC or GPS time; other time zones are not supported (and are read as UTC).
+    time_system = header_data.datetime_timezone.upper()
+    if time_system not in ("UTC", "GPS"):
+        logger.warning(
+            "Unsupported #datetime_timezone '%s': date/time strings must be UTC or GPS time. Reading them as UTC.",
+            header_data.datetime_timezone,
+        )
 
-    if header_data.datetime_timezone.upper() == "GPS":
+    ts_datetime = pd.DatetimeIndex(pd.to_datetime(datetime_strings, format=header_data.datetime_format, utc=True))
+    if time_system == "GPS":
         ts_datetime -= pd.Timedelta(seconds=GPS_LEAP_SECONDS)
-        time_zone = "UTC"
         logger.info("Applied GPS leap seconds.")
-    else:
-        time_zone = header_data.datetime_timezone
 
-    ts_datetime = pd.DatetimeIndex(ts_datetime).tz_convert(tz=time_zone)
-    logger.info("Timezone: %s", time_zone)
-
-    return np.array([dt_i.timestamp() for dt_i in ts_datetime])
+    return np.asarray((ts_datetime - pd.Timestamp(0, tz="UTC")) / pd.Timedelta(seconds=1), dtype=float)
 
 
 def _parse_gps_sow(trajectory_data: np.ndarray, time_columns: list[int], header_data: HeaderData) -> np.ndarray:

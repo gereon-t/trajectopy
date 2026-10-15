@@ -119,6 +119,36 @@ class TestReadTrajectory(unittest.TestCase):
                 self._assert_same_as_general_reader(text)
 
 
+class TestDatetimeTimeSystems(unittest.TestCase):
+    TEMPLATE = (
+        "#fields t,px,py,pz\n#time_format datetime\n{header}"
+        "2024-01-01 12:00:00.000,0,0,0\n2024-01-01 12:00:00.100,1,0,0\n"
+    )
+    UTC_2024 = 1704110400.0  # 2024-01-01 12:00:00 UTC
+
+    def _timestamps(self, header: str) -> np.ndarray:
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "trajectory.traj")
+            with open(filename, "w", encoding="utf-8") as file:
+                file.write(self.TEMPLATE.format(header=header))
+            return read_trajectory(filename).timestamps
+
+    def test_utc(self):
+        for header_lines in ("", "#datetime_timezone UTC\n"):
+            np.testing.assert_allclose(self._timestamps(header_lines), [self.UTC_2024, self.UTC_2024 + 0.1])
+
+    def test_gps_time_subtracts_the_leap_seconds(self):
+        np.testing.assert_allclose(
+            self._timestamps("#datetime_timezone GPS\n"), [self.UTC_2024 - 18, self.UTC_2024 - 18 + 0.1]
+        )
+
+    def test_other_time_zones_are_read_as_utc_with_a_warning(self):
+        with self.assertLogs(ascii.logger, level="WARNING") as logs:
+            timestamps = self._timestamps("#datetime_timezone Europe/Berlin\n")
+        np.testing.assert_allclose(timestamps, [self.UTC_2024, self.UTC_2024 + 0.1])
+        self.assertTrue(any("Europe/Berlin" in message for message in logs.output))
+
+
 class TestFastExtraHint(unittest.TestCase):
     FILE = "test/data/generated_trajectory.traj"
 
