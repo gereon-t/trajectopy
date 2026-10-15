@@ -105,7 +105,7 @@ trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS] [f
 
 | Argument | Description |
 | --- | --- |
-| `files` | Trajectory (`.traj`, `.bag`) or result (`.result`) files to open at start. |
+| `files` | Project (`.tpy`), trajectory (`.traj`, `.bag`) or result (`.result`) files to open at start. Trajectories and results are added to the project. |
 | `--version`, `-v` | Show the version and exit. |
 | `--single-thread` | Process in the GUI thread instead of a background thread, e.g. for debugging. The GUI does not respond while processing. |
 | `--plot-settings PLOT_SETTINGS` | JSON file with [plot settings](settings.md#plot-settings); settings missing in the file keep their default values. |
@@ -115,10 +115,11 @@ Examples:
 
 ```console
 trajectopy ground_truth.traj slam.traj
-trajectopy --plot-settings my_session/plot_settings.json
+trajectopy flight.tpy
+trajectopy --plot-settings plot_settings.json
 ```
 
-A session saved from the GUI contains its plot settings in `plot_settings.json`.
+A project contains its own plot settings, which replace those given with `--plot-settings` when it is opened.
 
 ## Citation
 

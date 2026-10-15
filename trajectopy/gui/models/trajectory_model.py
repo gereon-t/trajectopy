@@ -1,12 +1,7 @@
 import copy
 import logging
-import os
-
-from PySide6.QtCore import Signal
 
 from trajectopy.gui.managers.requests import (
-    FileRequest,
-    FileRequestType,
     TrajectoryModelRequest,
     TrajectoryModelRequestType,
 )
@@ -20,7 +15,6 @@ logger = logging.getLogger(__name__)
 class TrajectoryTableModel(RequestTableModel):
     """Class representing the trajectory table model."""
 
-    file_request = Signal(FileRequest)
     items: list[TrajectoryEntry]
 
     def __init__(self):
@@ -34,7 +28,6 @@ class TrajectoryTableModel(RequestTableModel):
             TrajectoryModelRequestType.SET_REFERENCE: self.set_as_reference,
             TrajectoryModelRequestType.UNSET_REFERENCE: self.unset_as_reference,
             TrajectoryModelRequestType.RESET: self.reset,
-            TrajectoryModelRequestType.EXPORT_ALL: self.export_all,
             TrajectoryModelRequestType.SORT: self.sort_items,
         }
 
@@ -45,36 +38,6 @@ class TrajectoryTableModel(RequestTableModel):
 
     def remove_group(self, group_id: str) -> None:
         self.remove([item.entry_id for item in self.items if item.group_id == group_id])
-
-    def export_all(self, request: TrajectoryModelRequest) -> None:
-        for item in self.items:
-            trajectory_filename = os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}.traj")
-            settings_filename = os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}.json")
-            self.file_request.emit(
-                FileRequest(
-                    type=FileRequestType.WRITE_TRAJ,
-                    trajectory_selection=TrajectorySelection(entries=[item]),
-                    file_list=[trajectory_filename],
-                )
-            )
-            item.settings.to_file(settings_filename)
-
-            if item.trajectory.positions.local_transformer is not None:
-                item.trajectory.positions.export_local_transformer(
-                    os.path.join(request.file_path, f"{item.trajectory.name}_{item.entry_id}_local_transformer.txt")
-                )
-
-        self.write_trajectory_order(request.file_path)
-
-    def write_trajectory_order(self, directory: str) -> None:
-        trajectory_order_filename = os.path.join(directory, "trajectory_order.txt")
-        self.file_request.emit(
-            FileRequest(
-                type=FileRequestType.WRITE_LIST,
-                id_list=[item.entry_id for item in self.items],
-                file_list=[trajectory_order_filename],
-            )
-        )
 
     @property
     def reference_entry(self) -> TrajectoryEntry | None:

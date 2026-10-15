@@ -163,6 +163,17 @@ class TrajectoryEntry(Entry):
             traj_entry.set_id(entry_id=header_data.id)
         return traj_entry
 
+    @classmethod
+    def from_trajectory_file(cls, filename: str) -> "TrajectoryEntry":
+        """Reads a trajectory file together with the processing settings (``<name>.json``) and the local
+        transformer (``<name>_local_transformer.txt``) next to it, if present."""
+        path = Path(filename)
+        return cls.from_file(
+            trajectory_filename=path,
+            settings_filename=path.with_name(f"{path.stem}.json"),
+            local_transformer_filename=path.with_name(f"{path.stem}_local_transformer.txt"),
+        )
+
     @property
     def name(self) -> str:
         return self.trajectory.name

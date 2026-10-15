@@ -170,8 +170,9 @@ headers. Messages of other types are skipped.
   `AlignmentResult.to_file`). They are text files with a header, too, and can be opened in the GUI.
 - **Settings** (`.json`): [processing settings](settings.md#processing-settings) and
   [plot settings](settings.md#plot-settings).
-- **Sessions** (GUI): a folder with all trajectories, results and settings, see
-  [Using the GUI](user_guide.md#menu-bar).
+- **Projects** (`.tpy`, GUI): a zip archive with all trajectories, results and settings, see
+  [Using the GUI](user_guide.md#menu-bar). Besides the files above, it contains a manifest (`project.json`)
+  with the order of the tables and the state of the entries (e.g. the reference).
 
 ## Creating Trajectories in Python
 

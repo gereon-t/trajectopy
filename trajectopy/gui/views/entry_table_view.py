@@ -4,6 +4,7 @@ from PySide6 import QtGui, QtWidgets
 from PySide6.QtCore import Qt, Signal
 
 from trajectopy.gui.managers.requests import FileRequest, FileRequestType
+from trajectopy.gui.project import PROJECT_SUFFIX
 from trajectopy.gui.views.menu_helpers import SelectionMenu
 
 
@@ -12,6 +13,7 @@ class EntryTableView(QtWidgets.QTableView):
     (whose entries also handle the keyboard shortcuts) and a hint while the table is empty."""
 
     file_request = Signal(FileRequest)
+    project_dropped = Signal(str)
 
     def __init__(
         self,
@@ -65,7 +67,10 @@ class EntryTableView(QtWidgets.QTableView):
     def dropEvent(self, event: QtGui.QDropEvent) -> None:
         if self._accept_files(event):
             file_paths = [url.toLocalFile() for url in event.mimeData().urls()]
-            self.file_request.emit(FileRequest(type=self._read_request, file_list=file_paths))
+            if projects := [path for path in file_paths if path.lower().endswith(PROJECT_SUFFIX)]:
+                self.project_dropped.emit(projects[0])
+            if files := [path for path in file_paths if path not in projects]:
+                self.file_request.emit(FileRequest(type=self._read_request, file_list=files))
 
     @staticmethod
     def _accept_files(event: QtGui.QDropEvent) -> bool:

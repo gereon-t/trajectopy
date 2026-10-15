@@ -10,6 +10,7 @@ from PySide6.QtCore import SignalInstance
 from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.models.entries import AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
+from trajectopy.gui.project import Project
 from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)
@@ -20,9 +21,6 @@ class FileRequestType(Enum):
     WRITE_TRAJ = auto()
     READ_RES = auto()
     WRITE_RES = auto()
-    WRITE_LIST = auto()
-    READ_TRAJ_ORDER = auto()
-    READ_RES_ORDER = auto()
 
 
 class PlotRequestType(Enum):
@@ -42,16 +40,16 @@ class ResultModelRequestType(Enum):
     REMOVE = auto()
     PASS_ALIGNMENTS_TO_UI = auto()
     RESET = auto()
-    EXPORT_ALL = auto()
     EDIT_ALIGNMENT = auto()
     COPY = auto()
     SORT = auto()
 
 
-class SessionManagerRequestType(Enum):
-    IMPORT = auto()
-    EXPORT = auto()
+class ProjectRequestType(Enum):
     NEW = auto()
+    OPEN = auto()
+    SAVE = auto()
+    IMPORT_SESSION_FOLDER = auto()
 
 
 class TrajectoryManagerRequestType(Enum):
@@ -85,7 +83,6 @@ class TrajectoryModelRequestType(Enum):
     REMOVE = auto()
     REMOVE_RELATED = auto()
     RESET = auto()
-    EXPORT_ALL = auto()
     SORT = auto()
 
 
@@ -102,20 +99,11 @@ class UIRequestType(Enum):
     EXPORT_RES = auto()
     IMPORT_RES = auto()
     MESSAGE = auto()
-    CONFIRM_RESET = auto()
-    EXPORT_SESSION = auto()
-    IMPORT_SESSION = auto()
     EDIT_ALIGNMENT = auto()
     MANUAL_ALIGNMENT = auto()
     PLAYBACK = auto()
     RENAME_TRAJ = auto()
     RENAME_RES = auto()
-
-
-class PlotSettingsRequestType(Enum):
-    IMPORT = auto()
-    EXPORT = auto()
-    RESET = auto()
 
 
 @dataclass
@@ -165,15 +153,10 @@ class ResultModelRequest:
 
 
 @dataclass
-class SessionManagerRequest:
-    type: SessionManagerRequestType
+class ProjectRequest(DeepCopyRequest):
+    type: ProjectRequestType
     file_path: str = ""
-
-
-@dataclass
-class PlotSettingsRequest:
-    type: PlotSettingsRequestType
-    file_path: str = ""
+    project: Project = field(default_factory=Project)  # SAVE
 
 
 @dataclass

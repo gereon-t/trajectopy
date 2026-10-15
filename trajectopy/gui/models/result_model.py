@@ -1,11 +1,6 @@
 import logging
-import os
-
-from PySide6.QtCore import Signal
 
 from trajectopy.gui.managers.requests import (
-    FileRequest,
-    FileRequestType,
     ResultModelRequest,
     ResultModelRequestType,
     UIRequest,
@@ -21,7 +16,6 @@ logger = logging.getLogger(__name__)
 class ResultTableModel(RequestTableModel):
     """Class representing the result table model."""
 
-    file_request = Signal(FileRequest)
     items: list[ResultEntry]
 
     def __init__(self):
@@ -32,7 +26,6 @@ class ResultTableModel(RequestTableModel):
             ResultModelRequestType.REMOVE: self.remove_selected_entries,
             ResultModelRequestType.PASS_ALIGNMENTS_TO_UI: self.pass_alignments_to_ui,
             ResultModelRequestType.RESET: self.reset,
-            ResultModelRequestType.EXPORT_ALL: self.export_all,
             ResultModelRequestType.EDIT_ALIGNMENT: self.edit_alignment,
             ResultModelRequestType.COPY: self.copy_selected_entries,
             ResultModelRequestType.SORT: self.sort_items,
@@ -40,29 +33,6 @@ class ResultTableModel(RequestTableModel):
         super().__init__(
             headers=["Name", "Result Type"],
             REQUEST_MAPPING=REQUEST_MAPPING,
-        )
-
-    def export_all(self, request: ResultModelRequest) -> None:
-        """Exports all results to files named after their entry id."""
-        for item in self.items:
-            filename = os.path.join(request.file_path, f"{item.name}_{item.entry_id}.result")
-            self.file_request.emit(
-                FileRequest(
-                    type=FileRequestType.WRITE_RES,
-                    result_selection=ResultSelection(entries=[item]),
-                    file_list=[filename],
-                )
-            )
-        self.write_result_order(request.file_path)
-
-    def write_result_order(self, directory: str) -> None:
-        result_order_filename = os.path.join(directory, "result_order.txt")
-        self.file_request.emit(
-            FileRequest(
-                type=FileRequestType.WRITE_LIST,
-                id_list=[item.entry_id for item in self.items],
-                file_list=[result_order_filename],
-            )
         )
 
     def rename_result(self, request: ResultModelRequest) -> None:

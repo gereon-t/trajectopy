@@ -6,7 +6,8 @@
 ; The installer is written to dist\Trajectopy-<version>-setup.exe.
 ;
 ; It installs for the current user without administrator rights (or for all users, if chosen in the
-; dialog), adds a Start menu entry and, optionally, a desktop icon and the .traj file association.
+; dialog), adds a Start menu entry and, optionally, a desktop icon and the .traj and .tpy (project) file
+; associations.
 ; Installing a newer version over an existing one updates it in place.
 
 #define AppName "Trajectopy"
@@ -51,6 +52,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "associate"; Description: "Open .traj files with {#AppName}"; GroupDescription: "File associations:"
+Name: "associateproject"; Description: "Open {#AppName} projects (.tpy)"; GroupDescription: "File associations:"
 
 [InstallDelete]
 ; an update replaces the bundled libraries completely, so that no files of the previous version remain
@@ -72,6 +74,13 @@ Root: HKA; Subkey: "Software\Classes\Trajectopy.traj"; ValueType: string; ValueN
 Root: HKA; Subkey: "Software\Classes\Trajectopy.traj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"",0"; Tasks: associate
 Root: HKA; Subkey: "Software\Classes\Trajectopy.traj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"" ""%1"""; Tasks: associate
 Root: HKA; Subkey: "Software\Classes\Applications\{#AppExe}\SupportedTypes"; ValueType: string; ValueName: ".traj"; ValueData: ""; Flags: uninsdeletekey; Tasks: associate
+; .tpy project files: created by Trajectopy only, so it is always their default program
+Root: HKA; Subkey: "Software\Classes\.tpy"; ValueType: string; ValueName: ""; ValueData: "Trajectopy.tpy"; Flags: uninsdeletevalue; Tasks: associateproject
+Root: HKA; Subkey: "Software\Classes\.tpy\OpenWithProgids"; ValueType: string; ValueName: "Trajectopy.tpy"; ValueData: ""; Flags: uninsdeletevalue; Tasks: associateproject
+Root: HKA; Subkey: "Software\Classes\Trajectopy.tpy"; ValueType: string; ValueName: ""; ValueData: "Trajectopy Project"; Flags: uninsdeletekey; Tasks: associateproject
+Root: HKA; Subkey: "Software\Classes\Trajectopy.tpy\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"",0"; Tasks: associateproject
+Root: HKA; Subkey: "Software\Classes\Trajectopy.tpy\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"" ""%1"""; Tasks: associateproject
+Root: HKA; Subkey: "Software\Classes\Applications\{#AppExe}\SupportedTypes"; ValueType: string; ValueName: ".tpy"; ValueData: ""; Flags: uninsdeletekey; Tasks: associateproject
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent

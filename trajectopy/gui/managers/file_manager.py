@@ -31,9 +31,6 @@ class FileManager(QObject):
     - Write trajectory files
     - Read result files
     - Write result files
-    - Read result order
-    - Read trajectory order
-    - Write list
 
     """
 
@@ -51,9 +48,6 @@ class FileManager(QObject):
             FileRequestType.WRITE_TRAJ: self.write_trajectory,
             FileRequestType.READ_RES: self.read_result_files,
             FileRequestType.WRITE_RES: self.write_result,
-            FileRequestType.READ_RES_ORDER: self.read_res_order,
-            FileRequestType.READ_TRAJ_ORDER: self.read_traj_order,
-            FileRequestType.WRITE_LIST: self.write_list,
         }
 
     @Slot(FileRequest)
@@ -79,13 +73,7 @@ class FileManager(QObject):
 
     def handle_ascii(self, file: str) -> None:
         """Reads an ASCII trajectory file and emits a request to add it to the model."""
-        trajectory_file, settings_file, local_transformer_file = self._get_traj_filenames(file)
-
-        traj_entry = TrajectoryEntry.from_file(
-            trajectory_filename=trajectory_file,
-            settings_filename=settings_file,
-            local_transformer_filename=local_transformer_file,
-        )
+        traj_entry = TrajectoryEntry.from_trajectory_file(file)
 
         self.trajectory_model_request.emit(
             TrajectoryModelRequest(
@@ -104,15 +92,6 @@ class FileManager(QObject):
                 selection=TrajectorySelection(entries=traj_entries),
             )
         )
-
-    @staticmethod
-    def _get_traj_filenames(file: str) -> tuple[Path, Path, Path]:
-        file_path = Path(file)
-        file_name = file_path.stem
-        file_directory = file_path.parent
-        settings_file = file_directory / f"{file_name}.json"
-        local_transformer_file = file_directory / f"{file_name}_local_transformer.txt"
-        return Path(file), Path(settings_file), Path(local_transformer_file)
 
     def write_trajectory(self, request: FileRequest) -> None:
         trajectory_entry = request.trajectory_selection.entries[0]
@@ -134,30 +113,3 @@ class FileManager(QObject):
     def write_result(self, request: FileRequest) -> None:
         result_entry = request.result_selection.entries[0]
         result_entry.to_file(request.file_list[0])
-
-    def write_list(self, request: FileRequest) -> None:
-        if not request.id_list:
-            return
-
-        with open(request.file_list[0], "w", encoding="utf-8") as f:
-            f.write("\n".join(request.id_list))
-            f.write("\n")
-
-    def read_list(self, request: FileRequest) -> None | list[str]:
-        if not Path(request.file_list[0]).is_file():
-            logger.warning("No order file found.")
-            return None
-
-        with open(request.file_list[0], encoding="utf-8") as f:
-            file_list = [line.strip() for line in f.readlines()]
-        return file_list
-
-    def read_res_order(self, request: FileRequest) -> None:
-        if id_list := self.read_list(request=request):
-            self.result_model_request.emit(ResultModelRequest(type=ResultModelRequestType.SORT, index_list=id_list))
-
-    def read_traj_order(self, request: FileRequest) -> None:
-        if id_list := self.read_list(request=request):
-            self.trajectory_model_request.emit(
-                TrajectoryModelRequest(type=TrajectoryModelRequestType.SORT, index_list=id_list)
-            )

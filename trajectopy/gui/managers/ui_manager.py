@@ -9,8 +9,6 @@ from trajectopy.gui.managers.requests import (
     FileRequestType,
     ResultModelRequest,
     ResultModelRequestType,
-    SessionManagerRequest,
-    SessionManagerRequestType,
     TrajectoryManagerRequest,
     TrajectoryManagerRequestType,
     TrajectoryModelRequest,
@@ -22,7 +20,6 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.utils import (
-    browse_dir_dialog,
     read_file_dialog,
     save_file_dialog,
     show_msg_box,
@@ -54,9 +51,6 @@ class UIManager(QObject):
     - Show trajectory properties
     - Show result properties
     - Show trajectory settings
-    - Show reset question
-    - Export session
-    - Import session
     - Edit alignment
 
     """
@@ -65,9 +59,9 @@ class UIManager(QObject):
     trajectory_model_request = Signal(TrajectoryModelRequest)
     result_model_request = Signal(ResultModelRequest)
     file_request = Signal(FileRequest)
-    session_manager_request = Signal(SessionManagerRequest)
     operation_finished = Signal()
     ui_request = Signal(UIRequest)
+    settings_applied = Signal()  # processing settings of a trajectory were changed in place
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -83,9 +77,6 @@ class UIManager(QObject):
             UIRequestType.MESSAGE: self.message_box,
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
             UIRequestType.TRAJ_SETTINGS: self.show_trajectory_settings,
-            UIRequestType.CONFIRM_RESET: self.show_reset_question,
-            UIRequestType.EXPORT_SESSION: self.session_export_dialog,
-            UIRequestType.IMPORT_SESSION: self.session_import_dialog,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
             UIRequestType.MANUAL_ALIGNMENT: self.manual_alignment,
             UIRequestType.GRID_SELECTION: self.grid_selection,
@@ -135,6 +126,7 @@ class UIManager(QObject):
             parent=self.parent(),
             settings=request.trajectory_selection.entries[0].settings,
         )
+        settings_window.applied.connect(self.settings_applied)
         settings_window.show()
 
     def trajectory_playback(self, request: UIRequest) -> None:
@@ -266,36 +258,6 @@ class UIManager(QObject):
             self._dialog_parent(), file_filter="Result Files (*.result);;All Files (*.*)"
         ):
             self.file_request.emit(FileRequest(type=FileRequestType.READ_RES, file_list=selected_files))
-        else:
-            return
-
-    def show_reset_question(self, _: UIRequest) -> None:
-        reply = QtWidgets.QMessageBox.question(
-            self._dialog_parent(),
-            "Confirmation",
-            "The current Session will be lost. Continue?",
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
-        )
-
-        if reply == QtWidgets.QMessageBox.StandardButton.Yes:
-            self.session_manager_request.emit(SessionManagerRequest(type=SessionManagerRequestType.NEW))
-
-    def session_export_dialog(self, _: UIRequest) -> None:
-        if selected_file := browse_dir_dialog(self._dialog_parent()):
-            self.session_manager_request.emit(
-                SessionManagerRequest(type=SessionManagerRequestType.EXPORT, file_path=selected_file)
-            )
-        else:
-            return
-
-    def session_import_dialog(self, _: UIRequest) -> None:
-        if selected_file := browse_dir_dialog(self._dialog_parent()):
-            self.session_manager_request.emit(
-                SessionManagerRequest(type=SessionManagerRequestType.NEW, file_path=selected_file)
-            )
-            self.session_manager_request.emit(
-                SessionManagerRequest(type=SessionManagerRequestType.IMPORT, file_path=selected_file)
-            )
         else:
             return
 

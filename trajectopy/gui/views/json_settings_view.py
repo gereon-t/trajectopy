@@ -3,7 +3,7 @@ import logging
 from typing import Any
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 
 from trajectopy.core.settings import Settings
 from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
@@ -35,6 +35,8 @@ SPECIAL_WORDS = {
 
 
 class JSONViewer(QtWidgets.QMainWindow):
+    applied = Signal()  # the settings were changed (in place)
+
     def __init__(self, parent, settings: Settings, name: str = "Settings Viewer"):
         super().__init__(parent=parent)
         # a child of the main window: without this, closing only hides it and it is never freed
@@ -141,6 +143,7 @@ class JSONViewer(QtWidgets.QMainWindow):
             self.settings.update_from_dict(parsed_json)
 
             logger.info("Updated settings")
+            self.applied.emit()
             if close_after:
                 self.close()
         except json.JSONDecodeError as e:

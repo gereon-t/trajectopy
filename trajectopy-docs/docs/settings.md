@@ -191,7 +191,8 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | `export_format` | File format of exported plots: `png`, `jpg` or `svg` | `png` |
 | `export_width` | Width of exported raster images (pixels) | `1600` |
 
-Plot settings are saved with a GUI session (`plot_settings.json`) and can be loaded at startup with
+Plot settings are saved with a GUI project (as `plot_settings.json` in the `.tpy` archive) and can be loaded at
+startup with
 `trajectopy --plot-settings plot_settings.json`.
 
 ### ATE Frame Definition (regarding `directed_ate`)

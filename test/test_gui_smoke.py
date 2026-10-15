@@ -51,8 +51,17 @@ class TestGuiSmoke(unittest.TestCase):
             patcher = mock.patch(target, side_effect=lambda message, *_, **__: self.messages.append(message))
             patcher.start()
             self.addCleanup(patcher.stop)
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        self.real_confirm_quit = TrajectopyGUI._confirm_quit
         patcher = mock.patch("trajectopy.gui.views.main_window.TrajectopyGUI._confirm_quit", return_value=True)
         self.confirm_quit = patcher.start()
+        self.addCleanup(patcher.stop)
+        patcher = mock.patch(
+            "trajectopy.gui.views.main_window.TrajectopyGUI._ask_save_changes",
+            side_effect=AssertionError("unexpected question to save the changes"),
+        )
+        patcher.start()
         self.addCleanup(patcher.stop)
         # never contact GitHub from the tests
         patcher = mock.patch("trajectopy.gui.update_check.UpdateChecker.check")
@@ -189,11 +198,10 @@ class TestGuiSmoke(unittest.TestCase):
                 requests.TrajectoryManagerRequestType: window.trajectory_manager,
                 requests.FileRequestType: window.file_manager,
                 requests.UIRequestType: window.ui_manager,
-                requests.SessionManagerRequestType: window.session_manager,
+                requests.ProjectRequestType: window.project_manager,
                 requests.PlotRequestType: window.plot_manager,
                 requests.TrajectoryModelRequestType: window.trajectory_table_model,
                 requests.ResultModelRequestType: window.result_table_model,
-                requests.PlotSettingsRequestType: window,
             }
             for request_enum, handler in handlers.items():
                 with self.subTest(request_type=request_enum.__name__):
@@ -391,6 +399,156 @@ class TestGuiSmoke(unittest.TestCase):
         generic_request_handler(handler, UIRequest(type=UIRequestType.PLAYBACK))
         self.assertTrue(reported[0].error)
         self.assertEqual(reported[0].message, "Playback failed:\n\nno poses")
+
+    def _project_window(self, single_thread: bool = True):
+        """Main window with two trajectories (the first one is the reference) in a new project."""
+        from trajectopy.gui.models.entries import TrajectoryEntry
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=single_thread)
+        self.addCleanup(window.close)
+        for file in TRAJECTORY_FILES:
+            window.trajectory_table_model.add(TrajectoryEntry.from_trajectory_file(file))
+        window.trajectory_table_model.items[0].set_as_reference = True
+        return window
+
+    def _temporary_directory(self) -> str:
+        import tempfile
+
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        return directory.name
+
+    def _save_as(self, window, path: str) -> None:
+        with mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")):
+            window.save_project_as()
+
+    def _check_project_roundtrip(self, single_thread: bool) -> None:
+        window = self._project_window(single_thread)
+        self.assertTrue(window.is_modified)
+        ids = [entry.entry_id for entry in window.trajectory_table_model.items]
+        path = os.path.join(self._temporary_directory(), "flight")
+        self._save_as(window, path)  # the suffix is added
+        self._wait_until(lambda: not window.is_modified)
+        self.assertEqual(window.windowTitle(), "flight[*] - Trajectopy")
+        self.assertEqual(window._recent_projects(), [path + ".tpy"])
+
+        window.new_project()  # nothing to save: no question
+        self._wait_until(lambda: window.trajectory_table_model.rowCount() == 0)
+        self.assertEqual(window.windowTitle(), "Untitled[*] - Trajectopy")
+
+        recent_action = window._recent_menu.actions()[0]
+        self.assertIn("flight.tpy", recent_action.text())
+        recent_action.trigger()
+        self._wait_until(lambda: window.trajectory_table_model.rowCount() == 2 and window._project_path)
+        self.assertEqual([entry.entry_id for entry in window.trajectory_table_model.items], ids)
+        self.assertTrue(window.trajectory_table_model.items[0].set_as_reference)
+        self.assertFalse(window.is_modified)
+        self.assertEqual(self.messages, [])
+
+    def test_project_roundtrip_single_threaded(self):
+        self._check_project_roundtrip(single_thread=True)
+
+    def test_project_roundtrip_multi_threaded(self):
+        self._check_project_roundtrip(single_thread=False)
+
+    def test_changes_are_tracked(self):
+        from trajectopy.gui.views.json_settings_view import JSONViewer
+
+        window = self._project_window()
+        self._save_as(window, os.path.join(self._temporary_directory(), "flight.tpy"))
+        self.assertFalse(window.isWindowModified())
+
+        window.trajectory_table_model.items[1].name = "renamed"
+        window.trajectory_table_model.refresh()
+        self.assertTrue(window.isWindowModified())
+        window.save_project()  # to its file, without asking
+        self.assertFalse(window.isWindowModified())
+
+        window.handle_show_plot_settings()  # settings are edited in place
+        viewer = window.findChild(JSONViewer)
+        viewer.apply_changes(close_after=True)
+        self.assertTrue(window.is_modified)
+
+    def test_unsaved_changes_are_offered_for_saving(self):
+        from PySide6.QtWidgets import QMessageBox
+
+        window = self._project_window()
+        path = os.path.join(self._temporary_directory(), "flight.tpy")
+        with mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Cancel):
+            window.new_project()
+        self.assertEqual(window.trajectory_table_model.rowCount(), 2)
+
+        with (
+            mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Save),
+            mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")),
+        ):
+            window.new_project()  # saved first, then cleared
+        self.assertTrue(os.path.isfile(path))
+        self.assertEqual(window.trajectory_table_model.rowCount(), 0)
+        self.assertEqual(window._project_path, "")
+
+        window.open_project(path)
+        window.trajectory_table_model.items[0].name = "renamed"
+        window.trajectory_table_model.refresh()
+        with mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Discard):
+            window.new_project()
+        window.open_project(path)
+        self.assertNotIn("renamed", [entry.name for entry in window.trajectory_table_model.items])
+
+    def test_quit_saves_unsaved_changes_first(self):
+        from PySide6.QtWidgets import QMessageBox
+
+        window = self._project_window()
+        path = os.path.join(self._temporary_directory(), "flight.tpy")
+        self.confirm_quit.side_effect = lambda: self.real_confirm_quit(window)
+        with (
+            mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Save),
+            mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")),
+        ):
+            window.close()
+        self._wait_until(lambda: not window.isVisible(), timeout=10)
+        self.assertTrue(os.path.isfile(path))
+
+    def test_failed_open_keeps_the_project(self):
+        from PySide6.QtWidgets import QMessageBox
+
+        window = self._project_window()
+        damaged = os.path.join(self._temporary_directory(), "damaged.tpy")
+        with open(damaged, "w", encoding="utf-8") as file:
+            file.write("not a project")
+
+        with mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Discard):
+            window.open_project(damaged)
+        self.assertEqual(len(self.messages), 1)
+        self.assertIn("not a Trajectopy project", self.messages[0])
+        self.assertEqual(window.trajectory_table_model.rowCount(), 2)
+        self.assertEqual(window._recent_projects(), [])
+
+    def test_missing_recent_project_is_removed(self):
+        window = self._project_window()
+        missing = os.path.join(self._temporary_directory(), "moved.tpy")
+        window._add_recent_project(missing)
+        with mock.patch("trajectopy.gui.views.main_window.show_msg_box") as message:
+            window._recent_menu.actions()[0].trigger()
+        self.assertIn("moved.tpy", message.call_args.args[0])
+        self.assertEqual(window._recent_projects(), [])
+        self.assertEqual([action.text() for action in window._recent_menu.actions()], ["No Recent Projects"])
+
+    def test_project_and_files_given_at_start_are_opened(self):
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = self._project_window()
+        path = os.path.join(self._temporary_directory(), "flight.tpy")
+        self._save_as(window, path)
+        window.close()
+
+        window = TrajectopyGUI(single_thread=True)
+        self.addCleanup(window.close)
+        window.open_files([TRAJECTORY_FILES[0], path])
+        self.assertEqual(window._project_path, path)
+        self.assertEqual(window.trajectory_table_model.rowCount(), 3)  # the file is added to the project
+        self.assertTrue(window.is_modified)
 
     def test_workflow_multi_threaded(self):
         self._run_workflow(single_thread=False)

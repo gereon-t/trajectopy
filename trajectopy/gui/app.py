@@ -37,7 +37,7 @@ def main(
     Args:
         single_thread: Disable multithreading
         plot_settings_path: Path to a JSON plot settings file
-        files: Trajectory or result files to open
+        files: Project, trajectory or result files to open
     """
     # On Windows with fractional DPI (125%, 150%) Qt rounds the scale factor
     # by default, causing blurry UI. PassThrough keeps the exact scale factor.

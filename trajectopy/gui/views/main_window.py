@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from collections.abc import Callable
+from pathlib import Path
 from typing import cast
 
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -12,25 +13,25 @@ from trajectopy import __version__ as VERSION
 from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
+from trajectopy.gui.managers.project_manager import ProjectManager
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
     PlotRequest,
-    PlotSettingsRequest,
-    PlotSettingsRequestType,
+    ProjectRequest,
+    ProjectRequestType,
     UIRequest,
     UIRequestType,
-    generic_request_handler,
 )
-from trajectopy.gui.managers.session_manager import SessionManager
 from trajectopy.gui.managers.trajectory_manager import TrajectoryManager
 from trajectopy.gui.managers.ui_manager import UIManager
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
+from trajectopy.gui.project import PROJECT_FILE_FILTER, PROJECT_SUFFIX, Project
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 from trajectopy.gui.update_check import Release, UpdateChecker
-from trajectopy.gui.utils import app_settings, center_window, set_dark_titlebar, show_msg_box
+from trajectopy.gui.utils import app_settings, browse_dir_dialog, center_window, set_dark_titlebar, show_msg_box
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.preview_plot import PreviewPlot
@@ -47,7 +48,8 @@ logger = logging.getLogger(__name__)
 
 PREVIEW_SETTINGS_KEY = "details/preview_enabled"
 
-PLOT_SETTINGS_FILENAME = "plot_settings.json"
+RECENT_PROJECTS_KEY = "projects/recent"
+MAX_RECENT_PROJECTS = 10
 
 UPDATE_CHECK_SETTINGS_KEY = "updates/check_at_startup"
 UPDATE_CHECK_DELAY_MS = 2000  # after start-up, so that the request does not compete with it
@@ -57,8 +59,8 @@ def _application() -> QtWidgets.QApplication:
     return cast(QtWidgets.QApplication, QtWidgets.QApplication.instance())
 
 
-def _count(number: int, singular: str, plural: str) -> str:
-    return f"{number} {singular if number == 1 else plural}"
+def _same_path(path: str, other: str) -> bool:
+    return os.path.normcase(os.path.abspath(path)) == os.path.normcase(os.path.abspath(other))
 
 
 class TrajectopyGUI(QtWidgets.QMainWindow):
@@ -81,11 +83,14 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     ) -> None:
         QtWidgets.QMainWindow.__init__(self)
 
-        self.REQUEST_MAPPING: dict[PlotSettingsRequestType, Callable[[PlotSettingsRequest], None]] = {
-            PlotSettingsRequestType.EXPORT: self.handle_plot_settings_export,
-            PlotSettingsRequestType.IMPORT: self.handle_plot_settings_import,
-            PlotSettingsRequestType.RESET: self.handle_plot_settings_reset,
-        }
+        # the open project file; empty while the project has not been saved yet
+        self._project_path = ""
+        # changes since start; the project is modified while it differs from the count at the last save or open
+        self._change_count = 0
+        self._saved_change_count = 0
+        self._pending_saves: list[int] = []  # change count of each save that is running or waiting to run
+        self._after_save: Callable[[], None] | None = None
+        self._closing = False
 
         self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
         self._settings = app_settings()
@@ -104,7 +109,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_manager = TrajectoryManager(worker=self.worker)
         self.ui_manager = UIManager(parent=self)
         self.file_manager = FileManager(worker=self.worker)
-        self.session_manager = SessionManager()
+        self.project_manager = ProjectManager(worker=self.worker)
 
         self.plot_settings = self.load_plot_settings(plot_settings_path)
         self.plot_manager = PlotManager(parent=self)
@@ -119,6 +124,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_menu_bar()
 
         self.setup_update_check()
+        self.setup_change_tracking()
+        self._update_title()
 
         set_dark_titlebar(self, self._dark_theme)
         self.show()
@@ -138,24 +145,26 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def setup_menu_bar(self):
         """
         This method sets up the menu bar containing
-        the session, plot settings and about menu
+        the file, plot settings and about menu
         """
         menubar = self.menuBar()
         menubar.setNativeMenuBar(False)
 
-        session_menu = QtWidgets.QMenu("Session", parent=self)
-        new_session_action = QAction("New", parent=self)
-        new_session_action.triggered.connect(self.handle_new_session)
-        session_menu.addAction(new_session_action)
-
-        load_session_action = QAction("Load", parent=self)
-        load_session_action.triggered.connect(self.handle_import_session)
-        session_menu.addAction(load_session_action)
-
-        save_session_action = QAction("Save", parent=self)
-        save_session_action.triggered.connect(self.handle_export_session)
-        session_menu.addAction(save_session_action)
-        menubar.addMenu(session_menu)
+        file_menu = QtWidgets.QMenu("File", parent=self)
+        self._add_action(file_menu, "New", self.new_project, "Ctrl+N")
+        self._add_action(file_menu, "Open…", self.open_project, "Ctrl+O")
+        self._recent_menu = QtWidgets.QMenu("Open Recent", parent=self)
+        self._recent_menu.setToolTipsVisible(True)
+        file_menu.addMenu(self._recent_menu)
+        self._update_recent_menu()
+        file_menu.addSeparator()
+        self._add_action(file_menu, "Save", self.save_project, "Ctrl+S")
+        self._add_action(file_menu, "Save As…", self.save_project_as, "Ctrl+Shift+S")
+        file_menu.addSeparator()
+        self._add_action(file_menu, "Import Session Folder…", self.import_session_folder)
+        file_menu.addSeparator()
+        self._add_action(file_menu, "Exit", self.close, "Ctrl+Q")
+        menubar.addMenu(file_menu)
 
         plot_settings_action = QAction("Plot Settings", parent=self)
         plot_settings_action.triggered.connect(self.handle_show_plot_settings)
@@ -298,7 +307,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             self._preview.clear_preview()
 
     def closeEvent(self, a0: QCloseEvent | None) -> None:
-        if not self._confirm_quit():
+        if not self._closing and not self._confirm_quit():
             if a0 is not None:
                 a0.ignore()
             return
@@ -317,25 +326,20 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             super().closeEvent(a0)
 
     def _confirm_quit(self) -> bool:
-        """Asks before discarding a session with entries or a running operation. Returns True to quit."""
-        trajectories, results = self.trajectory_table_model.rowCount(), self.result_table_model.rowCount()
-        busy = self.worker.is_busy
-        if not (trajectories or results or busy):
+        """Offers to save unsaved changes and asks before discarding a running operation. Returns True to quit."""
+        if self.is_modified:
+            answer = self._ask_save_changes()
+            if answer == QtWidgets.QMessageBox.StandardButton.Save:
+                self.save_project(then=self._close_after_save)
+            return answer == QtWidgets.QMessageBox.StandardButton.Discard
+
+        if not self.worker.is_busy:
             return True
 
-        lines = []
-        if trajectories or results:
-            lines.append(
-                f"The current session ({_count(trajectories, 'trajectory', 'trajectories')}, "
-                f"{_count(results, 'result', 'results')}) will be lost. "
-                "Use Session → Save to keep it."
-            )
-        if busy:
-            lines.append("An operation is still running; its result will be discarded.")
         box = QtWidgets.QMessageBox(
             QtWidgets.QMessageBox.Icon.Question, "Quit Trajectopy", "Quit Trajectopy?", parent=self
         )
-        box.setInformativeText("\n\n".join(lines))
+        box.setInformativeText("An operation is still running; its result will be discarded.")
         quit_button = box.addButton("Quit", QtWidgets.QMessageBox.ButtonRole.DestructiveRole)
         box.addButton(QtWidgets.QMessageBox.StandardButton.Cancel)
         box.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Cancel)
@@ -347,23 +351,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setup_trajectory_table_view_connections()
         self.setup_result_table_view_connections()
         self.setup_ui_manager_connections()
-        self.setup_session_manager_connections()
+        self.setup_project_manager_connections()
         self.setup_file_manager_connections()
         self.setup_plot_manager_connections()
         self.setup_trajectory_manager_connections()
         self.setup_result_table_connections()
-        self.setup_trajectory_table_connections()
         self.setup_plottings_connections()
 
     def setup_plot_manager_connections(self):
         self.plot_manager.ui_request.connect(self.ui_manager.handle_request)
 
-    def setup_trajectory_table_connections(self):
-        self.trajectory_table_model.file_request.connect(self.file_manager.handle_request)
-
     def setup_result_table_connections(self):
         self.result_table_model.ui_request.connect(self.ui_manager.handle_request)
-        self.result_table_model.file_request.connect(self.file_manager.handle_request)
 
     def setup_trajectory_manager_connections(self):
         self.trajectory_manager.ui_request.connect(self.ui_manager.handle_request)
@@ -375,18 +374,20 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.file_manager.result_model_request.connect(self.result_table_model.handle_request)
         self.file_manager.ui_request.connect(self.ui_manager.handle_request)
 
-    def setup_session_manager_connections(self):
-        self.session_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
-        self.session_manager.result_model_request.connect(self.result_table_model.handle_request)
-        self.session_manager.file_request.connect(self.file_manager.handle_request)
-        self.session_manager.ui_request.connect(self.ui_manager.handle_request)
-        self.session_manager.plot_settings_request.connect(self.handle_plot_settings_request)
+    def setup_project_manager_connections(self):
+        self.project_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
+        self.project_manager.result_model_request.connect(self.result_table_model.handle_request)
+        self.project_manager.ui_request.connect(self.ui_manager.handle_request)
+        self.project_manager.plot_settings_loaded.connect(self._set_plot_settings)
+        self.project_manager.project_loaded.connect(self._on_project_loaded)
+        self.project_manager.project_saved.connect(self._on_project_saved)
+        self.project_manager.save_failed.connect(self._on_save_failed)
 
     def setup_ui_manager_connections(self):
         self.ui_manager.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
         self.ui_manager.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.ui_manager.file_request.connect(self.file_manager.handle_request)
-        self.ui_manager.session_manager_request.connect(self.session_manager.handle_request)
+        self.ui_manager.settings_applied.connect(self._mark_modified)
         self.ui_manager.ui_request.connect(self.ui_manager.handle_request)
         self.ui_manager.result_model_request.connect(self.result_table_model.handle_request)
 
@@ -394,20 +395,22 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.resultTableView.result_model_request.connect(self.result_table_model.handle_request)
         self.resultTableView.ui_request.connect(self.ui_manager.handle_request)
         self.resultTableView.file_request.connect(self.file_manager.handle_request)
+        self.resultTableView.project_dropped.connect(self.open_project)
 
     def setup_trajectory_table_view_connections(self):
         self.trajectoryTableView.trajectory_model_request.connect(self.trajectory_table_model.handle_request)
         self.trajectoryTableView.trajectory_manager_request.connect(self.trajectory_manager.handle_request)
         self.trajectoryTableView.ui_request.connect(self.ui_manager.handle_request)
         self.trajectoryTableView.file_request.connect(self.file_manager.handle_request)
+        self.trajectoryTableView.project_dropped.connect(self.open_project)
         self.trajectoryTableView.result_model_request.connect(self.result_table_model.handle_request)
         self.trajectoryTableView.show_timeline.connect(self._show_timeline)
 
     def setup_progress_connections(self):
-        status_messages: dict[TrajectoryManager | FileManager | SessionManager, str] = {
+        status_messages: dict[TrajectoryManager | FileManager | ProjectManager, str] = {
             self.trajectory_manager: "Processing...",
             self.file_manager: "Loading...",
-            self.session_manager: "Session operation...",
+            self.project_manager: "Project operation...",
         }
         for manager, message in status_messages.items():
             manager.operation_started.connect(self.progress_window.handle_show_request)
@@ -473,24 +476,14 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.trajectory_table_model.refresh()
         self.result_table_model.refresh()
 
-    @Slot(PlotSettingsRequest)
-    def handle_plot_settings_request(self, request: PlotSettingsRequest) -> None:
-        """Logic for handling a request."""
-        generic_request_handler(self, request)
-
     def handle_show_plot_settings(self) -> None:
         viewer = JSONViewer(settings=self.plot_settings, parent=self)
+        viewer.applied.connect(self._mark_modified)
         viewer.show()
 
-    def handle_plot_settings_export(self, request: PlotSettingsRequest) -> None:
-        self.plot_settings.to_file(os.path.join(request.file_path, PLOT_SETTINGS_FILENAME))
-
-    def handle_plot_settings_import(self, request: PlotSettingsRequest) -> None:
-        path = os.path.join(request.file_path, PLOT_SETTINGS_FILENAME)
-        self.plot_settings = self.load_plot_settings(path) if os.path.isfile(path) else PlotSettings()
-
-    def handle_plot_settings_reset(self, _: PlotSettingsRequest) -> None:
-        self.plot_settings = PlotSettings()
+    @Slot(object)
+    def _set_plot_settings(self, plot_settings: PlotSettings) -> None:
+        self.plot_settings = plot_settings
 
     @QtCore.Slot(PlotRequest)
     def inject_plot_settings(self, plot_request: PlotRequest) -> None:
@@ -499,28 +492,215 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.plot_manager.handle_request(plot_request)
 
     def open_files(self, paths: list[str]) -> None:
-        """Loads the given trajectory (.traj, .bag, ...) and result (.result) files."""
+        """Opens the given project (.tpy) and loads the given trajectory (.traj, .bag, ...) and result (.result) files
+        into it (used at start-up)."""
         if missing := [path for path in paths if not os.path.isfile(path)]:
             show_msg_box("File not found:\n" + "\n".join(missing), self, error=True)
         existing = [os.path.abspath(path) for path in paths if path not in missing]
+        projects = [path for path in existing if path.lower().endswith(PROJECT_SUFFIX)]
+        if projects:
+            if len(projects) > 1:
+                logger.warning("Only one project can be open at a time; opening %s", projects[0])
+            self.open_project(projects[0])
         results = [path for path in existing if path.lower().endswith(".result")]
-        trajectories = [path for path in existing if path not in results]
+        trajectories = [path for path in existing if path not in results and path not in projects]
         if trajectories:
             self.file_manager.handle_request(FileRequest(type=FileRequestType.READ_TRAJ, file_list=trajectories))
         if results:
             self.file_manager.handle_request(FileRequest(type=FileRequestType.READ_RES, file_list=results))
 
-    @QtCore.Slot()
-    def handle_import_session(self) -> None:
-        self.ui_manager.handle_request(UIRequest(type=UIRequestType.IMPORT_SESSION))
+    # ----- projects -----
 
-    @QtCore.Slot()
-    def handle_export_session(self) -> None:
-        self.ui_manager.handle_request(UIRequest(type=UIRequestType.EXPORT_SESSION))
+    @property
+    def is_modified(self) -> bool:
+        """Whether the project has unsaved changes. A new project without entries has none."""
+        if not self._project_path and not (
+            self.trajectory_table_model.rowCount() or self.result_table_model.rowCount()
+        ):
+            return False
+        return self._change_count != self._saved_change_count
 
-    @QtCore.Slot()
-    def handle_new_session(self) -> None:
-        self.ui_manager.handle_request(UIRequest(type=UIRequestType.CONFIRM_RESET))
+    def setup_change_tracking(self) -> None:
+        """Counts every change of the tables; settings edited in place report their changes themselves."""
+        for model in (self.trajectory_table_model, self.result_table_model):
+            for signal in (
+                model.rowsInserted,
+                model.rowsRemoved,
+                model.dataChanged,
+                model.modelReset,
+                model.layoutChanged,
+            ):
+                signal.connect(self._mark_modified)
+
+    def _mark_modified(self, *_) -> None:
+        self._change_count += 1
+        self._update_title()
+
+    def _update_title(self) -> None:
+        name = Path(self._project_path).stem if self._project_path else "Untitled"
+        self.setWindowTitle(f"{name}[*] - Trajectopy")
+        self.setWindowModified(self.is_modified)
+
+    def new_project(self) -> None:
+        self._maybe_save(lambda: self._project_request(ProjectRequestType.NEW))
+
+    def open_project(self, path: str = "") -> None:
+        """Opens a project file; asks for one if no path is given."""
+        if not path and not (path := self._ask_open_path()):
+            return
+        if not os.path.isfile(path):
+            self._remove_recent_project(path)
+            show_msg_box(f"Project not found:\n{path}", self, error=True)
+            return
+        path = os.path.abspath(path)
+        self._maybe_save(lambda: self._project_request(ProjectRequestType.OPEN, path))
+
+    def import_session_folder(self) -> None:
+        """Opens a session folder saved by earlier versions of Trajectopy as a new (unsaved) project."""
+        if directory := browse_dir_dialog(self):
+            self._maybe_save(lambda: self._project_request(ProjectRequestType.IMPORT_SESSION_FOLDER, directory))
+
+    def save_project(self, then: Callable[[], None] | None = None) -> None:
+        """Saves the project to its file, or asks for a file if it has none yet. ``then`` runs once it is saved."""
+        if self._project_path:
+            self._save(self._project_path, then)
+        else:
+            self.save_project_as(then)
+
+    def save_project_as(self, then: Callable[[], None] | None = None) -> None:
+        if path := self._ask_save_path():
+            self._save(path, then)
+
+    def _save(self, path: str, then: Callable[[], None] | None) -> None:
+        self._after_save = then
+        self._pending_saves.append(self._change_count)
+        project = Project(
+            trajectories=list(self.trajectory_table_model.items),
+            results=list(self.result_table_model.items),
+            plot_settings=self.plot_settings,
+        )
+        self._project_request(ProjectRequestType.SAVE, path, project)
+
+    def _project_request(
+        self, request_type: ProjectRequestType, path: str = "", project: Project | None = None
+    ) -> None:
+        self.project_manager.handle_request(
+            ProjectRequest(type=request_type, file_path=path, project=project or Project())
+        )
+
+    @Slot(str)
+    def _on_project_loaded(self, path: str) -> None:
+        self._project_path = path
+        self._saved_change_count = self._change_count
+        if path:
+            self._add_recent_project(path)
+        self._update_title()
+
+    @Slot(str)
+    def _on_project_saved(self, path: str) -> None:
+        # changes made while the project was being saved remain unsaved
+        self._saved_change_count = self._pending_saves.pop(0)
+        self._project_path = path
+        self._add_recent_project(path)
+        self._update_title()
+        if not self._pending_saves and (then := self._after_save) is not None:
+            self._after_save = None
+            then()
+
+    @Slot()
+    def _on_save_failed(self) -> None:
+        self._pending_saves.pop(0)
+        self._after_save = None
+
+    def _close_after_save(self) -> None:
+        self._closing = True
+        # not within the close event that started the save (a save without worker thread finishes inside it)
+        QtCore.QTimer.singleShot(0, self.close)
+
+    def _maybe_save(self, then: Callable[[], None]) -> None:
+        """Runs ``then`` once unsaved changes have been saved or discarded; not at all if the user cancels."""
+        if not self.is_modified:
+            then()
+            return
+
+        answer = self._ask_save_changes()
+        if answer == QtWidgets.QMessageBox.StandardButton.Save:
+            self.save_project(then=then)
+        elif answer == QtWidgets.QMessageBox.StandardButton.Discard:
+            then()
+
+    def _ask_save_changes(self) -> QtWidgets.QMessageBox.StandardButton:
+        name = Path(self._project_path).name if self._project_path else "Untitled"
+        box = QtWidgets.QMessageBox(
+            QtWidgets.QMessageBox.Icon.Question, "Trajectopy", f'Save the changes to "{name}"?', parent=self
+        )
+        box.setInformativeText("Your changes will be lost if you don't save them.")
+        buttons = QtWidgets.QMessageBox.StandardButton
+        box.setStandardButtons(buttons.Save | buttons.Discard | buttons.Cancel)
+        box.setDefaultButton(buttons.Save)
+        box.button(buttons.Discard).setText("Don't Save")
+        return buttons(box.exec())
+
+    def _ask_open_path(self) -> str:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open Project", self._dialog_directory(), PROJECT_FILE_FILTER
+        )
+        return path
+
+    def _ask_save_path(self) -> str:
+        suggestion = self._project_path or os.path.join(self._dialog_directory(), f"Untitled{PROJECT_SUFFIX}")
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Project As", suggestion, PROJECT_FILE_FILTER)
+        if path and not path.lower().endswith(PROJECT_SUFFIX):
+            path += PROJECT_SUFFIX
+        return path
+
+    def _dialog_directory(self) -> str:
+        """Folder of the open project or of the most recent one."""
+        recent = self._recent_projects()
+        return os.path.dirname(self._project_path or (recent[0] if recent else ""))
+
+    def _recent_projects(self) -> list[str]:
+        value = self._settings.value(RECENT_PROJECTS_KEY, [])
+        # depending on the platform, QSettings returns a list with one entry as plain string
+        if isinstance(value, str):
+            return [value]
+        return [str(path) for path in value] if isinstance(value, list) else []
+
+    def _set_recent_projects(self, paths: list[str]) -> None:
+        self._settings.setValue(RECENT_PROJECTS_KEY, paths[:MAX_RECENT_PROJECTS])
+        self._update_recent_menu()
+
+    def _add_recent_project(self, path: str) -> None:
+        path = os.path.abspath(path)
+        self._set_recent_projects([path, *(other for other in self._recent_projects() if not _same_path(other, path))])
+
+    def _remove_recent_project(self, path: str) -> None:
+        self._set_recent_projects([other for other in self._recent_projects() if not _same_path(other, path)])
+
+    def _update_recent_menu(self) -> None:
+        self._recent_menu.clear()
+        recent = self._recent_projects()
+        for number, path in enumerate(recent, start=1):
+            name = os.path.basename(path).replace("&", "&&")
+            action = self._recent_menu.addAction(f"&{number} {name}" if number < 10 else name)
+            action.setToolTip(path)
+            action.setStatusTip(path)
+            action.triggered.connect(lambda _=False, path=path: self.open_project(path))
+        if recent:
+            self._recent_menu.addSeparator()
+            self._recent_menu.addAction("Clear Recent Projects").triggered.connect(
+                lambda: self._set_recent_projects([])
+            )
+        else:
+            self._recent_menu.addAction("No Recent Projects").setEnabled(False)
+
+    def _add_action(self, menu: QtWidgets.QMenu, text: str, slot: Callable[[], object], shortcut: str = "") -> QAction:
+        action = QAction(text, parent=self)
+        if shortcut:
+            action.setShortcut(QtGui.QKeySequence(shortcut))
+        action.triggered.connect(lambda: slot())  # without the checked state as argument
+        menu.addAction(action)
+        return action
 
     def center(self):
         center_window(self)
@@ -589,8 +769,6 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.statusBar().showMessage("Ready")
         self.statusBar().setSizeGripEnabled(False)
 
-        self.retranslateUi()
-
     @staticmethod
     def _group(
         title: str, widget: QtWidgets.QWidget, add_button: QtWidgets.QPushButton | None = None
@@ -605,7 +783,3 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
             buttons.addWidget(add_button)
             layout.addLayout(buttons)
         return group
-
-    def retranslateUi(self):
-        _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "Trajectopy"))

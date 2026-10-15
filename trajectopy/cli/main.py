@@ -12,7 +12,8 @@ def main():
     parser.add_argument(
         "files",
         nargs="*",
-        help="Trajectory (.traj, .bag) or result (.result) files to open (also used when opening files from Windows).",
+        help="Project (.tpy), trajectory (.traj, .bag) or result (.result) files to open "
+        "(also used when opening files from Windows).",
     )
     parser.add_argument("--version", "-v", action="store_true", help="Show the version and exit")
     parser.add_argument(

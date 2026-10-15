@@ -263,7 +263,8 @@ Start the GUI from the Start menu (Windows app) or with `trajectopy` (Python pac
    *Compare with Reference → Absolute Error (ATE), Aligned First*. The result appears in the results table.
 4. **Inspect**: select the result to see its statistics in the properties table and its deviations in the
    preview; press `V` (or *Plot*) for all plots.
-5. **Save**: *Session → Save* keeps everything for later; *Export…* (`E`) saves single trajectories or results.
+5. **Save**: *File → Save* (`Ctrl+S`) keeps everything for later in a project file; *Export…* (`E`) saves single
+   trajectories or results.
 
 ### Main Window
 
@@ -281,24 +282,31 @@ Trajectopy is busy.
 
 | Menu | Entry | Description |
 | --- | --- | --- |
-| Session | New | Removes all trajectories and results and resets the plot settings (asks first). |
-| | Load | Loads a session folder; replaces the current session. |
-| | Save | Saves all trajectories, results and settings to a folder (see below). |
+| File | New (`Ctrl+N`) | Starts a new, empty project with default plot settings. |
+| | Open… (`Ctrl+O`) | Opens a project file (`.tpy`); replaces the current project. |
+| | Open Recent | The last ten projects. |
+| | Save (`Ctrl+S`) | Saves the project to its file (asks for a file the first time). |
+| | Save As… (`Ctrl+Shift+S`) | Saves the project to a new file. |
+| | Import Session Folder… | Opens a session folder saved by earlier versions of Trajectopy as a new project. |
+| | Exit (`Ctrl+Q`) | Closes Trajectopy. |
 | Plot Settings | | Opens the [plot settings](settings.md#plot-settings), which apply to all plots opened afterwards. |
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
 | | About | Version and license information. |
 | Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes. |
 
-**Sessions** are folders. *Save* writes one `.traj` file per trajectory together with its processing settings
-(`.json`), one `.result` file per result, the order of the tables and the plot settings
-(`plot_settings.json`). *Load* restores all of it.
+**Projects** keep everything in one file (`.tpy`): all trajectories with their processing settings, the
+reference, all results, the order of the tables and the plot settings. The title bar shows the name of the
+project and a `*` while it has unsaved changes. Before these are lost (*New*, *Open*, closing Trajectopy),
+Trajectopy offers to save them. A project file can also be opened by dropping it onto one of the tables, by
+double-click on Windows (if chosen during installation) or on the command line. It is a zip archive of the
+same `.traj`, `.json` and `.result` files that *Export…* writes, so these can be extracted, too.
 
 **Updates**: the update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Python installations are updated with
 `pip install --upgrade "trajectopy[gui]"`, the Windows app with the installer of the new version.
 
-Closing Trajectopy asks for confirmation if trajectories or results would be lost.
+Closing Trajectopy offers to save unsaved changes and asks for confirmation while an operation is running.
 
 ### Processing Settings of a Trajectory
 
