@@ -269,13 +269,23 @@ class TestAteKml(unittest.TestCase):
             _export_ate(_ate_result(), field="speed")
 
 
+def _ui_manager():
+    """UI manager whose file requests are written synchronously by a file manager, as wired in the main window."""
+    from trajectopy.gui.managers.file_manager import FileManager
+    from trajectopy.gui.managers.ui_manager import UIManager
+
+    ui_manager, file_manager = UIManager(), FileManager()
+    ui_manager.file_request.connect(file_manager.handle_request)
+    ui_manager.file_manager = file_manager  # keeps it alive with the UI manager
+    return ui_manager
+
+
 class TestKmlGui(unittest.TestCase):
     def test_trajectory_export_uses_the_dialog_options(self):
         QtWidgets, settings = _gui()
         from PySide6 import QtGui
 
         from trajectopy.gui.managers.requests import UIRequest, UIRequestType
-        from trajectopy.gui.managers.ui_manager import UIManager
         from trajectopy.gui.models.entries import TrajectoryEntry
         from trajectopy.gui.models.selection import TrajectorySelection
         from trajectopy.gui.views import kml_dialog
@@ -297,7 +307,7 @@ class TestKmlGui(unittest.TestCase):
                 mock.patch.object(kml_dialog.KmlExportDialog, "exec", new=choose),
                 mock.patch("trajectopy.gui.managers.ui_manager.save_file_dialog", return_value=path),
             ):
-                UIManager().handle_request(request)
+                _ui_manager().handle_request(request)
             root = ET.parse(path).getroot()
             self.assertEqual(root.find(".//kml:LineStyle/kml:color", NS).text, "ff00ff00")
             self.assertEqual(root.find(".//gx:Track/kml:altitudeMode", NS).text, "relativeToGround")
@@ -310,14 +320,13 @@ class TestKmlGui(unittest.TestCase):
                 ),
                 mock.patch("trajectopy.gui.managers.ui_manager.save_file_dialog", return_value=path) as save,
             ):
-                UIManager().handle_request(request)
+                _ui_manager().handle_request(request)
             save.assert_not_called()
             self.assertFalse(os.path.exists(path))
 
     def test_ate_export_uses_the_chosen_field(self):
         QtWidgets, settings = _gui()
         from trajectopy.gui.managers.requests import UIRequest, UIRequestType
-        from trajectopy.gui.managers.ui_manager import UIManager
         from trajectopy.gui.models.entries import AbsoluteDeviationEntry
         from trajectopy.gui.models.selection import ResultSelection
         from trajectopy.gui.views import kml_dialog
@@ -338,7 +347,7 @@ class TestKmlGui(unittest.TestCase):
                 mock.patch.object(kml_dialog.KmlExportDialog, "exec", new=choose),
                 mock.patch("trajectopy.gui.managers.ui_manager.save_file_dialog", return_value=path),
             ):
-                UIManager().handle_request(request)
+                _ui_manager().handle_request(request)
             legend = ET.parse(path).getroot().find("kml:Document/kml:Folder/kml:name", NS)
             self.assertEqual(legend.text, "Yaw deviation [°]")
 

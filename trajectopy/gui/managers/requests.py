@@ -21,6 +21,7 @@ class FileRequestType(Enum):
     WRITE_TRAJ = auto()
     READ_RES = auto()
     WRITE_RES = auto()
+    WRITE_KML = auto()
 
 
 class PlotRequestType(Enum):
@@ -125,6 +126,7 @@ class FileRequest(DeepCopyRequest):
     trajectory_selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     result_selection: ResultSelection = field(default_factory=ResultSelection)
     id_list: list[str] = field(default_factory=list)
+    kml_options: dict[str, Any] = field(default_factory=dict)  # WRITE_KML, see trajectopy.io.kml.write_kml
 
 
 @dataclass

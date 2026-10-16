@@ -31,6 +31,7 @@ class FileManager(QObject):
     - Write trajectory files
     - Read result files
     - Write result files
+    - Write KML files (trajectory or ATE result)
 
     """
 
@@ -48,6 +49,7 @@ class FileManager(QObject):
             FileRequestType.WRITE_TRAJ: self.write_trajectory,
             FileRequestType.READ_RES: self.read_result_files,
             FileRequestType.WRITE_RES: self.write_result,
+            FileRequestType.WRITE_KML: self.write_kml,
         }
 
     @Slot(FileRequest)
@@ -113,3 +115,10 @@ class FileManager(QObject):
     def write_result(self, request: FileRequest) -> None:
         result_entry = request.result_selection.entries[0]
         result_entry.to_file(request.file_list[0])
+
+    def write_kml(self, request: FileRequest) -> None:
+        """Google Earth export of the selected ATE result, or of the selected trajectory if no result is selected."""
+        if request.result_selection.entries:
+            request.result_selection.entries[0].deviations.to_kml(request.file_list[0], **request.kml_options)
+        else:
+            request.trajectory_selection.entries[0].trajectory.to_kml(request.file_list[0], **request.kml_options)

@@ -18,7 +18,7 @@ from trajectopy.gui.managers.requests import (
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
-from trajectopy.gui.models.selection import TrajectorySelection
+from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import (
     read_file_dialog,
     save_file_dialog,
@@ -229,13 +229,15 @@ class UIManager(QObject):
             return
         if not (selected_file := save_file_dialog(self._dialog_parent(), file_filter="Google Earth (*.kml)")):
             return
-        try:
-            if ate_entry is not None:
-                ate_entry.deviations.to_kml(selected_file, **dialog.options())
-            else:
-                request.trajectory_selection.entries[0].trajectory.to_kml(selected_file, **dialog.options())
-        except ValueError as error:
-            show_msg_box(str(error), self._dialog_parent(), error=True)
+        self.file_request.emit(
+            FileRequest(
+                type=FileRequestType.WRITE_KML,
+                file_list=[selected_file],
+                trajectory_selection=request.trajectory_selection if ate_entry is None else TrajectorySelection(),
+                result_selection=ResultSelection(entries=[ate_entry]) if ate_entry is not None else ResultSelection(),
+                kml_options=dialog.options(),
+            )
+        )
 
     def _dialog_parent(self) -> QtWidgets.QWidget | None:
         parent = self.parent()
