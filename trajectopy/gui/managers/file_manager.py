@@ -14,7 +14,7 @@ from trajectopy.gui.managers.requests import (
     UIRequest,
     generic_request_handler,
 )
-from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
+from trajectopy.gui.models.entries import AbsoluteDeviationEntry, ResultEntry, TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.worker import BackgroundWorker
 from trajectopy.io.rosbag import trajectories_from_rosbag
@@ -119,6 +119,9 @@ class FileManager(QObject):
     def write_kml(self, request: FileRequest) -> None:
         """Google Earth export of the selected ATE result, or of the selected trajectory if no result is selected."""
         if request.result_selection.entries:
-            request.result_selection.entries[0].deviations.to_kml(request.file_list[0], **request.kml_options)
+            ate_entry = request.result_selection.entries[0]
+            if not isinstance(ate_entry, AbsoluteDeviationEntry):
+                raise TypeError("Only ATE results can be exported to Google Earth.")
+            ate_entry.deviations.to_kml(request.file_list[0], **request.kml_options)
         else:
             request.trajectory_selection.entries[0].trajectory.to_kml(request.file_list[0], **request.kml_options)
