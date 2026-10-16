@@ -104,7 +104,10 @@ class PreviewPlot3D(QtWidgets.QWidget):
             all_xyz.append(xyz)
             levels = np.nan_to_num(np.clip((ate - lower) / (upper - lower), 0.0, 1.0))
             colors = style.VALUE_COLORMAP.map(levels, mode=pg.ColorMap.FLOAT)
-            self._view.addItem(gl.GLScatterPlotItem(pos=xyz, color=colors, size=MARKER_SIZE, pxMode=True))
+            # opaque instead of the default additive blending, which saturates stacked points to white
+            self._view.addItem(
+                gl.GLScatterPlotItem(pos=xyz, color=colors, size=MARKER_SIZE, pxMode=True, glOptions="opaque")
+            )
 
         self._colorbar.setLevels(values=(lower, upper))
         fit_colorbar_axis(self._colorbar, lower, upper)
