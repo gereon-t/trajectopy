@@ -2,106 +2,106 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://gereon-t.github.io/trajectopy/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/file_formats/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/settings/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/user_guide/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/core/parameters/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/core/positions/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/core/rotations/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/core/settings/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/core/trajectory/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/io/kml/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/io/results_io/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/io/rosbag/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/io/trajectory_io/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/alignment/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/approximation/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/evaluation/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/interpolation/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/matching/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/merging/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/processing/sorting/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/results/alignment_result/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/results/ate_result/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/results/rpe_result/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/visualization/display/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
     <url>
          <loc>https://gereon-t.github.io/trajectopy/api/visualization/figures/</loc>
-         <lastmod>2026-10-15</lastmod>
+         <lastmod>2026-10-20</lastmod>
     </url>
 </urlset>
