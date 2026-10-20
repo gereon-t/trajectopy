@@ -15,7 +15,10 @@
 <h4>Trajectopy is a Python package with an optional graphical user interface for empirical trajectory evaluation. </h4>
 
 <p align="center">
-  <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/trajectopy_gif_low_quality.gif">
+  <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/gui_ate.png" alt="Trajectopy GUI showing the ATE of a trajectory in the 3D preview">
+  <br />
+  <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/plot_ate.png" width="49%" alt="ATE plot over time">
+  <img style="border-radius: 10px;" src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/plot_ate_map.png" width="49%" alt="ATE map plot">
 </p>
 
 </div>
