@@ -1,9 +1,14 @@
 name: Release
 
-# Pushing a version tag (e.g. v5.1.0, matching trajectopy/__version__.py) builds the Windows installer and
-# attaches it to the GitHub release of that tag (created with generated notes if it does not exist yet).
-# The update check of installed apps then finds the new version.
-# Running the workflow manually only builds the installer and keeps it as a workflow artifact.
+# Pushing a version tag (e.g. v5.1.0, matching trajectopy/__version__.py) builds the app for Windows (installer),
+# macOS (.dmg, Apple Silicon) and Linux (.tar.gz, x86-64) and attaches them to the GitHub release of that tag
+# (created with generated notes if it does not exist yet). The update check of installed apps then finds the new
+# version.
+# Running the workflow manually only builds the packages and keeps them as workflow artifacts.
+#
+# PyInstaller cannot cross-compile, so each package is built on a runner of its platform. The Linux build runs on
+# the oldest supported Ubuntu, since the app only runs on systems with the same or a newer glibc. The macOS app is
+# not signed with a Developer ID: on first start, users have to open it with right-click → Open.
 
 on:
   push:
@@ -14,8 +19,21 @@ permissions:
   contents: write
 
 jobs:
-  windows-installer:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            app: dist/Trajectopy/Trajectopy.exe
+          - os: macos-latest
+            app: dist/Trajectopy.app/Contents/MacOS/Trajectopy
+          - os: ubuntu-22.04
+            app: dist/Trajectopy/Trajectopy
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -25,7 +43,6 @@ jobs:
 
       - name: Read version
         id: version
-        shell: bash
         run: |
           version=$(uv run python -c "from trajectopy.__version__ import __version__; print(__version__)")
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -38,24 +55,54 @@ jobs:
         run: uv run pyinstaller --noconfirm trajectopy.spec
 
       - name: Check that the app starts
-        run: dist\Trajectopy\Trajectopy.exe --version
+        run: ${{ matrix.app }} --version
 
-      - name: Build the installer
+      - name: Build the Windows installer
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y }
           & $iscc "/DAppVersion=${{ steps.version.outputs.version }}" installer\trajectopy.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "PACKAGE=dist/Trajectopy-${{ steps.version.outputs.version }}-setup.exe" >> $env:GITHUB_ENV
+
+      - name: Build the macOS disk image
+        if: runner.os == 'macOS'
+        run: |
+          package="dist/Trajectopy-${{ steps.version.outputs.version }}-macos-arm64.dmg"
+          # the image shows the app next to a link to /Applications, to install it by dragging
+          mkdir dmg
+          cp -R dist/Trajectopy.app dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname Trajectopy -srcfolder dmg -format UDZO -ov "$package"
+          echo "PACKAGE=$package" >> "$GITHUB_ENV"
+
+      - name: Build the Linux archive
+        if: runner.os == 'Linux'
+        run: |
+          package="dist/Trajectopy-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz"
+          tar -czf "$package" -C dist Trajectopy
+          echo "PACKAGE=$package" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Trajectopy-${{ steps.version.outputs.version }}-setup
-          path: dist/Trajectopy-${{ steps.version.outputs.version }}-setup.exe
+          name: Trajectopy-${{ steps.version.outputs.version }}-${{ runner.os }}
+          path: ${{ env.PACKAGE }}
 
-      - name: Attach the installer to the release
-        if: github.ref_type == 'tag'
+  release:
+    # one job attaches all packages, so that the build jobs do not race to create the release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Attach the packages to the release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Trajectopy-${{ steps.version.outputs.version }}-setup.exe
+          files: dist/*
           generate_release_notes: true

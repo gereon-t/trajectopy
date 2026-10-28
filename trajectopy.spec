@@ -1,4 +1,11 @@
+import sys
+
 from PyInstaller.utils.hooks import collect_all, collect_submodules
+
+from trajectopy.__version__ import __version__
+
+IS_WINDOWS = sys.platform == 'win32'
+IS_MACOS = sys.platform == 'darwin'
 
 datas = []
 binaries = []
@@ -16,7 +23,7 @@ for tmp_ret in (tmp_ret_trajectopy, tmp_ret_rosbags, tmp_ret_pyqtgraph):
     hiddenimports += tmp_ret[2]
 
 a = Analysis(
-    ['trajectopy\\__main__.py'],
+    ['trajectopy/__main__.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -47,7 +54,8 @@ a.binaries = [
 pyz = PYZ(a.pure)
 
 # One-folder build (dist/Trajectopy/): starts much faster than a one-file exe, which unpacks itself on every
-# start. installer/trajectopy.iss packages the folder into a Windows installer.
+# start. installer/trajectopy.iss packages the folder into a Windows installer; on macOS, BUNDLE below wraps it
+# into dist/Trajectopy.app. Builds only run on the platform they are made for (see .github/workflows/release.yml).
 exe = EXE(
     pyz,
     a.scripts,
@@ -57,14 +65,16 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    console=True,
+    upx=IS_WINDOWS,  # UPX breaks the code signature of macOS binaries
+    # the .app is started from Finder; a console would open an extra Terminal window
+    console=not IS_MACOS,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='trajectopy\\gui\\resources\\icon-bg.ico',
+    # PyInstaller converts the .png to .icns on macOS (needs Pillow); Linux executables have no icon
+    icon='trajectopy/gui/resources/icon-bg.png' if IS_MACOS else 'trajectopy/gui/resources/icon-bg.ico',
 )
 
 coll = COLLECT(
@@ -72,7 +82,20 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=IS_WINDOWS,
     upx_exclude=[],
     name='Trajectopy',
 )
+
+if IS_MACOS:
+    app = BUNDLE(
+        coll,
+        name='Trajectopy.app',
+        icon='trajectopy/gui/resources/icon-bg.png',
+        bundle_identifier='io.github.gereon-t.trajectopy',
+        version=__version__,
+        info_plist={
+            'CFBundleShortVersionString': __version__,
+            'NSHighResolutionCapable': True,
+        },
+    )

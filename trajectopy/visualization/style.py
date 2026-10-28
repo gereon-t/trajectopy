@@ -62,6 +62,20 @@ def antialias(num_points: int) -> bool:
     return num_points <= ANTIALIAS_MAX_POINTS
 
 
+def _disable_auto_si_prefix() -> None:
+    """Makes all axes show plain values. By default, pyqtgraph scales the tick values of axes without units and
+    appends a multiplier such as "(x0.001)" to the label, which is easily overlooked."""
+    init = pg.AxisItem.__init__
+
+    def __init__(self: pg.AxisItem, *args, **kwargs) -> None:
+        init(self, *args, **kwargs)
+        self.autoSIPrefix = False
+        self.autoSIPrefixScale = 1.0
+        self.labelUnitPrefix = ""
+
+    pg.AxisItem.__init__ = __init__
+
+
 def theme() -> Theme:
     return _current_theme
 
@@ -95,4 +109,5 @@ def brush(index_or_color: int | str, alpha: int = 255) -> QtGui.QBrush:
     return pg.mkBrush(fill)
 
 
+_disable_auto_si_prefix()
 set_theme(dark=False)
