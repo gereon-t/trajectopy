@@ -39,6 +39,13 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.13"
+      # Qt's libraries for X11 and OpenGL: pyqtgraph cannot be imported without them, so PyInstaller would miss
+      # its submodules, and the ones not part of a typical desktop installation are bundled with the app
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libfontconfig1 libdbus-1-3 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-shape0 libxcb-util1 libxcb-xkb1
       - run: uv sync --group dev --extra gui
 
       - name: Read version

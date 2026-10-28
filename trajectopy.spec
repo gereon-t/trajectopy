@@ -38,18 +38,20 @@ a = Analysis(
 )
 # Python's ssl module (update check) needs the OpenSSL DLLs shipped with this Python. PyInstaller may pick
 # same-named DLLs of another OpenSSL version from PATH instead (e.g. Git for Windows' when building in Git
-# Bash), and then ssl cannot be loaded in the app.
-import os
-import _ssl
+# Bash), and then ssl cannot be loaded in the app. Only needed on Windows; elsewhere, _ssl may be built into
+# Python and has no file.
+if IS_WINDOWS:
+    import os
+    import _ssl
 
-_python_dlls = os.path.dirname(_ssl.__file__)
-a.binaries = [
-    (name, os.path.join(_python_dlls, os.path.basename(name)), typecode)
-    if os.path.basename(name).lower().startswith(('libcrypto-', 'libssl-'))
-    and os.path.isfile(os.path.join(_python_dlls, os.path.basename(name)))
-    else (name, source, typecode)
-    for name, source, typecode in a.binaries
-]
+    _python_dlls = os.path.dirname(_ssl.__file__)
+    a.binaries = [
+        (name, os.path.join(_python_dlls, os.path.basename(name)), typecode)
+        if os.path.basename(name).lower().startswith(('libcrypto-', 'libssl-'))
+        and os.path.isfile(os.path.join(_python_dlls, os.path.basename(name)))
+        else (name, source, typecode)
+        for name, source, typecode in a.binaries
+    ]
 
 pyz = PYZ(a.pure)
 
