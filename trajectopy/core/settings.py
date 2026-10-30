@@ -904,6 +904,9 @@ class PlotSettings(Settings):
         font_size: Font size in points of axis labels and titles. Defaults to 10.
         export_format: File format for exported plots ("png", "jpg" or "svg"). Defaults to "png".
         export_width: Width in pixels of exported raster images. Defaults to 1600.
+        use_opengl: Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets.
+            Falls back to software rendering if OpenGL is not available. Exports are not affected.
+            Defaults to True.
     """
 
     ate_unit_is_mm: bool = False
@@ -918,6 +921,7 @@ class PlotSettings(Settings):
     font_size: int = 10
     export_format: str = "png"
     export_width: int = 1600
+    use_opengl: bool = True
 
     @property
     def unit_multiplier(self) -> float:

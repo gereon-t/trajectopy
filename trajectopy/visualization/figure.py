@@ -27,6 +27,11 @@ RenderFunction = Callable[[pg.GraphicsLayout], None]
 # so that fonts and line widths keep their proportions independent of the export resolution.
 EXPORT_LOGICAL_SIZE = QtCore.QSizeF(1000.0, 625.0)
 
+# Multisample antialiasing of the OpenGL viewport; without it, nothing is antialiased there.
+OPENGL_SAMPLES = 4
+
+_opengl_available: bool | None = None
+
 
 def ensure_app() -> QtWidgets.QApplication:
     """Returns the running Qt application, creating one if necessary (required before creating plots)."""
@@ -34,6 +39,30 @@ def ensure_app() -> QtWidgets.QApplication:
     if app is None:
         app = pg.mkQApp("Trajectopy")
     return app  # type: ignore[return-value]
+
+
+def opengl_available() -> bool:
+    """Whether an OpenGL context can be created (not the case e.g. in some remote sessions and VMs)."""
+    global _opengl_available
+    if _opengl_available is None:
+        context = QtGui.QOpenGLContext()
+        _opengl_available = context.create() and context.isValid()
+        if not _opengl_available:
+            logger.info("OpenGL is not available; plots are drawn in software.")
+    return _opengl_available
+
+
+def _use_opengl(graphics: pg.GraphicsLayoutWidget) -> None:
+    """Draws the plots with OpenGL. Qt's software renderer is slow for wide lines and many points, which makes
+    panning and zooming stutter. Export is not affected: it always renders into an image in software."""
+    graphics.useOpenGL(True)
+    surface_format = QtGui.QSurfaceFormat.defaultFormat()
+    surface_format.setSamples(OPENGL_SAMPLES)
+    graphics.viewport().setFormat(surface_format)  # type: ignore[union-attr]
+    # Partial updates are clipped with the stencil buffer, which leaves holes in wide lines; repainting
+    # everything is cheap on the GPU (and what Qt recommends for OpenGL viewports).
+    graphics.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
+    graphics.setCacheMode(QtWidgets.QGraphicsView.CacheModeFlag.CacheNone)
 
 
 class Figure:
@@ -62,9 +91,13 @@ class Figure:
     def has_variants(self) -> bool:
         return len(self.variants) > 1 or "" not in self.variants
 
-    def create_widget(self) -> QtWidgets.QWidget:
-        """Creates an interactive widget showing the figure (with a variant selector if needed)."""
-        return _FigureWidget(self)
+    def create_widget(self, use_opengl: bool = False) -> QtWidgets.QWidget:
+        """Creates an interactive widget showing the figure (with a variant selector if needed).
+
+        Args:
+            use_opengl: Draw with OpenGL, if available. Much faster for large data sets.
+        """
+        return _FigureWidget(self, use_opengl=use_opengl)
 
     def export(self, path: str, variant: str | None = None, width: int = 1600) -> None:
         """Exports the figure (or one of its variants) to a PNG, JPG or SVG file.
@@ -124,7 +157,7 @@ def _render_to_file(graphics: pg.GraphicsLayoutWidget, path: str, width: int) ->
 class _FigureWidget(QtWidgets.QWidget):
     """Interactive view of a figure: the plots and, if the figure has variants, a selector."""
 
-    def __init__(self, figure: Figure, parent: QtWidgets.QWidget | None = None) -> None:
+    def __init__(self, figure: Figure, parent: QtWidgets.QWidget | None = None, use_opengl: bool = False) -> None:
         super().__init__(parent)
         self.figure = figure
         layout = QtWidgets.QVBoxLayout(self)
@@ -138,6 +171,8 @@ class _FigureWidget(QtWidgets.QWidget):
         layout.addWidget(self.selector)
 
         self.graphics = pg.GraphicsLayoutWidget(self)
+        if use_opengl and opengl_available():
+            _use_opengl(self.graphics)
         layout.addWidget(self.graphics)
         self._render(self.selector.currentText())
 
@@ -163,6 +198,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         title: str = "Trajectopy",
         export_format: str = "png",
         export_width: int = 1600,
+        use_opengl: bool = True,
         parent: QtWidgets.QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -170,6 +206,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         self.figures = list(figures)
         self.export_format = export_format
         self.export_width = export_width
+        self.use_opengl = use_opengl
 
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.setDocumentMode(True)
@@ -202,7 +239,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         if index < 0 or index >= len(self.figures) or self.figure_widget(index) is not None:
             return
         container = self.tabs.widget(index)
-        container.layout().addWidget(self.figures[index].create_widget())  # type: ignore[union-attr]
+        container.layout().addWidget(self.figures[index].create_widget(self.use_opengl))  # type: ignore[union-attr]
 
     def export_current(self) -> None:
         index = self.tabs.currentIndex()
@@ -243,7 +280,9 @@ def export_figures(
     return paths
 
 
-def show(figures: Figure | Sequence[Figure], title: str = "Trajectopy", block: bool = True) -> PlotWindow:
+def show(
+    figures: Figure | Sequence[Figure], title: str = "Trajectopy", block: bool = True, use_opengl: bool = True
+) -> PlotWindow:
     """Shows figures in a plot window.
 
     Args:
@@ -251,12 +290,13 @@ def show(figures: Figure | Sequence[Figure], title: str = "Trajectopy", block: b
         title: Window title.
         block: Run the Qt event loop until the window is closed (for scripts). Use ``False`` if an
             event loop is already running, e.g. inside a Qt application.
+        use_opengl: Draw with OpenGL, if available. Much faster for large data sets.
 
     Returns:
         PlotWindow: The window.
     """
     app = ensure_app()
-    window = PlotWindow([figures] if isinstance(figures, Figure) else figures, title=title)
+    window = PlotWindow([figures] if isinstance(figures, Figure) else figures, title=title, use_opengl=use_opengl)
     window.show()
     if block:
         app.exec()

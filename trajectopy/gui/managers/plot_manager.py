@@ -64,6 +64,7 @@ class PlotManager(QObject):
             title=title,
             export_format=request.plot_settings.export_format,
             export_width=request.plot_settings.export_width,
+            use_opengl=request.plot_settings.use_opengl,
             parent=self.parent(),  # type: ignore[arg-type]
         )
         window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)  # otherwise closing only hides it

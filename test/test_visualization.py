@@ -146,6 +146,47 @@ class TestVisualization(unittest.TestCase):
         self.assertIsNotNone(window.figure_widget(1))
         window.close()
 
+    def test_plot_window_opengl_option(self):
+        from unittest import mock
+
+        from PySide6 import QtOpenGLWidgets
+
+        from trajectopy.visualization import figure as figure_module
+
+        def viewport(window: "vis.PlotWindow") -> object:
+            return window.figure_widget(0).graphics.viewport()
+
+        for available in (True, False):
+            with self.subTest(opengl_available=available):
+                with mock.patch.object(figure_module, "opengl_available", return_value=available):
+                    window = vis.PlotWindow([vis.ate_figure([self.ate_result])], use_opengl=True)
+                self.assertEqual(isinstance(viewport(window), QtOpenGLWidgets.QOpenGLWidget), available)
+                if available:
+                    self.assertEqual(viewport(window).format().samples(), figure_module.OPENGL_SAMPLES)
+                window.close()
+
+        window = vis.PlotWindow([vis.ate_figure([self.ate_result])], use_opengl=False)
+        self.assertNotIsInstance(viewport(window), QtOpenGLWidgets.QOpenGLWidget)
+        window.close()
+
+    def test_grid_is_opaque_and_behind_the_data(self):
+        from trajectopy.visualization import style
+
+        widget = vis.ate_figure([self.ate_result]).create_widget()
+        plot = next(item for item in widget.graphics.ci.items if isinstance(item, pg.PlotItem))
+        widget.graphics.resize(600, 400)
+        image = QtGui.QImage(16, 16, QtGui.QImage.Format.Format_ARGB32)  # must outlive the painter
+        painter = QtGui.QPainter(image)
+        for name in ("bottom", "left"):
+            axis = plot.getAxis(name)
+            self.assertLess(axis.zValue(), plot.getViewBox().zValue())
+            _, tick_specs, _ = axis.generateDrawSpecs(painter)
+            self.assertTrue(tick_specs)
+            self.assertTrue(all(pen.color().alpha() == 255 for pen, _, _ in tick_specs))
+        painter.end()
+        self.assertGreater(style.theme().grid_alpha, 0)
+        widget.deleteLater()
+
     def test_stacked_plots_fit_data_and_are_aligned(self):
         """Guards the x-range linking and y-axis alignment in plots.py against pyqtgraph changes."""
         figure = vis.xyz_figure([generated_trajectory], PlotSettings(use_relative_timestamps=True))

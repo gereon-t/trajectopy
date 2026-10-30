@@ -190,6 +190,7 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | `font_size` | Font size of axis labels and titles (points) | `10` |
 | `export_format` | File format of exported plots: `png`, `jpg` or `svg` | `png` |
 | `export_width` | Width of exported raster images (pixels) | `1600` |
+| `use_opengl` | Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets; falls back to software rendering if OpenGL is not available. Exports are not affected | `True` |
 
 Plot settings are saved with a GUI project (as `plot_settings.json` in the `.tpy` archive) and can be loaded at
 startup with

@@ -51,6 +51,46 @@ class _TightXViewBox(pg.ViewBox):
         return 0.0 if axis == 0 else super().suggestPadding(axis)
 
 
+def _opaque_pen(pen: QtGui.QPen, background: QtGui.QColor) -> QtGui.QPen:
+    """The pen with its color blended onto ``background`` in advance."""
+    color = pen.color()
+    alpha = color.alphaF()
+    if alpha >= 1.0:
+        return pen
+    blended = QtGui.QColor.fromRgbF(
+        *(alpha * channel + (1 - alpha) * base for channel, base in zip(color.getRgbF()[:3], background.getRgbF()[:3]))
+    )
+    opaque = QtGui.QPen(pen)
+    opaque.setColor(blended)
+    return opaque
+
+
+class _OpaqueGridMixin:
+    """Draws the grid lines in opaque colors behind the data.
+
+    pyqtgraph draws the grid semi-transparent and above the data. Blending the long lines makes Qt's raster
+    engine spend several milliseconds per plot and repaint, so panning and zooming stutter. Pre-blended
+    colors look the same on the plain background and cost almost nothing; drawn behind the view box
+    (see ``_add_plot``) they do not cover the data.
+    """
+
+    def generateDrawSpecs(self, p):
+        specs = super().generateDrawSpecs(p)  # type: ignore[misc]
+        if specs is None or self.grid is False:  # type: ignore[attr-defined]
+            return specs
+        axis_spec, tick_specs, text_specs = specs
+        background = QtGui.QColor(style.theme().background)
+        return axis_spec, [(_opaque_pen(pen, background), p1, p2) for pen, p1, p2 in tick_specs], text_specs
+
+
+class _AxisItem(_OpaqueGridMixin, pg.AxisItem):
+    pass
+
+
+class _DateAxisItem(_OpaqueGridMixin, pg.DateAxisItem):
+    pass
+
+
 def _add_plot(
     layout: pg.GraphicsLayout,
     row: int,
@@ -64,9 +104,14 @@ def _add_plot(
     legend: bool = False,
     tight_x: bool = True,
 ) -> pg.PlotItem:
-    axis_items = {"bottom": pg.DateAxisItem(orientation="bottom", utcOffset=0)} if datetime_axis else None
+    axis_items = {
+        "bottom": _DateAxisItem(orientation="bottom", utcOffset=0) if datetime_axis else _AxisItem("bottom"),
+        "left": _AxisItem("left"),
+    }
     view_box = _TightXViewBox() if tight_x else None
     plot = layout.addPlot(row=row, col=col, axisItems=axis_items, viewBox=view_box)
+    for axis in axis_items.values():
+        axis.setZValue(plot.getViewBox().zValue() - 1)  # grid behind the data, see _OpaqueGridMixin
     if title:
         plot.setTitle(title, size=f"{settings.font_size + 1}pt", color=style.theme().foreground)
     # Passing a style replaces pyqtgraph's default label style, so the color has to be given as well.
