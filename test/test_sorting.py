@@ -6,7 +6,7 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import SortingSettings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.sorting import divide_into_laps, sort_spatially
+from trajectopy.processing.sorting import _mst_sort, divide_into_laps, sort_spatially
 from trajectopy.utils.definitions import Sorting
 
 
@@ -205,6 +205,64 @@ class TestSorting(unittest.TestCase):
         # Both should have path lengths
         self.assertIsNotNone(result_small.path_lengths)
         self.assertIsNotNone(result_large.path_lengths)
+
+
+class TestMSTSort(unittest.TestCase):
+    """The order reconstruction itself (without the MLS smoothing applied before)."""
+
+    @staticmethod
+    def _shuffled_curve(num_points: int = 1000, noise: float = 0.2) -> tuple[np.ndarray, np.ndarray]:
+        rng = np.random.default_rng(42)
+        t = np.linspace(0, 200, num_points)
+        xyz = np.column_stack((t, 20 * np.sin(t / 15), 0.1 * t)) + rng.normal(0, noise, (num_points, 3))
+        perm = rng.permutation(num_points)
+        return xyz[perm], t[perm]
+
+    def _assert_permutation(self, order: list[int], num_points: int) -> None:
+        self.assertEqual(sorted(order), list(range(num_points)))
+
+    def test_recovers_order_of_noisy_curve(self):
+        xyz, t = self._shuffled_curve()
+        order = _mst_sort(xyz)
+        self._assert_permutation(order, len(xyz))
+        # no large jumps and (up to the direction) monotonic up to the noise level
+        self.assertLess(np.max(np.linalg.norm(np.diff(xyz[order], axis=0), axis=1)), 2.0)
+        steps = np.diff(t[order]) * np.sign(t[order][-1] - t[order][0])
+        self.assertGreater(np.mean(steps > -1.0), 0.97)
+
+    def test_duplicate_points_are_kept_together(self):
+        xyz, _ = self._shuffled_curve()
+        xyz = np.vstack((xyz, np.repeat(xyz[:1], 50, axis=0)))
+        order = _mst_sort(xyz)
+        self._assert_permutation(order, len(xyz))
+        self.assertLess(np.max(np.linalg.norm(np.diff(xyz[order], axis=0), axis=1)), 2.0)
+
+    def test_isolated_group_is_included(self):
+        xyz, _ = self._shuffled_curve()
+        xyz = np.vstack((xyz, xyz[:3] + [1000.0, 0.0, 0.0]))
+        order = _mst_sort(xyz)
+        self._assert_permutation(order, len(xyz))
+        # the group is visited at once, i.e. there is exactly one jump to it (and at most one back)
+        jumps = np.linalg.norm(np.diff(xyz[order], axis=0), axis=1)
+        self.assertLessEqual(np.sum(jumps > 100), 2)
+
+    def test_degenerate_inputs(self):
+        for xyz in (
+            np.zeros((0, 3)),
+            np.zeros((1, 3)),
+            np.zeros((2, 3)),
+            np.zeros((3, 3)),
+            np.ones((100, 3)),
+            np.column_stack((np.arange(20.0), np.zeros(20), np.zeros(20))),
+        ):
+            with self.subTest(shape=xyz.shape, identical=bool(np.ptp(xyz) == 0) if len(xyz) else None):
+                self._assert_permutation(_mst_sort(xyz), len(xyz))
+
+    def test_collinear_points_are_sorted(self):
+        rng = np.random.default_rng(0)
+        x = rng.permutation(50).astype(float)
+        xyz = np.column_stack((x, np.zeros(50), np.zeros(50)))
+        np.testing.assert_array_equal(np.abs(np.diff(x[_mst_sort(xyz)])), np.ones(49))
 
 
 if __name__ == "__main__":

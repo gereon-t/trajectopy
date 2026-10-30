@@ -3,6 +3,8 @@ from functools import cache
 from typing import Literal, overload
 
 import numpy as np
+from scipy.sparse import csr_array
+from scipy.sparse.csgraph import breadth_first_order, connected_components, dijkstra, minimum_spanning_tree
 from scipy.spatial import KDTree
 
 from trajectopy.core.settings import SortingSettings
@@ -13,6 +15,9 @@ from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.geometry import lengths_from_xyz
 
 logger = logging.getLogger(__name__)
+
+# Edge weight used instead of zero for (nearly) identical points, see _edge_matrix.
+_MIN_EDGE_WEIGHT = 1e-12
 
 
 def sort_spatially(
@@ -174,8 +179,7 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings | None = None) -> tuple
     """Reconstructs the spatial sorting of the given points.
 
     Smooths positions using Moving Least Squares, then
-    reconstructs the spatial order via greedy nearest-neighbor
-    traversal with a KDTree.
+    reconstructs the spatial order using a minimum spanning tree.
 
     This functionality is only useful if the positions describe a closed
     loop without intersections.
@@ -204,7 +208,7 @@ def _sort_xyz(xyz: np.ndarray, settings: SortingSettings | None = None) -> tuple
 
 
 def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
-    idx_sort = _greedy_nn_sort(xyz=xyz_unsorted)
+    idx_sort = _mst_sort(xyz=xyz_unsorted)
 
     # Set start position of lap as the position with the maximum z-value
     idx_sort = _begin_with(idx=idx_sort, begin=int(np.argmax(xyz_unsorted[:, 2])))
@@ -218,56 +222,105 @@ def _create_sorting_index(xyz_unsorted: np.ndarray) -> list[int]:
     return idx_sort
 
 
-def _greedy_nn_sort(xyz: np.ndarray) -> list[int]:
-    """Sort points by greedy nearest-neighbor traversal using a KDTree.
+def _mst_sort(xyz: np.ndarray) -> list[int]:
+    """Reconstructs the order of points along a curve using a minimum spanning tree (MST).
 
-    Starting from an arbitrary point, repeatedly visits the nearest
-    unvisited point. This guarantees that all points are included
-    in the result.
+    The MST of densely sampled points on a curve follows the curve; noise only adds short side
+    branches. The tree is traversed depth-first, starting at one end of its longest path (diameter).
+    At every node, the shorter branches are visited first and the deepest one last, so that the
+    traversal follows the curve and only makes short detours into side branches. A plain
+    breadth-first traversal would instead interleave side branches with the curve.
 
     Args:
         xyz (np.ndarray): Input points that should be sorted.
 
     Returns:
-        list[int]: Index that establishes a spatial sorting.
+        list[int]: Index that establishes a spatial sorting. Contains every point exactly once.
     """
-    n = len(xyz)
-    if n <= 2:
-        return list(range(n))
+    num_points = len(xyz)
+    if num_points <= 2:
+        return list(range(num_points))
 
-    tree = KDTree(xyz)
+    mst = minimum_spanning_tree(_neighbor_graph(xyz))
+    mst = mst + mst.T  # symmetric, for looking up edge weights from either side
 
-    # Pre-compute nearest neighbors for each point
-    k = min(n, 64)
-    _, all_nn = tree.query(xyz, k=k)
+    # the farthest node from any node is an end of the tree's diameter
+    root = int(np.argmax(dijkstra(mst, directed=False, indices=0)))
+    bfs_order, parents = breadth_first_order(mst, root, directed=False, return_predecessors=True)
+    children = bfs_order[1:]
+    edge_lengths = np.asarray(mst[children, parents[children]]).ravel()
 
-    visited = np.zeros(n, dtype=bool)
-    order: list[int] = [0]
-    visited[0] = True
-    current = 0
+    # height of each subtree: length of the longest path from its root down to a leaf
+    heights = np.zeros(num_points)
+    for child, edge_length in zip(children[::-1], edge_lengths[::-1]):
+        heights[parents[child]] = max(heights[parents[child]], heights[child] + edge_length)
 
-    for _ in range(n - 1):
-        # Try pre-computed neighbors first
-        found = False
-        for nn_idx in all_nn[current]:
-            if not visited[nn_idx]:
-                order.append(int(nn_idx))
-                visited[nn_idx] = True
-                current = int(nn_idx)
-                found = True
-                break
+    # children of each node, deepest first
+    by_parent = children[np.lexsort((-heights[children], parents[children]))]
+    split = np.flatnonzero(np.diff(parents[by_parent])) + 1
+    children_of = {int(parents[group[0]]): group.tolist() for group in np.split(by_parent, split)}
 
-        if not found:
-            # Fallback: brute-force nearest unvisited point
-            unvisited = np.where(~visited)[0]
-            dists = np.linalg.norm(xyz[unvisited] - xyz[current], axis=1)
-            nearest = int(unvisited[np.argmin(dists)])
-            order.append(nearest)
-            visited[nearest] = True
-            current = nearest
+    # depth-first: the deepest child is pushed first and therefore visited last
+    order: list[int] = []
+    stack = [root]
+    while stack:
+        node = stack.pop()
+        order.append(node)
+        stack.extend(children_of.get(node, ()))
 
-    logger.info("Greedy nearest-neighbor sorting complete. All %i points included.", n)
+    logger.info("MST sorting complete: %i points.", num_points)
     return order
+
+
+def _neighbor_graph(xyz: np.ndarray, k_nearest: int = 10) -> csr_array:
+    """Sparse, connected graph linking each point to its nearest neighbors, weighted by distance.
+
+    Neighborhoods can miss each other, e.g. for an isolated group of points. Such separate parts are
+    connected by their shortest links (Boruvka steps), since otherwise the spanning tree, and with it
+    the sorting, would be incomplete.
+
+    Args:
+        xyz (np.ndarray): Points.
+        k_nearest (int, optional): Number of neighbors per point. Defaults to 10.
+
+    Returns:
+        csr_array: Upper triangular adjacency matrix of the undirected graph.
+    """
+    num_points = len(xyz)
+    _, neighbors = KDTree(xyz).query(xyz, k=min(k_nearest + 1, num_points))
+    edges = np.column_stack((np.repeat(np.arange(num_points), neighbors.shape[1]), neighbors.ravel()))
+    graph = _edge_matrix(xyz, edges)
+
+    num_components, labels = connected_components(graph, directed=False)
+    while num_components > 1:
+        logger.info("Connecting %i separate groups of points.", num_components)
+        bridges = [_shortest_link(xyz, labels, component) for component in range(num_components)]
+        edges = np.vstack((edges, bridges))
+        graph = _edge_matrix(xyz, edges)
+        num_components, labels = connected_components(graph, directed=False)
+    return graph
+
+
+def _shortest_link(xyz: np.ndarray, labels: np.ndarray, component: int) -> tuple[int, int]:
+    """Closest pair of points inside and outside of a component of the graph."""
+    members = np.flatnonzero(labels == component)
+    others = np.flatnonzero(labels != component)
+    distances, nearest = KDTree(xyz[others]).query(xyz[members])
+    best = int(np.argmin(distances))
+    return int(members[best]), int(others[nearest[best]])
+
+
+def _edge_matrix(xyz: np.ndarray, edges: np.ndarray) -> csr_array:
+    """Upper triangular adjacency matrix with the edge lengths as weights (each edge once, no loops)."""
+    num_points = len(xyz)
+    first, second = np.minimum(edges[:, 0], edges[:, 1]), np.maximum(edges[:, 0], edges[:, 1])
+    keys = np.unique(first.astype(np.int64) * num_points + second)
+    first, second = np.divmod(keys, num_points)
+    first, second = first[first != second], second[first != second]
+    weights = np.linalg.norm(xyz[second] - xyz[first], axis=1)
+    # scipy treats zero weights as missing edges, which would disconnect duplicate points
+    weights = np.maximum(weights, _MIN_EDGE_WEIGHT)
+    return csr_array((weights, (first, second)), shape=(num_points, num_points))
 
 
 def _begin_with(idx: list, begin: int) -> list:

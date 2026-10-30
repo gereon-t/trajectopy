@@ -164,7 +164,7 @@ meters for spatially sorted trajectories.
 Sorting involves two steps:
 
 1. Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.
-2. Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.
+2. Reconstruction of the point order from a minimum spanning tree (MST) of the smoothed points. The tree is traversed depth-first from one end of its longest path, visiting short side branches (caused by noise) before continuing along the trajectory.
 
 | Setting | Description | Default |
 | --- | --- | --- |
