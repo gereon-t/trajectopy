@@ -150,17 +150,17 @@ class TrajectoryContextMenu(SelectionMenu):
             )
         add_action(
             menu,
-            "Absolute Error (ATE), Aligned First",
-            self._manager(TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT),
-            hint="Aligns the trajectory with the reference (alignment settings), then computes the position and "
-            "orientation deviations of matching poses. Also adds the alignment to the results.",
+            "Absolute Error (ATE), Without Alignment",
+            self._manager(TrajectoryManagerRequestType.ATE_NO_ALIGNMENT),
+            hint="Computes the position and orientation deviations of matching poses without aligning first.",
             unavailable=needs_reference,
         )
         add_action(
             menu,
-            "Absolute Error (ATE), as Is",
-            self._manager(TrajectoryManagerRequestType.ATE_NO_ALIGNMENT),
-            hint="Computes the position and orientation deviations of matching poses without aligning first.",
+            "Absolute Error (ATE), With Alignment",
+            self._manager(TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT),
+            hint="Aligns the trajectory with the reference (alignment settings), then computes the position and "
+            "orientation deviations of matching poses. Also adds the alignment to the results.",
             unavailable=needs_reference,
         )
         add_action(
