@@ -60,6 +60,9 @@ jobs:
 
       - name: Build the app
         run: uv run pyinstaller --noconfirm trajectopy.spec
+        env:
+          # PyInstaller imports the packages to analyse them; Qt must not need a display for that (Linux CI)
+          QT_QPA_PLATFORM: offscreen
 
       - name: Check that the app starts
         run: ${{ matrix.app }} --version

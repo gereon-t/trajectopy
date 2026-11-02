@@ -66,6 +66,26 @@ class TestAlignment(unittest.TestCase):
             with self.subTest(similarity=similarity, time_shift=time_shift, lever=lever):
                 self._alignment_test(similarity_enabled=similarity, time_shift_enabled=time_shift, lever_enabled=lever)
 
+    def test_convergence_thresholds_belong_to_estimated_parameters(self):
+        """The time shift update is compared with the time threshold, also if parameters before it are fixed."""
+        transformed, _ = transform_randomly(
+            open_loop_trajectory, similarity_enabled=False, time_shift_enabled=True, lever_enabled=False
+        )
+        settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings.from_components(time_shift=True),
+            time_threshold=1e3,  # any update is small enough
+        )
+        prior = AlignmentParameters()  # starts at zero, so that the first update is large
+        with self.assertLogs("trajectopy.processing.lib.alignment.estimation", level="INFO") as logs:
+            estimate_alignment(
+                trajectory=open_loop_trajectory.copy(),
+                other=transformed,
+                alignment_settings=settings,
+                matching_settings=MatchingSettings(),
+                initial_parameters=prior,
+            )
+        self.assertIn("Adjustment did converge after 1 iterations", "\n".join(logs.output))
+
     def test_alignment_with_prior(self):
         """A prior is used as start value; non-estimated parameters stay fixed at the prior."""
         transformed, groundtruth = transform_randomly(

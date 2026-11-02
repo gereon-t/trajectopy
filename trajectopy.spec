@@ -14,8 +14,13 @@ hiddenimports = []
 
 tmp_ret_trajectopy = collect_all('trajectopy')
 tmp_ret_rosbags = collect_all('rosbags')
-# pyqtgraph ships its colormaps as data files and imports its OpenGL items dynamically
-tmp_ret_pyqtgraph = collect_all('pyqtgraph')
+# pyqtgraph ships its colormaps as data files and imports its OpenGL items dynamically. Its examples are left
+# out: importing them opens Qt windows, which aborts the build on a machine without a display (Linux CI).
+tmp_ret_pyqtgraph = collect_all(
+    'pyqtgraph',
+    filter_submodules=lambda name: not name.startswith(('pyqtgraph.examples', 'pyqtgraph.jupyter')),
+    exclude_datas=['examples/**'],
+)
 
 for tmp_ret in (tmp_ret_trajectopy, tmp_ret_rosbags, tmp_ret_pyqtgraph):
     datas += tmp_ret[0]

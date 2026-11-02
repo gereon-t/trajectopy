@@ -65,6 +65,16 @@ def _use_opengl(graphics: pg.GraphicsLayoutWidget) -> None:
     graphics.setCacheMode(QtWidgets.QGraphicsView.CacheModeFlag.CacheNone)
 
 
+def _antialias_all(graphics: pg.GraphicsLayoutWidget) -> None:
+    """Antialiases all curves and symbols. Plots switch antialiasing off for large data sets, which only Qt's
+    software renderer needs (see ``style.antialias``). With OpenGL, multisampling is only active for items drawn
+    with antialiasing, and it costs next to nothing."""
+    for item in graphics.scene().items():
+        if isinstance(item, (pg.PlotDataItem, pg.PlotCurveItem, pg.ScatterPlotItem)):
+            item.opts["antialias"] = True  # PlotDataItem passes its options on to its curve and symbols
+            item.update()
+
+
 class Figure:
     """A titled page of plots.
 
@@ -171,7 +181,8 @@ class _FigureWidget(QtWidgets.QWidget):
         layout.addWidget(self.selector)
 
         self.graphics = pg.GraphicsLayoutWidget(self)
-        if use_opengl and opengl_available():
+        self.uses_opengl = use_opengl and opengl_available()
+        if self.uses_opengl:
             _use_opengl(self.graphics)
         layout.addWidget(self.graphics)
         self._render(self.selector.currentText())
@@ -183,6 +194,8 @@ class _FigureWidget(QtWidgets.QWidget):
     def _render(self, variant: str) -> None:
         self.graphics.clear()
         self.figure.variants[variant](self.graphics.ci)
+        if self.uses_opengl:
+            _antialias_all(self.graphics)
 
 
 def _safe_filename(name: str) -> str:

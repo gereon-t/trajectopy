@@ -290,7 +290,7 @@ def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> Qt
 
     if isinstance(value, int):
         spin_box = QtWidgets.QSpinBox(parent_widget)
-        spin_box.setMaximum(10000)
+        spin_box.setMaximum(100000)
         spin_box.setValue(value)
         return spin_box
 

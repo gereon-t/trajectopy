@@ -161,8 +161,15 @@ class TestVisualization(unittest.TestCase):
                 with mock.patch.object(figure_module, "opengl_available", return_value=available):
                     window = vis.PlotWindow([vis.ate_figure([self.ate_result])], use_opengl=True)
                 self.assertEqual(isinstance(viewport(window), QtOpenGLWidgets.QOpenGLWidget), available)
+                curves = [
+                    item
+                    for item in window.figure_widget(0).graphics.scene().items()
+                    if isinstance(item, pg.PlotCurveItem)
+                ]
+                self.assertTrue(curves)
                 if available:
                     self.assertEqual(viewport(window).format().samples(), figure_module.OPENGL_SAMPLES)
+                    self.assertTrue(all(curve.opts["antialias"] for curve in curves))
                 window.close()
 
         window = vis.PlotWindow([vis.ate_figure([self.ate_result])], use_opengl=False)

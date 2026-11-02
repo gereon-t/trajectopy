@@ -224,7 +224,10 @@ class AlignmentEstimator:
         # obs = [x_from, y_from, z_from, x_to, y_to, z_to, roll_body, pitch_body, yaw_body]
 
         # preparation for iterative adjustment
-        delta_params = np.ones((len(self._est_params),)) * np.inf
+        parameter_filter = self.settings.estimation_settings.lq_parameter_filter
+        # the updates only contain the estimated parameters, so only their thresholds apply
+        thresholds = self.data.thresholds[parameter_filter]
+        delta_params = np.full(len(thresholds), np.inf)
         self.data.res_vector = np.zeros_like(self.data.obs_vector)
 
         contradiction_w = self._eval_functional_relationship()
@@ -232,7 +235,7 @@ class AlignmentEstimator:
         it_counter = 0
         max_iterations = 15
         self._converged = True
-        while any(abs(value) > threshold for value, threshold in zip(delta_params, self.data.thresholds)):
+        while np.any(np.abs(delta_params) > thresholds):
             if it_counter > max_iterations:
                 logger.error(
                     "Adjustment did not converge after %i iterations. Maximum parameter update: %.3e",
@@ -245,7 +248,7 @@ class AlignmentEstimator:
             a_design = self._get_design_matrix()
 
             # filter design matrix
-            a_design = a_design[:, self.settings.estimation_settings.lq_parameter_filter]
+            a_design = a_design[:, parameter_filter]
             b_cond = self._get_condition_matrix()
 
             bbt = b_cond @ self.data.sigma_ll @ b_cond.T

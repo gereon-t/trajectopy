@@ -58,6 +58,7 @@ def antialias(num_points: int) -> bool:
     """Whether a curve with ``num_points`` points should be drawn antialiased.
 
     Antialiasing looks better but makes Qt's raster engine orders of magnitude slower for long curves.
+    OpenGL plot windows antialias all curves regardless, since multisampling costs next to nothing there.
     """
     return num_points <= ANTIALIAS_MAX_POINTS
 
