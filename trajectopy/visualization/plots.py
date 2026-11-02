@@ -57,8 +57,14 @@ def _opaque_pen(pen: QtGui.QPen, background: QtGui.QColor) -> QtGui.QPen:
     alpha = color.alphaF()
     if alpha >= 1.0:
         return pen
+
+    def mix(channel: float, base: float) -> float:
+        return alpha * channel + (1 - alpha) * base
+
     blended = QtGui.QColor.fromRgbF(
-        *(alpha * channel + (1 - alpha) * base for channel, base in zip(color.getRgbF()[:3], background.getRgbF()[:3]))
+        mix(color.redF(), background.redF()),
+        mix(color.greenF(), background.greenF()),
+        mix(color.blueF(), background.blueF()),
     )
     opaque = QtGui.QPen(pen)
     opaque.setColor(blended)
@@ -133,6 +139,24 @@ def _add_plot(
 
 def _line(plot: pg.PlotItem, x: np.ndarray, y: np.ndarray, index: int, name: str | None, settings: PlotSettings):
     return plot.plot(x, y, pen=style.pen(index, settings.line_width), name=name, antialias=style.antialias(len(x)))
+
+
+def _link_visibility(plots: Sequence[pg.PlotItem]) -> None:
+    """Shows and hides the curves of the other plots along with the same-named curves of the first plot, whose
+    legend toggles them. The other plots need not have a legend: curves are added to a legend only if there is one.
+    """
+    followers: dict[str, list[pg.PlotDataItem]] = {}
+    for plot in plots[1:]:
+        for item in plot.listDataItems():
+            if item.name() is not None:
+                followers.setdefault(item.name(), []).append(item)
+    for item in plots[0].listDataItems():
+        for follower in followers.get(item.name(), []) if item.name() is not None else []:
+            _follow_visibility(follower, item)
+
+
+def _follow_visibility(follower: pg.GraphicsObject, leader: pg.GraphicsObject) -> None:
+    leader.visibleChanged.connect(lambda: follower.setVisible(leader.isVisible()))
 
 
 def _link_x(plots: Sequence[pg.PlotItem]) -> None:
@@ -373,6 +397,7 @@ def xyz_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
                 _line(plot, axis.values(trajectory), trajectory.xyz[:, dim], index, trajectory.name, settings)
             plots.append(plot)
         _link_x(plots)
+        _link_visibility(plots)
 
     return Figure("XYZ", render)
 
@@ -403,6 +428,7 @@ def rpy_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
                     _line(plot, axis.values(trajectory), rpy[id(trajectory)][:, dim], index, trajectory.name, settings)
             plots.append(plot)
         _link_x(plots)
+        _link_visibility(plots)
 
     return Figure("RPY", render)
 
@@ -473,8 +499,9 @@ def ate_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None =
             x = axis.values(result.trajectory)
             _line(position_plot, x, result.pos_dev_comb * settings.unit_multiplier, index, result.name, settings)
             if with_rotation and result.has_orientation:
-                _line(plots[1], x, np.rad2deg(result.rot_dev_comb), index, None, settings)
+                _line(plots[1], x, np.rad2deg(result.rot_dev_comb), index, result.name, settings)
         _link_x(plots)
+        _link_visibility(plots)
 
     return Figure("ATE", render)
 
@@ -683,10 +710,11 @@ def rpe_figures(rpe_results: Sequence[RPEResult], settings: PlotSettings | None 
                     (position_plot, np.asarray(result.pos_dev_mean), np.asarray(result.pos_std), result.name)
                 ]
                 if with_rotation and result.has_rot_dev:
-                    series.append((plots[1], np.rad2deg(result.rot_dev_mean), np.rad2deg(result.rot_std), None))
+                    series.append((plots[1], np.rad2deg(result.rot_dev_mean), np.rad2deg(result.rot_std), result.name))
                 for plot, mean, std, name in series:
-                    plot.addItem(pg.ErrorBarItem(x=x, y=mean, height=2 * std, beam=0, pen=style.pen(index, 1.0)))
-                    plot.plot(
+                    error_bars = pg.ErrorBarItem(x=x, y=mean, height=2 * std, beam=0, pen=style.pen(index, 1.0))
+                    plot.addItem(error_bars)
+                    curve = plot.plot(
                         x,
                         mean,
                         pen=style.pen(index, settings.line_width),
@@ -697,9 +725,11 @@ def rpe_figures(rpe_results: Sequence[RPEResult], settings: PlotSettings | None 
                         name=name,
                         antialias=True,
                     )
+                    _follow_visibility(error_bars, curve)
             for plot in plots:
                 plot.setClipToView(False)
             _link_x(plots)
+            _link_visibility(plots)
 
         figures.append(Figure(title, render))
     return figures

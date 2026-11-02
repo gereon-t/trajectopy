@@ -176,6 +176,29 @@ class TestVisualization(unittest.TestCase):
         self.assertNotIsInstance(viewport(window), QtOpenGLWidgets.QOpenGLWidget)
         window.close()
 
+    def test_legend_toggles_series_in_all_subplots(self):
+        figures = [
+            vis.xyz_figure([generated_trajectory, noisy_trajectory]),
+            vis.rpy_figure([generated_trajectory, noisy_trajectory]),
+            vis.ate_figure([self.ate_result]),
+            *vis.rpe_figures([self.rpe_result]),
+        ]
+        for figure in figures:
+            with self.subTest(figure=figure.title):
+                widget = figure.create_widget()
+                plots = [item for item in widget.graphics.ci.items if isinstance(item, pg.PlotItem)]
+                self.assertGreater(len(plots), 1)
+                sample, _ = plots[0].legend.items[0]
+                sample.item.setVisible(False)  # what a click on the legend sample does
+                hidden = [item for plot in plots for item in plot.items if not item.isVisible()]
+                curves = [item for item in hidden if isinstance(item, pg.PlotDataItem)]
+                self.assertEqual([curve.name() for curve in curves], [sample.item.name()] * len(plots))
+                error_bars = [item for plot in plots for item in plot.items if isinstance(item, pg.ErrorBarItem)]
+                self.assertEqual(
+                    sum(isinstance(item, pg.ErrorBarItem) for item in hidden), len(error_bars) and len(plots)
+                )
+                widget.deleteLater()
+
     def test_grid_is_opaque_and_behind_the_data(self):
         from trajectopy.visualization import style
 

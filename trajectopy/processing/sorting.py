@@ -320,6 +320,8 @@ def _edge_matrix(xyz: np.ndarray, edges: np.ndarray) -> csr_array:
     weights = np.linalg.norm(xyz[second] - xyz[first], axis=1)
     # scipy treats zero weights as missing edges, which would disconnect duplicate points
     weights = np.maximum(weights, _MIN_EDGE_WEIGHT)
+    # scipy < 1.16 keeps 64-bit indices, which its csgraph routines (minimum_spanning_tree) do not accept
+    first, second = first.astype(np.int32), second.astype(np.int32)
     return csr_array((weights, (first, second)), shape=(num_points, num_points))
 
 

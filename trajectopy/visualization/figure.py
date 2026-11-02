@@ -58,7 +58,7 @@ def _use_opengl(graphics: pg.GraphicsLayoutWidget) -> None:
     graphics.useOpenGL(True)
     surface_format = QtGui.QSurfaceFormat.defaultFormat()
     surface_format.setSamples(OPENGL_SAMPLES)
-    graphics.viewport().setFormat(surface_format)  # type: ignore[union-attr]
+    graphics.viewport().setFormat(surface_format)
     # Partial updates are clipped with the stencil buffer, which leaves holes in wide lines; repainting
     # everything is cheap on the GPU (and what Qt recommends for OpenGL viewports).
     graphics.setViewportUpdateMode(QtWidgets.QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
