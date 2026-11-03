@@ -521,6 +521,9 @@ class AlignmentStochastics(Settings):
         std_speed: Standard deviation of platform speed in meters per second. Defaults to 1.0.
         error_probability: Probability of error for stochastic testing. Defaults to 0.05.
         variance_estimation: Enable a-posteriori variance factor estimation. Defaults to False.
+        robust_estimation: Down-weight epochs with large residuals (iteratively reweighted least squares with
+            Huber weights), so that outliers, e.g. from wrong matches or GNSS multipath, hardly affect the
+            estimated parameters. Defaults to True.
     """
 
     std_xy_from: float = 1.0
@@ -532,6 +535,7 @@ class AlignmentStochastics(Settings):
     std_speed: float = 1.0
     error_probability: float = 0.05
     variance_estimation: bool = False
+    robust_estimation: bool = True
 
     @property
     def var_xy_from(self) -> float:

@@ -16,6 +16,7 @@ from trajectopy.gui.managers.requests import (
     TrajectoryModelRequest,
     TrajectoryModelRequestType,
     UIRequest,
+    UIRequestType,
     generic_request_handler,
 )
 from trajectopy.gui.models.entries import (
@@ -287,6 +288,17 @@ class TrajectoryManager(QObject):
                         self.emit_add_trajectory_signal(entry)
                 elif isinstance(entry, ResultEntry):
                     self.emit_add_result_signal(entry)
+
+                if isinstance(entry, AlignmentEntry) and not entry.alignment_result.converged:
+                    self.ui_request.emit(
+                        UIRequest(
+                            type=UIRequestType.MESSAGE,
+                            message=f"The alignment of '{selected_entry.name}' did not converge. The initial "
+                            "parameters were used instead; check the alignment settings and the overlap of the "
+                            "trajectories.",
+                            error=True,
+                        )
+                    )
 
     def operation_merge_trajectories(self, request: TrajectoryManagerRequest) -> None:
         """

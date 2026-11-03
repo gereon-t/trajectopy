@@ -273,12 +273,16 @@ def direct_timeshift(
 
 
 def align_rotations(rot_from: Rotations, rot_to: Rotations) -> SensorRotationParameters:
-    """Aligns the rotations of two trajectories"""
+    """Estimates the constant sensor (mounting) rotation between two sets of orientations.
+
+    The sensor rotation is defined in the body frame, i.e. ``rot_to = rot_from * sensor_rotation``.
+    It is estimated as the mean of the per-epoch body-frame differences ``rot_from^-1 * rot_to``.
+    """
 
     if rot_to is None or rot_from is None:
         return SensorRotationParameters(enabled=False)
 
-    rot_difference = (rot_to - rot_from).mean()
+    rot_difference = (rot_from.inv() * rot_to).mean()
     rpy_diff = rot_difference.as_euler(seq="xyz")
     return SensorRotationParameters(
         sensor_rot_x=Parameter(name="Rotation x", value=rpy_diff[0], enabled=True, unit=Unit.RADIAN),

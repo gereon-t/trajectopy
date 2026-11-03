@@ -8,6 +8,7 @@ from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     AlignmentEstimationSettings,
+    AlignmentPreprocessing,
     AlignmentSettings,
     AlignmentStochastics,
     MatchingSettings,
@@ -17,6 +18,7 @@ from trajectopy.processing.alignment import (
     estimate_alignment,
     manual_alignment,
 )
+from trajectopy.processing.lib.alignment.data import AlignmentData
 from trajectopy.processing.lib.alignment.direct import align_rotations
 
 
@@ -141,14 +143,14 @@ class TestAlignment(unittest.TestCase):
             angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
             degrees=True,
         )
-        trajectory_rotated.rotations = random_rot * trajectory_rotated.rotations
+        trajectory_rotated.rotations = trajectory_rotated.rotations * random_rot
 
         sensor_alignment = align_rotations(trajectory_rotated.rotations, trajectory.rotations)
 
         trajectory_rotated_back = trajectory_rotated.copy()
 
-        # apply as in Trajectory.apply_alignment()
-        trajectory_rotated_back.rotations = sensor_alignment.rotation_set * trajectory_rotated_back.rotations
+        # apply as in apply_alignment()
+        trajectory_rotated_back.rotations = trajectory_rotated_back.rotations * sensor_alignment.rotation_set
         alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rotations, trajectory.rotations)
 
         np.testing.assert_allclose(
@@ -159,23 +161,80 @@ class TestAlignment(unittest.TestCase):
         )
 
     def test_rotation_alignment(self):
-        """Test alignment of rotation sets and verification of transformation accuracy."""
+        """The sensor rotation is a constant rotation in the body frame, also with changing orientations."""
         rotations_1 = Rotations.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
-        rotations_2 = (
-            Rotations.from_euler(
-                seq="xyz",
-                angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
-                degrees=True,
-            )
-            * rotations_1
+        sensor_rotation = Rotations.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
+        rotations_2 = rotations_1 * sensor_rotation
+
+        sensor_rot_params = align_rotations(rot_from=rotations_1, rot_to=rotations_2)
+
+        np.testing.assert_allclose(np.rad2deg(sensor_rot_params.rotation), [2.0, -3.0, 5.0], atol=1e-8)
+        rotations_1_to_2 = rotations_1 * sensor_rot_params.rotation_set
+        np.testing.assert_allclose((rotations_2 - rotations_1_to_2).rotangle, 0, atol=1e-8)
+
+    def test_sensor_rotation_with_similarity_transformation(self):
+        """A mounting rotation is recovered after the similarity transformation and removed when applied."""
+        transformed, _ = transform_randomly(
+            open_loop_trajectory, similarity_enabled=True, time_shift_enabled=False, lever_enabled=False
         )
+        sensor_rotation = Rotations.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
+        transformed.rotations = transformed.rotations * sensor_rotation
 
-        sensor_rot_params = align_rotations(rot_from=rotations_2, rot_to=rotations_1)
+        settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings.from_components(similarity=True, sensor_rotation=True)
+        )
+        result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings, MatchingSettings())
+        np.testing.assert_allclose(np.rad2deg(result.rotation_parameters.rotation), [2.0, -3.0, 5.0], atol=1e-3)
 
-        rotations_2_to_1 = sensor_rot_params.rotation_set * rotations_2
-        rpy_trafo_diff = (rotations_2_to_1 - rotations_1).as_euler(seq="xyz", degrees=True)
+        aligned = apply_alignment(open_loop_trajectory, result, inplace=False)
+        np.testing.assert_allclose((transformed.rotations - aligned.rotations).rotangle, 0, atol=1e-5)
 
-        np.testing.assert_allclose(rpy_trafo_diff, np.zeros_like(rpy_trafo_diff), atol=1e-8, rtol=1e-8)
+    def test_robust_estimation_against_outliers(self):
+        """Outliers are down-weighted, so that they hardly affect the estimated parameters."""
+        transformed, groundtruth = transform_randomly(
+            open_loop_trajectory, similarity_enabled=True, time_shift_enabled=False, lever_enabled=False
+        )
+        rng = np.random.default_rng(1)
+        transformed.positions.xyz += rng.normal(0, 0.02, transformed.positions.xyz.shape)
+        outliers = rng.choice(len(transformed), len(transformed) // 50, replace=False)
+        transformed.positions.xyz[outliers] += rng.normal(0, 3.0, (len(outliers), 3))
+
+        errors = {}
+        for robust in (False, True):
+            settings = AlignmentSettings(
+                estimation_settings=AlignmentEstimationSettings.from_components(similarity=True),
+                stochastics=AlignmentStochastics(robust_estimation=robust),
+                preprocessing=AlignmentPreprocessing(max_samples=0),
+            )
+            result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings, MatchingSettings())
+            self.assertTrue(result.converged)
+            errors[robust] = np.max(
+                np.abs(result.position_parameters.helmert.translation - groundtruth.helmert.translation)
+            )
+        self.assertLess(errors[True], 0.005)
+        self.assertLess(errors[True], errors[False] / 5)
+
+    def test_time_window_relative_to_first_common_timestamp(self):
+        """time_start/time_end refer to the first common timestamp, not to the start of the aligned trajectory."""
+        reference = open_loop_trajectory.copy()
+        first_common = reference.timestamps[0] + 50.0
+        reference.mask(reference.timestamps >= first_common)
+        settings = AlignmentSettings(preprocessing=AlignmentPreprocessing(time_start=10.0, time_end=20.0))
+
+        data = AlignmentData(open_loop_trajectory.copy(), reference, settings, MatchingSettings())
+
+        self.assertGreaterEqual(data.tstamps.min(), first_common + 10.0)
+        self.assertLessEqual(data.tstamps.max(), first_common + 20.0)
+
+    def test_nothing_to_estimate_counts_as_converged(self):
+        """Without least squares parameters (e.g. only the sensor rotation), the result is not flagged."""
+        settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings.from_components(similarity=False, sensor_rotation=True)
+        )
+        result = estimate_alignment(
+            open_loop_trajectory.copy(), open_loop_trajectory.copy(), settings, MatchingSettings()
+        )
+        self.assertTrue(result.converged)
 
     def _verify_alignment(
         self, target: AlignmentParameters, estimation: AlignmentParameters, lazy: bool = False

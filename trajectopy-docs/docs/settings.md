@@ -57,7 +57,7 @@ adjustment of matched poses. Its settings have four parts.
 | `scale` | Scale of the similarity transformation | `False` |
 | `time_shift` | Time shift between both trajectories | `False` |
 | `leverarm_x`, `leverarm_y`, `leverarm_z` | Leverarm between both trajectories (needs orientations) | `False` |
-| `sensor_rotation` | Constant offsets between the roll, pitch and yaw angles of both trajectories. They are computed independently of the least squares adjustment. | `False` |
+| `sensor_rotation` | Constant mounting rotation between both trajectories in the body frame (roll, pitch and yaw offsets). It is computed independently of the least squares adjustment. | `False` |
 
 #### Stochastics (`alignment.stochastics`)
 
@@ -72,6 +72,7 @@ Standard deviations of the observations, which weight them in the least squares 
 | `std_speed` | Speed (m/s) | `1.0` |
 | `error_probability` | Error probability of the statistical tests | `0.05` |
 | `variance_estimation` | Estimate the variance factor a posteriori | `False` |
+| `robust_estimation` | Down-weight epochs with large residuals (iteratively reweighted least squares with Huber weights), so that outliers hardly affect the estimated parameters | `True` |
 
 #### Convergence (`alignment`)
 

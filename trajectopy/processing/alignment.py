@@ -76,7 +76,8 @@ def estimate_alignment(
         position_parameters=estimated_parameters,
         rotation_parameters=sensor_rot_params,
         estimation_of=ghm_alignment.settings.estimation_settings,
-        converged=ghm_alignment.has_results,
+        # without least squares parameters there is nothing that could fail to converge
+        converged=ghm_alignment.has_results or alignment_settings.estimation_settings.all_lq_disabled,
     )
 
 
@@ -184,9 +185,9 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
 
     logger.info("Applied alignment parameters to positions.")
 
-    # sensor orientation
+    # sensor orientation (mounting rotation in the body frame)
     if trajectory.rotations is not None:
-        trajectory.rotations = alignment_result.rotation_parameters.rotation_set * trajectory.rotations
+        trajectory.rotations = trajectory.rotations * alignment_result.rotation_parameters.rotation_set
         logger.info("Applied alignment parameters to orientations.")
 
     if not has_orientations:

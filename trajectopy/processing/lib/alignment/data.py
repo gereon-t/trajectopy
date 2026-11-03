@@ -51,25 +51,20 @@ class AlignmentData:
         by speed and resample both trajectories to
         the same sampling.
         """
+        preprocessing = self.alignment_settings.preprocessing
+        if preprocessing.time_start != 0 or preprocessing.time_end != 0:
+            # relative to the first common timestamp, before the speed filter removes a stationary start
+            first_common = max(np.min(self.traj_from.timestamps), np.min(self.traj_to.timestamps))
+            last_common = min(np.max(self.traj_from.timestamps), np.max(self.traj_to.timestamps))
+            start = first_common + preprocessing.time_start
+            end = first_common + preprocessing.time_end if preprocessing.time_end != 0 else last_common
+            # by timestamps, also for spatially sorted trajectories (crop would use the path lengths)
+            for trajectory in (self.traj_from, self.traj_to):
+                trajectory.mask((trajectory.timestamps >= start) & (trajectory.timestamps <= end))
+
         # speed filter
-        self.traj_to.mask(self.traj_to.absolute_velocity >= self.alignment_settings.preprocessing.min_speed)
-        self.traj_from.mask(self.traj_from.absolute_velocity >= self.alignment_settings.preprocessing.min_speed)
-
-        if (
-            self.alignment_settings.preprocessing.time_start != 0
-            or self.alignment_settings.preprocessing.time_end != 0
-        ):
-            if self.alignment_settings.preprocessing.time_end == 0.0:
-                self.alignment_settings.preprocessing.time_end = (
-                    self.traj_from.timestamps[-1] - self.traj_from.timestamps[0]
-                )
-
-            time_span = (
-                self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_start,
-                self.traj_from.timestamps[0] + self.alignment_settings.preprocessing.time_end,
-            )
-            self.traj_to.crop(time_span[0], time_span[1])
-            self.traj_from.crop(time_span[0], time_span[1])
+        self.traj_to.mask(self.traj_to.absolute_velocity >= preprocessing.min_speed)
+        self.traj_from.mask(self.traj_from.absolute_velocity >= preprocessing.min_speed)
 
         if len(self.traj_from) == 0 or len(self.traj_to) == 0:
             raise ValueError("At least one trajectory is empty after preprocessing!")
@@ -94,6 +89,8 @@ class AlignmentData:
         logger.debug("Observation vector created.")
         self.var_vector = self.build_var_vector()
         logger.debug("Variance vector created.")
+        # robust estimation down-weights whole epochs by dividing their variances by these weights
+        self.epoch_weights = np.ones(self.number_of_epochs)
         self.res_vector = self.build_res_vector()
         logger.debug("Residual vector created.")
 
@@ -192,7 +189,8 @@ class AlignmentData:
 
     @property
     def sigma_ll(self):
-        return spdiags(self.var_vector, 0, len(self.var_vector), len(self.var_vector))
+        variances = self.var_vector / np.repeat(self.epoch_weights, self.num_obs_per_epoch)
+        return spdiags(variances, 0, len(variances), len(variances))
 
     @property
     def tstamps(self) -> np.ndarray:

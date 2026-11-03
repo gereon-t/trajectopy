@@ -20,10 +20,13 @@ from trajectopy.processing.lib.alignment.direct import (
     direct_timeshift,
 )
 from trajectopy.processing.lib.alignment.egrad_interface import FunctionalRelationship
-from trajectopy.utils.definitions import Unit
+from trajectopy.utils.definitions import UNIT_FORMAT_RULES, Unit
 from trajectopy.utils.formatting import dict2table
 
 logger = logging.getLogger(__name__)
+
+MAX_ROBUST_ITERATIONS = 10
+NUM_LOGGED_OUTLIERS = 5  # epochs with the largest residuals in the debug log of the robust estimation
 
 
 class AlignmentEstimator:
@@ -162,7 +165,7 @@ class AlignmentEstimator:
         var_fac_tol = 1e-3
 
         while var_fac_diff > var_fac_tol and cnt < max_recomputations:
-            self._estimate_parameters()
+            self._estimate_robustly()
             self._global_test(variance_factor=self.variance_factor, redundancy=self.redundancy)
 
             if not self.data.alignment_settings.stochastics.variance_estimation:
@@ -267,6 +270,97 @@ class AlignmentEstimator:
             logger.info("Adjustment did converge after %i iterations", it_counter)
 
         self._compute_parameter_variances(a_design, bbt)
+
+    def _estimate_robustly(self) -> None:
+        """Iteratively reweighted least squares: epochs with large residuals are down-weighted until the
+        parameters do not change anymore."""
+        self._estimate_parameters()
+        if not self.settings.stochastics.robust_estimation:
+            return
+        if not self._converged:
+            logger.warning("Robust estimation skipped: the adjustment did not converge.")
+            return
+
+        k = np.sqrt(chi2.ppf(1 - self.settings.stochastics.error_probability, 3))
+        enabled_parameters = [parameter for parameter in self._est_params if parameter.enabled]
+        unweighted_values = np.array(self._est_params.values_enabled, dtype=float)
+        thresholds = self.data.thresholds[self.settings.estimation_settings.lq_parameter_filter]
+        for iteration in range(1, MAX_ROBUST_ITERATIONS + 1):
+            normalized = self._update_epoch_weights(k)
+            if normalized is None:
+                logger.debug("Robust estimation skipped: all residuals are zero.")
+                return
+            previous = np.array(self._est_params.values_enabled, dtype=float)
+            self._estimate_parameters()
+            if not self._converged:
+                logger.warning(
+                    "Robust estimation stopped: the adjustment in iteration %i did not converge.", iteration
+                )
+                return
+
+            change_ratio = np.abs(np.array(self._est_params.values_enabled, dtype=float) - previous) / thresholds
+            logger.debug(
+                "Robust iteration %i: %i epochs down-weighted, largest normalized residual %.1f (threshold %.2f), "
+                "largest parameter update %.2f x convergence threshold",
+                iteration,
+                int(np.sum(self.data.epoch_weights < 1.0)),
+                float(np.max(normalized)),
+                k,
+                float(np.max(change_ratio)),
+            )
+            if np.all(change_ratio <= 1.0):
+                break
+        else:
+            logger.warning("Robust estimation did not converge after %i iterations.", MAX_ROBUST_ITERATIONS)
+
+        weights = self.data.epoch_weights
+        logger.info(
+            "Robust estimation finished after %i iterations: %i of %i epochs (%.1f %%) down-weighted, "
+            "%i of them to less than 10 %%.",
+            iteration,
+            int(np.sum(weights < 1.0)),
+            len(weights),
+            100 * np.mean(weights < 1.0),
+            int(np.sum(weights < 0.1)),
+        )
+        largest = np.argsort(normalized)[::-1][: min(NUM_LOGGED_OUTLIERS, int(np.sum(weights < 1.0)))]
+        logger.debug(
+            "Largest normalized residuals: %s",
+            ", ".join(f"{normalized[i]:.1f} at t = {self.data.tstamps[i]:.3f} s" for i in largest),
+        )
+        logger.debug(
+            "Parameter changes by the robust weighting: %s",
+            ", ".join(
+                f"{parameter.name} {_format_change(parameter, value - unweighted)}"
+                for parameter, value, unweighted in zip(
+                    enabled_parameters, np.array(self._est_params.values_enabled, dtype=float), unweighted_values
+                )
+            ),
+        )
+
+    def _update_epoch_weights(self, k: float) -> np.ndarray | None:
+        """Huber weights from the standardized residuals of each epoch.
+
+        The sum of the squared standardized residuals of an epoch is approximately chi-square distributed
+        with 3 degrees of freedom (one condition per coordinate). Its scale is estimated robustly from the
+        median, so that the weights do not depend on the a-priori standard deviations.
+
+        Args:
+            k (float): Normalized residual above which epochs are down-weighted.
+
+        Returns:
+            np.ndarray | None: Normalized residual of each epoch, None if the residuals are all zero, so that
+                no weights can be derived.
+        """
+        standardized = self.data.res_vector**2 / self.data.var_vector
+        squared_norms = standardized.reshape(-1, self.data.num_obs_per_epoch).sum(axis=1)
+        variance_factor = np.median(squared_norms) / chi2.ppf(0.5, 3)
+        if not np.isfinite(variance_factor) or variance_factor <= 0:
+            return None
+
+        normalized = np.sqrt(squared_norms / variance_factor)
+        self.data.epoch_weights = np.minimum(1.0, k / np.maximum(normalized, np.finfo(float).tiny))
+        return normalized
 
     def _compute_parameter_variances(self, a_design: csc_matrix, bbt: csc_matrix) -> None:
         sigma_xx_inv: csc_matrix = a_design.T @ spsolve(bbt, a_design)
@@ -786,6 +880,15 @@ class AlignmentEstimator:
                 ),
             ],
         ]
+
+
+def _format_change(parameter: Parameter, change: float) -> str:
+    """Formats a (small) parameter change in the precise unit of the parameter, e.g. mm instead of m."""
+    rules = UNIT_FORMAT_RULES.get(parameter.unit, {"normal": (1, "-", 3)})
+    factor, unit, decimals = rules.get("precise", rules["normal"])
+    if "precise" not in rules:
+        decimals += 3  # e.g. degrees: small changes would otherwise round to zero
+    return f"{change * factor:+.{decimals}f} {unit}"
 
 
 def print_summary(alignment: AlignmentEstimator) -> None:

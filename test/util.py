@@ -189,7 +189,7 @@ def apply_alignment_using_velocities(
 
     # sensor orientation
     if trajectory.rotations is not None:
-        trajectory.rotations = alignment_result.rotation_parameters.rotation_set * trajectory.rotations
+        trajectory.rotations = trajectory.rotations * alignment_result.rotation_parameters.rotation_set
 
     if not has_orientations:
         trajectory.rotations = None
