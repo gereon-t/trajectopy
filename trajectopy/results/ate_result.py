@@ -7,6 +7,7 @@ import pandas as pd
 
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.numeric import rms
 
 
@@ -76,6 +77,7 @@ class ATEResult:
             "Type": self.__class__.__name__,
             "Number of deviations": str(len(self.abs_dev.pos_dev)),
             "Deviation directions derived using": "Rotations" if self.abs_dev.rotations_used else "Positions / Unkown",
+            "Sort by": self.trajectory.sorting.value,
             "Maximum position deviation [m]": f"{self.pos_dev_max:.4f}",
             "Mean position deviation [m]": f"{self.pos_ate:.4f}",
             "Median position deviation [m]": f"{self.pos_dev_median:.4f}",
@@ -146,6 +148,35 @@ class ATEResult:
             )
 
         # rotation statistics are cached and depend on the removed deviations
+        for cached in ("rot_dev_xyz", "rot_bias_xyz"):
+            self.__dict__.pop(cached, None)
+
+    @property
+    def is_spatially_sorted(self) -> bool:
+        """True if the trajectory was sorted spatially, i.e. its path lengths do not follow the chronological
+        order. Only then, ordering by path length differs from ordering by time."""
+        if self.trajectory.sorting == Sorting.PATH_LENGTH:
+            return True
+        return bool(np.any(np.diff(self.trajectory.path_lengths) < 0))
+
+    def set_sorting(self, sorting: Sorting) -> None:
+        """Orders the trajectory and its deviations by time or path length.
+
+        Args:
+            sorting (Sorting): New sorting.
+        """
+        if sorting == self.trajectory.sorting:
+            return
+
+        order = self.trajectory.sort_index(sorting)
+        self.trajectory.set_sorting(sorting)
+
+        self.abs_dev.pos_dev = self.abs_dev.pos_dev[order]
+        self.abs_dev.directed_pos_dev = self.abs_dev.directed_pos_dev[order]
+        if self.abs_dev.rot_dev is not None:
+            self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[order])
+
+        # cached per-epoch rotation deviations follow the old order
         for cached in ("rot_dev_xyz", "rot_bias_xyz"):
             self.__dict__.pop(cached, None)
 

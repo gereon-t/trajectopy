@@ -304,12 +304,27 @@ class Trajectory:
         self._sorting = sorting
         self._apply_sorting()
 
+    def sort_index(self, sorting: Sorting) -> np.ndarray:
+        """Returns the index that orders the current data by time or path length.
+
+        The sort is stable, so that data that is already in order (e.g. with equal path lengths of several laps)
+        keeps its order and data stored alongside the trajectory, such as deviations, can be reordered alike.
+
+        Args:
+            sorting (Sorting): Sorting to order by.
+
+        Returns:
+            np.ndarray: Index into the current data.
+        """
+        key = self.timestamps if sorting == Sorting.TIME else self.path_lengths
+        return np.argsort(key, kind="stable")
+
     def _apply_sorting(self) -> None:
         """Internal method to physically reorder all data according to current sorting."""
         if len(self) == 0:
             return
 
-        sort_index = np.argsort(self.timestamps) if self._sorting == Sorting.TIME else np.argsort(self.path_lengths)
+        sort_index = self.sort_index(self._sorting)
 
         # Check if already sorted
         if np.array_equal(sort_index, np.arange(len(self))):
@@ -515,17 +530,18 @@ class Trajectory:
 
         traj_self.crop(index_start=index_span[0], index_end=index_span[1])
 
-        tstamps_sorted = np.sort(index)
-        filter_mask = np.ones(len(traj_self.timestamps), dtype=bool)
+        index_sorted = np.sort(index)
+        filter_mask = np.ones(len(traj_self), dtype=bool)
 
         # find where gaps are too large
-        gaps = np.diff(tstamps_sorted) > max_gap_size
-        gap_starts = tstamps_sorted[:-1][gaps]
-        gap_ends = tstamps_sorted[1:][gaps]
+        gaps = np.diff(index_sorted) > max_gap_size
+        gap_starts = index_sorted[:-1][gaps]
+        gap_ends = index_sorted[1:][gaps]
 
+        # the index (time or path length) is in ascending order, see _apply_sorting
         for g_start, g_end in zip(gap_starts, gap_ends):
-            idx_start = np.searchsorted(traj_self.timestamps, g_start, side="right")
-            idx_end = np.searchsorted(traj_self.timestamps, g_end, side="left")
+            idx_start = np.searchsorted(traj_self.index, g_start, side="right")
+            idx_end = np.searchsorted(traj_self.index, g_end, side="left")
 
             # keep one point after gap start and one point before gap end for interpolation
             if idx_end - 1 > idx_start:

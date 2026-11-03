@@ -1,5 +1,4 @@
 import logging
-from functools import cache
 from typing import Literal, overload
 
 import numpy as np
@@ -109,16 +108,19 @@ def _mls_single(xyz: np.ndarray, voxel_size: float, k_nearest: int) -> tuple[np.
     voxelizer = Voxelizer(xyz, voxel_size=voxel_size)
     neighboring_voxels = voxelizer.k_nearest_query(xyz, k_nearest=k_nearest)
     mls_approx = np.zeros(xyz.shape, dtype=float)
+    # neighboring points often share the same voxel set; cached only for this voxelizer, i.e. this iteration
+    lines: dict[frozenset[str], Line3D | None] = {}
     for i, voxel_set in enumerate(neighboring_voxels):
-        line = _cached_line_approximator(voxelizer=voxelizer, voxel_set=voxel_set)
+        if voxel_set not in lines:
+            lines[voxel_set] = _line_approximator(voxelizer=voxelizer, voxel_set=voxel_set)
+        line = lines[voxel_set]
         mls_approx[i, :] = line.evaluate_at(xyz[i, :]) if line is not None else xyz[i, :]
 
     avg_point_movement = np.mean(np.sqrt(np.sum(np.power(xyz - mls_approx, 2), axis=1)))
     return mls_approx, avg_point_movement
 
 
-@cache
-def _cached_line_approximator(voxelizer: Voxelizer, voxel_set: frozenset[str]) -> Line3D | None:
+def _line_approximator(voxelizer: Voxelizer, voxel_set: frozenset[str]) -> Line3D | None:
     """Approximates a 3D line from a set of points and returns it as a Line3D object.
 
     If the set contains only one point, returns None.

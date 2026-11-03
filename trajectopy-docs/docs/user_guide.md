@@ -340,7 +340,8 @@ Processing adds new trajectories (e.g. *Smooth* adds a smoothed copy) and compar
 coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
 
 The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Remove* and, for ATE results,
-*Export to Google Earth (KML)…*. For alignments, *Choose Parameters to Apply…* selects which of the estimated
+*Export to Google Earth (KML)…*. ATE results of spatially sorted trajectories can also be switched between
+chronological and spatial order with *Switch Order: Time ↔ Path*, e.g. to plot the deviations over time. For alignments, *Choose Parameters to Apply…* selects which of the estimated
 parameters are used when the alignment is applied to a trajectory (*Apply Existing Alignment…*).
 
 ### Keyboard Shortcuts

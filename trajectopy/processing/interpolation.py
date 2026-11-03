@@ -88,6 +88,8 @@ def _interpolate_linear(
         if len(index_cropped) == 0:
             raise ValueError("No valid indices left after applying max_gap_size filter.")
 
+    _drop_duplicate_index_values(trajectory)
+
     if trajectory.sorting == Sorting.TIME:
         trajectory.path_lengths = np.interp(index_cropped, trajectory.timestamps, trajectory.path_lengths)
 
@@ -106,6 +108,24 @@ def _interpolate_linear(
     logger.info("Interpolated %s", trajectory.name)
 
     return trajectory
+
+
+def _drop_duplicate_index_values(trajectory: Trajectory) -> None:
+    """Keeps only the first pose of each index value, since interpolation requires a strictly increasing index.
+
+    Duplicate path lengths occur for spatially sorted trajectories, e.g. at standstills or if several laps
+    pass exactly the same positions.
+    """
+    _, first_indices = np.unique(trajectory.index, return_index=True)
+    if len(first_indices) == len(trajectory):
+        return
+    logger.info(
+        "%s: ignoring %i poses with duplicate %s for the interpolation.",
+        trajectory.name,
+        len(trajectory) - len(first_indices),
+        "timestamps" if trajectory.sorting == Sorting.TIME else "path lengths",
+    )
+    trajectory.mask(first_indices)
 
 
 def _interpolate_rotations_linear(

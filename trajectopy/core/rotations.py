@@ -14,7 +14,8 @@ class Rotations(Rotation):
     """
 
     def __len__(self) -> int:
-        return self.as_quat().shape[0]
+        # scipy's len does not copy the quaternions, but raises for a single rotation (kept as before)
+        return self.as_quat().shape[0] if self.single else super().__len__()
 
     @classmethod
     def from_euler(cls, seq: str, angles: np.ndarray, degrees: bool = False) -> "Rotations":

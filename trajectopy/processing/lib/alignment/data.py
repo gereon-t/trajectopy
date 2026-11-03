@@ -157,6 +157,7 @@ class AlignmentData:
             raise ValueError("Observation vector is not divisible by the number of observations per epoch!")
 
         self._obs_vector = values
+        self._est_obs_matrix = None
 
     def __len__(self) -> int:
         return len(self._obs_vector) // self.num_obs_per_epoch
@@ -182,10 +183,24 @@ class AlignmentData:
             raise ValueError("Residual vector is not divisible by the number of observations per epoch!")
 
         self._res_vector = values
+        self._est_obs_matrix = None
 
     @property
     def est_obs_vector(self) -> np.ndarray:
         return self._obs_vector + self._res_vector
+
+    @property
+    def est_obs_matrix(self) -> np.ndarray:
+        """Estimated observations with one row per epoch, cached until the observations or residuals change."""
+        if self._est_obs_matrix is None:
+            self._est_obs_matrix = self.est_obs_vector.reshape(-1, self.num_obs_per_epoch)
+        return self._est_obs_matrix
+
+    def _est_obs_columns(self, key: str) -> np.ndarray:
+        group_indices = self.observation_groups[key]
+        if group_indices[0] is None or group_indices[1] is None:
+            raise ValueError("Tried to access observation group that is not defined")
+        return self.est_obs_matrix[:, group_indices[0] : group_indices[1]]
 
     @property
     def sigma_ll(self):
@@ -409,25 +424,25 @@ class AlignmentData:
 
     @property
     def est_xyz_from(self) -> np.ndarray:
-        return np.c_[self.get_est_obs_group("XYZ_FROM")]
+        return self._est_obs_columns("XYZ_FROM")
 
     @property
     def est_xyz_to(self) -> np.ndarray:
-        return np.c_[self.get_est_obs_group("XYZ_TO")]
+        return self._est_obs_columns("XYZ_TO")
 
     @property
     def est_rpy_from(self) -> np.ndarray:
         if not self.alignment_settings.estimation_settings.leverarm_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
-        return np.c_[self.get_est_obs_group("RPY")]
+        return self._est_obs_columns("RPY")
 
     @property
     def est_speed(self) -> np.ndarray:
         if not self.alignment_settings.estimation_settings.time_shift_enabled:
             return np.zeros((self.number_of_epochs, 3))
 
-        return np.c_[self.get_est_obs_group("SPEED")]
+        return self._est_obs_columns("SPEED")
 
     @property
     def est_x_from(self) -> np.ndarray:

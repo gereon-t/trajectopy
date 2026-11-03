@@ -116,6 +116,40 @@ class TestContextMenus(unittest.TestCase):
         self.assertTrue(actions["Plot"].isEnabled())  # deviations are plotted together
         self.assertFalse(actions["Export…"].isEnabled())
         self.assertIn("single result", actions["Export…"].toolTip())
+        self.assertFalse(actions["Switch Order: Time ↔ Path"].isEnabled())  # chronological trajectory
+        self.assertIn("spatially sorted", actions["Switch Order: Time ↔ Path"].toolTip())
+
+    def test_switch_order_of_spatially_sorted_ate_result(self):
+        from trajectopy.gui.managers.requests import ResultModelRequest, ResultModelRequestType
+        from trajectopy.gui.models.entries import AbsoluteDeviationEntry
+        from trajectopy.gui.models.result_model import ResultTableModel
+        from trajectopy.gui.models.selection import ResultSelection
+        from trajectopy.gui.views.menu_helpers import iter_actions
+        from trajectopy.gui.views.result_context_menu import ResultContextMenu
+        from trajectopy.processing import evaluation
+        from trajectopy.processing.sorting import sort_spatially
+        from trajectopy.utils.definitions import Sorting
+
+        sorted_trajectory = sort_spatially(self.trajectory.trajectory, inplace=False)
+        entry = AbsoluteDeviationEntry(
+            deviations=evaluation.ate(trajectory=sorted_trajectory, other=sorted_trajectory, align=False)
+        )
+        selection = ResultSelection(entries=[entry])
+        menu = ResultContextMenu()
+        received = []
+        menu.result_model_request.connect(received.append)
+        menu.populate(selection)
+        action = {action.text(): action for action in iter_actions(menu)}["Switch Order: Time ↔ Path"]
+        self.assertTrue(action.isEnabled())
+        action.trigger()
+        self.assertEqual([request.type for request in received], [ResultModelRequestType.SWITCH_SORTING])
+
+        model = ResultTableModel()
+        model.add_entries(ResultModelRequest(type=ResultModelRequestType.ADD, selection=selection))
+        model.handle_request(received[0])
+        self.assertEqual(entry.deviations.trajectory.sorting, Sorting.TIME)
+        model.handle_request(ResultModelRequest(type=ResultModelRequestType.SWITCH_SORTING, selection=selection))
+        self.assertEqual(entry.deviations.trajectory.sorting, Sorting.PATH_LENGTH)
 
 
 if __name__ == "__main__":

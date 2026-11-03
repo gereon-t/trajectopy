@@ -1,12 +1,19 @@
+import copy
+import os
+import tempfile
 import unittest
 
 import numpy as np
 
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
-from trajectopy.core.settings import MatchingMethod, MatchingSettings
+from trajectopy.core.settings import MatchingMethod, MatchingSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.evaluation import ate
 from trajectopy.processing.matching import match_trajectories
+from trajectopy.processing.sorting import sort_spatially
+from trajectopy.results.ate_result import ATEResult
+from trajectopy.utils.definitions import Sorting
 
 
 class TestMatching(unittest.TestCase):
@@ -244,6 +251,98 @@ class TestMatching(unittest.TestCase):
 
         # Timestamps should be identical
         np.testing.assert_array_equal(test_matched.timestamps, ref_matched.timestamps)
+
+
+def _loop(noise: float, rng: np.random.Generator, name: str, laps: int = 3) -> Trajectory:
+    """Several laps of an elliptic loop (60 s per lap, 10 Hz) whose height has two equal maxima."""
+    t = np.arange(0, laps * 60, 0.1)
+    angle = 2 * np.pi * t / 60
+    xyz = np.c_[100 * np.cos(angle), 50 * np.sin(angle), 2 * np.sin(2 * angle)] + rng.normal(0, noise, (len(t), 3))
+    rotations = Rotations.from_euler("xyz", np.c_[np.zeros_like(t), np.zeros_like(t), angle + np.pi / 2])
+    return Trajectory(name=name, positions=Positions(xyz, epsg=0), rotations=rotations, timestamps=t + 1000.0)
+
+
+class TestSpatiallySortedMatching(unittest.TestCase):
+    """Two spatially sorted trajectories start their path lengths at different places and must still be matched."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        rng = np.random.default_rng(0)
+        # noise-free laps pass exactly the same positions, which leads to duplicate path lengths
+        cls.reference = sort_spatially(_loop(0.0, rng, "reference"), inplace=False)
+        cls.test = sort_spatially(_loop(0.03, rng, "test"), inplace=False)
+
+    def test_interpolation_matches_the_same_places(self):
+        matched, reference = match_trajectories(self.test, self.reference, inplace=False)
+        distances = np.linalg.norm(matched.positions.xyz - reference.positions.xyz, axis=1)
+        self.assertGreater(len(matched), 0.95 * len(self.test))
+        self.assertLess(np.median(distances), 0.1)
+
+    def test_ate_of_sorted_trajectories(self):
+        for method in (MatchingMethod.INTERPOLATION, MatchingMethod.NEAREST_SPATIAL_INTERPOLATED):
+            with self.subTest(method=method):
+                settings = ProcessingSettings()
+                settings.matching = MatchingSettings(method=method)
+                result = ate(self.test, self.reference, settings)
+                self.assertLess(np.median(result.pos_dev_comb), 0.1)
+
+
+class TestSortedATEResult(unittest.TestCase):
+    """ATE results of spatially sorted trajectories can be ordered by time or by path length."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        rng = np.random.default_rng(0)
+        reference = sort_spatially(_loop(0.0, rng, "reference"), inplace=False)
+        test = sort_spatially(_loop(0.03, rng, "test"), inplace=False)
+        cls.result = ate(test, reference)
+
+    def _by_timestamp(self, result: ATEResult) -> dict:
+        order = np.argsort(result.trajectory.timestamps)
+        return {
+            "t": result.trajectory.timestamps[order],
+            "l": result.trajectory.path_lengths[order],
+            "xyz": result.trajectory.positions.xyz[order],
+            "pos_dev": result.abs_dev.pos_dev[order],
+            "directed_pos_dev": result.abs_dev.directed_pos_dev[order],
+            "rot_dev": result.abs_dev.rot_dev.as_quat()[order],
+            "rot_dev_xyz": result.rot_dev_xyz[order],
+        }
+
+    def test_switching_keeps_deviations_with_their_epochs(self):
+        result = copy.deepcopy(self.result)
+        self.assertEqual(result.trajectory.sorting, Sorting.PATH_LENGTH)
+        self.assertTrue(result.is_spatially_sorted)
+        before = self._by_timestamp(result)  # also fills the cached rotation deviations
+
+        result.set_sorting(Sorting.TIME)
+        self.assertEqual(result.trajectory.sorting, Sorting.TIME)
+        self.assertTrue(np.all(np.diff(result.trajectory.timestamps) > 0))
+        self.assertTrue(result.is_spatially_sorted)  # can be switched back
+        for key, values in self._by_timestamp(result).items():
+            np.testing.assert_array_equal(values, before[key], err_msg=key)
+
+        # back by path length; epochs with equal path lengths (one per lap) may change places among themselves
+        result.set_sorting(Sorting.PATH_LENGTH)
+        self.assertTrue(np.all(np.diff(result.trajectory.path_lengths) >= 0))
+        for key, values in self._by_timestamp(result).items():
+            np.testing.assert_array_equal(values, before[key], err_msg=key)
+
+    def test_chronological_results_are_not_spatially_sorted(self):
+        rng = np.random.default_rng(1)
+        self.assertFalse(ate(_loop(0.03, rng, "test"), _loop(0.0, rng, "reference")).is_spatially_sorted)
+
+    def test_file_keeps_deviations_with_their_epochs(self):
+        """Reading a spatially sorted result with equal path lengths of several laps keeps the deviations with their
+        positions."""
+        self.assertLess(len(np.unique(self.result.trajectory.path_lengths)), len(self.result.trajectory))
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "sorted.result")
+            self.result.to_file(filename, mode="w")
+            loaded = ATEResult.from_file(filename)
+        # a mix-up would show as differences of centimeters, not of the file's number format
+        np.testing.assert_allclose(loaded.trajectory.positions.xyz, self.result.trajectory.positions.xyz, atol=1e-9)
+        np.testing.assert_allclose(loaded.abs_dev.pos_dev, self.result.abs_dev.pos_dev, atol=1e-9)
 
 
 if __name__ == "__main__":

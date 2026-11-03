@@ -107,6 +107,18 @@ class ResultContextMenu(SelectionMenu):
                 "Google Earth's time slider.",
                 unavailable=kml_unavailable,
             )
+            add_action(
+                self,
+                "Switch Order: Time ↔ Path",
+                lambda: self.result_model_request.emit(
+                    ResultModelRequest(type=ResultModelRequestType.SWITCH_SORTING, selection=self.get_selection())
+                ),
+                hint="Switches between chronological and spatial order of the deviations, e.g. to plot them over "
+                "the path length.",
+                unavailable=""
+                if all(entry.deviations.is_spatially_sorted for entry in entries)
+                else "Only for results of spatially sorted trajectories.",
+            )
         self.addSeparator()
         add_action(
             self,

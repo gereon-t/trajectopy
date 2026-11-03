@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import factorized, spsolve
 from scipy.stats.distributions import chi2
 
 from trajectopy.core.parameters import (
@@ -26,6 +26,20 @@ from trajectopy.utils.formatting import dict2table
 logger = logging.getLogger(__name__)
 
 MAX_ROBUST_ITERATIONS = 10
+# Parameters in the order of the columns of the design matrix (see AlignmentParameters)
+DESIGN_COLUMNS = (
+    "sim_trans_x",
+    "sim_trans_y",
+    "sim_trans_z",
+    "sim_rot_x",
+    "sim_rot_y",
+    "sim_rot_z",
+    "sim_scale",
+    "time_shift",
+    "lever_x",
+    "lever_y",
+    "lever_z",
+)
 NUM_LOGGED_OUTLIERS = 5  # epochs with the largest residuals in the debug log of the robust estimation
 
 
@@ -248,17 +262,20 @@ class AlignmentEstimator:
                 self._converged = False
                 break
 
-            a_design = self._get_design_matrix()
+            partials = self.funcrel.partials(observations=self.data, parameters=self.est_params)
+            a_design = self._get_design_matrix(partials)
 
             # filter design matrix
             a_design = a_design[:, parameter_filter]
-            b_cond = self._get_condition_matrix()
+            b_cond = self._get_condition_matrix(partials)
 
-            bbt = b_cond @ self.data.sigma_ll @ b_cond.T
+            # factorized once per iteration and used for all solves with it
+            bbt = _FactorizedMatrix(b_cond @ self.data.sigma_ll @ b_cond.T)
+            normal_matrix = a_design.T @ bbt.solve_sparse(a_design)
 
             # solve normal equations
-            delta_params = self._compute_parameter_deltas(contradiction_w, a_design, bbt)
-            correlates_k = -spsolve(bbt, a_design @ delta_params + contradiction_w)
+            delta_params = self._compute_parameter_deltas(contradiction_w, a_design, normal_matrix, bbt)
+            correlates_k = -bbt.solve(a_design @ delta_params + contradiction_w)
             self.data.res_vector = self.data.sigma_ll @ b_cond.T @ correlates_k
 
             # update
@@ -269,7 +286,7 @@ class AlignmentEstimator:
         if self._converged:
             logger.info("Adjustment did converge after %i iterations", it_counter)
 
-        self._compute_parameter_variances(a_design, bbt)
+        self._compute_parameter_variances(normal_matrix)
 
     def _estimate_robustly(self) -> None:
         """Iteratively reweighted least squares: epochs with large residuals are down-weighted until the
@@ -362,25 +379,27 @@ class AlignmentEstimator:
         self.data.epoch_weights = np.minimum(1.0, k / np.maximum(normalized, np.finfo(float).tiny))
         return normalized
 
-    def _compute_parameter_variances(self, a_design: csc_matrix, bbt: csc_matrix) -> None:
-        sigma_xx_inv: csc_matrix = a_design.T @ spsolve(bbt, a_design)
+    def _compute_parameter_variances(self, normal_matrix: csc_matrix) -> None:
+        """Sets the parameter covariances from the normal matrix of the last iteration."""
+        sigma_xx_inv = normal_matrix
         if sigma_xx_inv.size == 1:
             self._est_params.set_covariance_matrix(np.reciprocal(sigma_xx_inv[:, None]))
         else:
             self._est_params.set_covariance_matrix(np.linalg.pinv(sigma_xx_inv.toarray()))
 
     def _compute_parameter_deltas(
-        self, contradiction_w: np.ndarray, a_design: csc_matrix, bbt: csc_matrix
+        self,
+        contradiction_w: np.ndarray,
+        a_design: csc_matrix,
+        normal_matrix: csc_matrix,
+        bbt: "_FactorizedMatrix",
     ) -> np.ndarray:
         if a_design.shape[1] == 1:
-            return -(a_design.T @ spsolve(bbt, contradiction_w)) / (a_design.T @ spsolve(bbt, a_design))
+            return -(a_design.T @ bbt.solve(contradiction_w)) / normal_matrix
 
         # quasi vermittelnd
         # spsolve(-a_design.T @ spsolve(bbt, -a_design), -a_design.T @ spsolve(bbt, contradiction_w))
-        return -spsolve(
-            a_design.T @ spsolve(bbt, a_design),
-            a_design.T @ spsolve(bbt, contradiction_w),
-        )
+        return -spsolve(normal_matrix, a_design.T @ bbt.solve(contradiction_w))
 
     def _global_test(self, variance_factor: float, redundancy: int, description: str = "global") -> bool:
         tau = variance_factor * redundancy
@@ -397,171 +416,33 @@ class AlignmentEstimator:
         )
         return tau <= quantile
 
-    def _get_design_matrix(self) -> csc_matrix:
-        a_design = np.zeros((self.data.number_of_epochs * 3, 11))
-        a_design[0::3, :] = self._get_design_x()
-        a_design[1::3, :] = self._get_design_y()
-        a_design[2::3, :] = self._get_design_z()
+    def _get_design_matrix(self, partials: list[dict[str, np.ndarray]]) -> csc_matrix:
+        """Derivatives of the observation equations with respect to all 11 parameters.
+
+        Args:
+            partials (list[dict[str, np.ndarray]]): Partial derivatives of the x, y and z equations,
+                see FunctionalRelationship.partials.
+        """
+        a_design = np.zeros((self.data.number_of_epochs * 3, len(DESIGN_COLUMNS)))
+        for axis, axis_partials in enumerate(partials):
+            # the translation of an equation is the one along its own axis, the others do not occur
+            translation = f"sim_trans_{'xyz'[axis]}"
+            for column, parameter in enumerate(DESIGN_COLUMNS):
+                name = "sim_trans" if parameter == translation else parameter
+                if name in axis_partials:
+                    a_design[axis::3, column] = axis_partials[name]
         return csc_matrix(a_design)
-
-    def _get_design_z(self) -> np.ndarray:
-        return np.c_[
-            np.zeros((self.data.number_of_epochs, 1)),
-            np.zeros((self.data.number_of_epochs, 1)),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dsim_trans_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dsim_rot_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dsim_rot_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            np.zeros((self.data.number_of_epochs, 1)),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dsim_scale,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dtime_shift,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dlever_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dlever_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dz_dlever_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-        ]
-
-    def _get_design_y(self) -> np.ndarray:
-        return np.c_[
-            np.zeros((self.data.number_of_epochs, 1)),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dsim_trans_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            np.zeros((self.data.number_of_epochs, 1)),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dsim_rot_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dsim_rot_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dsim_rot_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dsim_scale,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dtime_shift,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dlever_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dlever_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dy_dlever_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-        ]
-
-    def _get_design_x(self) -> np.ndarray:
-        return np.c_[
-            self.funcrel.eval(
-                func=self.funcrel.dx_dsim_trans_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            np.zeros((self.data.number_of_epochs, 1)),
-            np.zeros((self.data.number_of_epochs, 1)),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dsim_rot_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dsim_rot_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dsim_rot_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dsim_scale,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dtime_shift,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dlever_x,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dlever_y,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-            self.funcrel.eval(
-                func=self.funcrel.dx_dlever_z,
-                parameters=self.est_params,
-                observations=self.data,
-            ),
-        ]
 
     def _eval_functional_relationship(self) -> np.ndarray:
         # accounting for the time shift not by using the velocity model but by shifting the time stamps and re-interpolating
         func_xyz = np.zeros((self.data.number_of_epochs * 3,))
-        func_xyz[::3] = self.funcrel.eval(func=self.funcrel.x, parameters=self.est_params, observations=self.data)
-        func_xyz[1::3] = self.funcrel.eval(func=self.funcrel.y, parameters=self.est_params, observations=self.data)
-        func_xyz[2::3] = self.funcrel.eval(func=self.funcrel.z, parameters=self.est_params, observations=self.data)
+        func_x, func_y, func_z = self.funcrel.eval(observations=self.data, parameters=self.est_params)
+        func_xyz[::3] = func_x
+        func_xyz[1::3] = func_y
+        func_xyz[2::3] = func_z
         return func_xyz
 
-    def _get_condition_matrix(self) -> csc_matrix:
+    def _get_condition_matrix(self, partials: list[dict[str, np.ndarray]]) -> csc_matrix:
         """Computes the condition-matrix for the Gauß-Helmert-Model
 
         The matrix contains the derivatives of the
@@ -580,12 +461,13 @@ class AlignmentEstimator:
         This matrix is sparse.
 
         Args:
-            parameters (AlignmentParameters): (current) estimated parameters
+            partials (list[dict[str, np.ndarray]]): Partial derivatives of the x, y and z equations,
+                see FunctionalRelationship.partials.
 
         Returns:
             csc_matrix: sparse condition matrix
         """
-        cond_xyz = self._get_condition_stack()
+        cond_xyz = self._get_condition_stack(partials)
 
         # row indices
         # [0,0,0,0,0,0; 1,1,1,1,1,1; 2,2,2,2,2,2; 3,3,3,3,3,3; ...]
@@ -610,276 +492,68 @@ class AlignmentEstimator:
 
         return csc_matrix((np.reshape(cond_xyz, (cond_xyz.size,)), (row_idx, col_idx)))
 
-    def _get_condition_stack(self) -> np.ndarray:
+    def _get_condition_stack(self, partials: list[dict[str, np.ndarray]]) -> np.ndarray:
         """Helper function to get the non-zero data of the condition matrix
 
-        Depending on which parameters are estimated, this function returns
-        different data.
+        For each epoch, the derivatives of the x, y and z equations with respect to the observations of the
+        epoch follow each other: source positions, target positions and, depending on which parameters are
+        estimated, platform orientations and speeds.
 
         Args:
-            parameters (AlignmentParameters): (current) estimated parameters
+            partials (list[dict[str, np.ndarray]]): Partial derivatives of the x, y and z equations,
+                see FunctionalRelationship.partials.
 
         Returns:
             np.ndarray: condition matrix data
         """
-        xyz_from_component = self._get_condition_xyz_from()
+        observations = ["x_from", "y_from", "z_from"]
+        if self.settings.estimation_settings.leverarm_enabled:
+            observations_after_target = ["euler_x", "euler_y", "euler_z"]
+        else:
+            observations_after_target = []
+        if self.settings.estimation_settings.time_shift_enabled:
+            observations_after_target += ["speed_x", "speed_y", "speed_z"]
 
-        rpy_body_component = (
-            self._get_condition_rpy_body() if self.settings.estimation_settings.leverarm_enabled else None
-        )
-
-        speed_to_component = (
-            self._get_condition_speed_to() if self.settings.estimation_settings.time_shift_enabled else None
-        )
-
-        if (
-            self.settings.estimation_settings.leverarm_enabled
-            and not self.settings.estimation_settings.time_shift_enabled
-            and rpy_body_component is not None
-        ):
-            return np.column_stack(
-                [
-                    np.c_[
-                        xyz_from_component[i],
-                        self._condition_xyz_to[i],
-                        rpy_body_component[i],
-                    ]
-                    for i in range(3)
-                ]
+        blocks = []
+        for axis, axis_partials in enumerate(partials):
+            # the derivative with respect to the own target coordinate is -1, the others do not occur
+            target = [np.zeros(self.data.number_of_epochs) for _ in range(3)]
+            target[axis] = -np.ones(self.data.number_of_epochs)
+            blocks.append(
+                np.column_stack(
+                    [axis_partials[name] for name in observations]
+                    + target
+                    + [axis_partials[name] for name in observations_after_target]
+                )
             )
+        return np.column_stack(blocks)
 
-        if (
-            self.settings.estimation_settings.time_shift_enabled
-            and not self.settings.estimation_settings.leverarm_enabled
-            and speed_to_component is not None
-        ):
-            return np.column_stack(
-                [
-                    np.c_[
-                        xyz_from_component[i],
-                        self._condition_xyz_to[i],
-                        speed_to_component[i],
-                    ]
-                    for i in range(3)
-                ]
-            )
 
-        if (
-            self.settings.estimation_settings.leverarm_enabled
-            and self.settings.estimation_settings.time_shift_enabled
-            and rpy_body_component is not None
-            and speed_to_component is not None
-        ):
-            return np.column_stack(
-                [
-                    np.c_[
-                        xyz_from_component[i],
-                        self._condition_xyz_to[i],
-                        rpy_body_component[i],
-                        speed_to_component[i],
-                    ]
-                    for i in range(3)
-                ]
-            )
+class _FactorizedMatrix:
+    """Sparse matrix with its LU factorization, so that several systems can be solved with one factorization.
 
-        return np.column_stack(
-            [
-                np.c_[
-                    xyz_from_component[i],
-                    self._condition_xyz_to[i],
-                ]
-                for i in range(3)
-            ]
-        )
+    The results are the same as those of scipy's spsolve, which factorizes the matrix for every call.
+    """
 
-    def _get_condition_rpy_body(self) -> list:
-        return [
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dx_deuler_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_deuler_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_deuler_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dy_deuler_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_deuler_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_deuler_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dz_deuler_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_deuler_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_deuler_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-        ]
+    def __init__(self, matrix: csc_matrix) -> None:
+        self._matrix = matrix
+        self._solve = factorized(matrix)
 
-    def _get_condition_xyz_from(self) -> list:
-        return [
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dx_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dy_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dz_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dx_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dy_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dz_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dx_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dy_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dz_from,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-        ]
+    def solve(self, b: np.ndarray) -> np.ndarray:
+        return self._solve(b)
 
-    @property
-    def _condition_xyz_to(self) -> list:
+    def solve_sparse(self, b: csc_matrix) -> csc_matrix:
+        """Solves for all columns of a sparse right-hand side; the solution is sparse as well (like spsolve).
+
+        Like spsolve, a single column is treated as a vector and its solution is dense.
         """
-        Helper function returning the constant xyz_to component of
-        the condition matrix
-        """
-        return [
-            np.c_[
-                -np.ones((self.data.number_of_epochs, 1)),
-                np.zeros((self.data.number_of_epochs, 1)),
-                np.zeros((self.data.number_of_epochs, 1)),
-            ],
-            np.c_[
-                np.zeros((self.data.number_of_epochs, 1)),
-                -np.ones((self.data.number_of_epochs, 1)),
-                np.zeros((self.data.number_of_epochs, 1)),
-            ],
-            np.c_[
-                np.zeros((self.data.number_of_epochs, 1)),
-                np.zeros((self.data.number_of_epochs, 1)),
-                -np.ones((self.data.number_of_epochs, 1)),
-            ],
-        ]
-
-    def _get_condition_speed_to(self) -> list:
-        return [
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dspeed_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dspeed_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dx_dspeed_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dspeed_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dspeed_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dy_dspeed_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-            np.c_[
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dspeed_x,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dspeed_y,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-                self.funcrel.eval(
-                    func=self.funcrel.dz_dspeed_z,
-                    parameters=self.est_params,
-                    observations=self.data,
-                ),
-            ],
-        ]
+        if b.shape[1] == 1:
+            return self._solve(b.toarray().ravel())
+        solutions = [self._solve(b[:, [column]].toarray().ravel()) for column in range(b.shape[1])]
+        rows = [np.flatnonzero(solution) for solution in solutions]
+        data = np.concatenate([solution[nonzero] for solution, nonzero in zip(solutions, rows)])
+        columns = np.concatenate([np.full(len(nonzero), column) for column, nonzero in enumerate(rows)])
+        return self._matrix.__class__((data, (np.concatenate(rows), columns)), shape=b.shape)
 
 
 def _format_change(parameter: Parameter, change: float) -> str:

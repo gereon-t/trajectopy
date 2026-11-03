@@ -44,6 +44,7 @@ class ResultModelRequestType(Enum):
     EDIT_ALIGNMENT = auto()
     COPY = auto()
     SORT = auto()
+    SWITCH_SORTING = auto()
 
 
 class ProjectRequestType(Enum):

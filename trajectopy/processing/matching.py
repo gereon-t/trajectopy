@@ -10,8 +10,12 @@ from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
+from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
+
+# Number of (distinct) reference positions before and after the nearest one that define the local path direction
+_TANGENT_HALF_WINDOW = 5
 
 
 def match_non_overlapping_stamps(trajectory: Trajectory, other: Trajectory, max_distance: float = 0.0) -> float:
@@ -87,6 +91,15 @@ def match_trajectories(
     trajectory = trajectory if inplace else trajectory.copy()
     other = other if inplace else other.copy()
 
+    if (
+        trajectory.sorting == Sorting.PATH_LENGTH
+        and other.sorting == Sorting.PATH_LENGTH
+        and matching_settings.method
+        in [settings.MatchingMethod.NEAREST_TEMPORAL, settings.MatchingMethod.INTERPOLATION]
+        and not np.array_equal(trajectory.index, other.index)
+    ):
+        _adopt_reference_path_lengths(trajectory=trajectory, other=other)
+
     if not trajectory.overlaps_with(other) and matching_settings.method in [
         settings.MatchingMethod.NEAREST_TEMPORAL,
         settings.MatchingMethod.INTERPOLATION,
@@ -96,7 +109,6 @@ def match_trajectories(
             trajectory=other, other=trajectory, max_distance=matching_settings.max_distance
         )
         logger.info("Rough matching index offset: %.3f", timeshift)
-        from trajectopy.utils.definitions import Sorting
 
         if trajectory.sorting == Sorting.TIME:
             trajectory.timestamps = trajectory.timestamps + timeshift
@@ -131,6 +143,38 @@ def match_trajectories(
     raise ValueError(f"Matching method {matching_settings.method} not supported!")
 
 
+def _adopt_reference_path_lengths(trajectory: Trajectory, other: Trajectory) -> None:
+    """Expresses the path lengths of ``trajectory`` in the path length frame of ``other``.
+
+    The path lengths of a spatially sorted trajectory start at an individual position and may run in the
+    opposite direction, so equal path lengths of two trajectories generally do not belong to the same place.
+    Therefore, each position is projected onto the path of the reference: its path length is the path length
+    of the nearest reference position plus the offset along the local path direction.
+
+    Args:
+        trajectory (Trajectory): Spatially sorted trajectory whose path lengths are replaced (in-place).
+        other (Trajectory): Spatially sorted reference trajectory.
+    """
+    # distinct path lengths only, so that the window defining the local path direction has a length
+    path_lengths, first_indices = np.unique(other.path_lengths, return_index=True)
+    if len(path_lengths) < 2:
+        return
+    ref_xyz = other.positions.xyz[first_indices]
+
+    xyz = trajectory.positions.xyz
+    _, nearest = KDTree(ref_xyz).query(xyz, workers=-1)
+    tangents = (
+        ref_xyz[np.minimum(nearest + _TANGENT_HALF_WINDOW, len(ref_xyz) - 1)]
+        - ref_xyz[np.maximum(nearest - _TANGENT_HALF_WINDOW, 0)]
+    )
+    norms = np.linalg.norm(tangents, axis=1)
+    offsets = np.sum((xyz - ref_xyz[nearest]) * tangents, axis=1) / np.where(norms > 0, norms, 1.0)
+
+    trajectory.path_lengths = np.clip(path_lengths[nearest] + offsets, path_lengths[0], path_lengths[-1])
+    trajectory.mask(np.argsort(trajectory.path_lengths, kind="stable"))
+    logger.info("Expressed the path lengths of %s in the path length frame of %s.", trajectory.name, other.name)
+
+
 def _match_trajectories_interpolation(
     trajectory: Trajectory, other: Trajectory, max_gap_size: float = 10.0
 ) -> tuple[Trajectory, Trajectory]:
@@ -149,6 +193,10 @@ def _match_trajectories_interpolation(
         Tuple[Trajectory, Trajectory]: Both trajectories with the same sampling. The instance
             which called this method is the first returned trajectory.
     """
+    if trajectory.sorting == other.sorting and np.array_equal(trajectory.index, other.index):
+        logger.info("Trajectories are already matched, no interpolation required.")
+        return trajectory, other
+
     trajectory.intersect(other.index, max_gap_size=max_gap_size)
 
     if trajectory.index.shape[0] == 0:
@@ -163,6 +211,9 @@ def _match_trajectories_interpolation(
             "Test trajectory has no indices after intersection! Check your matching settings, especially max_gap_size."
         )
     interpolate(trajectory, other.index)
+    # the poses now belong to the epochs of the reference: for spatially sorted trajectories, interpolated
+    # timestamps would mix laps that pass the same place
+    trajectory.timestamps = copy.deepcopy(other.timestamps)
     trajectory.path_lengths = copy.deepcopy(other.path_lengths)
 
     return trajectory, other
@@ -216,16 +267,19 @@ def _match_trajectories_spatial(
     return trajectory.mask(test_indices), other.mask(ref_indices)
 
 
-def _determine_mean_arc_length(arc_lengths: np.ndarray) -> float:
+def _determine_mean_arc_length(arc_lengths: np.ndarray, lap_length: float) -> float:
     """Determines the mean arc length from a set of arc lengths while considering the circular nature of arc lengths.
 
     Args:
         arc_lengths (np.ndarray): Array of arc lengths.
+        lap_length (float): Arc length of one lap, at which the arc lengths start over.
 
     Returns:
         float: Mean arc length.
     """
-    max_arc_length = max(arc_lengths)
+    if lap_length <= 0:
+        return float(np.mean(arc_lengths))
+    max_arc_length = lap_length
     # convert to angles
     angles = (arc_lengths / max_arc_length) * 2 * np.pi
     xy = np.c_[np.cos(angles), np.sin(angles)]
@@ -281,7 +335,9 @@ def _match_trajectories_spatial_interpolation(
     matched_test_rot = []
     matched_ref_rot = []
 
+    lap_length = float(np.max(other.path_lengths)) if len(other) else 0.0
     matched_arc_lengths = []
+    matched_indices = []
     for i, (dists, idxs) in enumerate(zip(distances, closest_indices)):
         valid_mask = ~np.isinf(dists)
         idxs = idxs[valid_mask]
@@ -302,14 +358,20 @@ def _match_trajectories_spatial_interpolation(
         matched_test_pos.append(test_pos)
         matched_ref_pos.append(line_point)
 
-        matched_arc_lengths.append(_determine_mean_arc_length(other.path_lengths[idxs]))
+        matched_arc_lengths.append(_determine_mean_arc_length(other.path_lengths[idxs], lap_length))
+        matched_indices.append(i)
 
+    # both keep the timestamps and velocities of the evaluated trajectory
+    timestamps = trajectory.timestamps[matched_indices]
+    velocities = trajectory.velocity_xyz[matched_indices]
     trajectory = Trajectory(
         name=trajectory.name,
         positions=Positions(np.array(matched_test_pos), local_transformer=trajectory.positions.local_transformer),
         rotations=Rotations.from_quat(np.array(matched_test_rot)) if trajectory.has_orientation else None,
         sorting=trajectory.sorting,
         path_lengths=np.array(matched_arc_lengths),
+        timestamps=timestamps,
+        velocity_xyz=velocities,
     )
     other = Trajectory(
         name=other.name,
@@ -317,6 +379,8 @@ def _match_trajectories_spatial_interpolation(
         rotations=Rotations.from_quat(np.array(matched_ref_rot)) if other.has_orientation else None,
         sorting=other.sorting,
         path_lengths=np.array(matched_arc_lengths),
+        timestamps=timestamps,
+        velocity_xyz=velocities,
     )
 
     return trajectory, other

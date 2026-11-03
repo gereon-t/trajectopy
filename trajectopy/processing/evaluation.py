@@ -227,8 +227,20 @@ def _compare_trajectories_relative(
     rot_dev: dict[float, list[float]] = {}
     pair_distance: dict[float, list[float]] = {}
 
-    se3_other = other.se3
-    se3_test = trajectory.se3
+    if relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.METER:
+        index = other.path_lengths
+    elif relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.SECOND:
+        index = other.timestamps
+    else:
+        raise ValueError(f"Unknown unit {relative_comparison_settings.pair_distance_unit}")
+
+    with_orientations = other.has_orientation and trajectory.has_orientation
+    if with_orientations:
+        se3_other = np.asarray(other.se3)
+        se3_test = np.asarray(trajectory.se3)
+        # every pose starts pairs for several pair distances, so it is inverted only once
+        se3_other_inv = _se3_inv(se3_other)
+        se3_test_inv = _se3_inv(se3_test)
 
     cnt = 0
     for pair_dist in pair_dists:
@@ -236,42 +248,32 @@ def _compare_trajectories_relative(
         rot_dev[pair_dist] = []
         pair_distance[pair_dist] = []
 
-        if relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.METER:
-            pair_indices = _get_pair_indices(other.path_lengths, relative_comparison_settings, dist=pair_dist)
-
-        elif relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.SECOND:
-            pair_indices = _get_pair_indices(other.timestamps, relative_comparison_settings, dist=pair_dist)
-
-        else:
-            raise ValueError(f"Unknown unit {relative_comparison_settings.pair_distance_unit}")
+        pair_indices = _get_pair_indices(index, relative_comparison_settings, dist=pair_dist)
 
         if len(pair_indices) == 0:
             logger.warning("No pairs found for distance %.2f", pair_dist)
             continue
 
-        for pair in pair_indices:
-            if relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.METER:
-                distance = other.path_lengths[pair[1]] - other.path_lengths[pair[0]]
-            else:
-                distance = other.timestamps[pair[1]] - other.timestamps[pair[0]]
+        # all pairs of this distance at once
+        first, second = pair_indices[:, 0].astype(int), pair_indices[:, 1].astype(int)
+        distances = index[second] - index[first]
 
-            if other.has_orientation and trajectory.has_orientation:
-                pose_delta_gt = _se3_inv(se3_other[pair[0]]).dot(se3_other[pair[1]])
-                pose_delta_test = _se3_inv(se3_test[pair[0]]).dot(se3_test[pair[1]])
-                pose_error = _se3_inv(pose_delta_gt).dot(pose_delta_test)
+        if with_orientations:
+            pose_delta_gt = np.matmul(se3_other_inv[first], se3_other[second])
+            pose_delta_test = np.matmul(se3_test_inv[first], se3_test[second])
+            pose_error = np.matmul(_se3_inv(pose_delta_gt), pose_delta_test)
 
-                r_err = _rotation_error(pose_error)
-                t_err = _translation_error(pose_error)
+            t_err = _translation_error(pose_error)
+            rot_dev[pair_dist] = list(_rotation_error(pose_error) / distances)
+        else:
+            xyz_other, xyz_test = other.positions.xyz, trajectory.positions.xyz
+            ref_dist = np.linalg.norm(xyz_other[second] - xyz_other[first], axis=1)
+            test_dist = np.linalg.norm(xyz_test[second] - xyz_test[first], axis=1)
+            t_err = np.abs(ref_dist - test_dist)
 
-                rot_dev[pair_dist].append(r_err / distance)
-            else:
-                ref_dist = np.linalg.norm(other.positions.xyz[pair[1]] - other.positions.xyz[pair[0]])
-                test_dist = np.linalg.norm(trajectory.positions.xyz[pair[1]] - trajectory.positions.xyz[pair[0]])
-                t_err = np.abs(ref_dist - test_dist)
-
-            pos_dev[pair_dist].append(t_err / distance)
-            pair_distance[pair_dist].append(distance)
-            cnt += 1
+        pos_dev[pair_dist] = list(t_err / distances)
+        pair_distance[pair_dist] = list(distances)
+        cnt += len(distances)
 
     if cnt == 0:
         raise ValueError("No pairs found")
@@ -289,31 +291,33 @@ def _compare_trajectories_relative(
     )
 
 
-def _se3_inv(pose: np.ndarray) -> np.ndarray:
-    """Invert SE3 pose"""
-    rot_inv = pose[:3, :3].transpose()
-    trans_inv = -rot_inv.dot(pose[:3, 3])
+def _se3_inv(poses: np.ndarray) -> np.ndarray:
+    """Inverts SE3 poses (n x 4 x 4)"""
+    # contiguous: matmul of the transposed view rounds differently than the former per-pose numpy dot
+    rot_inv = np.ascontiguousarray(np.swapaxes(poses[:, :3, :3], 1, 2))
+    trans_inv = -np.matmul(rot_inv, poses[:, :3, 3, None])[:, :, 0]
 
-    se3 = np.eye(4)
-    se3[:3, :3] = rot_inv
-    se3[:3, 3] = trans_inv
+    se3 = np.zeros_like(poses)
+    se3[:, 3, 3] = 1.0
+    se3[:, :3, :3] = rot_inv
+    se3[:, :3, 3] = trans_inv
     return se3
 
 
-def _rotation_error(pose_error: np.ndarray) -> float:
+def _rotation_error(pose_errors: np.ndarray) -> np.ndarray:
     """KITTI metric port"""
-    a = pose_error[0, 0]
-    b = pose_error[1, 1]
-    c = pose_error[2, 2]
+    a = pose_errors[:, 0, 0]
+    b = pose_errors[:, 1, 1]
+    c = pose_errors[:, 2, 2]
     d = 0.5 * (a + b + c - 1.0)
-    return np.arccos(max(min(d, 1.0), -1.0))
+    return np.arccos(np.clip(d, -1.0, 1.0))
 
 
-def _translation_error(pose_error: np.ndarray) -> float:
+def _translation_error(pose_errors: np.ndarray) -> np.ndarray:
     """KITTI metric port"""
-    dx = pose_error[0, 3]
-    dy = pose_error[1, 3]
-    dz = pose_error[2, 3]
+    dx = pose_errors[:, 0, 3]
+    dy = pose_errors[:, 1, 3]
+    dz = pose_errors[:, 2, 3]
     return np.sqrt(dx * dx + dy * dy + dz * dz)
 
 
