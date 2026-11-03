@@ -7,18 +7,17 @@ import numpy as np
 import pyqtgraph as pg
 from PySide6 import QtGui
 
+from trajectopy.core.settings import PlotSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.utils.colors import color_range
 from trajectopy.visualization import style
-from trajectopy.visualization.plots import _value_brushes
+from trajectopy.visualization.plots import _smooth, _value_brushes
 
 logger = logging.getLogger(__name__)
 
 MAX_PREVIEW_POINTS = 5000
 LINE_WIDTH = 4.0  # pixels, trajectories
-MARKER_SIZE = 6  # pixels, ATE results (color-coded points)
-COLORBAR_MAX_STD = 3.0  # same default as PlotSettings.colorbar_max_std
 COLORBAR_GAP = 14  # pixels
 
 
@@ -37,7 +36,7 @@ class PreviewPlot(pg.PlotWidget):
         # created once and only shown/hidden: re-adding it to the layout makes the plot flicker while switching results
         self._colorbar = pg.ColorBarItem(colorMap=style.VALUE_COLORMAP, interactive=False, width=12)
         # label next to the tick values (pyqtgraph would put it on the narrow left side, between plot and color bar)
-        self._colorbar.axis.setLabel("ATE [m]")
+        self._colorbar.axis.setLabel(ate_label(PlotSettings()))
         self.plotItem.layout.addItem(self._colorbar, 2, 3)
         self.plotItem.layout.setColumnSpacing(2, COLORBAR_GAP)  # between the plot area and the color bar
         self._colorbar.hide()
@@ -81,8 +80,9 @@ class PreviewPlot(pg.PlotWidget):
             )
         self.plotItem.autoRange()
 
-    def show_ate_results(self, ate_results: Sequence[ATEResult]) -> None:
+    def show_ate_results(self, ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> None:
         """Shows the trajectories of the results colored by their position deviations, on a shared color scale."""
+        settings = settings if settings is not None else PlotSettings()
         self.plotItem.clear()
         self.plotItem.show()
         ate_results = [ate_result for ate_result in ate_results if len(ate_result.abs_dev.pos_dev)]
@@ -90,17 +90,22 @@ class PreviewPlot(pg.PlotWidget):
             self._colorbar.hide()
             return
 
-        samples, values, lower, upper = ate_preview_values(ate_results)
+        samples, values, lower, upper = ate_preview_values(ate_results, settings)
 
         local_transformer = ate_results[0].trajectory.positions.local_transformer
         for ate_result, indices, ate in zip(ate_results, samples, values):
             xyz = local_xyz(ate_result.trajectory, local_transformer, indices)
             self.plotItem.addItem(
                 pg.ScatterPlotItem(
-                    x=xyz[:, 0], y=xyz[:, 1], size=MARKER_SIZE, pen=None, brush=_value_brushes(ate, lower, upper)
+                    x=xyz[:, 0],
+                    y=xyz[:, 1],
+                    size=settings.marker_size,
+                    pen=None,
+                    brush=_value_brushes(ate, lower, upper),
                 )
             )
 
+        self._colorbar.axis.setLabel(ate_label(settings))
         self._colorbar.setLevels(values=(lower, upper))
         fit_colorbar_axis(self._colorbar, lower, upper)
         self._colorbar.show()
@@ -126,12 +131,25 @@ def local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | N
         return positions.xyz
 
 
-def ate_preview_values(ate_results: Sequence[ATEResult]) -> tuple[list[np.ndarray], list[np.ndarray], float, float]:
-    """Sample indices and position deviations of each result, and their shared color range."""
+def ate_preview_values(
+    ate_results: Sequence[ATEResult], settings: PlotSettings
+) -> tuple[list[np.ndarray], list[np.ndarray], float, float]:
+    """Sample indices and (smoothed) position deviations in the display unit of each result, and their shared
+    color range."""
     samples = [sample_indices(len(ate_result.trajectory)) for ate_result in ate_results]
-    values = [ate_result.pos_dev_comb[indices] for ate_result, indices in zip(ate_results, samples)]
-    lower, upper = color_range(np.concatenate(values), COLORBAR_MAX_STD)
+    # smoothed before thinning out, as in the plot windows, so that only neighboring points are averaged
+    values = [
+        _smooth(
+            np.asarray(ate_result.pos_dev_comb, dtype=float) * settings.unit_multiplier, settings.smoothing_window
+        )[indices]
+        for ate_result, indices in zip(ate_results, samples)
+    ]
+    lower, upper = color_range(np.concatenate(values), settings.colorbar_max_std)
     return samples, values, lower, upper
+
+
+def ate_label(settings: PlotSettings) -> str:
+    return f"ATE [{settings.unit}]"
 
 
 def fit_colorbar_axis(colorbar: pg.ColorBarItem, lower: float, upper: float) -> None:

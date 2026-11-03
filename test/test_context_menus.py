@@ -41,7 +41,7 @@ class TestContextMenus(unittest.TestCase):
     def test_reference_entries_explain_why_they_are_unavailable(self):
         self.menu.populate(self._selection(self.trajectory))
         actions = self._actions()
-        for text in ("Absolute Error (ATE), With Alignment", "Estimate Alignment", "Interactive Alignment…"):
+        for text in ("Absolute Error (ATE), with Alignment", "Estimate Alignment", "Interactive Alignment…"):
             self.assertFalse(actions[text].isEnabled(), text)
             self.assertIn("Set a reference first", actions[text].toolTip())
         self.assertTrue(any(text.startswith("ⓘ") for text in actions))  # visible note in the submenu

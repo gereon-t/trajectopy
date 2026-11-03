@@ -7,13 +7,9 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from PySide6 import QtGui, QtWidgets
 
+from trajectopy.core.settings import PlotSettings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.gui.views.preview_plot import (
-    MARKER_SIZE,
-    ate_preview_values,
-    fit_colorbar_axis,
-    local_xyz,
-)
+from trajectopy.gui.views.preview_plot import ate_label, ate_preview_values, fit_colorbar_axis, local_xyz
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.visualization import style
 
@@ -36,7 +32,7 @@ class PreviewPlot3D(QtWidgets.QWidget):
         self._legend.setContentsMargins(6, 2, 6, 2)
         self._legend.setWordWrap(True)
         self._colorbar = pg.ColorBarItem(colorMap=style.VALUE_COLORMAP, interactive=False, width=12)
-        self._colorbar.axis.setLabel("ATE [m]")
+        self._colorbar.axis.setLabel(ate_label(PlotSettings()))
         self._colorbar_widget = pg.GraphicsLayoutWidget()
         self._colorbar_widget.ci.layout.setContentsMargins(0, 10, 4, 4)
         self._colorbar_widget.addItem(self._colorbar)
@@ -87,8 +83,9 @@ class PreviewPlot3D(QtWidgets.QWidget):
         self._show_legend([(style.color(index), t.name) for index, t in enumerate(trajectories)])
         self._frame(all_xyz)
 
-    def show_ate_results(self, ate_results: Sequence[ATEResult]) -> None:
+    def show_ate_results(self, ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> None:
         """Shows the trajectories of the results colored by their position deviations, on a shared color scale."""
+        settings = settings if settings is not None else PlotSettings()
         self._clear_items()
         self._legend.hide()
         ate_results = [ate_result for ate_result in ate_results if len(ate_result.abs_dev.pos_dev)]
@@ -96,7 +93,7 @@ class PreviewPlot3D(QtWidgets.QWidget):
             self._colorbar_widget.hide()
             return
 
-        samples, values, lower, upper = ate_preview_values(ate_results)
+        samples, values, lower, upper = ate_preview_values(ate_results, settings)
         local_transformer = ate_results[0].trajectory.positions.local_transformer
         all_xyz = []
         for ate_result, indices, ate in zip(ate_results, samples, values):
@@ -106,9 +103,10 @@ class PreviewPlot3D(QtWidgets.QWidget):
             colors = style.VALUE_COLORMAP.map(levels, mode=pg.ColorMap.FLOAT)
             # opaque instead of the default additive blending, which saturates stacked points to white
             self._view.addItem(
-                gl.GLScatterPlotItem(pos=xyz, color=colors, size=MARKER_SIZE, pxMode=True, glOptions="opaque")
+                gl.GLScatterPlotItem(pos=xyz, color=colors, size=settings.marker_size, pxMode=True, glOptions="opaque")
             )
 
+        self._colorbar.axis.setLabel(ate_label(settings))
         self._colorbar.setLevels(values=(lower, upper))
         fit_colorbar_axis(self._colorbar, lower, upper)
         self._colorbar_widget.setFixedWidth(int(self._colorbar.axis.width() + self._colorbar.width() + 8))

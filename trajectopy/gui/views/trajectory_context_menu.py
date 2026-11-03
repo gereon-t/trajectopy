@@ -150,14 +150,14 @@ class TrajectoryContextMenu(SelectionMenu):
             )
         add_action(
             menu,
-            "Absolute Error (ATE), Without Alignment",
+            "Absolute Error (ATE), without Alignment",
             self._manager(TrajectoryManagerRequestType.ATE_NO_ALIGNMENT),
             hint="Computes the position and orientation deviations of matching poses without aligning first.",
             unavailable=needs_reference,
         )
         add_action(
             menu,
-            "Absolute Error (ATE), With Alignment",
+            "Absolute Error (ATE), with Alignment",
             self._manager(TrajectoryManagerRequestType.ATE_WITH_ALIGNMENT),
             hint="Aligns the trajectory with the reference (alignment settings), then computes the position and "
             "orientation deviations of matching poses. Also adds the alignment to the results.",
@@ -268,7 +268,7 @@ class TrajectoryContextMenu(SelectionMenu):
         menu = add_submenu(self, "Process", hint="Operations that create modified copies of the trajectories.")
         add_action(
             menu,
-            "Smooth (Approximate)",
+            "Approximate",
             self._manager(TrajectoryManagerRequestType.APPROXIMATE),
             hint="Approximates the trajectory by piecewise cubic polynomials (approximation settings).",
         )

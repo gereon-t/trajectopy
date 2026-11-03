@@ -496,7 +496,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._properties.show_entries(items)
         ate_results = [item.deviations for item in items if isinstance(item, AbsoluteDeviationEntry)]
         if ate_results and self._preview_enabled:
-            self._active_preview.show_ate_results(ate_results)
+            self._active_preview.show_ate_results(ate_results, self.plot_settings)
         else:
             self._active_preview.clear_preview()
 
@@ -514,11 +514,18 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     def handle_show_plot_settings(self) -> None:
         viewer = JSONViewer(settings=self.plot_settings, parent=self)
         viewer.applied.connect(self._mark_modified)
+        viewer.applied.connect(self._refresh_preview)
         viewer.show()
 
     @Slot(object)
     def _set_plot_settings(self, plot_settings: PlotSettings) -> None:
         self.plot_settings = plot_settings
+        self._refresh_preview()
+
+    def _refresh_preview(self, *_) -> None:
+        """Redraws the preview, e.g. with changed plot settings."""
+        if self._preview_enabled:
+            self._show_selection()
 
     @QtCore.Slot(PlotRequest)
     def inject_plot_settings(self, plot_request: PlotRequest) -> None:
