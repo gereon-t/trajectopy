@@ -26,6 +26,7 @@ from trajectopy.gui.models.entries import (
     TrajectoryEntry,
     TrajectoryProcessingState,
 )
+from trajectopy.io.results_io import DEVIATIONS_CONVENTION, convert_ate_deviations
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
@@ -156,21 +157,19 @@ def _encode_ate(result: ATEResult, encoder: Encoder) -> dict:
         "directed_pos_dev": encoder.put(deviations.directed_pos_dev),
         "rot_dev": None if deviations.rot_dev is None else encoder.put(deviations.rot_dev.as_quat()),
         "rotations_used": deviations.rotations_used,
-        "deviations": "test-reference",
+        "deviations": DEVIATIONS_CONVENTION,
     }
 
 
 def _decode_ate(data: dict, decoder: Decoder) -> ATEResult:
-    pos_dev = decoder.get(data["pos_dev"])
-    rot_dev = None if data["rot_dev"] is None else Rotations.from_quat(decoder.get(data["rot_dev"]))
-    if data.get("deviations") != "test-reference":  # saved before the deviations were test minus reference
-        pos_dev = -pos_dev
-        rot_dev = None if rot_dev is None else rot_dev.inv()
+    pos_dev, directed_pos_dev, rot_dev = convert_ate_deviations(
+        data.get("deviations", ""),
+        decoder.get(data["pos_dev"]),
+        decoder.get(data["directed_pos_dev"]),
+        None if data["rot_dev"] is None else Rotations.from_quat(decoder.get(data["rot_dev"])),
+    )
     deviations = AbsoluteTrajectoryDeviations(
-        pos_dev=pos_dev,
-        directed_pos_dev=decoder.get(data["directed_pos_dev"]),
-        rot_dev=rot_dev,
-        rotations_used=data["rotations_used"],
+        pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev, rotations_used=data["rotations_used"]
     )
     return ATEResult(trajectory=decode_trajectory(data["trajectory"], decoder), abs_dev=deviations, name=data["name"])
 

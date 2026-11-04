@@ -23,7 +23,7 @@ class AbsoluteTrajectoryDeviations:
 
     All deviations describe how far the evaluated (test) trajectory deviates from the reference, i.e. test
     minus reference: a positive x deviation means the test trajectory is further in x direction, a positive
-    along-track deviation that it is ahead, a positive horizontal cross-track deviation that it is to the left and
+    along-track deviation that it is ahead, a positive horizontal cross-track deviation that it is to the right and
     a positive vertical cross-track deviation that it is above.
 
     Attributes:

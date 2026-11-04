@@ -384,6 +384,9 @@ def _derive_dev_directions_with_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray
         # transform to body system
         devs[i, :] = (xyz_test[i, :] - xyz_ref[i, :]) @ rot_matrices[i]
 
+    # the body frame is x forward, y left, z up (as the ENU navigation frame); the horizontal cross-track
+    # direction is positive to the right, like without orientations
+    devs[:, 1] *= -1
     return devs
 
 
@@ -432,7 +435,8 @@ def _cross_track_dev(*, p: np.ndarray, line_pts: list) -> tuple[float, float]:
     if cross_track_norm < np.finfo(float).eps:
         d_cross_h = 0.0
     else:
-        d_cross_h = (diff[:2] @ cross_track_direction[:2]) / cross_track_norm
+        # positive to the right of the direction of travel (diff points from the test position to the line)
+        d_cross_h = -(diff[:2] @ cross_track_direction[:2]) / cross_track_norm
 
     line_direction = b - a
     line_direction_norm = np.linalg.norm(line_direction[:2])

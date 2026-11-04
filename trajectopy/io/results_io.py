@@ -16,8 +16,36 @@ from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResul
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
 from trajectopy.utils.definitions import Sorting
 
-# marks ATE results whose deviations are test minus reference (all others are from earlier versions)
-DEVIATIONS_TEST_MINUS_REFERENCE = "test-reference"
+# sign convention of the ATE deviations that are written: test minus reference, with the horizontal cross-track
+# direction positive to the right; files with another one are from earlier versions (see convert_ate_deviations)
+DEVIATIONS_CONVENTION = "test-reference-cross-right"
+_TEST_MINUS_REFERENCE_CROSS_LEFT = "test-reference"
+
+
+def convert_ate_deviations(
+    convention: str, pos_dev: np.ndarray, directed_pos_dev: np.ndarray, rot_dev: Rotations | None
+) -> tuple[np.ndarray, np.ndarray, Rotations | None]:
+    """Expresses ATE deviations stored with an earlier sign convention in the current one.
+
+    Args:
+        convention (str): Convention of the stored deviations; empty for the earliest one.
+        pos_dev (np.ndarray): Position deviations.
+        directed_pos_dev (np.ndarray): Along-track, horizontal and vertical cross-track deviations.
+        rot_dev (Rotations | None): Rotation deviations.
+
+    Returns:
+        tuple: The deviations as test minus reference, with horizontal cross-track positive to the right.
+    """
+    if convention == DEVIATIONS_CONVENTION:
+        return pos_dev, directed_pos_dev, rot_dev
+    # all earlier conventions: horizontal cross-track positive to the left
+    directed_pos_dev = directed_pos_dev * [1.0, -1.0, 1.0]
+    if convention != _TEST_MINUS_REFERENCE_CROSS_LEFT:
+        # the earliest: position and rotation deviations reference minus test
+        pos_dev = -pos_dev
+        rot_dev = None if rot_dev is None else rot_dev.inv()
+    return pos_dev, directed_pos_dev, rot_dev
+
 
 # ---------------------------------------------------------------------------
 # Alignment parameters
@@ -118,7 +146,7 @@ def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
         file.write(f"#name {result.name}\n")
         file.write(f"#epsg {result.trajectory.positions.epsg}\n")
         file.write(f"#sorting {result.trajectory.sorting.value}\n")
-        file.write(f"#deviations {DEVIATIONS_TEST_MINUS_REFERENCE}\n")
+        file.write(f"#deviations {DEVIATIONS_CONVENTION}\n")
     result.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
 
 
@@ -165,10 +193,9 @@ def read_ate_result(filename: str) -> ATEResult:
         path_lengths=path_lengths,
         sorting=sorting,
     )
-    if header_data.deviations != DEVIATIONS_TEST_MINUS_REFERENCE:
-        # written by an earlier version, whose position and rotation deviations were reference minus test
-        pos_dev = -pos_dev
-        rot_dev = None if rot_dev is None else rot_dev.inv()
+    pos_dev, directed_pos_dev, rot_dev = convert_ate_deviations(
+        header_data.deviations, pos_dev, directed_pos_dev, rot_dev
+    )
     abs_dev = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
     return ATEResult(trajectory=trajectory, abs_dev=abs_dev)
 

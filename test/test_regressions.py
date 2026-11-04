@@ -377,7 +377,10 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         np.testing.assert_allclose([result.pos_bias_x, result.pos_bias_y, result.pos_bias_z], [0.5, 0.2, 0.1])
         np.testing.assert_allclose(
-            [result.pos_bias_along, result.pos_bias_cross_h, result.pos_bias_cross_v], [0.5, 0.2, 0.1], atol=0.02
+            # horizontal cross-track is positive to the right, as in the frame figure of the documentation
+            [result.pos_bias_along, result.pos_bias_cross_h, result.pos_bias_cross_v],
+            [0.5, -0.2, 0.1],
+            atol=0.02,
         )
         self.assertAlmostEqual(np.rad2deg(result.rot_bias_z), 2.0)
 
@@ -398,13 +401,13 @@ class TestRobustnessRegressions(unittest.TestCase):
             result.to_file(filename)
             with open(filename, encoding="utf-8") as file:
                 lines = file.readlines()
-            # as written by an earlier version: no marker, deviations reference minus test
+            # as written by an earlier version: no marker, deviations reference minus test, cross-track to the left
             old = [line for line in lines if not line.startswith("#deviations")]
             header = old[: next(i for i, line in enumerate(old) if not line.startswith("#")) + 1]
             rows = [line.split(",") for line in old[len(header) :]]
             columns = header[-1].strip().split(",")
             for row in rows:
-                for name in ("pos_dev_x", "pos_dev_y", "pos_dev_z"):
+                for name in ("pos_dev_x", "pos_dev_y", "pos_dev_z", "pos_dev_cross_h"):
                     row[columns.index(name)] = str(-float(row[columns.index(name)]))
                 quat = [float(row[columns.index(f"rot_dev_{c}")]) for c in "xyzw"]
                 for c, value in zip("xyz", quat[:3]):
@@ -415,6 +418,7 @@ class TestRobustnessRegressions(unittest.TestCase):
             read = ATEResult.from_file(filename)
 
         np.testing.assert_allclose(read.abs_dev.pos_dev, result.abs_dev.pos_dev)
+        np.testing.assert_allclose(read.abs_dev.directed_pos_dev, result.abs_dev.directed_pos_dev, atol=1e-9)
         self.assertAlmostEqual(read.rot_bias_z, result.rot_bias_z)
 
     def test_cli_reports_only_a_missing_gui_as_missing_dependencies(self):
@@ -504,6 +508,24 @@ class TestRobustnessRegressions(unittest.TestCase):
             result = estimate_alignment(trajectory, reference, alignment_settings=settings)
 
         self.assertFalse(result.converged)
+
+    def test_conversion_of_all_earlier_deviation_conventions(self):
+        from trajectopy.io.results_io import DEVIATIONS_CONVENTION, convert_ate_deviations
+
+        pos_dev, directed = np.array([[1.0, 2.0, 3.0]]), np.array([[4.0, 5.0, 6.0]])
+        rot_dev = Rotations.from_euler("xyz", np.array([[0.0, 0.0, 0.1]]))
+
+        current = convert_ate_deviations(DEVIATIONS_CONVENTION, pos_dev, directed, rot_dev)
+        cross_left = convert_ate_deviations("test-reference", pos_dev, directed, rot_dev)
+        earliest = convert_ate_deviations("", pos_dev, directed, rot_dev)
+
+        np.testing.assert_array_equal(current[0], pos_dev)
+        np.testing.assert_array_equal(current[1], directed)
+        np.testing.assert_array_equal(cross_left[0], pos_dev)
+        np.testing.assert_array_equal(cross_left[1], [[4.0, -5.0, 6.0]])
+        np.testing.assert_array_equal(earliest[0], -pos_dev)
+        np.testing.assert_array_equal(earliest[1], [[4.0, -5.0, 6.0]])
+        self.assertAlmostEqual(earliest[2].as_euler("xyz")[0, 2], -0.1)
 
 
 if __name__ == "__main__":

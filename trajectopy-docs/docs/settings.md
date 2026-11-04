@@ -199,8 +199,6 @@ startup with
 
 ### ATE Frame Definition (regarding `directed_ate`)
 
-The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the left of the along-track direction. The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.
+The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. With orientations, the directions are those of the body frame, which is assumed to be x forward, y left and z up (like the ENU navigation frame). The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.
 
 <img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/>
-
-*Note: unlike the image, horizontal cross-track deviations are positive to the left of the direction of travel.*

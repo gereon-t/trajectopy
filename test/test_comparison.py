@@ -72,7 +72,8 @@ class TestComparison(unittest.TestCase):
         deviations = compare_trajectories_abs(traj_ref=trajectory, traj_test=transformed)
 
         np.testing.assert_almost_equal(deviations.pos_bias_along, parameters.lever_x.value)
-        np.testing.assert_almost_equal(deviations.pos_bias_cross_h, parameters.lever_y.value)
+        # the body y axis points to the left, horizontal cross-track is positive to the right
+        np.testing.assert_almost_equal(deviations.pos_bias_cross_h, -parameters.lever_y.value)
         np.testing.assert_almost_equal(deviations.pos_bias_cross_v, parameters.lever_z.value)
 
     def test_xyz_deviations(self) -> None:
@@ -119,7 +120,8 @@ class TestComparison(unittest.TestCase):
         test_trajectory_xyz = ref_trajectory_xyz + deviations
         dir_devs = _derive_dev_directions_no_rot(xyz_ref=ref_trajectory_xyz, xyz_test=test_trajectory_xyz)
         np.testing.assert_almost_equal(dir_devs[:, 0], deviations[:, 0])  # along-track
-        np.testing.assert_almost_equal(dir_devs[:, 1], deviations[:, 1])  # cross-track horizontal
+        # travelling along x, y points to the left and horizontal cross-track is positive to the right
+        np.testing.assert_almost_equal(dir_devs[:, 1], -deviations[:, 1])  # cross-track horizontal
         np.testing.assert_almost_equal(dir_devs[:, 2], deviations[:, 2])  # cross-track vertical
 
     def test_cross_track_deviations_no_rot_slope(self) -> None:
@@ -148,8 +150,8 @@ class TestComparison(unittest.TestCase):
         # with a slope of 45 degrees, the deviations are split equally into vertical and along-track components
         np.testing.assert_almost_equal(dir_devs[:, 0], -dir_devs[:, 2])
 
-        # horizontal cross-track deviations remain the same
-        np.testing.assert_almost_equal(dir_devs[:, 1], deviations[:, 1])
+        # horizontal cross-track deviations remain the same (positive to the right, i.e. -y)
+        np.testing.assert_almost_equal(dir_devs[:, 1], -deviations[:, 1])
 
         # in total, the deviations are the same as the input deviations
         np.testing.assert_almost_equal(np.linalg.norm(dir_devs, axis=1), np.linalg.norm(deviations, axis=1))
