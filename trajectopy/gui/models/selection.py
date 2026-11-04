@@ -9,6 +9,8 @@ class TrajectorySelection:
 
     entries: list[TrajectoryEntry] = field(default_factory=list)
     reference_entry: TrajectoryEntry | None = None
+    # the groups shown in the table, by group id
+    groups: dict[str, str] = field(default_factory=dict)
 
     def __len__(self) -> int:
         return len(self.entries)
@@ -26,6 +28,8 @@ class ResultSelection:
     """Dataclass for storing the selected results."""
 
     entries: list[ResultEntry] = field(default_factory=list)
+    # the groups shown in the table, by group id
+    groups: dict[str, str] = field(default_factory=dict)
 
     def __len__(self) -> int:
         return len(self.entries)

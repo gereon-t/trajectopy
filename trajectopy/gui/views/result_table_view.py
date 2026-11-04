@@ -37,7 +37,7 @@ class ResultTableView(EntryTableView):
 
     @property
     def selection(self) -> ResultSelection:
-        return ResultSelection(entries=self.selected_entries)
+        return ResultSelection(entries=self.selected_entries, groups=self.result_table_model.groups())
 
     @property
     def selected_entries(self) -> list[ResultEntry]:

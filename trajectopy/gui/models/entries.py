@@ -105,6 +105,9 @@ class TrajectoryEntry(Entry):
     settings: ProcessingSettings = field(default_factory=ProcessingSettings)
     group_id: str = field(default_factory=generate_id)
     state: TrajectoryProcessingState = field(default_factory=TrajectoryProcessingState)
+    # name of the group shown in the table; empty: named after its first trajectory (e.g. the source of the
+    # derived ones, which share its group_id)
+    group_name: str = ""
 
     def __len__(self) -> int:
         return len(self.trajectory)
@@ -117,6 +120,7 @@ class TrajectoryEntry(Entry):
             settings=self.settings,
             group_id=self.group_id,
             state=self.state if keep_state else TrajectoryProcessingState(),
+            group_name=self.group_name,
         )
 
     def to_file(self, filename: str) -> None:
@@ -264,6 +268,10 @@ def _utc(timestamp: float) -> str:
 @dataclass
 class ResultEntry(Entry, ABC):
     """Abstract base class for result entries in the result model."""
+
+    # results are grouped by hand only: every result starts in a group of its own
+    group_id: str = field(init=False, default_factory=generate_id)
+    group_name: str = field(init=False, default="")
 
     @abstractmethod
     def __len__(self) -> int:

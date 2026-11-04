@@ -86,6 +86,10 @@ class UIManager(QObject):
             UIRequestType.PLAYBACK: self.trajectory_playback,
             UIRequestType.RENAME_TRAJ: self.rename_trajectory,
             UIRequestType.RENAME_RES: self.rename_result,
+            UIRequestType.GROUP_TRAJ: self.group_trajectories,
+            UIRequestType.RENAME_GROUP_TRAJ: self.rename_trajectory_group,
+            UIRequestType.GROUP_RES: self.group_results,
+            UIRequestType.RENAME_GROUP_RES: self.rename_result_group,
         }
 
     @Slot(UIRequest)
@@ -108,9 +112,37 @@ class UIManager(QObject):
                 ResultModelRequest(type=ResultModelRequestType.RENAME, selection=request.result_selection, name=name)
             )
 
-    def _ask_name(self, current: str) -> str:
+    def group_trajectories(self, request: UIRequest) -> None:
+        if name := self._ask_name("", title="New Group"):
+            self.trajectory_model_request.emit(
+                TrajectoryModelRequest(
+                    type=TrajectoryModelRequestType.GROUP, selection=request.trajectory_selection, name=name
+                )
+            )
+
+    def rename_trajectory_group(self, request: UIRequest) -> None:
+        selection = request.trajectory_selection
+        if name := self._ask_name(selection.groups.get(selection.entries[0].group_id, ""), title="Rename Group"):
+            self.trajectory_model_request.emit(
+                TrajectoryModelRequest(type=TrajectoryModelRequestType.RENAME_GROUP, selection=selection, name=name)
+            )
+
+    def group_results(self, request: UIRequest) -> None:
+        if name := self._ask_name("", title="New Group"):
+            self.result_model_request.emit(
+                ResultModelRequest(type=ResultModelRequestType.GROUP, selection=request.result_selection, name=name)
+            )
+
+    def rename_result_group(self, request: UIRequest) -> None:
+        selection = request.result_selection
+        if name := self._ask_name(selection.groups.get(selection.entries[0].group_id, ""), title="Rename Group"):
+            self.result_model_request.emit(
+                ResultModelRequest(type=ResultModelRequestType.RENAME_GROUP, selection=selection, name=name)
+            )
+
+    def _ask_name(self, current: str, title: str = "Rename") -> str:
         """Asks for a new name; returns an empty string if cancelled or unchanged."""
-        name, ok = QtWidgets.QInputDialog.getText(self._dialog_parent(), "Rename", "Name:", text=current)
+        name, ok = QtWidgets.QInputDialog.getText(self._dialog_parent(), title, "Name:", text=current)
         name = name.strip()
         return name if ok and name != current else ""
 

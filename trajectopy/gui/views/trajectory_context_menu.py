@@ -16,7 +16,7 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
 )
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action, add_note, add_submenu
+from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action, add_group_menu, add_note, add_submenu
 from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
@@ -373,6 +373,18 @@ class TrajectoryContextMenu(SelectionMenu):
             "in one color or colored by speed, height or time, on the terrain or at its heights.",
             unavailable=kml_unavailable,
         )
+        add_group_menu(
+            self,
+            self._selection,
+            group=self._ui(UIRequestType.GROUP_TRAJ),
+            rename=self._ui(UIRequestType.RENAME_GROUP_TRAJ),
+            ungroup=self._model(TrajectoryModelRequestType.UNGROUP),
+            move=lambda group_id: self.trajectory_model_request.emit(
+                TrajectoryModelRequest(
+                    type=TrajectoryModelRequestType.MOVE_TO_GROUP, selection=self.get_selection(), group_id=group_id
+                )
+            ),
+        )
         self.addSeparator()
         add_action(
             self,
@@ -382,8 +394,8 @@ class TrajectoryContextMenu(SelectionMenu):
         )
         add_action(
             self,
-            "Remove Including Derived",
+            "Remove Group",
             self._model(TrajectoryModelRequestType.REMOVE_RELATED),
-            hint="Removes the trajectories together with all trajectories derived from the same file (aligned, "
-            "matched, sorted, … copies).",
+            hint="Removes the trajectories together with all other trajectories of their groups (e.g. the aligned, "
+            "matched, sorted, … copies derived from the same file).",
         )

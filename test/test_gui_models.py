@@ -9,7 +9,7 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
-    from PySide6 import QtWidgets
+    from PySide6 import QtCore, QtWidgets
 
     from trajectopy.core.settings import PlotSettings
     from trajectopy.gui.managers.plot_manager import PlotManager
@@ -58,18 +58,18 @@ class TestTableModelSelection(unittest.TestCase):
         return [entry.name for entry in self.view.selected_entries]
 
     def test_selection_stays_on_entry_when_row_above_is_removed(self):
-        self.view.selectRow(1)
+        self.view.select_entries([self.entries[1]])
         self.model.remove([self.entries[0].entry_id])
         self.assertEqual(self.selected_names(), ["T1"])
 
     def test_removing_the_selected_entry_clears_the_selection(self):
-        self.view.selectRow(2)
+        self.view.select_entries([self.entries[2]])
         self.model.remove([self.entries[2].entry_id])
         self.assertEqual(self.selected_names(), [])
         self.assertEqual([entry.name for entry in self.model.items], ["T0", "T1", "T3"])
 
     def test_selection_follows_entry_when_reordered(self):
-        self.view.selectRow(1)
+        self.view.select_entries([self.entries[1]])
         order = [self.entries[i].entry_id for i in (3, 2, 1, 0)]
         self.model.sort_items(TrajectoryModelRequest(type=TrajectoryModelRequestType.SORT, index_list=order))
         self.assertEqual([entry.name for entry in self.model.items], ["T3", "T2", "T1", "T0"])
@@ -84,13 +84,81 @@ class TestTableModelSelection(unittest.TestCase):
         grouped = [_entry("G0", group_id="group"), _entry("G1", group_id="group")]
         for entry in grouped:
             self.model.add(entry)
-        self.view.selectRow(3)
+        self.view.select_entries([self.entries[3]])
         self.model.remove_group("group")
         self.assertEqual([entry.name for entry in self.model.items], ["T0", "T1", "T2", "T3"])
         self.assertEqual(self.selected_names(), ["T3"])
 
+    def test_derived_entries_are_grouped_after_their_source(self):
+        derived = self.entries[1].derive(noisy_trajectory.copy())
+        self.model.add(derived)
+        self.assertEqual(self.model.items.index(derived), 2)
+        self.assertEqual(self.model.rowCount(), 4)  # T0, group of T1, T2, T3
+        group = self.model.index(1, 0)
+        self.assertEqual(self.model.group_at(group), self.entries[1].group_id)
+        self.assertEqual(self.model.rowCount(group), 2)
+        self.assertEqual(self.model.data(group), "T1 (2)")
+
+    def test_selecting_a_group_selects_its_entries(self):
+        self.model.add(self.entries[1].derive(noisy_trajectory.copy()))
+        group = self.model.index(1, 0)
+        self.view.selectionModel().select(
+            group, QtCore.QItemSelectionModel.SelectionFlag.Select | QtCore.QItemSelectionModel.SelectionFlag.Rows
+        )
+        self.assertEqual(len(self.view.selected_entries), 2)
+        self.assertEqual(set(self.view.selection.groups), {self.entries[1].group_id})
+
+    def test_group_rename_ungroup(self):
+        ids = {self.entries[0].entry_id, self.entries[2].entry_id}
+        self.view.select_entries([self.entries[2]])
+        self.model.group_entries(ids, "Run 1")
+        self.assertEqual([entry.name for entry in self.model.items], ["T0", "T2", "T1", "T3"])
+        self.assertEqual(list(self.model.groups().values()), ["Run 1"])
+        self.assertEqual(self.selected_names(), ["T2"])  # the selection follows the entry into the group
+
+        group_id = self.entries[0].group_id
+        self.model.rename_groups({group_id}, "Run 2")
+        self.assertEqual(self.model.data(self.model.index(0, 0)), "Run 2 (2)")
+
+        self.model.move_to_group({self.entries[3].entry_id}, group_id)
+        self.assertEqual([entry.name for entry in self.model.items], ["T0", "T2", "T3", "T1"])
+        self.assertEqual(self.entries[3].group_name, "Run 2")
+
+        self.model.ungroup_entries({self.entries[0].entry_id, self.entries[2].entry_id})
+        self.assertEqual(list(self.model.groups().values()), ["Run 2"])  # a named group stays with one entry
+        self.model.ungroup_entries({self.entries[3].entry_id})
+        self.assertEqual(self.model.groups(), {})
+        self.assertEqual(self.model.rowCount(), 4)
+
+    def test_dropping_entries(self):
+        self.model.group_entries({self.entries[0].entry_id, self.entries[1].entry_id}, "Run")
+        data = self.model.mimeData([self.model.entry_index(self.entries[3].entry_id)])
+        group = self.model.group_index(self.entries[0].group_id)
+        self.assertTrue(self.model.dropMimeData(data, QtCore.Qt.DropAction.MoveAction, -1, -1, group))
+        self.assertEqual(self.entries[3].group_id, self.entries[0].group_id)
+
+        # onto an entry outside of groups: a group with that entry
+        data = self.model.mimeData([self.model.entry_index(self.entries[3].entry_id)])
+        target = self.model.entry_index(self.entries[2].entry_id)
+        self.assertTrue(self.model.dropMimeData(data, QtCore.Qt.DropAction.MoveAction, -1, -1, target))
+        self.assertEqual(self.entries[3].group_id, self.entries[2].group_id)
+        self.assertEqual(len(self.model.groups()), 2)
+
+        # between the rows of the top level: out of the group
+        data = self.model.mimeData([self.model.entry_index(self.entries[3].entry_id)])
+        self.assertTrue(self.model.dropMimeData(data, QtCore.Qt.DropAction.MoveAction, 0, 0, QtCore.QModelIndex()))
+        self.assertEqual(len(self.model.groups()), 1)
+
+    def test_collapsed_groups_stay_collapsed(self):
+        self.model.group_entries({self.entries[0].entry_id, self.entries[1].entry_id}, "Run")
+        group = self.model.group_index(self.entries[0].group_id)
+        self.assertTrue(self.view.isExpanded(group))
+        self.view.collapse(group)
+        self.model.remove([self.entries[3].entry_id])
+        self.assertFalse(self.view.isExpanded(self.model.group_index(self.entries[0].group_id)))
+
     def test_reset_clears_the_selection(self):
-        self.view.selectRow(0)
+        self.view.select_entries([self.entries[0]])
         self.model.reset()
         self.assertEqual(self.model.rowCount(), 0)
         self.assertEqual(self.selected_names(), [])

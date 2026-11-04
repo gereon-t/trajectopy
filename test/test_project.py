@@ -37,17 +37,21 @@ def _project() -> Project:
     test.settings.alignment.preprocessing.min_speed = 1.5
     duplicate = TrajectoryEntry.from_trajectory_file(TRAJECTORY_FILES[0])  # same id as the reference
     duplicate.group_id = reference.group_id
+    duplicate.group_name = reference.group_name = "Reference"
+
+    # the test data was written by an earlier version (#type AbsoluteDeviationEntry, ...), so the type is given
+    results = [
+        AlignmentEntry.from_file("./test/data/align_entry.result"),
+        AbsoluteDeviationEntry.from_file("./test/data/abs_dev.result"),
+        RelativeDeviationEntry.from_file("./test/data/rel_dev_meter.result"),
+    ]
+    results[2].group_id, results[2].group_name = results[1].group_id, "Deviations"
 
     plot_settings = PlotSettings()
     plot_settings.ate_unit_is_mm = not plot_settings.ate_unit_is_mm
     return Project(
         trajectories=[test, reference, duplicate],
-        # the test data was written by an earlier version (#type AbsoluteDeviationEntry, ...), so the type is given
-        results=[
-            AlignmentEntry.from_file("./test/data/align_entry.result"),
-            AbsoluteDeviationEntry.from_file("./test/data/abs_dev.result"),
-            RelativeDeviationEntry.from_file("./test/data/rel_dev_meter.result"),
-        ],
+        results=results,
         plot_settings=plot_settings,
     )
 
@@ -70,13 +74,14 @@ class TestProject(unittest.TestCase):
             self.assertEqual(restored.name, original.name)
             self.assertEqual(restored.set_as_reference, original.set_as_reference)
             self.assertEqual(restored.group_id, original.group_id)
+            self.assertEqual(restored.group_name, original.group_name)
             self.assertEqual(restored.full_filename, original.full_filename)
             self.assertEqual(restored.settings.to_dict(), original.settings.to_dict())
             self.assertEqual(len(restored), len(original))
 
         self.assertEqual(
-            [(result.entry_id, result.type, result.name) for result in loaded.results],
-            [(result.entry_id, result.type, result.name) for result in project.results],
+            [(r.entry_id, r.type, r.name, r.group_id, r.group_name) for r in loaded.results],
+            [(r.entry_id, r.type, r.name, r.group_id, r.group_name) for r in project.results],
         )
         self.assertEqual(loaded.plot_settings, project.plot_settings)
 

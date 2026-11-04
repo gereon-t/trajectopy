@@ -314,6 +314,13 @@ Trajectory files (`.traj` and other ASCII files, ROS1 `.bag` files) are loaded i
 `.result` files into the results table. Long operations run in the background; a progress window shows that
 Trajectopy is busy.
 
+**Groups**: trajectories computed from another one (aligned, smoothed, sorted, … copies) are grouped with it
+automatically, so that the results of one measurement run stay together. Groups can be collapsed; selecting a group
+selects all of its entries. *Group → New Group…* (`Ctrl+G`) in the context menu groups any trajectories or results,
+*Rename Group…* names a group, *Ungroup* (`Ctrl+Shift+G`) takes entries out of their groups and *Move to Group* moves
+them into another group. Entries can also be dragged onto a group (or an entry) to move them there, or between the
+rows to take them out of their group. Groups are saved in the project.
+
 ### Menu Bar
 
 | Menu | Entry | Description |
@@ -370,12 +377,12 @@ The trajectory context menu is grouped by task:
 | Align with Reference | *Estimate Alignment*, *Interactive Alignment…* (see below), *Match First Pose*, *Apply Existing Alignment…* |
 | Coordinate System | *Transform to EPSG…*, *Adapt EPSG from Reference*, *Set EPSG Code (No Transformation)…* |
 | Process | *Smooth (Approximate)*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
-| Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Remove*, *Remove Including Derived* |
+| Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Group*, *Remove*, *Remove Group* |
 
 Processing adds new trajectories (e.g. *Smooth* adds a smoothed copy) and comparisons add results; only the
 coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
 
-The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Remove* and, for ATE results,
+The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Group*, *Remove* and, for ATE results,
 *Export to Google Earth (KML)…*. ATE results of spatially sorted trajectories can also be switched between
 chronological and spatial order with *Switch Order: Time ↔ Path*, e.g. to plot the deviations over time. For alignments, *Choose Parameters to Apply…* selects which of the estimated
 parameters are used when the alignment is applied to a trajectory (*Apply Existing Alignment…*).
@@ -396,6 +403,7 @@ table has focus and do what the menu entry does for the selected rows.
 | `Ctrl+D` (or `Ctrl+C`) | Duplicate | Duplicate |
 | `E` | Export | Export |
 | `Delete` | Remove | Remove |
+| `Ctrl+G` / `Ctrl+Shift+G` | New group / ungroup | New group / ungroup |
 
 ### Interactive Alignment
 

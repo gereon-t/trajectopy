@@ -51,6 +51,7 @@ class TrajectoryTableView(EntryTableView):
         return TrajectorySelection(
             entries=self.selected_entries,
             reference_entry=self.trajectory_table_model.reference_entry,
+            groups=self.trajectory_table_model.groups(),
         )
 
     @property

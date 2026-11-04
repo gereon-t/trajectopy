@@ -17,7 +17,7 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
 )
 from trajectopy.gui.models.selection import ResultSelection
-from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action
+from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action, add_group_menu
 
 SINGLE_ONLY = "Select a single result."
 
@@ -123,6 +123,18 @@ class ResultContextMenu(SelectionMenu):
                 )
                 else "Only for results of spatially sorted trajectories.",
             )
+        add_group_menu(
+            self,
+            selection,
+            group=self._ui(UIRequestType.GROUP_RES),
+            rename=self._ui(UIRequestType.RENAME_GROUP_RES),
+            ungroup=self._model(ResultModelRequestType.UNGROUP),
+            move=lambda group_id: self.result_model_request.emit(
+                ResultModelRequest(
+                    type=ResultModelRequestType.MOVE_TO_GROUP, selection=self.get_selection(), group_id=group_id
+                )
+            ),
+        )
         self.addSeparator()
         add_action(
             self,
@@ -148,3 +160,8 @@ class ResultContextMenu(SelectionMenu):
 
     def _ui(self, request_type: UIRequestType) -> Callable[[], None]:
         return lambda: self.ui_request.emit(UIRequest(type=request_type, result_selection=self.get_selection()))
+
+    def _model(self, request_type: ResultModelRequestType) -> Callable[[], None]:
+        return lambda: self.result_model_request.emit(
+            ResultModelRequest(type=request_type, selection=self.get_selection())
+        )

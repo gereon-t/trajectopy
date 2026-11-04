@@ -100,6 +100,7 @@ def encode_trajectory_entry(entry: TrajectoryEntry, encoder: Encoder) -> dict:
         "source": entry.full_filename,
         "reference": entry.set_as_reference,
         "group": entry.group_id,
+        "group_name": entry.group_name,
         "state": str(entry.state),
         "settings": entry.settings.to_dict(),
         "trajectory": encode_trajectory(entry.trajectory, encoder),
@@ -113,6 +114,7 @@ def decode_trajectory_entry(data: dict, decoder: Decoder) -> TrajectoryEntry:
         set_as_reference=data["reference"],
         settings=ProcessingSettings.from_dict(data["settings"]),
         group_id=data["group"],
+        group_name=data.get("group_name", ""),  # since 6.1
         state=TrajectoryProcessingState.from_string(data["state"]),
     )
     entry.set_id(data["id"])
@@ -131,7 +133,7 @@ def encode_result_entry(entry: ResultEntry, encoder: Encoder) -> dict:
         data = {"type": "alignment", **_encode_alignment(entry.alignment_result, encoder)}
     else:
         raise TypeError(f"Unsupported result type {type(entry).__name__}")
-    return {"id": entry.entry_id, **data}
+    return {"id": entry.entry_id, "group": entry.group_id, "group_name": entry.group_name, **data}
 
 
 def decode_result_entry(data: dict, decoder: Decoder) -> ResultEntry:
@@ -145,6 +147,8 @@ def decode_result_entry(data: dict, decoder: Decoder) -> ResultEntry:
     else:
         raise ValueError(f"Unsupported result type {data['type']!r}")
     entry.set_id(data["id"])
+    if "group" in data:  # since 6.1
+        entry.group_id, entry.group_name = data["group"], data["group_name"]
     return entry
 
 

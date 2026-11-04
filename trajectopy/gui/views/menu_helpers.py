@@ -5,6 +5,7 @@ selection, stays visible but disabled with the reason as hint. Keyboard shortcut
 actions, so the menu shows them and the table views trigger the very same actions (see ``trigger_shortcut``).
 """
 
+import functools
 from collections.abc import Callable, Iterator
 from typing import Any
 
@@ -121,3 +122,46 @@ class SelectionMenu(QtWidgets.QMenu):
             return False
         self.populate(selection)
         return trigger_shortcut(self, event)
+
+
+def add_group_menu(
+    menu: QtWidgets.QMenu,
+    selection: Any,
+    *,
+    group: Callable[[], object],
+    rename: Callable[[], object],
+    ungroup: Callable[[], object],
+    move: Callable[[str], object],
+) -> None:
+    """Adds the submenu for grouping the selected entries (selection with ``entries`` and the shown ``groups``)."""
+    groups: dict[str, str] = selection.groups
+    selected_groups = {entry.group_id for entry in selection.entries}
+    grouped = selected_groups & groups.keys()
+    submenu = add_submenu(menu, "Group", hint="Groups of entries in the table, e.g. of one measurement run.")
+    add_action(
+        submenu,
+        "New Group…",
+        group,
+        hint="Puts the selected entries into a new group. Drag entries onto a group to move them there.",
+        shortcuts=("Ctrl+G",),
+    )
+    add_action(
+        submenu,
+        "Rename Group…",
+        rename,
+        shortcuts=("Ctrl+Shift+F2",),
+        unavailable="" if len(selected_groups) == 1 and grouped else "Select a single group (or its entries).",
+    )
+    add_action(
+        submenu,
+        "Ungroup",
+        ungroup,
+        hint="Takes the selected entries out of their groups.",
+        shortcuts=("Ctrl+Shift+G",),
+        unavailable="" if grouped else "None of the selected entries is in a group.",
+    )
+    targets = {group_id: name for group_id, name in groups.items() if selected_groups != {group_id}}
+    move_menu = add_submenu(submenu, "Move to Group", hint="Moves the selected entries into an existing group.")
+    move_menu.setEnabled(bool(targets))
+    for group_id, name in targets.items():
+        add_action(move_menu, name, functools.partial(move, group_id))

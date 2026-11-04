@@ -8,13 +8,13 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry, ResultEntry
 from trajectopy.gui.models.selection import ResultSelection
-from trajectopy.gui.models.table_model import RequestTableModel
+from trajectopy.gui.models.table_model import GroupedTableModel
 from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 
 
-class ResultTableModel(RequestTableModel):
+class ResultTableModel(GroupedTableModel):
     """Class representing the result table model."""
 
     items: list[ResultEntry]
@@ -31,6 +31,10 @@ class ResultTableModel(RequestTableModel):
             ResultModelRequestType.COPY: self.copy_selected_entries,
             ResultModelRequestType.SORT: self.sort_items,
             ResultModelRequestType.SWITCH_SORTING: self.switch_sorting,
+            ResultModelRequestType.GROUP: self.group_selected_entries,
+            ResultModelRequestType.UNGROUP: self.ungroup_selected_entries,
+            ResultModelRequestType.RENAME_GROUP: self.rename_selected_groups,
+            ResultModelRequestType.MOVE_TO_GROUP: self.move_selected_entries_to_group,
         }
         super().__init__(
             headers=["Name", "Result Type"],

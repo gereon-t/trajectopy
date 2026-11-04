@@ -45,6 +45,10 @@ class ResultModelRequestType(Enum):
     COPY = auto()
     SORT = auto()
     SWITCH_SORTING = auto()
+    GROUP = auto()
+    UNGROUP = auto()
+    RENAME_GROUP = auto()
+    MOVE_TO_GROUP = auto()
 
 
 class ProjectRequestType(Enum):
@@ -86,6 +90,10 @@ class TrajectoryModelRequestType(Enum):
     REMOVE_RELATED = auto()
     RESET = auto()
     SORT = auto()
+    GROUP = auto()
+    UNGROUP = auto()
+    RENAME_GROUP = auto()
+    MOVE_TO_GROUP = auto()
 
 
 class UIRequestType(Enum):
@@ -106,6 +114,10 @@ class UIRequestType(Enum):
     PLAYBACK = auto()
     RENAME_TRAJ = auto()
     RENAME_RES = auto()
+    GROUP_TRAJ = auto()
+    RENAME_GROUP_TRAJ = auto()
+    GROUP_RES = auto()
+    RENAME_GROUP_RES = auto()
 
 
 @dataclass
@@ -152,7 +164,8 @@ class ResultModelRequest:
     alignment: AlignmentEntry = field(default_factory=AlignmentEntry)
     index_list: list[str] = field(default_factory=list)
     file_path: str = ""
-    name: str = ""  # new name (RENAME)
+    name: str = ""  # new name (RENAME, GROUP, RENAME_GROUP)
+    group_id: str = ""  # target group (MOVE_TO_GROUP)
 
 
 @dataclass
@@ -168,7 +181,8 @@ class TrajectoryModelRequest:
     selection: TrajectorySelection = field(default_factory=TrajectorySelection)
     index_list: list[str] = field(default_factory=list)
     file_path: str = ""
-    name: str = ""  # new name (RENAME)
+    name: str = ""  # new name (RENAME, GROUP, RENAME_GROUP)
+    group_id: str = ""  # target group (MOVE_TO_GROUP)
 
 
 @dataclass

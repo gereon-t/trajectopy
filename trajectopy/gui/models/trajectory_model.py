@@ -7,12 +7,12 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.entries import TrajectoryEntry
 from trajectopy.gui.models.selection import TrajectorySelection
-from trajectopy.gui.models.table_model import RequestTableModel
+from trajectopy.gui.models.table_model import GroupedTableModel
 
 logger = logging.getLogger(__name__)
 
 
-class TrajectoryTableModel(RequestTableModel):
+class TrajectoryTableModel(GroupedTableModel):
     """Class representing the trajectory table model."""
 
     items: list[TrajectoryEntry]
@@ -29,6 +29,10 @@ class TrajectoryTableModel(RequestTableModel):
             TrajectoryModelRequestType.UNSET_REFERENCE: self.unset_as_reference,
             TrajectoryModelRequestType.RESET: self.reset,
             TrajectoryModelRequestType.SORT: self.sort_items,
+            TrajectoryModelRequestType.GROUP: self.group_selected_entries,
+            TrajectoryModelRequestType.UNGROUP: self.ungroup_selected_entries,
+            TrajectoryModelRequestType.RENAME_GROUP: self.rename_selected_groups,
+            TrajectoryModelRequestType.MOVE_TO_GROUP: self.move_selected_entries_to_group,
         }
 
         super().__init__(
@@ -43,6 +47,10 @@ class TrajectoryTableModel(RequestTableModel):
             if (current := self.get(entry.entry_id)) is not None:
                 entry.set_as_reference = current.set_as_reference
         super().update_selected_entries(request)
+
+    def default_group_name(self, entries: list) -> str:
+        # trajectories derived from another one share its group: named after the first one (usually the source)
+        return entries[0].name
 
     def remove_group(self, group_id: str) -> None:
         self.remove([item.entry_id for item in self.items if item.group_id == group_id])
@@ -62,8 +70,8 @@ class TrajectoryTableModel(RequestTableModel):
         if not isinstance((selection := request.selection), TrajectorySelection):
             raise ValueError("No trajectory selection provided")
 
-        for entry in selection.entries:
-            self.remove_group(entry.group_id)
+        group_ids = {entry.group_id for entry in selection.entries}
+        self.remove([item.entry_id for item in self.items if item.group_id in group_ids])
 
     def copy_trajectories(self, request: TrajectoryModelRequest) -> None:
         """Deep copy trajectory"""
