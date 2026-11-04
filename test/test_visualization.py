@@ -65,6 +65,33 @@ class TestVisualization(unittest.TestCase):
         warning.assert_called_once()
         self.assertIn("plot.png", warning.call_args.args[2])  # the extension was added
 
+    def test_axes_refit_when_a_curve_is_hidden(self):
+        from trajectopy.core.trajectory import Trajectory
+
+        t = np.arange(100.0)
+        low = Trajectory.from_arrays(np.c_[t, t, np.sin(t)], timestamps=t, name="low")
+        high = Trajectory.from_arrays(np.c_[t, t, np.sin(t) + 1000.0], timestamps=t, name="high")
+        window = vis.PlotWindow([vis.xyz_figure([low, high])])
+        self.addCleanup(window.close)
+        window.show()
+        app = ensure_app()
+        app.processEvents()
+        plot = [item for item in window.figure_widget(0).graphics.ci.items if isinstance(item, pg.PlotItem)][2]
+        view = plot.getViewBox()
+
+        def y_range() -> list[float]:
+            app.processEvents()
+            app.processEvents()
+            return view.viewRange()[1]
+
+        self.assertGreater(y_range()[1], 900)
+        curve = next(item for item in plot.listDataItems() if item.name() == "high")
+        view.setYRange(-5, 5)  # e.g. zoomed in
+        curve.setVisible(False)
+        self.assertLess(y_range()[1], 10)
+        curve.setVisible(True)
+        self.assertGreater(y_range()[1], 900)
+
     def test_trajectory_figures(self):
         figures = vis.trajectory_figures([generated_trajectory, noisy_trajectory])
         self.assertEqual([figure.title for figure in figures], ["Positions", "XYZ", "RPY", "Map"])

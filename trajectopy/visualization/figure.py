@@ -196,6 +196,40 @@ class _FigureWidget(QtWidgets.QWidget):
         self.figure.variants[variant](self.graphics.ci)
         if self.uses_opengl:
             _antialias_all(self.graphics)
+        self._refit_on_visibility_changes()
+
+    def _refit_on_visibility_changes(self) -> None:
+        """Fits the axes to the shown data again when items are shown or hidden, e.g. with the legend.
+
+        Each view returns to the automatic ranging it had after rendering (e.g. only y for plots whose x range
+        follows another plot); hidden items do not count for the automatic range.
+        """
+        self._pending_refits: dict[int, tuple[pg.ViewBox, list]] = {}
+        for item in self.graphics.ci.items:
+            if not isinstance(item, pg.PlotItem):
+                continue
+            view = item.getViewBox()
+            auto_range = list(view.state["autoRange"])
+            if not any(auto_range):
+                continue  # a fixed range, e.g. of a matrix
+            for data_item in view.addedItems:
+                data_item.visibleChanged.connect(
+                    lambda view=view, auto_range=auto_range: self._schedule_refit(view, auto_range)
+                )
+
+    def _schedule_refit(self, view: pg.ViewBox, auto_range: list) -> None:
+        # several items change at once (e.g. a curve and the items that follow it): one refit per view
+        if not self._pending_refits:
+            QtCore.QTimer.singleShot(0, self._refit)
+        self._pending_refits[id(view)] = (view, auto_range)
+
+    def _refit(self) -> None:
+        pending, self._pending_refits = self._pending_refits, {}
+        for view, (x_auto, y_auto) in pending.values():
+            if x_auto:
+                view.enableAutoRange(axis=pg.ViewBox.XAxis, enable=x_auto)
+            if y_auto:
+                view.enableAutoRange(axis=pg.ViewBox.YAxis, enable=y_auto)
 
 
 def _safe_filename(name: str) -> str:
