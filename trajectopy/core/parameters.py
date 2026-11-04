@@ -68,7 +68,13 @@ class Parameter:
         """
         formatter_value = UNIT_FORMAT_RULES.get(self.unit, {"normal": (1, "-", 4)})["normal"]
         formatter_variance = UNIT_FORMAT_RULES.get(self.unit, {"precise": (1, "-", 2)}).get("precise", formatter_value)
-        return f"{self.name:<16} = {self.value * formatter_value[0]:<8.{formatter_value[2]}f}{formatter_value[1]:<4}  s-dev.: {np.sqrt(self.variance) * formatter_variance[0]:<8.{formatter_variance[2]}f}{formatter_variance[1]:<4}"
+        # "-" for an invalid variance, e.g. of a parameter that the data does not determine
+        std = (
+            f"{np.sqrt(self.variance) * formatter_variance[0]:<8.{formatter_variance[2]}f}{formatter_variance[1]:<4}"
+            if self.variance >= 0
+            else f"{'-':<12}"
+        )
+        return f"{self.name:<16} = {self.value * formatter_value[0]:<8.{formatter_value[2]}f}{formatter_value[1]:<4}  s-dev.: {std}"
 
     def __sub__(self, other: "Parameter") -> "Parameter":
         """Subtracts another parameter from this one.

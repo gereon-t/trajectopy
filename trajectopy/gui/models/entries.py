@@ -8,7 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
-from trajectopy.core.parameters import AlignmentParameters
+from trajectopy.core.parameters import AlignmentParameters, Parameter
 from trajectopy.core.settings import AlignmentEstimationSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.io.header import HeaderData
@@ -414,18 +414,20 @@ class AlignmentEntry(ResultEntry):
         if self.alignment_result.position_parameters is None:
             return {}
 
+        parameters = self.alignment_result.position_parameters
+        degrees = float(np.rad2deg(1.0))
         return {
-            "Translation x [m]": f"{self.alignment_result.position_parameters.helmert.trans_x.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.trans_x.variance):<10.4f}",
-            "Translation y [m]": f"{self.alignment_result.position_parameters.helmert.trans_y.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.trans_y.variance):<10.4f}",
-            "Translation z [m]": f"{self.alignment_result.position_parameters.helmert.trans_z.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.trans_z.variance):<10.4f}",
-            "Rotation x [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_x.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_x.variance)):<10.4f}",
-            "Rotation y [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_y.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_y.variance)):<10.4f}",
-            "Rotation z [°]": f"{np.rad2deg(self.alignment_result.position_parameters.helmert.rot_z.value):<10.4f} s-dev.: {np.rad2deg(np.sqrt(self.alignment_result.position_parameters.helmert.rot_z.variance)):<10.4f}",
-            "Scale [-]": f"{self.alignment_result.position_parameters.helmert.scale.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.helmert.scale.variance) * 1e6:<10.4f} ppm",
-            "Time Shift [s]": f"{self.alignment_result.position_parameters.time_shift.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.time_shift.variance):<10.4f}",
-            "Leverarm x [m]": f"{self.alignment_result.position_parameters.leverarm.x.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.leverarm.x.variance):<10.4f}",
-            "Leverarm y [m]": f"{self.alignment_result.position_parameters.leverarm.y.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.leverarm.y.variance):<10.4f}",
-            "Leverarm z [m]": f"{self.alignment_result.position_parameters.leverarm.z.value:<10.4f} s-dev.: {np.sqrt(self.alignment_result.position_parameters.leverarm.z.variance):<10.4f}",
+            "Translation x [m]": _value_with_std(parameters.sim_trans_x),
+            "Translation y [m]": _value_with_std(parameters.sim_trans_y),
+            "Translation z [m]": _value_with_std(parameters.sim_trans_z),
+            "Rotation x [°]": _value_with_std(parameters.sim_rot_x, degrees),
+            "Rotation y [°]": _value_with_std(parameters.sim_rot_y, degrees),
+            "Rotation z [°]": _value_with_std(parameters.sim_rot_z, degrees),
+            "Scale [-]": _value_with_std(parameters.sim_scale, std_factor=1e6, std_suffix=" ppm"),
+            "Time Shift [s]": _value_with_std(parameters.time_shift),
+            "Leverarm x [m]": _value_with_std(parameters.lever_x),
+            "Leverarm y [m]": _value_with_std(parameters.lever_y),
+            "Leverarm z [m]": _value_with_std(parameters.lever_z),
             "Sensor Rotation x [°]": f"{np.rad2deg(self.alignment_result.rotation_parameters.sensor_rot_x.value):<10.4f}",
             "Sensor Rotation y [°]": f"{np.rad2deg(self.alignment_result.rotation_parameters.sensor_rot_y.value):<10.4f}",
             "Sensor Rotation z [°]": f"{np.rad2deg(self.alignment_result.rotation_parameters.sensor_rot_z.value):<10.4f}",
@@ -446,6 +448,17 @@ class AlignmentEntry(ResultEntry):
         entry_id = HeaderData.from_file(filename).id or str(uuid.uuid4())
         alignment_entry.set_id(entry_id=entry_id)
         return alignment_entry
+
+
+def _value_with_std(
+    parameter: Parameter, factor: float = 1.0, std_factor: float | None = None, std_suffix: str = ""
+) -> str:
+    """Value and standard deviation of a parameter; "-" if the variance is not valid (e.g. a parameter that the
+    data does not determine, whose variance is negative due to rounding)."""
+    std_factor = factor if std_factor is None else std_factor
+    variance = parameter.variance
+    std = f"{np.sqrt(variance) * std_factor:<10.4f}{std_suffix}" if variance >= 0 else f"{'-':<10}"
+    return f"{parameter.value * factor:<10.4f} s-dev.: {std}"
 
 
 @dataclass

@@ -42,6 +42,9 @@ from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 
+# limit of "Resample to Time Grid" (e.g. one day at 500 Hz); larger grids would exhaust the memory
+MAX_GRID_POINTS = 50_000_000
+
 
 @dataclass(frozen=True)
 class _PerEntryOperation:
@@ -446,6 +449,12 @@ class TrajectoryManager(QObject):
         step = entry_pair.request.grid
         if step <= 0:
             raise ValueError(f"The grid step must be positive, got {step}.")
+        # e.g. a merged trajectory of Unix and relative timestamps spans decades: refuse instead of running out of memory
+        if (num_points := (trajectory.time_end - trajectory.time_start) / step + 1) > MAX_GRID_POINTS:
+            raise ValueError(
+                f"The grid would have {num_points:.3g} points over {trajectory.time_end - trajectory.time_start:.6g} s "
+                f"(at most {MAX_GRID_POINTS:.0e}). Choose a larger step or check the timestamps."
+            )
         new_timestamps = np.arange(trajectory.time_start, trajectory.time_end + step, step)
         # a time grid is interpolated over time, also for spatially sorted trajectories
         sorting = trajectory.sorting

@@ -194,6 +194,30 @@ class TestTrajectoryOperations(unittest.TestCase):
         self.assertEqual(added, [])
         self.assertIn("no poses", messages[0])
 
+    def test_grid_with_too_many_points_is_refused(self):
+        t = np.r_[np.arange(5.0), 1.7e9 + np.arange(5.0)]  # e.g. merged Unix and relative timestamps
+        trajectory = Trajectory.from_arrays(np.c_[t * 0, t * 0, t * 0], timestamps=t)
+
+        with self.assertRaisesRegex(ValueError, "larger step"):
+            TrajectoryManager.operation_interpolate_to_grid(_pair(trajectory, grid=0.1))
+
+    def test_undetermined_parameters_show_no_standard_deviation(self):
+        import warnings
+
+        from trajectopy.gui.models.entries import AlignmentEntry
+
+        entry = AlignmentEntry()
+        rotation = entry.alignment_result.position_parameters.sim_rot_x
+        rotation.enable()
+        rotation.variance = -1e-12  # rounding of an undetermined one
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            properties = entry.result_properties
+            text = str(entry.alignment_result.position_parameters)
+
+        self.assertIn("s-dev.: -", properties["Rotation x [°]"])
+        self.assertNotIn("nan", text)
+
 
 if __name__ == "__main__":
     unittest.main()
