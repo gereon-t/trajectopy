@@ -549,6 +549,24 @@ class TestRobustnessRegressions(unittest.TestCase):
         trajectory = Trajectory.from_file("#fields t,l,px,py,pz\n0,nan,0,0,0\n1,nan,3,4,0\n", io_stream=True)
         np.testing.assert_allclose(trajectory.path_lengths, [0.0, 5.0])
 
+    def test_rpe_deviations_are_arrays_for_fast_copies(self):
+        import copy
+        import time
+
+        from trajectopy.results.rpe_result import RelativeTrajectoryDeviations
+
+        result = rpe(_line(np.arange(2000.0)), _line(np.arange(2000.0)))
+        self.assertTrue(all(isinstance(values, np.ndarray) for values in result.rpe_dev.pos_dev.values()))
+        start = time.perf_counter()
+        copy.deepcopy(result)  # e.g. a project save request on the GUI thread
+        self.assertLess(time.perf_counter() - start, 0.5)
+
+        # lists are still accepted
+        deviations = RelativeTrajectoryDeviations(
+            pos_dev={1.0: [0.1, 0.2]}, rot_dev={1.0: []}, pair_distance={1.0: [1.0, 1.0]}
+        )
+        self.assertEqual(deviations.num_pairs, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

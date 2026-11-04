@@ -18,13 +18,13 @@ class RelativeTrajectoryDeviations:
     list contains per-pair drift samples for that bucket.
 
     Attributes:
-        pos_dev (Dict[float, List[float]]): Mapping from pair distance to a
-            list of position drift magnitudes. Units depend on
+        pos_dev (Dict[float, np.ndarray]): Mapping from pair distance to the
+            position drift magnitudes. Units depend on
             `pair_distance_unit`; values are normalized per 100 m (expressed
             as percentage) when distance-based.
-        rot_dev (Dict[float, List[float]]): Mapping from pair distance to a
-            list of orientation drift samples in radians.
-        pair_distance (Dict[float, List[float]]): Raw separation measurements
+        rot_dev (Dict[float, np.ndarray]): Mapping from pair distance to the
+            orientation drift samples in radians.
+        pair_distance (Dict[float, np.ndarray]): Raw separation measurements
             (meters or seconds) for each bucket, used for computing mean
             bucket spacing and step size.
         pair_distance_unit (PairDistanceUnit): Enumeration indicating whether
@@ -36,10 +36,16 @@ class RelativeTrajectoryDeviations:
         num_pairs (int): Total number of evaluated pose pairs across all buckets.
     """
 
-    pos_dev: dict[float, list[float]]
-    rot_dev: dict[float, list[float]]
-    pair_distance: dict[float, list[float]]
+    pos_dev: dict[float, np.ndarray]
+    rot_dev: dict[float, np.ndarray]
+    pair_distance: dict[float, np.ndarray]
     pair_distance_unit: PairDistanceUnit = PairDistanceUnit.METER
+
+    def __post_init__(self) -> None:
+        # arrays (lists are accepted): millions of pairs are copied and saved as a whole, not number by number
+        for deviations in (self.pos_dev, self.rot_dev, self.pair_distance):
+            for key, values in deviations.items():
+                deviations[key] = np.asarray(values, dtype=float)
 
     @property
     def num_pairs(self) -> int:
@@ -78,7 +84,7 @@ class RPEResult:
 
     @property
     def has_rot_dev(self) -> bool:
-        return any(self.rpe_dev.rot_dev.values())
+        return any(len(values) for values in self.rpe_dev.rot_dev.values())
 
     @property
     def step(self) -> float:
@@ -101,11 +107,11 @@ class RPEResult:
         return 100.0 if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else 1.0
 
     def compute_metric(self, key: str, func: Callable[[Any], float], factor: float = 1.0) -> list[float]:
-        return [float(func(values) * factor) for values in self.rpe_dev.__dict__[key].values() if values]
+        return [float(func(values) * factor) for values in self.rpe_dev.__dict__[key].values() if len(values)]
 
     @property
     def num_pairs(self) -> list[int]:
-        return [len(values) for values in self.rpe_dev.pair_distance.values() if values]
+        return [len(values) for values in self.rpe_dev.pair_distance.values() if len(values)]
 
     @property
     def mean_pair_distances(self) -> list[float]:
@@ -179,28 +185,22 @@ class RPEResult:
 
         return self.compute_metric(key="rot_dev", func=np.median, factor=self.drift_factor)
 
-    def get_all(self, key: str) -> list[float]:
-        ret_list: list[float] = []
+    def get_all(self, key: str) -> np.ndarray:
         model_dict = self.rpe_dev.__dict__
-
-        if key not in model_dict:
-            return ret_list
-
-        for value in model_dict[key].values():
-            ret_list.extend(value)
-
-        return ret_list
+        if key not in model_dict or not model_dict[key]:
+            return np.array([])
+        return np.concatenate([np.asarray(values, dtype=float) for values in model_dict[key].values()])
 
     @property
-    def all_pair_distances(self) -> list[float]:
+    def all_pair_distances(self) -> np.ndarray:
         return self.get_all(key="pair_distance")
 
     @property
-    def pos_dev_all(self) -> list[float]:
+    def pos_dev_all(self) -> np.ndarray:
         return self.get_all(key="pos_dev")
 
     @property
-    def all_rot_devs(self) -> list[float]:
+    def all_rot_devs(self) -> np.ndarray:
         return self.get_all(key="rot_dev")
 
     @property

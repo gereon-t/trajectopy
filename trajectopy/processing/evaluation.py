@@ -229,9 +229,9 @@ def _compare_trajectories_relative(
         relative_comparison_settings.pair_distance_step,
     )
 
-    pos_dev: dict[float, list[float]] = {}
-    rot_dev: dict[float, list[float]] = {}
-    pair_distance: dict[float, list[float]] = {}
+    pos_dev: dict[float, np.ndarray] = {}
+    rot_dev: dict[float, np.ndarray] = {}
+    pair_distance: dict[float, np.ndarray] = {}
 
     if relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.METER:
         index = other.path_lengths
@@ -254,9 +254,9 @@ def _compare_trajectories_relative(
 
     cnt = 0
     for pair_dist in pair_dists:
-        pos_dev[pair_dist] = []
-        rot_dev[pair_dist] = []
-        pair_distance[pair_dist] = []
+        pos_dev[pair_dist] = np.array([])
+        rot_dev[pair_dist] = np.array([])
+        pair_distance[pair_dist] = np.array([])
 
         pair_indices = _get_pair_indices(index, relative_comparison_settings, dist=pair_dist)
 
@@ -274,15 +274,15 @@ def _compare_trajectories_relative(
             pose_error = np.matmul(_se3_inv(pose_delta_gt), pose_delta_test)
 
             t_err = _translation_error(pose_error)
-            rot_dev[pair_dist] = list(_rotation_error(pose_error) / distances)
+            rot_dev[pair_dist] = _rotation_error(pose_error) / distances
         else:
             xyz_other, xyz_test = other.positions.xyz[order], trajectory.positions.xyz[order]
             ref_dist = np.linalg.norm(xyz_other[second] - xyz_other[first], axis=1)
             test_dist = np.linalg.norm(xyz_test[second] - xyz_test[first], axis=1)
             t_err = np.abs(ref_dist - test_dist)
 
-        pos_dev[pair_dist] = list(t_err / distances)
-        pair_distance[pair_dist] = list(distances)
+        pos_dev[pair_dist] = t_err / distances
+        pair_distance[pair_dist] = distances
         cnt += len(distances)
 
     if cnt == 0:

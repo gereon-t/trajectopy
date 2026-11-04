@@ -194,9 +194,9 @@ def _encode_rpe(result: RPEResult, encoder: Encoder) -> dict:
 def _decode_rpe(data: dict, decoder: Decoder) -> RPEResult:
     buckets = data["buckets"]
     deviations = RelativeTrajectoryDeviations(
-        pair_distance={bucket["distance"]: decoder.get(bucket["pair_distance"]).tolist() for bucket in buckets},
-        pos_dev={bucket["distance"]: decoder.get(bucket["pos_dev"]).tolist() for bucket in buckets},
-        rot_dev={bucket["distance"]: decoder.get(bucket["rot_dev"]).tolist() for bucket in buckets},
+        pair_distance={bucket["distance"]: decoder.get(bucket["pair_distance"]) for bucket in buckets},
+        pos_dev={bucket["distance"]: decoder.get(bucket["pos_dev"]) for bucket in buckets},
+        rot_dev={bucket["distance"]: decoder.get(bucket["rot_dev"]) for bucket in buckets},
         pair_distance_unit=PairDistanceUnit[data["unit"]],
     )
     return RPEResult(rpe_dev=deviations, name=data["name"])

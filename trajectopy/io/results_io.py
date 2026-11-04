@@ -222,21 +222,21 @@ def read_rpe_result(filename: str) -> RPEResult:
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
 
-    pos_dev: dict[float, list[float]] = {}
-    rot_dev: dict[float, list[float]] = {}
-    pair_distance: dict[float, list[float]] = {}
+    pos_dev: dict[float, np.ndarray] = {}
+    rot_dev: dict[float, np.ndarray] = {}
+    pair_distance: dict[float, np.ndarray] = {}
 
     last_index = 0
     for index in header_data.num_pairs:
         dev_block = deviation_data.iloc[last_index : last_index + index, :]
         pair_distances = dev_block["pair_distance"].to_numpy(dtype=float)
         pos_devs = dev_block["pos_dev"].to_numpy(dtype=float)
-        rot_devs = dev_block["rot_dev"].to_numpy(dtype=float) if "rot_dev" in deviation_data.columns else []
+        rot_devs = dev_block["rot_dev"].to_numpy(dtype=float) if "rot_dev" in deviation_data.columns else np.array([])
 
         mean_dist = float(np.mean(pair_distances))
-        pair_distance[mean_dist] = list(pair_distances)
-        pos_dev[mean_dist] = list(pos_devs)
-        rot_dev[mean_dist] = list(rot_devs)
+        pair_distance[mean_dist] = pair_distances
+        pos_dev[mean_dist] = pos_devs
+        rot_dev[mean_dist] = rot_devs
 
         last_index += index
 
