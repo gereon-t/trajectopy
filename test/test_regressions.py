@@ -567,6 +567,22 @@ class TestRobustnessRegressions(unittest.TestCase):
         )
         self.assertEqual(deviations.num_pairs, 2)
 
+    def test_cached_ate_statistics_follow_changes_of_the_deviations(self):
+        from trajectopy.processing.evaluation import ate
+
+        t = np.arange(20.0)
+        test = _line(t, rpy=np.c_[0 * t, 0 * t, 0.01 * t])
+        test.positions.xyz[:, 1] += np.where(t < 10, 0.1, 5.0)  # large deviations in the second half
+        result = ate(test, _line(t, rpy=np.zeros((20, 3))), align=False)
+        self.assertAlmostEqual(result.pos_dev_max, 5.0)
+        before = result.rot_dev_max
+
+        result.remove_ate_above(1.0)
+
+        self.assertAlmostEqual(result.pos_dev_max, 0.1)
+        self.assertLess(result.rot_dev_max, before)
+        self.assertEqual(len(result.pos_dev_comb), 10)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -151,8 +151,8 @@ class ATEResult:
             # selected as quaternions, a round trip through Euler angles is inexact near gimbal lock
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[ate_below_idx])
 
-        # rotation statistics are cached and depend on the removed deviations
-        for cached in ("rot_dev_xyz", "rot_bias_xyz"):
+        # the combined deviations and rotation statistics are cached and depend on the removed deviations
+        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb"):
             self.__dict__.pop(cached, None)
 
     @property
@@ -180,8 +180,8 @@ class ATEResult:
         if self.abs_dev.rot_dev is not None:
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[order])
 
-        # cached per-epoch rotation deviations follow the old order
-        for cached in ("rot_dev_xyz", "rot_bias_xyz"):
+        # cached per-epoch deviations follow the old order
+        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb"):
             self.__dict__.pop(cached, None)
 
     @property
@@ -316,17 +316,17 @@ class ATEResult:
             else np.zeros_like(self.abs_dev.pos_dev)
         )
 
-    @property
+    @cached_property
     def pos_dev_comb(self) -> np.ndarray:
         """
-        Returns position deviations combined using the L2 norm
+        Returns position deviations combined using the L2 norm (cached: the statistics use them several times)
         """
         return np.linalg.norm(self.abs_dev.pos_dev, axis=1)
 
-    @property
+    @cached_property
     def rot_dev_comb(self) -> np.ndarray:
         """
-        Returns rotation deviations as single rotation angles
+        Returns rotation deviations as single rotation angles (cached: the statistics use them several times)
         """
         return (
             self.abs_dev.rot_dev.rotangle if self.abs_dev.rot_dev is not None else np.zeros_like(self.abs_dev.pos_dev)
