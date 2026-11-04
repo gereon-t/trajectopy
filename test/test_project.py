@@ -7,6 +7,8 @@ import unittest
 import zipfile
 from pathlib import Path
 
+import numpy as np
+
 from trajectopy.core.settings import PlotSettings
 from trajectopy.gui.models.entries import (
     AbsoluteDeviationEntry,
@@ -16,12 +18,14 @@ from trajectopy.gui.models.entries import (
 )
 from trajectopy.gui.project import (
     MANIFEST_FILENAME,
+    MANIFEST_KEY,
     Project,
     ProjectError,
     load_project,
     load_session_folder,
     save_project,
 )
+from trajectopy.utils.definitions import Sorting
 
 TRAJECTORY_FILES = ["./test/data/generated_trajectory.traj", "./test/data/noisy_trajectory.traj"]
 
@@ -108,17 +112,98 @@ class TestProject(unittest.TestCase):
     def test_projects_of_newer_versions_are_rejected(self):
         save_project(Project(), self.path)
         newer = self.directory / "newer.tpy"
-        with zipfile.ZipFile(self.path) as source, zipfile.ZipFile(newer, "w") as target:
-            for item in source.infolist():
-                data = source.read(item)
-                if item.filename == MANIFEST_FILENAME:
-                    manifest = json.loads(data)
-                    manifest.update(version=manifest["version"] + 1, trajectopy_version="99.0.0")
-                    data = json.dumps(manifest).encode()
-                target.writestr(item, data)
+        with np.load(self.path, allow_pickle=False) as arrays:
+            manifest = json.loads(str(arrays[MANIFEST_KEY]))
+            contents = {key: arrays[key] for key in arrays.files if key != MANIFEST_KEY}
+        manifest.update(version=manifest["version"] + 1, trajectopy_version="99.0.0")
+        with open(newer, "wb") as file:
+            np.savez(file, **{MANIFEST_KEY: np.array(json.dumps(manifest))}, **contents)
 
         with self.assertRaisesRegex(ProjectError, r"newer version of Trajectopy \(99.0.0\)"):
             load_project(str(newer))
+
+    def test_roundtrip_restores_the_data_exactly(self):
+        project = _project()
+        # spatially sorted with equal path lengths, which the trajectory would otherwise order by time
+        trajectory = project.trajectories[0].trajectory
+        trajectory.path_lengths = np.repeat(np.arange(len(trajectory) // 2 + 1), 2)[: len(trajectory)].astype(float)
+        trajectory._sorting = Sorting.PATH_LENGTH
+        alignment = project.results[0].alignment_result.position_parameters
+        alignment.sim_trans_x.value = 1.25
+        alignment.sim_trans_x.disable()  # keeps its value for when it is enabled again
+        save_project(project, self.path)
+        loaded = load_project(self.path)
+
+        for original, restored in zip(project.trajectories, loaded.trajectories):
+            for attribute in ("timestamps", "path_lengths", "xyz", "velocity_xyz"):
+                np.testing.assert_array_equal(
+                    getattr(restored.trajectory, attribute), getattr(original.trajectory, attribute)
+                )
+            # scipy normalizes quaternions when rotations are created, which may change the last digit
+            np.testing.assert_allclose(restored.trajectory.quat, original.trajectory.quat, rtol=0, atol=1e-15)
+            self.assertEqual(restored.trajectory.sorting, original.trajectory.sorting)
+            self.assertEqual(restored.trajectory.positions.epsg, original.trajectory.positions.epsg)
+            self.assertEqual(restored.trajectory.positions.pipeline_str, original.trajectory.positions.pipeline_str)
+            self.assertEqual(str(restored.state), str(original.state))
+
+        restored_alignment = loaded.results[0].alignment_result
+        self.assertEqual(restored_alignment, project.results[0].alignment_result)
+        self.assertFalse(restored_alignment.position_parameters.sim_trans_x.enabled)
+        restored_alignment.position_parameters.sim_trans_x.enable()
+        self.assertEqual(restored_alignment.position_parameters.sim_trans_x.value, 1.25)
+
+        ate_original, ate_restored = project.results[1].deviations, loaded.results[1].deviations
+        np.testing.assert_array_equal(ate_restored.abs_dev.pos_dev, ate_original.abs_dev.pos_dev)
+        np.testing.assert_array_equal(ate_restored.trajectory.timestamps, ate_original.trajectory.timestamps)
+        self.assertEqual(ate_restored.property_dict, ate_original.property_dict)
+        self.assertEqual(loaded.results[2].deviations.property_dict, project.results[2].deviations.property_dict)
+
+    def test_projects_of_the_text_format_can_still_be_opened(self):
+        # the format of Trajectopy 5.1: a zip archive with a manifest and the trajectory and result files
+        project = _project()
+        with zipfile.ZipFile(self.path, "w") as archive:
+            trajectories = []
+            for index, entry in enumerate(project.trajectories):
+                file = self.directory / f"{index:04d}.traj"
+                entry.to_file(str(file))
+                archive.write(file, f"trajectories/{index:04d}.traj")
+                trajectories.append(
+                    {
+                        "id": entry.entry_id,
+                        "file": f"trajectories/{index:04d}.traj",
+                        "reference": entry.set_as_reference,
+                        "group": entry.group_id,
+                        "source": "",
+                    }
+                )
+            file = self.directory / "0000.result"
+            project.results[1].to_file(str(file))
+            archive.write(file, "results/0000.result")
+            manifest = {
+                "format": "trajectopy-project",
+                "version": 1,
+                "trajectories": trajectories,
+                "results": [{"id": project.results[1].entry_id, "file": "results/0000.result"}],
+            }
+            archive.writestr(MANIFEST_FILENAME, json.dumps(manifest))
+
+        loaded = load_project(self.path)
+
+        self.assertEqual(
+            [entry.entry_id for entry in loaded.trajectories], [entry.entry_id for entry in project.trajectories]
+        )
+        self.assertEqual(loaded.results[0].entry_id, project.results[1].entry_id)
+        np.testing.assert_allclose(loaded.trajectories[0].trajectory.xyz, project.trajectories[0].trajectory.xyz)
+
+    def test_projects_are_read_without_unpickling(self):
+        save_project(Project(), self.path)
+        with np.load(self.path, allow_pickle=False) as arrays:
+            manifest = json.loads(str(arrays[MANIFEST_KEY]))
+        with open(self.path, "wb") as file:
+            np.savez(file, **{MANIFEST_KEY: np.array(json.dumps(manifest))}, a0=np.array([object()], dtype=object))
+
+        loaded = load_project(self.path)  # the object array is not referenced, so it is never read
+        self.assertEqual(loaded.trajectories, [])
 
     def test_session_folder_of_earlier_versions(self):
         # the layout that "Session -> Save" wrote: <name>_<id>.traj/.json/.result and the order of the tables

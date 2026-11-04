@@ -170,9 +170,11 @@ headers. Messages of other types are skipped.
   `AlignmentResult.to_file`). They are text files with a header, too, and can be opened in the GUI.
 - **Settings** (`.json`): [processing settings](settings.md#processing-settings) and
   [plot settings](settings.md#plot-settings).
-- **Projects** (`.tpy`, GUI): a zip archive with all trajectories, results and settings, see
-  [Using the GUI](user_guide.md#menu-bar). Besides the files above, it contains a manifest (`project.json`)
-  with the order of the tables and the state of the entries (e.g. the reference).
+- **Projects** (`.tpy`, GUI): all trajectories, results and settings of the GUI, see
+  [Using the GUI](user_guide.md#menu-bar). Projects are stored in a binary format (an uncompressed NumPy
+  archive), so that even large projects are saved and opened within seconds. To exchange data with other
+  programs, export the trajectories and results instead. Projects of Trajectopy 5.1 (zip archives of text files)
+  can still be opened, and session folders of earlier versions can be imported.
 
 ## Creating Trajectories in Python
 

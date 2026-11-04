@@ -1,15 +1,9 @@
 """Trajectopy projects: all trajectories, results and plot settings of a GUI session in one file.
 
-A project file (``.tpy``) is a zip archive::
-
-    project.json                         manifest: format version, order and state of the entries
-    plot_settings.json
-    trajectories/0000.traj               trajectory (the same file that *Export…* writes)
-    trajectories/0000.json               its processing settings
-    trajectories/0000_local_transformer.txt  (if it has a local coordinate system)
-    results/0000.result
-
-The trajectory and result files can be extracted and used on their own.
+A project file (``.tpy``) is an uncompressed NumPy archive (see :mod:`trajectopy.gui.project_format`): a JSON
+manifest with the metadata of all entries and their numerical data as binary arrays, which makes saving and opening
+fast. Projects of the earlier text based format (a zip archive of trajectory and result files) can still be opened,
+and session folders of even older versions can be imported.
 """
 
 import json
@@ -20,10 +14,13 @@ import uuid
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
+
+import numpy as np
 
 from trajectopy.__version__ import __version__ as VERSION
 from trajectopy.core.settings import PlotSettings
+from trajectopy.gui import project_format
 from trajectopy.gui.models.entries import ResultEntry, TrajectoryEntry
 
 logger = logging.getLogger(__name__)
@@ -32,8 +29,9 @@ PROJECT_SUFFIX = ".tpy"
 PROJECT_FILE_FILTER = f"Trajectopy Project (*{PROJECT_SUFFIX})"
 
 FORMAT_NAME = "trajectopy-project"
-FORMAT_VERSION = 1
-MANIFEST_FILENAME = "project.json"
+FORMAT_VERSION = 2
+MANIFEST_KEY = "manifest"  # array of the JSON manifest in a binary project (version 2)
+MANIFEST_FILENAME = "project.json"  # manifest of a text based project (version 1)
 PLOT_SETTINGS_FILENAME = "plot_settings.json"
 
 # order files of session folders (written by Trajectopy before projects were introduced)
@@ -59,75 +57,78 @@ class Project:
 def save_project(project: Project, path: str) -> None:
     """Writes ``project`` to ``path``. An existing file is replaced only once the new one is complete."""
     target = Path(path)
-    with tempfile.TemporaryDirectory() as directory:
-        root = Path(directory)
-        _write_contents(project, root)
-
-        file_descriptor, partial = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".part", dir=target.parent)
-        os.close(file_descriptor)
-        try:
-            with zipfile.ZipFile(partial, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-                for file in sorted(root.rglob("*")):
-                    if file.is_file():
-                        archive.write(file, file.relative_to(root).as_posix())
-            os.replace(partial, target)
-        except BaseException:
-            Path(partial).unlink(missing_ok=True)
-            raise
-    logger.info("Saved project %s", target)
-
-
-def _write_contents(project: Project, root: Path) -> None:
-    # files are numbered instead of named after the entries: names may contain any character and ids may repeat
-    (root / "trajectories").mkdir()
-    (root / "results").mkdir()
-    trajectories, results = [], []
-    for index, entry in enumerate(project.trajectories):
-        file = root / "trajectories" / f"{index:04d}.traj"
-        entry.to_file(str(file))
-        entry.settings.to_file(str(file.with_suffix(".json")))
-        if entry.trajectory.positions.local_transformer is not None:
-            entry.trajectory.positions.export_local_transformer(
-                str(file.with_name(f"{file.stem}_local_transformer.txt"))
-            )
-        trajectories.append(
-            {
-                "id": entry.entry_id,
-                "file": file.relative_to(root).as_posix(),
-                "reference": entry.set_as_reference,
-                "group": entry.group_id,
-                "source": entry.full_filename,
-            }
-        )
-
-    for index, result in enumerate(project.results):
-        file = root / "results" / f"{index:04d}.result"
-        result.to_file(str(file))
-        results.append({"id": result.entry_id, "file": file.relative_to(root).as_posix()})
-
-    project.plot_settings.to_file(str(root / PLOT_SETTINGS_FILENAME))
+    encoder = project_format.Encoder()
     manifest = {
         "format": FORMAT_NAME,
         "version": FORMAT_VERSION,
         "trajectopy_version": VERSION,
-        "trajectories": trajectories,
-        "results": results,
+        "trajectories": [project_format.encode_trajectory_entry(entry, encoder) for entry in project.trajectories],
+        "results": [project_format.encode_result_entry(result, encoder) for result in project.results],
+        "plot_settings": project_format.encode_plot_settings(project.plot_settings),
     }
-    (root / MANIFEST_FILENAME).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    file_descriptor, partial = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".part", dir=target.parent)
+    try:
+        with os.fdopen(file_descriptor, "wb") as file:
+            # uncompressed: the arrays are written as they are, which is much faster than compressing them
+            contents: dict[str, Any] = {MANIFEST_KEY: np.array(json.dumps(manifest)), **encoder.arrays}
+            np.savez(file, allow_pickle=False, **contents)
+        os.replace(partial, target)
+    except BaseException:
+        Path(partial).unlink(missing_ok=True)
+        raise
+    logger.info("Saved project %s", target)
 
 
 def load_project(path: str) -> Project:
-    """Reads a project file.
+    """Reads a project file (of this or of the earlier, text based format).
 
     Raises:
         ProjectError: If the file is not a Trajectopy project or was written by a newer version.
     """
     try:
         archive = zipfile.ZipFile(path)
-    except (zipfile.BadZipFile, IsADirectoryError) as error:
+    except (zipfile.BadZipFile, IsADirectoryError, FileNotFoundError) as error:
         raise ProjectError(f"{path} is not a Trajectopy project.") from error
 
-    with archive, tempfile.TemporaryDirectory() as directory:
+    with archive:
+        names = set(archive.namelist())
+        if MANIFEST_FILENAME in names:
+            project = _load_text_project(archive, path)
+        elif f"{MANIFEST_KEY}.npy" in names:
+            project = None
+        else:
+            raise ProjectError(f"{path} is not a Trajectopy project.")
+    if project is None:
+        project = _load_binary_project(path)
+    logger.info("Opened project %s", path)
+    return project
+
+
+def _load_binary_project(path: str) -> Project:
+    # without pickle: a project file can never execute code
+    with np.load(path, allow_pickle=False) as arrays:
+        try:
+            manifest = json.loads(str(arrays[MANIFEST_KEY]))
+        except ValueError as error:
+            raise ProjectError(f"{path} is not a Trajectopy project.") from error
+        _check_manifest(manifest, path)
+        decoder = project_format.Decoder(arrays)
+        try:
+            return Project(
+                trajectories=[
+                    project_format.decode_trajectory_entry(item, decoder) for item in manifest["trajectories"]
+                ],
+                results=[project_format.decode_result_entry(item, decoder) for item in manifest["results"]],
+                plot_settings=project_format.decode_plot_settings(manifest["plot_settings"]),
+            )
+        except (KeyError, TypeError) as error:
+            raise ProjectError(f"The project {path} is damaged ({error}).") from error
+
+
+def _load_text_project(archive: zipfile.ZipFile, path: str) -> Project:
+    """Reads a project of format version 1 (text files in a zip archive, Trajectopy 5.1)."""
+    with tempfile.TemporaryDirectory() as directory:
         manifest = _read_manifest(archive, path)
         archive.extractall(directory)
         root = Path(directory)
@@ -147,9 +148,7 @@ def load_project(path: str) -> Project:
             result.set_id(item["id"])
             results.append(result)
 
-        project = Project(trajectories, results, _read_plot_settings(root / PLOT_SETTINGS_FILENAME))
-    logger.info("Opened project %s", path)
-    return project
+        return Project(trajectories, results, _read_plot_settings(root / PLOT_SETTINGS_FILENAME))
 
 
 def _read_manifest(archive: zipfile.ZipFile, path: str) -> dict:
@@ -157,7 +156,11 @@ def _read_manifest(archive: zipfile.ZipFile, path: str) -> dict:
         manifest = json.loads(archive.read(MANIFEST_FILENAME))
     except (KeyError, ValueError) as error:
         raise ProjectError(f"{path} is not a Trajectopy project.") from error
+    _check_manifest(manifest, path)
+    return manifest
 
+
+def _check_manifest(manifest: object, path: str) -> None:
     if not isinstance(manifest, dict) or manifest.get("format") != FORMAT_NAME:
         raise ProjectError(f"{path} is not a Trajectopy project.")
     if manifest.get("version", 0) > FORMAT_VERSION:
@@ -165,7 +168,6 @@ def _read_manifest(archive: zipfile.ZipFile, path: str) -> dict:
             f"{path} was saved by a newer version of Trajectopy ({manifest.get('trajectopy_version', 'unknown')}). "
             "Update Trajectopy to open it."
         )
-    return manifest
 
 
 def _member(root: Path, name: str) -> Path:

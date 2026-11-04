@@ -300,8 +300,9 @@ Trajectopy is busy.
 reference, all results, the order of the tables and the plot settings. The title bar shows the name of the
 project and a `*` while it has unsaved changes. Before these are lost (*New*, *Open*, closing Trajectopy),
 Trajectopy offers to save them. A project file can also be opened by dropping it onto one of the tables, by
-double-click on Windows (if chosen during installation) or on the command line. It is a zip archive of the
-same `.traj`, `.json` and `.result` files that *Export…* writes, so these can be extracted, too.
+double-click on Windows (if chosen during installation) or on the command line. Project files are binary, so
+that large projects are saved and opened quickly; use *Export…* for files that other programs can read. Projects
+saved by Trajectopy 5.1 can still be opened.
 
 **Updates**: the update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Python installations are updated with
