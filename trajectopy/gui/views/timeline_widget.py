@@ -78,7 +78,7 @@ class TimelineWidget(QtWidgets.QWidget):
         return c
 
     def paintEvent(self, _event: QtGui.QPaintEvent) -> None:  # noqa: N802
-        entries = self._entries
+        entries = [entry for entry in self._entries if len(entry.trajectory)]  # an empty one has no time span
         if not entries:
             return
 

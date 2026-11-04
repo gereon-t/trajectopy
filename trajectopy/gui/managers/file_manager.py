@@ -78,6 +78,8 @@ class FileManager(QObject):
     def handle_ascii(self, file: str) -> None:
         """Reads an ASCII trajectory file and emits a request to add it to the model."""
         traj_entry = TrajectoryEntry.from_trajectory_file(file)
+        if len(traj_entry) == 0:
+            raise ValueError("The file contains no poses.")
 
         self.trajectory_model_request.emit(
             TrajectoryModelRequest(

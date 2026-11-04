@@ -3,7 +3,7 @@ import os
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -199,11 +199,17 @@ class TrajectoryEntry(Entry):
     @property
     def property_dict(self) -> dict[str, str]:
         """Shows a new window with trajectory properties"""
+        trajectory = self.trajectory
+        speed = trajectory.absolute_velocity if len(trajectory) else np.zeros(1)
         return {
-            "Name": self.trajectory.name,
-            "Date": f"{datetime.fromtimestamp(self.trajectory.timestamps[0]).strftime('%Y-%m-%d %H:%M:%S')} UTC - "
-            f"{datetime.fromtimestamp(self.trajectory.timestamps[-1]).strftime('%Y-%m-%d %H:%M:%S')} UTC",
-            "Duration": f"{timedelta(seconds=float(self.trajectory.timestamps[-1] - self.trajectory.timestamps[0]))}",
+            "Name": trajectory.name,
+            # first and last epoch, also of spatially sorted trajectories; only Unix timestamps are dates
+            "Date": (
+                f"{_utc(trajectory.time_start)} UTC - {_utc(trajectory.time_end)} UTC"
+                if trajectory.is_unix_time
+                else "-"
+            ),
+            "Duration": f"{timedelta(seconds=trajectory.time_end - trajectory.time_start)}",
             "EPSG": (
                 f"{self.trajectory.positions.crs}, {self.trajectory.positions.crs.name}"
                 if self.trajectory.positions.crs is not None
@@ -215,9 +221,9 @@ class TrajectoryEntry(Entry):
             "Sort By:": self.trajectory.sorting.value,
             "Length [m]": f"{self.trajectory.total_length:.3f}",
             "Data Rate [Hz]": f"{self.trajectory.data_rate:.3f}",
-            "Minimum Speed [m/s]": f"{np.min(self.trajectory.absolute_velocity):.3f}",
-            "Maximum Speed [m/s]": f"{np.max(self.trajectory.absolute_velocity):.3f}",
-            "Average Speed [m/s]": f"{np.mean(self.trajectory.absolute_velocity):.3f}",
+            "Minimum Speed [m/s]": f"{np.min(speed):.3f}",
+            "Maximum Speed [m/s]": f"{np.max(speed):.3f}",
+            "Average Speed [m/s]": f"{np.mean(speed):.3f}",
             "Sorting known": "yes" if self.state.sorting_known else "no",
             "Approximated": "yes" if self.state.approximated else "no",
             "Intersected": "yes" if self.state.intersected else "no",
@@ -226,6 +232,10 @@ class TrajectoryEntry(Entry):
             "Filename": self.full_filename,
             "UUID": self.entry_id,
         }
+
+
+def _utc(timestamp: float) -> str:
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
 @dataclass

@@ -286,16 +286,8 @@ class Trajectory:
         if min_time < UNIX_TIME_THRESHOLD:
             return False
 
-        today = datetime.now()
-        try:
-            converted_date = datetime.fromtimestamp(self.timestamps[0])
-        except Exception:
-            return False
-
-        if converted_date > today:
-            return False
-
-        return True
+        # the latest epoch (not the first array element, e.g. of a spatially sorted trajectory) is not in the future
+        return bool(self.time_end <= datetime.now().timestamp())
 
     @property
     def total_length(self) -> float:

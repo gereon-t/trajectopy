@@ -157,6 +157,43 @@ class TestTrajectoryOperations(unittest.TestCase):
 
         np.testing.assert_allclose(second_data.xyz, first_data.xyz[5:], atol=1e-6)
 
+    def test_properties_show_utc_dates_of_the_first_and_last_epoch(self):
+        t = np.array([1_700_000_100.0, 1_700_000_000.0, 1_700_000_050.0])
+        trajectory = Trajectory.from_arrays(np.c_[t, 0 * t, 0 * t], timestamps=t)
+        trajectory.path_lengths = np.array([0.0, 2.0, 1.0])
+        trajectory.set_sorting(Sorting.PATH_LENGTH)  # the first element is not the first epoch
+
+        properties = TrajectoryEntry(full_filename="", trajectory=trajectory).property_dict
+
+        self.assertEqual(properties["Date"], "2023-11-14 22:13:20 UTC - 2023-11-14 22:15:00 UTC")
+        self.assertEqual(properties["Duration"], "0:01:40")
+
+    def test_properties_of_relative_timestamps(self):
+        t = np.arange(-5.0, 5.0)
+        properties = TrajectoryEntry(
+            full_filename="", trajectory=Trajectory.from_arrays(np.c_[t, t, t], timestamps=t)
+        ).property_dict
+        self.assertEqual(properties["Date"], "-")
+
+    def test_files_without_poses_are_rejected(self):
+        import tempfile
+
+        from trajectopy.gui.managers.file_manager import FileManager
+        from trajectopy.gui.managers.requests import FileRequest, FileRequestType
+
+        manager = FileManager()
+        messages, added = [], []
+        manager.ui_request.connect(lambda request: messages.append(request.message))
+        manager.trajectory_model_request.connect(lambda request: added.extend(request.selection.entries))
+        with tempfile.TemporaryDirectory() as directory:
+            empty = os.path.join(directory, "empty.traj")
+            with open(empty, "w", encoding="utf-8") as file:
+                file.write("#fields t,px,py,pz\n")
+            manager.handle_request(FileRequest(type=FileRequestType.READ_TRAJ, file_list=[empty]))
+
+        self.assertEqual(added, [])
+        self.assertIn("no poses", messages[0])
+
 
 if __name__ == "__main__":
     unittest.main()
