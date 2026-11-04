@@ -234,6 +234,29 @@ class TrajectoryEntry(Entry):
         }
 
 
+# result types of the "#type" header line, also of earlier versions (the class names of the entries)
+_RESULT_TYPES = {
+    "ate result": "ate",
+    "absolutedeviationentry": "ate",
+    "rpe result": "rpe",
+    "relativedeviationentry": "rpe",
+    "alignment": "alignment",
+    "alignmententry": "alignment",
+}
+
+
+def _result_type(header_data: HeaderData, filename: str) -> str:
+    """ "ate", "rpe" or "alignment"; recognized by the content if the file has no "#type" line, like the files
+    that ATEResult.to_file, RPEResult.to_file and AlignmentResult.to_file of earlier versions wrote."""
+    if "type" in header_data.data:
+        return _RESULT_TYPES.get(header_data.type, "")
+    if "num_pairs" in header_data.data or "relative_dist_unit" in header_data.data:
+        return "rpe"
+    with open(filename, encoding="utf-8") as file:
+        first_data_line = next((line for line in file if line.strip() and not line.startswith("#")), "")
+    return "ate" if "pos_dev_x" in first_data_line else "alignment"
+
+
 def _utc(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -293,15 +316,17 @@ class ResultEntry(Entry, ABC):
         if not header_data.id and len(Path(filename).stem.split("_")) > 1:
             header_data.id = Path(filename).stem.split("_")[1]
 
-        if header_data.type == "ATE Result".lower():
+        result_type = _result_type(header_data, filename)
+
+        if result_type == "ate":
             logger.info("Detected Absolute Deviations file.")
             return AbsoluteDeviationEntry.from_file(filename)
 
-        if header_data.type == "RPE Result".lower():
+        if result_type == "rpe":
             logger.info("Detected Relative Deviations file.")
             return RelativeDeviationEntry.from_file(filename)
 
-        if header_data.type == "alignment":
+        if result_type == "alignment":
             logger.info("Detected Alignment file.")
             return AlignmentEntry.from_file(filename)
 

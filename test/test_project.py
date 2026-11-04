@@ -108,6 +108,51 @@ class TestProject(unittest.TestCase):
         with self.assertRaisesRegex(ProjectError, "damaged"):
             load_project(self.path)
 
+    def test_result_files_of_earlier_versions_and_of_the_python_api_can_be_imported(self):
+        from test.testdata import generated_trajectory, noisy_trajectory
+        from trajectopy.gui.models.entries import ResultEntry
+        from trajectopy.processing.alignment import estimate_alignment
+        from trajectopy.processing.evaluation import ate, rpe
+
+        expected = {
+            # "#type" lines with the entry class names of earlier versions
+            "./test/data/abs_dev.result": AbsoluteDeviationEntry,
+            "./test/data/rel_dev_meter.result": RelativeDeviationEntry,
+            "./test/data/align_entry.result": AlignmentEntry,
+        }
+        # written with the Python API (earlier versions wrote no "#type" line)
+        for name, result in (
+            ("ate", ate(noisy_trajectory, generated_trajectory)),
+            ("rpe", rpe(noisy_trajectory, generated_trajectory)),
+            ("alignment", estimate_alignment(noisy_trajectory, generated_trajectory)),
+        ):
+            filename = str(self.directory / f"{name}.result")
+            result.to_file(filename)
+            lines = Path(filename).read_text(encoding="utf-8").splitlines(keepends=True)
+            Path(filename).write_text(
+                "".join(line for line in lines if not line.startswith("#type")), encoding="utf-8"
+            )
+            expected[filename] = {"ate": AbsoluteDeviationEntry, "rpe": RelativeDeviationEntry}.get(
+                name, AlignmentEntry
+            )
+
+        for filename, entry_type in expected.items():
+            with self.subTest(file=Path(filename).name):
+                self.assertIsInstance(ResultEntry.from_file(filename), entry_type)
+
+    def test_session_folder_with_results_of_earlier_versions(self):
+        import shutil
+
+        for name in ("abs_dev", "rel_dev_meter", "align_entry"):
+            shutil.copy(f"./test/data/{name}.result", self.directory / f"{name}.result")
+
+        project = load_session_folder(str(self.directory))
+
+        self.assertEqual(
+            sorted(type(result).__name__ for result in project.results),
+            ["AbsoluteDeviationEntry", "AlignmentEntry", "RelativeDeviationEntry"],
+        )
+
     def test_other_files_are_rejected(self):
         text_file = self.directory / "notes.tpy"
         text_file.write_text("not a project", encoding="utf-8")

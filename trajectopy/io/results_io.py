@@ -112,6 +112,7 @@ def write_alignment_result(result: AlignmentResult, filename: str) -> None:
         raise ValueError("No estimated parameters available!")
 
     with open(filename, "a", newline="\n", encoding="utf-8") as file:
+        file.write("#type Alignment\n")  # so that the GUI recognizes the file
         file.write(f"#name {result.name}\n")
 
     result.position_parameters.to_dataframe().to_csv(
@@ -143,6 +144,7 @@ def read_alignment_result(filename: str) -> AlignmentResult:
 def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
     """Writes an ATE result as CSV with a metadata header."""
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
+        file.write("#type ATE Result\n")  # so that the GUI recognizes the file
         file.write(f"#name {result.name}\n")
         file.write(f"#epsg {result.trajectory.positions.epsg}\n")
         file.write(f"#sorting {result.trajectory.sorting.value}\n")
@@ -208,6 +210,7 @@ def read_ate_result(filename: str) -> ATEResult:
 def write_rpe_result(result: RPEResult, filename: str, mode: str = "a") -> None:
     """Writes an RPE result as CSV with a metadata header."""
     with open(filename, mode, encoding="utf-8", newline="") as file:
+        file.write("#type RPE Result\n")  # so that the GUI recognizes the file
         file.write(f"#relative_dist_unit {result.rpe_dev.pair_distance_unit.name}\n")
         file.write(f"#name {result.name}\n")
 
