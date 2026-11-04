@@ -19,7 +19,7 @@ from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.settings import PairDistanceUnit, PlotSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
-from trajectopy.results.correlation import COMPONENT_LABELS
+from trajectopy.results.correlation import COMPONENT_LABELS, ComponentCorrelation
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.utils.colors import color_range
 from trajectopy.utils.numeric import rms
@@ -616,9 +616,29 @@ def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
     return Figure("ATE Statistics", render)
 
 
+def _mark_correlation_time(
+    plot: pg.PlotItem, curve: pg.PlotDataItem, component: ComponentCorrelation, index: int
+) -> None:
+    """Level that the correlation time refers to (1/e of the correlated share, the white noise drops at once) as
+    a dashed line, and the correlation time as a point on it."""
+    level = (1.0 - component.white_noise_share) / np.e
+    if component.correlation_time <= 0 or level <= 0:
+        return  # white noise
+    line = pg.InfiniteLine(pos=level, angle=0, pen=style.pen(index, 1.0, Qt.PenStyle.DashLine))
+    plot.addItem(line)
+    _follow_visibility(line, curve)
+    if np.isfinite(component.correlation_time):
+        point = pg.ScatterPlotItem(
+            x=[component.correlation_time], y=[level], size=9, pen=None, brush=style.brush(index)
+        )
+        plot.addItem(point)
+        _follow_visibility(point, curve)
+
+
 def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Temporal correlation of the deviations: autocorrelation over the time lag (with the 1/e level that defines
-    the correlation time) and the standard deviation in consecutive time windows."""
+    """Temporal correlation of the deviations: autocorrelation over the time lag (with the level that defines the
+    correlation time of each component, 1/e of its correlated share, and the correlation time as a point) and the
+    standard deviation in consecutive time windows."""
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
     for result in ate_results:
@@ -638,9 +658,6 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
                 plot = _add_plot(
                     layout, row, settings, x_label="time lag [s]", y_label=f"autocorrelation ({quantity})", legend=True
                 )
-                plot.addLine(
-                    y=float(np.exp(-1.0)), pen=pg.mkPen(style.theme().foreground, width=1, style=Qt.PenStyle.DashLine)
-                )
                 for index, name in enumerate(components):
                     component = correlation.components[name]
                     tau = component.correlation_time
@@ -648,7 +665,10 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
                     white = f"{100 * component.white_noise_share:.0f} % white noise"
                     label = f"{COMPONENT_LABELS[name]} ({tau_text}, {white})"
                     valid = np.isfinite(component.autocorrelation)
-                    _line(plot, component.lags[valid], component.autocorrelation[valid], index, label, settings)
+                    curve = _line(
+                        plot, component.lags[valid], component.autocorrelation[valid], index, label, settings
+                    )
+                    _mark_correlation_time(plot, curve, component, index)
                 plots.append(plot)
             _link_x(plots)
 
