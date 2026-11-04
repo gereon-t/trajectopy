@@ -406,6 +406,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     def setup_result_table_connections(self):
         self.result_table_model.ui_request.connect(self.ui_manager.handle_request)
+        # e.g. a failed export of the properties table
+        self._properties.model.ui_request.connect(self.ui_manager.handle_request)
 
     def setup_trajectory_manager_connections(self):
         self.trajectory_manager.ui_request.connect(self.ui_manager.handle_request)

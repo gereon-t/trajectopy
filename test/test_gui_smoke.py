@@ -4,6 +4,7 @@ Runs headless (``QT_QPA_PLATFORM=offscreen``) and is skipped if the GUI extras a
 """
 
 import os
+import tempfile
 import time
 import unittest
 from collections.abc import Callable
@@ -207,6 +208,20 @@ class TestGuiSmoke(unittest.TestCase):
                 with self.subTest(request_type=request_enum.__name__):
                     missing = [member.name for member in request_enum if member not in handler.REQUEST_MAPPING]
                     self.assertEqual(missing, [])
+        finally:
+            window.close()
+
+    def test_failed_properties_export_is_reported(self):
+        from trajectopy.gui.models.property_model import PropertyModelRequest, PropertyModelRequestType
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            missing = os.path.join(tempfile.gettempdir(), "trajectopy-missing-folder", "sub", "properties.csv")
+            window._properties.model.handle_request(
+                PropertyModelRequest(type=PropertyModelRequestType.EXPORT, file_path=missing)
+            )
+            self.assertEqual(len(self.messages), 1)
         finally:
             window.close()
 
