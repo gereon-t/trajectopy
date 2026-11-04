@@ -487,6 +487,24 @@ class TestRobustnessRegressions(unittest.TestCase):
         lower, upper = color_range(np.full(5, 1.7e9), max_std=3.0)
         self.assertGreater(upper - lower, 0.0)
 
+    def test_undetermined_parameters_do_not_converge_without_warnings(self):
+        import warnings
+
+        from trajectopy.core.settings import AlignmentEstimationSettings, AlignmentSettings
+        from trajectopy.processing.alignment import estimate_alignment
+
+        # rotations cannot be determined from a single pose
+        trajectory = Trajectory.from_arrays(np.array([[1.0, 2.0, 3.0]]), timestamps=np.array([0.0]))
+        reference = Trajectory.from_arrays(np.array([[1.5, 2.0, 3.0]]), timestamps=np.array([0.0]))
+        settings = AlignmentSettings(
+            estimation_settings=AlignmentEstimationSettings(translation_x=True, translation_y=True, translation_z=True)
+        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = estimate_alignment(trajectory, reference, alignment_settings=settings)
+
+        self.assertFalse(result.converged)
+
 
 if __name__ == "__main__":
     unittest.main()

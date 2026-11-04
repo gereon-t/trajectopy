@@ -1,9 +1,10 @@
 import copy
 import logging
+import warnings
 
 import numpy as np
 from scipy.sparse import csc_matrix
-from scipy.sparse.linalg import factorized, spsolve
+from scipy.sparse.linalg import MatrixRankWarning, factorized, spsolve
 from scipy.stats.distributions import chi2
 
 from trajectopy.core.parameters import (
@@ -287,14 +288,17 @@ class AlignmentEstimator:
             b_cond = self._get_condition_matrix(partials)
 
             try:
-                # factorized once per iteration and used for all solves with it
-                bbt = _FactorizedMatrix(b_cond @ self.data.sigma_ll @ b_cond.T)
-                normal_matrix = a_design.T @ bbt.solve_sparse(a_design)
+                with warnings.catch_warnings():
+                    # a singular normal matrix (e.g. parameters that the data does not determine) is a failure
+                    warnings.simplefilter("error", MatrixRankWarning)
+                    # factorized once per iteration and used for all solves with it
+                    bbt = _FactorizedMatrix(b_cond @ self.data.sigma_ll @ b_cond.T)
+                    normal_matrix = a_design.T @ bbt.solve_sparse(a_design)
 
-                # solve normal equations
-                delta_params = self._compute_parameter_deltas(contradiction_w, a_design, normal_matrix, bbt)
-                correlates_k = -bbt.solve(a_design @ delta_params + contradiction_w)
-            except (RuntimeError, np.linalg.LinAlgError) as error:
+                    # solve normal equations
+                    delta_params = self._compute_parameter_deltas(contradiction_w, a_design, normal_matrix, bbt)
+                    correlates_k = -bbt.solve(a_design @ delta_params + contradiction_w)
+            except (RuntimeError, np.linalg.LinAlgError, MatrixRankWarning) as error:
                 # e.g. too few or degenerate matched poses for the enabled parameters
                 logger.error("Adjustment failed: the equations are singular (%s).", error)
                 self._converged = False
