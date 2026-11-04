@@ -188,5 +188,55 @@ class TestSubWindows(unittest.TestCase):
         self.assertEqual(settings.alignment.preprocessing.time_start, -2.5)
 
 
+@unittest.skipIf(QtWidgets is None, "GUI dependencies not installed")
+class TestUniqueIds(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+
+    def test_a_result_file_opened_twice_gives_two_independent_entries(self):
+        import tempfile
+
+        from trajectopy.gui.models.entries import AbsoluteDeviationEntry
+        from trajectopy.gui.models.result_model import ResultTableModel
+        from trajectopy.processing.evaluation import ate
+
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "ate.result")
+            AbsoluteDeviationEntry(deviations=ate(noisy_trajectory, noisy_trajectory, align=False)).to_file(filename)
+            first, second = AbsoluteDeviationEntry.from_file(filename), AbsoluteDeviationEntry.from_file(filename)
+
+        model = ResultTableModel()
+        model.add(first)
+        model.add(second)
+        model.remove([second.entry_id])
+
+        self.assertEqual(model.items, [first])
+
+    def test_operation_results_keep_the_current_reference(self):
+        import copy
+
+        from trajectopy.gui.managers.requests import TrajectoryModelRequest, TrajectoryModelRequestType
+
+        model = TrajectoryTableModel()
+        first, second = _entry("first"), _entry("second")
+        first.set_as_reference = True
+        model.add(first)
+        model.add(second)
+        result = copy.deepcopy(first)  # e.g. an EPSG change, computed while the reference is changed
+        model.handle_request(
+            TrajectoryModelRequest(
+                type=TrajectoryModelRequestType.SET_REFERENCE, selection=TrajectorySelection(entries=[second])
+            )
+        )
+        model.handle_request(
+            TrajectoryModelRequest(
+                type=TrajectoryModelRequestType.UPDATE, selection=TrajectorySelection(entries=[result])
+            )
+        )
+
+        self.assertEqual([entry.set_as_reference for entry in model.items], [False, True])
+
+
 if __name__ == "__main__":
     unittest.main()

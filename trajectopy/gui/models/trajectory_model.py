@@ -36,6 +36,14 @@ class TrajectoryTableModel(RequestTableModel):
             REQUEST_MAPPING=REQUEST_MAPPING,
         )
 
+    def update_selected_entries(self, request) -> None:
+        # the results of operations on (copies of) the entries; which entry is the reference is decided in the
+        # table, possibly while the operation ran
+        for entry in request.selection.entries:
+            if (current := self.get(entry.entry_id)) is not None:
+                entry.set_as_reference = current.set_as_reference
+        super().update_selected_entries(request)
+
     def remove_group(self, group_id: str) -> None:
         self.remove([item.entry_id for item in self.items if item.group_id == group_id])
 

@@ -59,6 +59,9 @@ class BaseTableModel(QAbstractTableModel, Generic[T]):
                 return
 
     def add(self, entry: T) -> None:
+        # entries are addressed by their id (update, removal), so it must be unique, e.g. if a file is opened twice
+        if self.get(entry.entry_id) is not None:
+            entry.renew_id()
         row = len(self.items)
         self.beginInsertRows(_ROOT_INDEX, row, row)
         self.items.append(entry)
