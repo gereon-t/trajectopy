@@ -130,6 +130,10 @@ class ATEResult:
                 ("along", "cross_h", "cross_v"), "correlation_time"
             ),
             "Correlation Time X / Y / Z [s]": self._correlation_summary(("x", "y", "z"), "correlation_time"),
+            "White Noise Along / Cross-H / Cross-V [%]": self._correlation_summary(
+                ("along", "cross_h", "cross_v"), "white_noise_share"
+            ),
+            "White Noise X / Y / Z [%]": self._correlation_summary(("x", "y", "z"), "white_noise_share"),
             "Independent Deviations Along / Cross-H / Cross-V": self._correlation_summary(
                 ("along", "cross_h", "cross_v"), "effective_samples"
             ),
@@ -178,6 +182,8 @@ class ATEResult:
         values = [getattr(self.correlation.components[name], quantity) for name in components]
         if quantity == "effective_samples":
             return " / ".join(f"{value:.0f}" for value in values)
+        if quantity == "white_noise_share":
+            return " / ".join(f"{100 * value:.0f}" for value in values)
         return " / ".join("> max. lag" if np.isinf(value) else f"{value:.2f}" for value in values)
 
     @property

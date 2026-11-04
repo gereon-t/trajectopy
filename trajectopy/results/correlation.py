@@ -10,6 +10,7 @@ from trajectopy.utils.statistics import (
     correlation_time,
     effective_samples,
     sampling_interval,
+    white_noise_split,
     windowed_std,
 )
 
@@ -45,9 +46,12 @@ class ComponentCorrelation:
         lags (np.ndarray): Time lags [s].
         autocorrelation (np.ndarray): Autocorrelation of each lag (NaN if too few pairs of samples).
         pairs (np.ndarray): Number of pairs of samples of each lag.
-        correlation_time (float): Lag at which the autocorrelation drops below 1/e [s]; inf if it does not
-            within the largest lag.
-        effective_samples (float): Approximate number of independent deviations.
+        white_noise_share (float): Share of the variance that is white noise (uncorrelated from one deviation to
+            the next, e.g. measurement noise of the reference); the rest is correlated.
+        correlation_time (float): Correlation time of the correlated part [s]: lag at which the autocorrelation
+            drops below 1/e of the correlated share; 0 for white noise, inf if it does not drop within the largest
+            lag.
+        effective_samples (float): Approximate number of independent deviations of the correlated part.
         std (float): Standard deviation of the component (around its mean).
         window_centers (np.ndarray): Centers of the windows of window_std [s].
         window_std (np.ndarray): Standard deviation in consecutive windows.
@@ -56,6 +60,7 @@ class ComponentCorrelation:
     lags: np.ndarray
     autocorrelation: np.ndarray
     pairs: np.ndarray
+    white_noise_share: float
     correlation_time: float
     effective_samples: float
     std: float
@@ -69,7 +74,8 @@ class DeviationCorrelation:
 
     Deviations of trajectories (e.g. GNSS/INS) are usually correlated in time over seconds to minutes. Then,
     neighboring epochs do not provide independent information, and the number of independent deviations is much
-    smaller than the number of epochs. Gaps (e.g. losses of a total station's lock) are respected: no deviation
+    smaller than the number of epochs. The deviations are described as white noise (e.g. measurement noise of the
+    reference) plus a correlated part, whose correlation time is given. Gaps (e.g. losses of a total station's lock) are respected: no deviation
     is correlated across a gap.
 
     Attributes:
@@ -119,12 +125,15 @@ class DeviationCorrelation:
         # all components at once: the grid of the epochs and the pairs of each lag are the same
         lags, rho, pairs = autocorrelation(timestamps, np.column_stack(list(values.values())), max_lag=max_lag)
         for column, (name, component) in enumerate(values.items()):
-            tau = correlation_time(lags, rho[:, column])
+            # white noise (e.g. of the reference) drops at once and would hide the correlated part
+            correlated = white_noise_split(lags, rho[:, column], pairs)
+            tau = correlation_time(lags, rho[:, column], level=correlated) if correlated > 0 else 0.0
             window_centers, window_std = windowed_std(timestamps, component, window)
             correlation.components[name] = ComponentCorrelation(
                 lags=lags,
                 autocorrelation=rho[:, column],
                 pairs=pairs,
+                white_noise_share=1.0 - correlated,
                 correlation_time=tau,
                 # the time covered by the deviations, without gaps
                 effective_samples=effective_samples(len(component), len(component) * step, tau),

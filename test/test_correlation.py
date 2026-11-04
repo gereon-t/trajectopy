@@ -7,7 +7,13 @@ import numpy as np
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.evaluation import ate
 from trajectopy.utils.definitions import Sorting
-from trajectopy.utils.statistics import autocorrelation, correlation_time, effective_samples, windowed_std
+from trajectopy.utils.statistics import (
+    autocorrelation,
+    correlation_time,
+    effective_samples,
+    white_noise_split,
+    windowed_std,
+)
 
 
 def _gauss_markov(timestamps: np.ndarray, tau: float, rng: np.random.Generator) -> np.ndarray:
@@ -64,6 +70,23 @@ class TestAutocorrelation(unittest.TestCase):
         lags, rho, _ = autocorrelation(timestamps, np.linspace(-1, 1, 1000))  # a trend: correlated throughout
         self.assertEqual(correlation_time(lags, rho), float("inf"))
 
+    def test_white_noise_and_correlated_part(self):
+        rng = np.random.default_rng(7)
+        timestamps = np.arange(0, 3600, 1 / 19)
+        correlated = _gauss_markov(timestamps, 5.0, rng)
+        white = rng.normal(size=len(timestamps))
+        for white_share in (0.0, 0.7):
+            with self.subTest(white_share=white_share):
+                values = np.sqrt(1 - white_share) * correlated + np.sqrt(white_share) * white
+                lags, rho, pairs = autocorrelation(timestamps, values, max_lag=60)
+                share = white_noise_split(lags, rho, pairs)
+
+                self.assertAlmostEqual(1 - share, white_share, delta=0.05)
+                self.assertAlmostEqual(correlation_time(lags, rho, level=share), 5.0, delta=0.75)
+
+        lags, rho, pairs = autocorrelation(timestamps, white, max_lag=60)
+        self.assertEqual(white_noise_split(lags, rho, pairs), 0.0)
+
     def test_white_noise_is_not_correlated(self):
         rng = np.random.default_rng(2)
         timestamps = np.arange(5000) * 0.01
@@ -102,10 +125,13 @@ class TestDeviationCorrelation(unittest.TestCase):
         correlation = result.correlation
 
         self.assertAlmostEqual(correlation.components["cross_h"].correlation_time, 5.0, delta=1.5)
-        self.assertLess(correlation.components["along"].correlation_time, 0.1)
+        self.assertEqual(correlation.components["along"].correlation_time, 0.0)  # white noise
+        self.assertGreater(correlation.components["along"].white_noise_share, 0.9)
+        self.assertLess(correlation.components["cross_h"].white_noise_share, 0.1)
         self.assertLess(correlation.components["cross_h"].effective_samples, 100)
         self.assertIn("roll", correlation.components)
         self.assertIn("Correlation Time Along / Cross-H / Cross-V [s]", result.property_dict)
+        self.assertIn("White Noise Along / Cross-H / Cross-V [%]", result.property_dict)
 
     def test_spatially_sorted_results_are_analyzed_in_chronological_order(self):
         by_time, by_path = self._result(), self._result(Sorting.PATH_LENGTH)

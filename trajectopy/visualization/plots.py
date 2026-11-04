@@ -644,7 +644,9 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
                 for index, name in enumerate(components):
                     component = correlation.components[name]
                     tau = component.correlation_time
-                    label = f"{COMPONENT_LABELS[name]} ({'> max. lag' if np.isinf(tau) else f'{tau:.2f} s'})"
+                    tau_text = "> max. lag" if np.isinf(tau) else f"{tau:.2f} s"
+                    white = f"{100 * component.white_noise_share:.0f} % white noise"
+                    label = f"{COMPONENT_LABELS[name]} ({tau_text}, {white})"
                     valid = np.isfinite(component.autocorrelation)
                     _line(plot, component.lags[valid], component.autocorrelation[valid], index, label, settings)
                 plots.append(plot)

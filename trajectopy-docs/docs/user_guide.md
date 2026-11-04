@@ -211,10 +211,18 @@ this for every deviation component (along-track, cross-track, x, y, z and, with 
 ```python
 correlation = ate_result.correlation
 cross_track = correlation.components["cross_h"]
-print(cross_track.correlation_time)  # lag at which the autocorrelation drops below 1/e [s]
+print(cross_track.white_noise_share)  # share of the variance that is uncorrelated white noise
+print(cross_track.correlation_time)  # correlation time of the correlated part [s]
 print(cross_track.effective_samples)  # approximate number of independent deviations
 print(correlation.cross_correlation_directed)  # correlation of along / cross-h / cross-v at the same epochs
 ```
+
+Deviations are usually white noise (e.g. measurement noise of the reference, uncorrelated from one epoch to the
+next) plus a correlated part (e.g. the GNSS/INS error). The white noise makes the autocorrelation drop at once
+between the first two lags; then the correlated part decays. Its share is extrapolated to lag 0 from the first
+lags, and its correlation time is the lag at which the autocorrelation drops to 1/e of that share. Without this,
+a large white noise share would make the correlated part look like it lasted only a fraction of a sampling
+interval. Deviations whose first lag is not significantly correlated are white noise (correlation time 0).
 
 The autocorrelation is computed in chronological order, also for spatially sorted results, and gaps (e.g. losses
 of a total station's lock) are respected: no deviation is correlated across a gap. Irregular sampling is allowed. The autocorrelation is computed up to a tenth of the number of deviations

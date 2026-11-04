@@ -72,13 +72,21 @@ def autocorrelation(
     return np.arange(max_index + 1) * step, rho.reshape(max_index + 1, *values.shape[1:]), pairs.astype(int)
 
 
-def correlation_time(lags: np.ndarray, rho: np.ndarray) -> float:
-    """Lag at which the autocorrelation first drops below 1/e, linearly interpolated.
+def correlation_time(lags: np.ndarray, rho: np.ndarray, level: float = 1.0) -> float:
+    """Lag at which the autocorrelation first drops below level / e, linearly interpolated.
+
+    Args:
+        lags (np.ndarray): Lags [s], starting with 0.
+        rho (np.ndarray): Autocorrelation of the lags.
+        level (float, optional): Autocorrelation at lag 0 of the decaying part, e.g. the correlated share of
+            white_noise_split (the part above it drops at once). Defaults to 1.0 (all of it).
 
     Returns:
-        float: Correlation time [s]; inf if the autocorrelation stays above 1/e up to the largest lag.
+        float: Correlation time [s]; inf if the autocorrelation stays above level / e up to the largest lag.
     """
-    threshold = np.exp(-1.0)
+    threshold = level * np.exp(-1.0)
+    rho = np.array(rho, dtype=float)
+    rho[0] = level  # the decaying part starts at its level (the white noise drops between lag 0 and the next)
     below = np.flatnonzero(np.nan_to_num(rho, nan=np.inf) < threshold)
     if len(below) == 0:
         return float("inf")
@@ -87,6 +95,36 @@ def correlation_time(lags: np.ndarray, rho: np.ndarray) -> float:
         return 0.0
     # between the last lag above and the first below
     return float(np.interp(threshold, [rho[i], rho[i - 1]], [lags[i], lags[i - 1]]))
+
+
+def white_noise_split(lags: np.ndarray, rho: np.ndarray, pairs: np.ndarray, max_fit_lags: int = 10) -> float:
+    """Correlated share of the variance of a series of white noise and a correlated part.
+
+    The autocorrelation of such a series drops by the white noise share between lag 0 and the next lag; the
+    correlated part decays from there. Its share is extrapolated to lag 0 with an exponential decay fitted to the
+    first lags (at most max_fit_lags, within the first decay by 1/e). If the first lag is not significantly
+    correlated (less than two standard errors, 2 / sqrt(pairs)), the series is white noise.
+
+    Args:
+        lags (np.ndarray): Lags [s], starting with 0.
+        rho (np.ndarray): Autocorrelation of the lags.
+        pairs (np.ndarray): Number of pairs of samples of the lags.
+        max_fit_lags (int, optional): Largest number of lags of the fit. Defaults to 10.
+
+    Returns:
+        float: Correlated share of the variance (0: white noise, 1: no white noise).
+    """
+    if len(rho) < 2 or not np.isfinite(rho[1]) or pairs[1] == 0 or rho[1] < 2 / np.sqrt(pairs[1]):
+        return 0.0
+    first = rho[1]
+    fit = rho[1 : max_fit_lags + 1]
+    # the lags within the first decay by 1/e, where the decay is still well determined
+    used = np.cumprod(np.isfinite(fit) & (fit > first / np.e)).astype(bool)
+    if np.sum(used) < 2:
+        return float(min(first, 1.0))  # decays within one lag: no extrapolation
+    slope, intercept = np.polyfit(lags[1 : max_fit_lags + 1][used], np.log(fit[used]), 1)
+    # at least the value of the first lag (the correlated part does not grow), at most everything
+    return float(np.clip(np.exp(intercept), first, 1.0)) if slope < 0 else float(min(first, 1.0))
 
 
 def effective_samples(num_samples: int, duration: float, tau: float) -> float:
