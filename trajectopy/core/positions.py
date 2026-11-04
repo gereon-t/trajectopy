@@ -363,8 +363,15 @@ class Positions:
         transformer = Transformer.from_crs(crs, CRS.from_epsg(code=target_epsg))
 
         x, y, z = transformer.transform(xx=xyz[:, 0], yy=xyz[:, 1], zz=xyz[:, 2])
+        transformed = np.c_[x, y, z]
+        # pyproj returns inf for positions outside the area of the coordinate system (e.g. a wrong EPSG code)
+        if np.any(np.isfinite(xyz) & ~np.isfinite(transformed)):
+            raise PointSetError(
+                f"The positions cannot be transformed from EPSG {crs.to_epsg()} to EPSG {target_epsg}: they are "
+                "outside of the valid area. Check the EPSG code of the positions."
+            )
 
-        pointset.xyz = np.c_[x, y, z]
+        pointset.xyz = transformed
         pointset.epsg = target_epsg
 
         return pointset
