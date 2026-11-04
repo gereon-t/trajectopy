@@ -5,6 +5,9 @@ from scipy import fft
 
 # minimum number of sample pairs for an autocorrelation value
 MIN_PAIRS = 10
+# the autocorrelation is computed up to this fraction of the number of samples (in sampling intervals), since the
+# values of larger lags rely on too few pairs
+MAX_LAG_FRACTION = 0.1
 
 
 def sampling_interval(timestamps: np.ndarray) -> float:
@@ -28,7 +31,8 @@ def autocorrelation(
         timestamps (np.ndarray): Times of the samples [s], in any order.
         values (np.ndarray): Values of the samples, one series (n) or several (n x m) at the same times; samples
             with non-finite values or times are ignored.
-        max_lag (float, optional): Largest lag [s]. Defaults to half of the time span.
+        max_lag (float, optional): Largest lag [s]. In any case, the lags go up to MAX_LAG_FRACTION of the number
+            of samples (n / 10 sampling intervals).
 
     Returns:
         tuple[np.ndarray, np.ndarray, np.ndarray]: Lags [s], autocorrelation of each lag (and series; NaN for lags
@@ -50,7 +54,10 @@ def autocorrelation(
     mask = np.zeros(len(grid))
     mask[cells[first]] = 1.0
 
-    max_index = (len(grid) - 1) // 2 if max_lag is None else min(len(grid) - 1, int(np.floor(max_lag / step)))
+    max_index = max(1, int(len(first) * MAX_LAG_FRACTION))
+    if max_lag is not None:
+        max_index = min(max_index, int(np.floor(max_lag / step)))
+    max_index = min(max_index, len(grid) - 1)
     # zero padding up to the largest lag avoids the cyclic wrap-around of the FFT
     size = fft.next_fast_len(len(grid) + max_index + 1, real=True)
     pairs = np.rint(fft.irfft(np.abs(fft.rfft(mask, size, workers=-1)) ** 2, size, workers=-1)[: max_index + 1])

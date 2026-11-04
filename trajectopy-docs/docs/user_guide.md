@@ -217,7 +217,9 @@ print(correlation.cross_correlation_directed)  # correlation of along / cross-h 
 ```
 
 The autocorrelation is computed in chronological order, also for spatially sorted results, and gaps (e.g. losses
-of a total station's lock) are respected: no deviation is correlated across a gap. Irregular sampling is allowed.
+of a total station's lock) are respected: no deviation is correlated across a gap. Irregular sampling is allowed. The autocorrelation is computed up to a tenth of the number of deviations
+(n / 10 sampling intervals), at most up to 600 s, since larger lags rely on too few pairs of deviations; longer
+correlation times are reported as "> max. lag".
 The correlation times and the number of independent deviations are also shown in the properties of ATE results,
 and the plots of ATE results include the autocorrelation and the standard deviation over time.
 

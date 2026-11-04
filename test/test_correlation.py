@@ -43,16 +43,26 @@ class TestAutocorrelation(unittest.TestCase):
         self.assertTrue(np.all(pairs[1:] < pairs[0]))
 
     def test_no_correlation_across_a_gap(self):
-        # two constant blocks with opposite signs, separated by a gap: within a block, the values are perfectly
-        # correlated; pairs across the gap (which would be anti-correlated) must not be used
-        timestamps = np.r_[np.arange(0, 10, 0.1), np.arange(100, 110, 0.1)]
-        values = np.r_[np.ones(100), -np.ones(100)]
+        # 10 s blocks with alternating signs, separated by 20 s gaps: within a block, the values are perfectly
+        # correlated; empty grid cells of the gaps must not produce pairs
+        timestamps = np.concatenate([np.arange(0, 10, 0.1) + 30 * block for block in range(40)])
+        values = np.concatenate([np.full(100, (-1.0) ** block) for block in range(40)])
 
-        lags, rho, pairs = autocorrelation(timestamps, values, max_lag=50)
+        lags, rho, pairs = autocorrelation(timestamps, values)
 
-        within = (lags > 0) & (lags < 9.5) & (pairs >= 10)
-        np.testing.assert_allclose(rho[within], 1.0)
-        self.assertTrue(np.all(pairs[(lags > 10.5) & (lags < 89.5)] == 0))
+        np.testing.assert_allclose(rho[(lags > 0) & (lags < 9.95)], 1.0)
+        self.assertTrue(np.all(pairs[(lags > 10.05) & (lags < 19.95)] == 0))  # only gaps at these lags
+        self.assertTrue(np.all(rho[(lags > 20.05) & (lags < 29.95)] < 0))  # neighboring blocks, opposite signs
+
+    def test_lags_up_to_a_tenth_of_the_samples(self):
+        timestamps = np.arange(1000) * 0.1
+        lags, _, _ = autocorrelation(timestamps, np.random.default_rng(6).normal(size=1000), max_lag=600)
+        self.assertAlmostEqual(lags[-1], 10.0)  # 100 sampling intervals
+
+    def test_correlation_time_beyond_the_largest_lag(self):
+        timestamps = np.arange(1000) * 0.1
+        lags, rho, _ = autocorrelation(timestamps, np.linspace(-1, 1, 1000))  # a trend: correlated throughout
+        self.assertEqual(correlation_time(lags, rho), float("inf"))
 
     def test_white_noise_is_not_correlated(self):
         rng = np.random.default_rng(2)

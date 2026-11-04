@@ -16,7 +16,7 @@ from trajectopy.utils.statistics import (
 if TYPE_CHECKING:
     from trajectopy.results.ate_result import ATEResult
 
-# longest lag of the autocorrelation [s] (at most half of the time span is used)
+# longest lag of the autocorrelation [s]; at most a tenth of the number of deviations (see MAX_LAG_FRACTION)
 DEFAULT_MAX_LAG = 600.0
 # length of the windows of the windowed standard deviations [s]; for short data, a tenth of the duration
 DEFAULT_WINDOW = 60.0
@@ -95,7 +95,8 @@ class DeviationCorrelation:
 
         Args:
             ate_result (ATEResult): Result to analyze.
-            max_lag (float, optional): Largest lag of the autocorrelation [s]. Defaults to DEFAULT_MAX_LAG.
+            max_lag (float, optional): Largest lag of the autocorrelation [s], at most n / 10 sampling intervals.
+                Defaults to DEFAULT_MAX_LAG.
             window (float, optional): Length of the windows of the windowed standard deviations [s], at most a
                 tenth of the duration (at least MIN_WINDOWS windows). Defaults to DEFAULT_WINDOW.
         """
