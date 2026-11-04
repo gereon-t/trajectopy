@@ -91,16 +91,21 @@ def load_project(path: str) -> Project:
     except (zipfile.BadZipFile, IsADirectoryError, FileNotFoundError) as error:
         raise ProjectError(f"{path} is not a Trajectopy project.") from error
 
-    with archive:
-        names = set(archive.namelist())
-        if MANIFEST_FILENAME in names:
-            project = _load_text_project(archive, path)
-        elif f"{MANIFEST_KEY}.npy" in names:
-            project = None
-        else:
-            raise ProjectError(f"{path} is not a Trajectopy project.")
-    if project is None:
-        project = _load_binary_project(path)
+    try:
+        with archive:
+            names = set(archive.namelist())
+            if MANIFEST_FILENAME in names:
+                project = _load_text_project(archive, path)
+            elif f"{MANIFEST_KEY}.npy" in names:
+                project = None
+            else:
+                raise ProjectError(f"{path} is not a Trajectopy project.")
+        if project is None:
+            project = _load_binary_project(path)
+    except ProjectError:
+        raise
+    except Exception as error:  # e.g. a damaged archive or data that does not fit together
+        raise ProjectError(f"The project {path} is damaged ({type(error).__name__}: {error}).") from error
     logger.info("Opened project %s", path)
     return project
 
@@ -163,7 +168,9 @@ def _read_manifest(archive: zipfile.ZipFile, path: str) -> dict:
 def _check_manifest(manifest: object, path: str) -> None:
     if not isinstance(manifest, dict) or manifest.get("format") != FORMAT_NAME:
         raise ProjectError(f"{path} is not a Trajectopy project.")
-    if manifest.get("version", 0) > FORMAT_VERSION:
+    if not isinstance(version := manifest.get("version", 0), int):
+        raise ProjectError(f"The project {path} is damaged (invalid format version {version!r}).")
+    if version > FORMAT_VERSION:
         raise ProjectError(
             f"{path} was saved by a newer version of Trajectopy ({manifest.get('trajectopy_version', 'unknown')}). "
             "Update Trajectopy to open it."

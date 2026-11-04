@@ -98,6 +98,16 @@ class TestProject(unittest.TestCase):
         self.assertEqual(Path(self.path).read_bytes(), before)
         self.assertEqual(os.listdir(self.directory), ["flight.tpy"])  # no partial file left behind
 
+    def test_damaged_projects_are_reported_as_damaged(self):
+        save_project(_project(), self.path)
+        data = bytearray(Path(self.path).read_bytes())
+        start = data.index(b"manifest.npy") + 100  # inside the stored manifest
+        data[start : start + 20] = b"\x00" * 20
+        Path(self.path).write_bytes(bytes(data))
+
+        with self.assertRaisesRegex(ProjectError, "damaged"):
+            load_project(self.path)
+
     def test_other_files_are_rejected(self):
         text_file = self.directory / "notes.tpy"
         text_file.write_text("not a project", encoding="utf-8")
