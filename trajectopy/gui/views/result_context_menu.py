@@ -116,7 +116,11 @@ class ResultContextMenu(SelectionMenu):
                 hint="Switches between chronological and spatial order of the deviations, e.g. to plot them over "
                 "the path length.",
                 unavailable=""
-                if all(entry.deviations.is_spatially_sorted for entry in entries)
+                if all(
+                    entry.deviations.is_spatially_sorted
+                    for entry in entries
+                    if isinstance(entry, AbsoluteDeviationEntry)
+                )
                 else "Only for results of spatially sorted trajectories.",
             )
         self.addSeparator()

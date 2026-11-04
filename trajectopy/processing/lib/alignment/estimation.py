@@ -252,7 +252,13 @@ class AlignmentEstimator:
         it_counter = 0
         max_iterations = 15
         self._converged = True
-        while np.any(np.abs(delta_params) > thresholds):
+        # "not all within the thresholds": NaN updates (a singular or diverged adjustment) must not count as converged
+        while not np.all(np.abs(delta_params) <= thresholds):
+            # the initial updates are infinite by definition, later ones have to be finite
+            if it_counter > 0 and not np.all(np.isfinite(delta_params)):
+                logger.error("Adjustment failed: the parameter updates are not finite (singular normal equations?).")
+                self._converged = False
+                break
             if it_counter > max_iterations:
                 logger.error(
                     "Adjustment did not converge after %i iterations. Maximum parameter update: %.3e",
@@ -302,11 +308,13 @@ class AlignmentEstimator:
         enabled_parameters = [parameter for parameter in self._est_params if parameter.enabled]
         unweighted_values = np.array(self._est_params.values_enabled, dtype=float)
         thresholds = self.data.thresholds[self.settings.estimation_settings.lq_parameter_filter]
+        normalized = np.zeros(0)
         for iteration in range(1, MAX_ROBUST_ITERATIONS + 1):
-            normalized = self._update_epoch_weights(k)
-            if normalized is None:
+            current = self._update_epoch_weights(k)
+            if current is None:
                 logger.debug("Robust estimation skipped: all residuals are zero.")
                 return
+            normalized = current
             previous = np.array(self._est_params.values_enabled, dtype=float)
             self._estimate_parameters()
             if not self._converged:

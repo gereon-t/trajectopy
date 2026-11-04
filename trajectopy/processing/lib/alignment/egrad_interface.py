@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import Any
+
 import autograd.numpy as np
 from autograd import elementwise_grad as egrad
 
@@ -40,25 +43,30 @@ class FunctionalRelationship:
     """Class for the functional relationship between the observations and the parameters."""
 
     def __init__(self) -> None:
-        self._functions = (functional_relationship_x, functional_relationship_y, functional_relationship_z)
+        self._functions: tuple[Callable[..., Any], ...] = (
+            functional_relationship_x,
+            functional_relationship_y,
+            functional_relationship_z,
+        )
         self._arguments = (ARGUMENTS_XY, ARGUMENTS_XY, ARGUMENTS_Z)
         # the derivative with respect to the target coordinate is the constant -1 (see the condition matrix)
         self._differentiated = tuple(
             tuple(argument for argument in arguments if argument != "to") for arguments in self._arguments
         )
         # all partial derivatives of one coordinate from a single trace of its function
-        self._partials = tuple(
-            egrad(function, tuple(arguments.index(argument) for argument in differentiated))
-            for function, arguments, differentiated in zip(self._functions, self._arguments, self._differentiated)
+        self._partials: tuple[Callable[..., Any], ...] = tuple(
+            egrad(self._functions[axis], tuple(arguments.index(argument) for argument in differentiated))
+            for axis, (arguments, differentiated) in enumerate(zip(self._arguments, self._differentiated))
         )
 
     def eval(
         self, observations: AlignmentData, parameters: AlignmentParameters
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Evaluates the functional relationship of the x, y and z coordinates."""
-        return tuple(  # type: ignore[return-value]
+        x, y, z = (
             function(*self._values(axis, observations, parameters)) for axis, function in enumerate(self._functions)
         )
+        return x, y, z
 
     def partials(self, observations: AlignmentData, parameters: AlignmentParameters) -> list[dict[str, np.ndarray]]:
         """Partial derivatives of the x, y and z functional relationship with respect to all arguments

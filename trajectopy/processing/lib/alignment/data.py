@@ -157,7 +157,7 @@ class AlignmentData:
             raise ValueError("Observation vector is not divisible by the number of observations per epoch!")
 
         self._obs_vector = values
-        self._est_obs_matrix = None
+        self._est_obs_matrix: np.ndarray | None = None
 
     def __len__(self) -> int:
         return len(self._obs_vector) // self.num_obs_per_epoch
