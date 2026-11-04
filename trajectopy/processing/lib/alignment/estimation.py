@@ -104,7 +104,13 @@ class AlignmentEstimator:
             return self._init_from_prior(self._initial_parameters)
 
         if self.settings.estimation_settings.helmert_enabled:
-            helmert_init = direct_helmert_transformation(xyz_from=self.data.xyz_from, xyz_to=self.data.xyz_to)
+            try:
+                helmert_init = direct_helmert_transformation(xyz_from=self.data.xyz_from, xyz_to=self.data.xyz_to)
+            except ValueError as error:
+                # e.g. a single matched pose: the translation is still determined, rotation and scale are not
+                logger.warning("No direct Helmert transformation (%s), starting from the translation only.", error)
+                helmert_init = HelmertTransformation()
+                helmert_init.translation = np.mean(self.data.xyz_to - self.data.xyz_from, axis=0)
             xyz_init = helmert_init.apply_to(self.data.xyz_from)
         else:
             helmert_init = HelmertTransformation()
@@ -182,6 +188,9 @@ class AlignmentEstimator:
             self._estimate_robustly()
             if not self._converged:
                 break  # there are no residuals to test (and to estimate the variances from)
+            if self.redundancy <= 0:
+                logger.warning("No redundancy: the variance factor cannot be estimated and tested.")
+                break
             self._global_test(variance_factor=self.variance_factor, redundancy=self.redundancy)
 
             if not self.data.alignment_settings.stochastics.variance_estimation:

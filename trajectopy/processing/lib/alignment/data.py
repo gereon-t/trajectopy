@@ -508,7 +508,8 @@ class AlignmentData:
         max_dist = np.max([max_dist_from, max_dist_to])
 
         # scale and angle threshold should fit to metric threshold
-        scale_and_angle_th = self.alignment_settings.metric_threshold / max_dist
+        # without any extent (a single position), rotation and scale are undetermined anyway
+        scale_and_angle_th = self.alignment_settings.metric_threshold / max_dist if max_dist > 0 else np.inf
 
         thresholds = np.ones(11)
         thresholds[:3] *= self.alignment_settings.metric_threshold
