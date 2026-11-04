@@ -14,6 +14,15 @@ repos:
 
   - repo: local
     hooks:
+      # same check as the CI lint job: the whole package with the GUI packages, whose types trajectopy.gui needs
+      - id: mypy
+        name: Type check (mypy)
+        entry: uv run --extra gui mypy
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-commit]
+
       - id: pytest
         name: Run unit tests
         entry: uv run pytest -q
