@@ -7,6 +7,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.gui.views.preview_plot import local_xyz
 from trajectopy.utils.definitions import Sorting
 from trajectopy.visualization import style
 
@@ -115,10 +116,12 @@ class PlaybackWindow(QtWidgets.QDialog):
     @staticmethod
     def _build_traj_data(trajectories: list[Trajectory]) -> list[_TrajData]:
         result = []
+        # one local frame for all trajectories (each one's own frame is centered at its own positions)
+        shared_transformer = trajectories[0].positions.local_transformer if trajectories else None
         for i, traj in enumerate(trajectories):
             # played back in chronological order, also if the trajectory is sorted spatially
             order = traj.sort_index(Sorting.TIME)
-            local_xyz = traj.positions.to_local(inplace=False).xyz[order]
+            xyz = local_xyz(traj, shared_transformer, indices=np.arange(len(traj)))[order]
             timestamps = traj.timestamps[order]
             t_rel = timestamps - timestamps[0] if len(timestamps) else timestamps
             rot_mats: np.ndarray | None = None
@@ -127,7 +130,7 @@ class PlaybackWindow(QtWidgets.QDialog):
                 if rot_mats.ndim == 2:
                     rot_mats = rot_mats[np.newaxis]
                 rot_mats = rot_mats[order]
-            result.append(_TrajData(traj.name, style.color(i), local_xyz, t_rel, rot_mats))
+            result.append(_TrajData(traj.name, style.color(i), xyz, t_rel, rot_mats))
         return result
 
     def _compute_axes_scale(self) -> float:

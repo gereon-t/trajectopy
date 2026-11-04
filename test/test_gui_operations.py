@@ -135,6 +135,28 @@ class TestTrajectoryOperations(unittest.TestCase):
         # the line runs along x at 1 m/s
         np.testing.assert_allclose(np.diff(data.xyz[:, 0]), 1.0, atol=1e-9)
 
+    def test_preview_shows_trajectories_of_different_local_frames_in_one_frame(self):
+        from trajectopy.gui.views.preview_plot import local_xyz
+
+        xyz = np.c_[np.linspace(364000, 364100, 10), np.full(10, 5621000.0), np.full(10, 100.0)]
+        first = Trajectory.from_arrays(xyz, epsg=25832)
+        # the same positions, transformed into a local frame of their own (centered at the second half)
+        second = Trajectory.from_arrays(xyz[5:], epsg=25832)
+        second.positions.to_local()
+
+        shared = first.positions.local_transformer
+        np.testing.assert_allclose(local_xyz(second, shared), local_xyz(first, shared)[5:], atol=1e-6)
+
+    def test_playback_shows_all_trajectories_in_one_frame(self):
+        from trajectopy.gui.views.playback_window import PlaybackWindow
+
+        xyz = np.c_[np.linspace(364000, 364100, 10), np.full(10, 5621000.0), np.full(10, 100.0)]
+        first, second = Trajectory.from_arrays(xyz, epsg=25832), Trajectory.from_arrays(xyz[5:], epsg=25832)
+
+        first_data, second_data = PlaybackWindow._build_traj_data([first, second])
+
+        np.testing.assert_allclose(second_data.xyz, first_data.xyz[5:], atol=1e-6)
+
 
 if __name__ == "__main__":
     unittest.main()

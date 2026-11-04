@@ -124,6 +124,14 @@ def local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | N
     positions = trajectory.positions.copy()
     positions.xyz = positions.xyz[sample_indices(len(positions.xyz)) if indices is None else indices]
     try:
+        if (
+            positions.epsg == 0
+            and positions.local_transformer is not None
+            and local_transformer is not None
+            and positions.pipeline_str != local_transformer.definition
+        ):
+            # local in a frame of its own: back to earth-centered coordinates first, then into the shared frame
+            positions.to_epsg(positions.epsg_local_cart)
         positions.local_transformer = local_transformer
         return positions.to_local(inplace=False).xyz
     except Exception:
