@@ -36,30 +36,27 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
             "Consider reprojecting the trajectories to the same EPSG code."
         )
 
-    epsg = epsg_set.pop()
+    epsg = trajectories[0].positions.epsg  # the first trajectory's, not an arbitrary one of the set
 
     merged_xyz = np.concatenate([t.positions.xyz for t in trajectories], axis=0)
-    merged_quat = np.concatenate(
-        [
-            t.rotations.as_quat() if t.rotations is not None else Rotations.identity(len(t)).as_quat()
-            for t in trajectories
-        ],
-        axis=0,
+    # orientations only if all trajectories have them: any substitute would be made-up data
+    with_orientation = all(t.rotations is not None for t in trajectories)
+    if not with_orientation and any(t.rotations is not None for t in trajectories):
+        logger.warning("Not all merged trajectories have orientations. The merged trajectory has none.")
+    merged_rotations = (
+        Rotations.from_quat(np.concatenate([t.quat for t in trajectories], axis=0)) if with_orientation else None
     )
-    has_rot = [t.has_orientation for t in trajectories]
     merged_timestamps = np.concatenate([t.timestamps for t in trajectories], axis=0)
     merged_velocities = np.concatenate([t.velocity_xyz for t in trajectories], axis=0)
 
-    merged = Trajectory(
+    # the trajectory orders the poses chronologically before it derives the path lengths
+    return Trajectory(
         name="Merged",
         timestamps=merged_timestamps,
         positions=Positions(xyz=merged_xyz, epsg=epsg),
-        rotations=Rotations.from_quat(merged_quat) if any(has_rot) else None,
+        rotations=merged_rotations,
         velocity_xyz=merged_velocities,
     )
-
-    merged.mask(np.argsort(merged.timestamps), inplace=True)
-    return merged
 
 
 def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:

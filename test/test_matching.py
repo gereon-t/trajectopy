@@ -139,6 +139,34 @@ class TestMatching(unittest.TestCase):
         # Index should match
         np.testing.assert_array_almost_equal(test_matched.index, ref_matched.index)
 
+    def test_interpolation_does_not_fill_gaps_of_the_test_trajectory(self):
+        """Reference epochs inside a test gap larger than max_gap_size must not be matched."""
+        t_ref = np.r_[np.arange(0, 20.0), np.arange(20.5, 100, 1.0)]
+        t_test = np.r_[np.arange(0, 20.0, 0.5), np.arange(80, 100, 0.5)]  # 60 s outage
+        reference = Trajectory.from_arrays(np.c_[t_ref, 0 * t_ref, 0 * t_ref], timestamps=t_ref)
+        test = Trajectory.from_arrays(np.c_[t_test, 0 * t_test, 0 * t_test], timestamps=t_test)
+
+        settings = MatchingSettings(method=MatchingMethod.INTERPOLATION, max_gap_size=10.0)
+        test_matched, ref_matched = match_trajectories(test, reference, matching_settings=settings)
+
+        self.assertFalse(np.any((ref_matched.timestamps > 19.5) & (ref_matched.timestamps < 80.0)))
+        np.testing.assert_array_equal(test_matched.timestamps, ref_matched.timestamps)
+
+    def test_interpolation_at_gap_edges_uses_observations_inside_the_gap(self):
+        """The edges of a reference gap are interpolated with the test observations next to them."""
+        t_ref = np.r_[np.arange(0, 21.0), np.arange(80, 101.0)]  # 59 s gap
+        t_test = np.arange(0.25, 100, 0.5)
+        reference = Trajectory.from_arrays(np.c_[t_ref, 0 * t_ref, 0 * t_ref], timestamps=t_ref)
+        test = Trajectory.from_arrays(np.c_[t_test**2, 0 * t_test, 0 * t_test], timestamps=t_test)
+
+        settings = MatchingSettings(method=MatchingMethod.INTERPOLATION, max_gap_size=10.0)
+        test_matched, _ = match_trajectories(test, reference, matching_settings=settings)
+
+        for edge in (20.0, 80.0):
+            x = test_matched.positions.x[test_matched.timestamps == edge]
+            # linear interpolation of t^2 between edge -/+ 0.25 s
+            np.testing.assert_allclose(x, edge**2 + 0.0625)
+
     def test_match_trajectories_spatial_interpolated_basic(self):
         """Test spatial interpolation-based matching."""
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED, max_distance=5.0, k_nearest=5)

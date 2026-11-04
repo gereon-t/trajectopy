@@ -30,7 +30,7 @@ def sparse_least_squares(
     l_s = design_matrix @ x_s
 
     # residuals
-    v = l_s[:, None] - observations
+    v = l_s[:, None] - observations.reshape(-1, 1)
 
     return x_s, l_s, v
 

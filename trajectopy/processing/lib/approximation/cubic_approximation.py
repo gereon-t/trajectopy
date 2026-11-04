@@ -121,9 +121,8 @@ class CubicApproximation:
                 intervals.append(current_interval_obj)
                 current_interval_obj = Interval(start=x_value, end=x_value)
 
-            if (i == len(var_red) - 1) and (
-                len(current_interval_obj) < self.min_obs or current_interval_obj.length < self.min_win_size
-            ):
+            # the remaining observations, which did not complete an interval, extend the last one
+            if (i == len(var_red) - 1) and intervals and current_interval_obj.values:
                 intervals[-1].end = current_interval_obj.end
                 intervals[-1].values.extend(current_interval_obj.values)
 

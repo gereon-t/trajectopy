@@ -243,10 +243,10 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: 
     """
     trajectory = trajectory if inplace else trajectory.copy()
     if trajectory.rotations is not None and other.rotations is not None:
-        rpy = trajectory.rotations.as_euler(seq="xyz")
-        rotation_difference = other.rotations.as_euler(seq="xyz")[0, :] - rpy[0, :]
-
-        trajectory.rotations = Rotations.from_euler(seq="xyz", angles=rpy + rotation_difference)
+        # one rotation for all poses, so that the rotations between the poses are kept
+        first = Rotations.from_quat(trajectory.rotations.as_quat()[0])
+        first_other = Rotations.from_quat(other.rotations.as_quat()[0])
+        trajectory.rotations = first_other * first.inv() * trajectory.rotations
 
     return trajectory
 

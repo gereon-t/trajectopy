@@ -5,8 +5,13 @@ import unittest
 import numpy as np
 
 from test.testdata import generated_trajectory
-from trajectopy.core.settings import MatchingMethod, MatchingSettings
+from trajectopy.core.rotations import Rotations
+from trajectopy.core.settings import MatchingMethod, MatchingSettings, PairDistanceUnit, ProcessingSettings
+from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing.alignment import adopt_first_orientation
+from trajectopy.processing.evaluation import _along_track_dev, rpe
 from trajectopy.processing.matching import match_trajectories
+from trajectopy.processing.merging import merge_trajectories
 from trajectopy.utils.definitions import Sorting, TrajectoriesSorting
 from trajectopy.visualization.axes import get_sorting
 
@@ -54,6 +59,293 @@ class TestRegressions(unittest.TestCase):
         self.assertAlmostEqual(np.linalg.det(helmert.rotation_matrix), 1.0)
         np.testing.assert_allclose(helmert.rotation_matrix, rotation, atol=1e-9)
         np.testing.assert_allclose(helmert.apply_to(xyz_from), xyz_to, atol=1e-6)
+
+
+def _line(timestamps: np.ndarray, **kwargs) -> Trajectory:
+    """Straight line along x at 1 m/s."""
+    return Trajectory.from_arrays(np.c_[timestamps, 0 * timestamps, 0 * timestamps], timestamps=timestamps, **kwargs)
+
+
+class TestTrajectoryOperationRegressions(unittest.TestCase):
+    def test_unordered_input_gets_chronological_path_lengths_and_velocities(self):
+        order = np.array([0, 5, 1, 6, 2, 7, 3, 8, 4, 9])
+        t = np.arange(10.0)
+        velocity = np.c_[t, 0 * t, 0 * t]  # tagged with the timestamp, to follow the reordering
+
+        trajectory = Trajectory.from_arrays(
+            np.c_[t, 0 * t, 0 * t][order], timestamps=t[order], velocity_xyz=velocity[order]
+        )
+
+        np.testing.assert_allclose(trajectory.timestamps, t)
+        np.testing.assert_allclose(trajectory.path_lengths, t)
+        np.testing.assert_allclose(trajectory.velocity_xyz[:, 0], t)
+
+    def test_duplicate_epochs_keep_the_given_path_lengths(self):
+        t = np.array([0.0, 1.0, 1.0, 2.0])
+        path_lengths = np.array([0.0, 10.0, 99.0, 20.0])
+
+        trajectory = Trajectory.from_arrays(np.zeros((4, 3)), timestamps=t, path_lengths=path_lengths)
+
+        np.testing.assert_allclose(trajectory.timestamps, [0.0, 1.0, 2.0])
+        np.testing.assert_allclose(trajectory.path_lengths, [0.0, 10.0, 20.0])
+
+    def test_merging_interleaved_trajectories_gives_monotonic_path_lengths(self):
+        t = np.arange(10.0)
+        merged = merge_trajectories([_line(t[::2]), _line(t[1::2])])
+
+        np.testing.assert_allclose(merged.timestamps, t)
+        np.testing.assert_allclose(merged.path_lengths, t)
+
+    def test_transform_rotates_velocities_and_keeps_missing_orientations(self):
+        trajectory = _line(np.arange(10.0))
+        transformation = np.eye(4)
+        transformation[:3, :3] = 2.0 * Rotations.from_euler("z", np.pi / 2).as_matrix()
+
+        trajectory.transform(transformation)
+
+        self.assertFalse(trajectory.has_orientation)
+        np.testing.assert_allclose(trajectory.velocity_xyz[0], [0.0, 2.0, 0.0], atol=1e-12)
+        np.testing.assert_allclose(trajectory.path_lengths, 2.0 * np.arange(10.0))
+
+    def test_adopt_first_orientation_keeps_relative_rotations(self):
+        num = 5
+        trajectory = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, random_state=1).as_quat())
+        other = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, random_state=2).as_quat())
+
+        adopted = adopt_first_orientation(trajectory, other, inplace=False)
+
+        def relative_angles(rotations: Rotations) -> np.ndarray:
+            return (Rotations.from_quat(rotations.as_quat()[0]).inv() * rotations).magnitude()
+
+        np.testing.assert_allclose(adopted.quat[0], other.quat[0] * np.sign(adopted.quat[0] @ other.quat[0]))
+        np.testing.assert_allclose(relative_angles(adopted.rotations), relative_angles(trajectory.rotations))
+
+    def test_rpe_across_a_gap_has_no_zero_length_pairs(self):
+        t = np.r_[np.arange(0, 50.0), np.arange(100, 150.0)]
+        settings = ProcessingSettings()
+        settings.relative_comparison.pair_distance_unit = PairDistanceUnit.SECOND
+        settings.relative_comparison.pair_min_distance = 10.0
+        settings.relative_comparison.pair_max_distance = 10.0
+        settings.relative_comparison.use_all_pose_pairs = False
+
+        result = rpe(_line(t), _line(t), settings)
+
+        self.assertTrue(np.all(np.array(result.rpe_dev.pair_distance[10.0]) > 0))
+        self.assertFalse(np.isnan(result.rpe_dev.pos_dev[10.0]).any())
+
+    def test_spatial_interpolation_keeps_the_epsg(self):
+        xyz = np.c_[np.linspace(364000, 364100, 50), np.full(50, 5621000.0), np.full(50, 100.0)]
+        reference = Trajectory.from_arrays(xyz, epsg=25832)
+        test = Trajectory.from_arrays(xyz + 0.05, epsg=25832)
+
+        settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED)
+        matched_test, matched_ref = match_trajectories(test, reference, matching_settings=settings)
+
+        self.assertEqual(matched_test.positions.epsg, 25832)
+        self.assertEqual(matched_ref.positions.epsg, 25832)
+
+    def test_along_track_deviation_of_the_last_point_far_behind(self):
+        a, b = np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0])
+        # 3 m behind the last reference point b
+        deviation = _along_track_dev(p=np.array([-2.0, 0.0, 0.0]), line_pts=[a, b], is_last=True)
+        self.assertAlmostEqual(deviation, -3.0)
+
+
+class TestRobustnessRegressions(unittest.TestCase):
+    def test_shrink_data_averages_zeros(self):
+        from trajectopy.utils.numeric import shrink_data
+
+        np.testing.assert_allclose(shrink_data(np.array([0.0, 2.0, 0.0, 2.0]), max_size=2), [1.0, 1.0])
+
+    def test_rpe_in_seconds_of_a_spatially_sorted_trajectory(self):
+        t = np.arange(100.0)
+        trajectory = _line(t)
+        # spatially sorted: the order of the path lengths differs from the chronological one
+        trajectory.path_lengths = (t * 37) % 100
+        trajectory.set_sorting(Sorting.PATH_LENGTH)
+        settings = ProcessingSettings()
+        settings.relative_comparison.pair_distance_unit = PairDistanceUnit.SECOND
+        settings.relative_comparison.pair_min_distance = 10.0
+        settings.relative_comparison.pair_max_distance = 10.0
+
+        result = rpe(trajectory, trajectory.copy(), settings)
+
+        np.testing.assert_allclose(result.rpe_dev.pair_distance[10.0], 10.0)
+
+    def test_rpe_rejects_non_positive_pair_distances(self):
+        for attribute in ("pair_min_distance", "pair_distance_step"):
+            settings = ProcessingSettings()
+            setattr(settings.relative_comparison, attribute, 0.0)
+            with self.assertRaises(ValueError):
+                rpe(_line(np.arange(100.0)), _line(np.arange(100.0)), settings)
+
+    def test_spatial_interpolation_needs_two_neighbours(self):
+        settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED, k_nearest=1)
+        with self.assertRaises(ValueError):
+            match_trajectories(_line(np.arange(10.0)), _line(np.arange(10.0)), matching_settings=settings)
+
+    def test_interpolating_a_single_pose(self):
+        from trajectopy.processing.interpolation import interpolate
+
+        single = Trajectory.from_arrays(np.ones((1, 3)), rpy=np.zeros((1, 3)), timestamps=np.array([5.0]))
+        interpolated = interpolate(single, [5.0], inplace=False)
+
+        np.testing.assert_allclose(interpolated.xyz, [[1.0, 1.0, 1.0]])
+        self.assertEqual(len(interpolated.rotations), 1)
+
+    def test_rotation_window_is_centered(self):
+        from trajectopy.processing.approximation import _average_rotations_in_window
+
+        index = np.arange(20.0)
+        yaw = np.deg2rad(index)
+        quat = Rotations.from_euler("xyz", np.c_[0 * yaw, 0 * yaw, yaw]).as_quat()
+
+        averaged = Rotations.from_quat(_average_rotations_in_window(index, quat, win_size=4.0))
+
+        # the mean of a symmetric window of linearly increasing angles is the center angle
+        np.testing.assert_allclose(averaged.as_euler("xyz")[2:-2, 2], yaw[2:-2], atol=1e-6)
+
+    def test_rotation_averaging_per_path_length_follows_the_trajectory_order(self):
+        from trajectopy.processing.approximation import _average_rotations_per_path_length
+
+        # two laps of 50 m, every pose oriented by its position on the lap
+        t = np.arange(100.0)
+        lap_position = t % 50
+        trajectory = Trajectory.from_arrays(
+            np.c_[lap_position, 0 * t, 0 * t], rpy=np.c_[0 * t, 0 * t, np.deg2rad(lap_position)], timestamps=t
+        )
+        trajectory.path_lengths = lap_position.copy()
+
+        yaw = Rotations.from_quat(_average_rotations_per_path_length(trajectory)).as_euler("xyz")[:, 2]
+
+        np.testing.assert_allclose(yaw, np.deg2rad(lap_position), atol=1e-9)
+
+    def test_cubic_approximation_with_a_last_interval_of_exactly_the_window_size(self):
+        from trajectopy.processing.lib.approximation.cubic_approximation import CubicApproximation
+
+        index = np.arange(8.0)
+        values = np.sin(index) + 5.0
+        approximation = CubicApproximation(index, values, min_win_size=3.0, min_obs=3)
+
+        self.assertLess(np.max(np.abs(approximation.est_obs - values)), 0.5)
+
+    def test_cubic_approximation_of_too_few_observations(self):
+        from trajectopy.exceptions import ApproximationError
+        from trajectopy.processing.lib.approximation.cubic_approximation import CubicApproximation
+
+        with self.assertRaises(ApproximationError):
+            CubicApproximation(np.arange(2.0), np.ones(2), min_win_size=3.0, min_obs=3)
+
+    def test_header_tolerates_spaces_and_missing_values(self):
+        from trajectopy.io.header import HeaderData
+
+        header = HeaderData.from_string("#epsg\n#fields t, px, py, pz\n1,2,3,4")
+
+        self.assertEqual(header.epsg, 0)
+        self.assertEqual(header.fields, ["t", "px", "py", "pz"])
+
+    def test_alignment_of_integer_data(self):
+        from trajectopy.processing.alignment import apply_alignment
+        from trajectopy.results.alignment_result import AlignmentResult
+
+        trajectory = Trajectory.from_arrays(np.arange(15).reshape(5, 3))
+        apply_alignment(trajectory, AlignmentResult())
+
+        np.testing.assert_allclose(trajectory.xyz, np.arange(15).reshape(5, 3))
+
+    def test_timestamps_have_to_match_the_positions(self):
+        from trajectopy.exceptions import TrajectoryError
+
+        with self.assertRaises(TrajectoryError):
+            Trajectory.from_arrays(np.zeros((5, 3)), timestamps=np.arange(4.0))
+
+    def test_voxels_of_different_cells_stay_separate(self):
+        from trajectopy.processing.lib.approximation.voxelizer import Voxelizer
+
+        # the cells (1, 12, 3) and (11, 2, 3) must not share a voxel
+        points = np.array([[0, 0, 0], [1, 12, 3], [11, 2, 3]], dtype=float) - 0.5
+        voxelizer = Voxelizer(points, voxel_size=1.0)
+
+        self.assertEqual(len(voxelizer.voxels), 3)
+        self.assertEqual(len(voxelizer.k_nearest_query(points, k_nearest=10)[0]), 3)
+
+    def test_variances_of_independent_parameters_add_up(self):
+        from trajectopy.core.parameters import Parameter
+
+        a, b = Parameter(value=1.0, variance=4.0), Parameter(value=2.0, variance=9.0)
+
+        self.assertAlmostEqual((a + b).variance, 13.0)
+        self.assertAlmostEqual((a - b).variance, 13.0)
+
+    def test_read_ate_result_keeps_deviations_with_their_poses(self):
+        import os
+        import tempfile
+
+        from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
+
+        t = np.arange(6.0)
+        trajectory = _line(t)
+        # spatially sorted with ties in path length, which are not in chronological order
+        trajectory.timestamps = np.array([3.0, 0.0, 4.0, 1.0, 5.0, 2.0])
+        trajectory.path_lengths = np.array([0.0, 0.0, 1.0, 1.0, 2.0, 2.0])
+        trajectory._sorting = Sorting.PATH_LENGTH
+        # every deviation is tagged with the timestamp of its pose
+        deviations = np.c_[trajectory.timestamps, 0 * t, 0 * t]
+        result = ATEResult(trajectory, AbsoluteTrajectoryDeviations(pos_dev=deviations, directed_pos_dev=deviations))
+
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "ate.result")
+            result.to_file(filename)
+            read = ATEResult.from_file(filename)
+
+        np.testing.assert_allclose(read.abs_dev.pos_dev[:, 0], read.trajectory.timestamps)
+
+    def test_smoothing_keeps_constant_values_at_the_ends(self):
+        from trajectopy.utils.numeric import round_to_precision
+
+        values = np.full(10, 5.0)
+        _, smoothed = round_to_precision(np.arange(10.0), values, resolution=0.1, filter_size=5)
+
+        np.testing.assert_allclose(smoothed, 5.0)
+
+    def test_merging_does_not_make_up_orientations(self):
+        with_rotations = _line(np.arange(5.0), rpy=np.full((5, 3), 0.1))
+        without_rotations = _line(np.arange(5.0, 10.0))
+
+        merged = merge_trajectories([with_rotations, without_rotations])
+
+        self.assertFalse(merged.has_orientation)
+        self.assertEqual(len(merged), 10)
+
+    def test_assigned_local_transformer_survives_export_and_import(self):
+        import os
+        import tempfile
+
+        from trajectopy.core.positions import Positions
+
+        xyz = np.c_[np.linspace(364000, 364100, 10), np.full(10, 5621000.0), np.full(10, 100.0)]
+        georeferenced = Positions(xyz, epsg=25832)
+        # positions that took over the transformer of other positions, e.g. matched or "reference EPSG"
+        local = Positions(georeferenced.to_local(inplace=False).xyz, local_transformer=georeferenced.local_transformer)
+
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "local_transformer.txt")
+            local.export_local_transformer(filename)
+            restored = Positions(local.xyz.copy())
+            restored.import_local_transformer(filename)
+
+        np.testing.assert_allclose(restored.to_epsg(25832, inplace=False).xyz, xyz, atol=1e-6)
+
+    def test_interpolating_rotations_at_a_single_index(self):
+        from trajectopy.processing.interpolation import interpolate
+
+        t = np.arange(6.0)
+        trajectory = _line(t, rpy=np.c_[0 * t, 0 * t, 0.1 * t])
+
+        interpolated = interpolate(trajectory, [2.5], inplace=False)
+
+        self.assertEqual(len(interpolated.rotations), 1)
+        self.assertAlmostEqual(interpolated.rpy[0, 2], 0.25)
 
 
 if __name__ == "__main__":

@@ -61,7 +61,9 @@ def round_to_precision(
     Returns:
         Tuple[np.ndarray, np.ndarray]: downsampled index and data
     """
-    data_smoothed = np.convolve(data, [1 / filter_size] * filter_size, "same")
+    # moving average over the samples inside the filter (cut off at the ends, not filled with zeros)
+    kernel = np.ones(filter_size)
+    data_smoothed = np.convolve(data, kernel, "same") / np.convolve(np.ones(len(data)), kernel, "same")
     data_rounded = np.round(data_smoothed / resolution) * resolution
     _, indices = np.unique(np.c_[index, data_rounded], return_index=True, axis=0)
     indices_sorted = np.sort(indices)
@@ -92,8 +94,8 @@ def shrink_data(data: np.ndarray, max_size: int = 1000) -> np.ndarray:
 
     data = data.astype(float)
     array_size = (-len(data) % max_size) + len(data)
-    padded_data = np.pad(data, (0, array_size - len(data)))
-    padded_data[padded_data == 0] = np.nan
+    # the padding must not be averaged, unlike zeros of the data
+    padded_data = np.pad(data, (0, array_size - len(data)), constant_values=np.nan)
 
     reshaped_data = np.array(
         [row for row in padded_data.reshape(-1, len(padded_data) // max_size) if not np.all(np.isnan(row))]

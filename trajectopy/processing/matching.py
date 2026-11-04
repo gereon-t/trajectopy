@@ -8,7 +8,7 @@ from trajectopy.core import settings
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.interpolation import interpolate
+from trajectopy.processing.interpolation import inside_gaps, interpolate
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
 from trajectopy.utils.definitions import Sorting
 
@@ -205,6 +205,9 @@ def _match_trajectories_interpolation(
         )
 
     other.intersect(trajectory.index, max_gap_size=max_gap_size)
+    # the epochs of the reference are interpolated, which is not done inside gaps of the trajectory;
+    # unlike the observations of the trajectory, the reference epochs at the gap edges are not needed there
+    other.mask(~inside_gaps(other.index, trajectory.index, max_gap_size))
 
     if other.index.shape[0] == 0:
         raise ValueError(
@@ -316,6 +319,9 @@ def _match_trajectories_spatial_interpolation(
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories
     """
+    if k_nearest < 2:
+        raise ValueError(f"k_nearest must be at least 2 to fit a 3d line, got {k_nearest}.")
+
     test_xyz = trajectory.positions.xyz
     ref_xyz = other.positions.xyz
 
@@ -361,12 +367,19 @@ def _match_trajectories_spatial_interpolation(
         matched_arc_lengths.append(_determine_mean_arc_length(other.path_lengths[idxs], lap_length))
         matched_indices.append(i)
 
+    if not matched_indices:
+        raise ValueError("No matches found! Each pose needs at least two reference poses within max_distance.")
+
     # both keep the timestamps and velocities of the evaluated trajectory
     timestamps = trajectory.timestamps[matched_indices]
     velocities = trajectory.velocity_xyz[matched_indices]
     trajectory = Trajectory(
         name=trajectory.name,
-        positions=Positions(np.array(matched_test_pos), local_transformer=trajectory.positions.local_transformer),
+        positions=Positions(
+            np.array(matched_test_pos),
+            epsg=trajectory.positions.epsg,
+            local_transformer=trajectory.positions.local_transformer,
+        ),
         rotations=Rotations.from_quat(np.array(matched_test_rot)) if trajectory.has_orientation else None,
         sorting=trajectory.sorting,
         path_lengths=np.array(matched_arc_lengths),
@@ -375,7 +388,9 @@ def _match_trajectories_spatial_interpolation(
     )
     other = Trajectory(
         name=other.name,
-        positions=Positions(np.array(matched_ref_pos), local_transformer=other.positions.local_transformer),
+        positions=Positions(
+            np.array(matched_ref_pos), epsg=other.positions.epsg, local_transformer=other.positions.local_transformer
+        ),
         rotations=Rotations.from_quat(np.array(matched_ref_rot)) if other.has_orientation else None,
         sorting=other.sorting,
         path_lengths=np.array(matched_arc_lengths),

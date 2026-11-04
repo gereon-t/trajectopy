@@ -80,7 +80,8 @@ class Voxelizer:
 
         voxels: dict[str, Voxel] = {}
         for i, (x_id, y_id, z_id) in enumerate(zip(x_bin_ids, y_bin_ids, z_bin_ids)):
-            voxel_id = f"{x_id}{y_id}{z_id}"
+            # separated, since e.g. (1, 12, 3) and (11, 2, 3) would otherwise share the id "1123"
+            voxel_id = f"{x_id}_{y_id}_{z_id}"
             if voxel_id not in voxels:
                 voxels[voxel_id] = Voxel(id=voxel_id, size=voxel_size, points=[])
             voxels[voxel_id].points.append(xyz[i, :])
@@ -111,7 +112,10 @@ class Voxelizer:
         Returns:
             list[frozenset[str]]: list of frozensets containing voxel ids.
         """
+        # at most all voxels, since missing neighbors have no id; always one column per neighbor
+        k_nearest = min(k_nearest, len(self.voxels))
         _, neighbor_voxels = self.kd_tree.query(xyz, k=k_nearest)
+        neighbor_voxels = np.reshape(neighbor_voxels, (len(xyz), k_nearest))
         return [frozenset(self.index_to_id(index) for index in voxel_list) for voxel_list in neighbor_voxels]
 
     def points_from_voxel_set(self, voxel_set: frozenset[str]) -> np.ndarray:

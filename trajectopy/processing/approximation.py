@@ -77,6 +77,21 @@ def approximate(
 
 
 def _average_rotations_per_path_length(trajectory: Trajectory, max_gap_size: float = 0.15) -> np.ndarray:
+    """Averages the rotations of all laps at each path length.
+
+    Returns:
+        np.ndarray: Averaged quaternions in the order of the given trajectory.
+    """
+    # the averaging works in the order of the path lengths, the result has to follow the trajectory's order
+    order = trajectory.sort_index(Sorting.PATH_LENGTH)
+    quat_by_path_length = _average_rotations_per_sorted_path_length(trajectory, max_gap_size=max_gap_size)
+    quat = np.empty_like(quat_by_path_length)
+    quat[order] = quat_by_path_length
+    return quat
+
+
+def _average_rotations_per_sorted_path_length(trajectory: Trajectory, max_gap_size: float) -> np.ndarray:
+    """Averages the rotations of all laps at each path length, in ascending order of the path lengths."""
     trajectory = trajectory.copy()
     trajectory.set_sorting(Sorting.PATH_LENGTH)
 
@@ -155,7 +170,8 @@ def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: 
     num_rotations = len(quat)
     for i in range(num_rotations):
         window_start_index = max(0, i - ext)
-        window_end_index = min(num_rotations - 1, i + ext)
+        # i + ext is included: the window is centered at the current rotation
+        window_end_index = min(num_rotations, i + ext + 1)
         quat_i = quat[window_start_index:window_end_index, :]
         # compute mean
         quat_mean[i, :] = Rotations.from_quat(quat_i).mean().as_quat()

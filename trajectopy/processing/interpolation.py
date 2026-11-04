@@ -72,18 +72,7 @@ def _interpolate_linear(
         )
 
     if max_gap_size < float("inf"):
-        # Find exactly where the gaps in the original trajectory are greater than max_gap_size
-        gaps = np.diff(trajectory.index) > max_gap_size
-        gap_starts = trajectory.index[:-1][gaps]
-        gap_ends = trajectory.index[1:][gaps]
-
-        # Filter out target indices that fall in gaps
-        valid_indices = np.ones(len(index_cropped), dtype=bool)
-        for g_start, g_end in zip(gap_starts, gap_ends):
-            in_gap = (index_cropped > g_start) & (index_cropped < g_end)
-            valid_indices[in_gap] = False
-
-        index_cropped = index_cropped[valid_indices]
+        index_cropped = index_cropped[~inside_gaps(index_cropped, trajectory.index, max_gap_size)]
 
         if len(index_cropped) == 0:
             raise ValueError("No valid indices left after applying max_gap_size filter.")
@@ -108,6 +97,27 @@ def _interpolate_linear(
     logger.info("Interpolated %s", trajectory.name)
 
     return trajectory
+
+
+def inside_gaps(index: np.ndarray, observed_index: np.ndarray, max_gap_size: float) -> np.ndarray:
+    """Returns which values of an index lie inside gaps of the observations that are larger than max_gap_size.
+
+    Such values are not interpolated. Values at the edges of a gap are, since the observations on both
+    sides of an edge are available.
+
+    Args:
+        index (np.ndarray): Index values to interpolate at.
+        observed_index (np.ndarray): Ascending index of the observations.
+        max_gap_size (float): Maximum gap in the observed index over which to interpolate.
+
+    Returns:
+        np.ndarray: Boolean mask, True for values of index that lie strictly inside a gap.
+    """
+    gaps = np.diff(observed_index) > max_gap_size
+    in_gap = np.zeros(len(index), dtype=bool)
+    for g_start, g_end in zip(observed_index[:-1][gaps], observed_index[1:][gaps]):
+        in_gap |= (index > g_start) & (index < g_end)
+    return in_gap
 
 
 def _drop_duplicate_index_values(trajectory: Trajectory) -> None:
@@ -146,6 +156,12 @@ def _interpolate_rotations_linear(
     if not trajectory.rotations or len(index) == 0:
         return trajectory
 
+    # the observations, not len(trajectory): the positions may already be interpolated
+    if len(trajectory.index) == 1:
+        # slerp needs two rotations, and a single pose is only interpolated at its own index
+        trajectory.rotations = Rotations.from_quat(np.repeat(trajectory.rotations.as_quat(), len(index), axis=0))
+        return trajectory
+
     # spherical linear orientation interpolation
     # Slerp interpolation, as geodetic curve on unit sphere
     slerp = Slerp(trajectory.index, trajectory.rotations)
@@ -167,9 +183,10 @@ def _interpolate_positions_linear(trajectory: Trajectory, index: np.ndarray, inp
     """
     trajectory = trajectory if inplace else trajectory.copy()
 
-    x_i = np.interp(index, trajectory.index, trajectory.positions.x)
-    y_i = np.interp(index, trajectory.index, trajectory.positions.y)
-    z_i = np.interp(index, trajectory.index, trajectory.positions.z)
+    xyz = trajectory.positions.xyz
+    x_i = np.interp(index, trajectory.index, xyz[:, 0])
+    y_i = np.interp(index, trajectory.index, xyz[:, 1])
+    z_i = np.interp(index, trajectory.index, xyz[:, 2])
     trajectory.positions.xyz = np.c_[x_i, y_i, z_i]
     return trajectory
 

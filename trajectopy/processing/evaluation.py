@@ -200,7 +200,9 @@ def _get_pair_indices(distances: np.ndarray, settings: settings.RelativeComparis
         return np.array([])
 
     indices = np.searchsorted(distances, dist_steps)
-    return np.c_[indices[:-1], indices[1:]]
+    # after a gap larger than dist, several steps start at the same pose, which would pair it with itself
+    distinct = indices[:-1] < indices[1:]
+    return np.c_[indices[:-1][distinct], indices[1:][distinct]]
 
 
 def _compare_trajectories_relative(
@@ -216,6 +218,9 @@ def _compare_trajectories_relative(
     logger.info("Performing relative comparison")
     if relative_comparison_settings.pair_min_distance > relative_comparison_settings.pair_max_distance:
         raise ValueError("Maximum pose distance must be larger than minimum pose distance")
+    # pairs of zero distance would divide by zero, a step of zero would never reach the maximum distance
+    if relative_comparison_settings.pair_min_distance <= 0 or relative_comparison_settings.pair_distance_step <= 0:
+        raise ValueError("Minimum pose distance and pose distance step must be positive")
 
     pair_dists = np.arange(
         relative_comparison_settings.pair_min_distance,
@@ -234,10 +239,14 @@ def _compare_trajectories_relative(
     else:
         raise ValueError(f"Unknown unit {relative_comparison_settings.pair_distance_unit}")
 
+    # the pairs are searched in ascending order of the index, e.g. by time also for spatially sorted trajectories
+    order = np.argsort(index, kind="stable")
+    index = index[order]
+
     with_orientations = other.has_orientation and trajectory.has_orientation
     if with_orientations:
-        se3_other = np.asarray(other.se3)
-        se3_test = np.asarray(trajectory.se3)
+        se3_other = np.asarray(other.se3)[order]
+        se3_test = np.asarray(trajectory.se3)[order]
         # every pose starts pairs for several pair distances, so it is inverted only once
         se3_other_inv = _se3_inv(se3_other)
         se3_test_inv = _se3_inv(se3_test)
@@ -266,7 +275,7 @@ def _compare_trajectories_relative(
             t_err = _translation_error(pose_error)
             rot_dev[pair_dist] = list(_rotation_error(pose_error) / distances)
         else:
-            xyz_other, xyz_test = other.positions.xyz, trajectory.positions.xyz
+            xyz_other, xyz_test = other.positions.xyz[order], trajectory.positions.xyz[order]
             ref_dist = np.linalg.norm(xyz_other[second] - xyz_other[first], axis=1)
             test_dist = np.linalg.norm(xyz_test[second] - xyz_test[first], axis=1)
             t_err = np.abs(ref_dist - test_dist)
@@ -385,12 +394,9 @@ def _along_track_dev(*, p: np.ndarray, line_pts: list, is_last: bool) -> float:
     b = line_pts[1]
     p_nearest, t = nearest_point(p=p, line_pts=line_pts)
 
+    # t is the signed distance from a in direction of b, but the last reference point is b
     if is_last:
-        return float(
-            -np.linalg.norm(p_nearest - b)
-            if np.linalg.norm(b - a) > np.linalg.norm(p_nearest - a)
-            else np.linalg.norm(p_nearest - b)
-        )
+        return float(t - np.linalg.norm(b - a))
 
     return np.sign(t) * np.linalg.norm(p_nearest - a)
 
