@@ -64,7 +64,7 @@ class Trajectory:
             sorting (Sorting, optional): Definition of the sorting logic (TIME or ARC_LENGTH). Defaults to Sorting.TIME.
 
         Raises:
-            TrajectoryError: If the number of positions and rotations do not match.
+            TrajectoryError: If the number of positions and rotations or timestamps do not match.
         """
         # check dimensions
         if rotations is not None and len(positions) != len(rotations):
@@ -78,24 +78,42 @@ class Trajectory:
         self.positions = positions
         self.rotations = rotations
 
-        if not isinstance(timestamps, np.ndarray):
-            timestamps = np.array(timestamps) if timestamps is not None else None
+        # float, since timestamps are shifted and interpolated
+        self.timestamps = (
+            np.arange(0, len(positions), dtype=float) if timestamps is None else np.asarray(timestamps, dtype=float)
+        )
 
-        self.timestamps = np.arange(0, len(positions)) if timestamps is None else timestamps
+        num_poses = len(self.timestamps)
+        if num_poses != len(positions):
+            raise TrajectoryError(f"Number of positions ({len(positions)}) and timestamps ({num_poses}) do not match!")
+        velocity_xyz = (
+            np.asarray(velocity_xyz) if velocity_xyz is not None and len(velocity_xyz) == num_poses else None
+        )
+        path_lengths = (
+            np.asarray(path_lengths) if path_lengths is not None and len(path_lengths) == num_poses else None
+        )
 
-        # ensure strictly increasing timestamps
-        unique_timestamps, unique_indices = np.unique(self.timestamps, return_index=True)
+        # velocities and path lengths are derived from consecutive poses, so the data has to be in chronological
+        # order with strictly increasing timestamps first
+        chronological = np.argsort(self.timestamps, kind="stable")
+        first_of_epoch = chronological[np.diff(self.timestamps[chronological], prepend=np.nan) != 0]
 
-        if len(unique_timestamps) != len(self.timestamps):
+        if len(first_of_epoch) != num_poses:
             logger.warning(
                 "Timestamps contain duplicates. Only the first occurrence of each unique timestamp will be kept. "
                 "This may lead to loss of data if duplicates are present."
             )
-            self.timestamps = unique_timestamps
-            self.positions.xyz = self.positions.xyz[unique_indices, :]
+
+        if not np.array_equal(first_of_epoch, np.arange(num_poses)):
+            self.timestamps = self.timestamps[first_of_epoch]
+            self.positions.xyz = self.positions.xyz[first_of_epoch, :]
 
             if self.rotations is not None:
-                self.rotations = Rotations.from_quat(self.rotations.as_quat()[unique_indices, :])
+                self.rotations = Rotations.from_quat(self.rotations.as_quat()[first_of_epoch, :])
+            if velocity_xyz is not None:
+                velocity_xyz = velocity_xyz[first_of_epoch]
+            if path_lengths is not None:
+                path_lengths = path_lengths[first_of_epoch]
 
         if velocity_xyz is not None and len(velocity_xyz) == len(self.positions):
             self._velocity_xyz = velocity_xyz
@@ -260,7 +278,10 @@ class Trajectory:
         """
         Checks if the supplied trajectory has (likely) unix timestamps as seconds.
         """
-        min_time = min(self.timestamps)
+        if len(self.timestamps) == 0:
+            return False
+
+        min_time = np.min(self.timestamps)
 
         if min_time < UNIX_TIME_THRESHOLD:
             return False
@@ -583,7 +604,10 @@ class Trajectory:
 
     def transform(self, transformation: np.ndarray, inplace: bool = True) -> "Trajectory":
         """
-        Applies a rigid body transformation to the trajectory poses.
+        Applies a rigid body or similarity transformation to the trajectory poses.
+
+        Velocities are rotated and scaled alike, path lengths are scaled. A trajectory without
+        orientations stays without orientations.
 
         Args:
             transformation (np.ndarray): A 4x4 homogeneous transformation matrix.
@@ -593,7 +617,15 @@ class Trajectory:
             Trajectory: The transformed trajectory.
         """
         traj_self = self if inplace else self.copy()
+        linear = transformation[:3, :3]
+
+        traj_self.velocity_xyz = traj_self.velocity_xyz @ linear.T
+        traj_self.path_lengths = traj_self.path_lengths * float(np.cbrt(abs(np.linalg.det(linear))))
+
+        has_orientation = traj_self.has_orientation
         traj_self.se3 = [np.dot(transformation, p) for p in traj_self.se3]
+        if not has_orientation:
+            traj_self.rotations = None
         return traj_self
 
     def to_dataframe(self, sort_by: str = "") -> pd.DataFrame:

@@ -122,6 +122,17 @@ def read_ate_result(filename: str) -> ATEResult:
     """Reads an ATE result from a file."""
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
+    sorting = Sorting.from_str(header_data.sorting)
+
+    # the rows in the order the trajectory will have, so that the deviations stay with their poses: one pose
+    # per timestamp and, if sorted by path length, ties in chronological order
+    tstamps = deviation_data["time"].to_numpy(dtype=float)
+    chronological = np.argsort(tstamps, kind="stable")
+    order = chronological[np.diff(tstamps[chronological], prepend=np.nan) != 0]
+    if sorting == Sorting.PATH_LENGTH:
+        path_lengths = deviation_data["arc_lengths"].to_numpy(dtype=float)
+        order = order[np.argsort(path_lengths[order], kind="stable")]
+    deviation_data = deviation_data.iloc[order]
 
     tstamps = deviation_data["time"].to_numpy(dtype=float)
     path_lengths = deviation_data["arc_lengths"].to_numpy(dtype=float)
@@ -148,7 +159,7 @@ def read_ate_result(filename: str) -> ATEResult:
         rotations=rotations,
         timestamps=tstamps,
         path_lengths=path_lengths,
-        sorting=Sorting.from_str(header_data.sorting),
+        sorting=sorting,
     )
     abs_dev = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
     return ATEResult(trajectory=trajectory, abs_dev=abs_dev)

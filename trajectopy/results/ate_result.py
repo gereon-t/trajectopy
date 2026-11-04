@@ -142,10 +142,8 @@ class ATEResult:
         self.abs_dev.directed_pos_dev = self.abs_dev.directed_pos_dev[ate_below_idx]
 
         if self.abs_dev.rot_dev is not None:
-            self.abs_dev.rot_dev = Rotations.from_euler(
-                angles=self.abs_dev.rot_dev.as_euler(seq="xyz")[ate_below_idx],
-                seq="xyz",
-            )
+            # selected as quaternions, a round trip through Euler angles is inexact near gimbal lock
+            self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[ate_below_idx])
 
         # rotation statistics are cached and depend on the removed deviations
         for cached in ("rot_dev_xyz", "rot_bias_xyz"):

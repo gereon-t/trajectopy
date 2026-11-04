@@ -158,7 +158,7 @@ class HeaderData:
 
     @property
     def fields(self) -> list[str]:
-        return str(self.data.get("fields", "t,px,py,pz,qx,qy,qz,qw")).split(",")
+        return [field.strip() for field in str(self.data.get("fields", "t,px,py,pz,qx,qy,qz,qw")).split(",")]
 
     @property
     def delimiter(self) -> str:
@@ -227,7 +227,10 @@ class HeaderData:
         keyword = splitted_line[0][1:]
 
         if keyword in HEADER_KEYS:
-            metadata[keyword] = HANDLER_MAPPING.get(keyword, HANDLER_MAPPING["default"])(line)
+            try:
+                metadata[keyword] = HANDLER_MAPPING.get(keyword, HANDLER_MAPPING["default"])(line)
+            except (IndexError, ValueError):
+                logger.warning("Ignoring the header line '%s' since its value is missing or invalid.", line.strip())
 
     @classmethod
     def from_file(cls, filename: str) -> "HeaderData":

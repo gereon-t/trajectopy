@@ -70,7 +70,6 @@ class Positions:
         self.local_transformer = local_transformer
         self.epsg_local_geod = epsg_local_geod
         self.epsg_local_cart = epsg_local_cart
-        self.pipeline_str = ""
 
         if self.epsg == 0:
             return
@@ -113,7 +112,7 @@ class Positions:
         )
 
         # define local transformation
-        self.pipeline_str = (
+        pipeline_str = (
             f"+proj=pipeline "
             f"+step +proj=affine "
             f"+xoff={-mean_pos[0]} +yoff={-mean_pos[1]} +zoff={-mean_pos[2]} "
@@ -123,7 +122,13 @@ class Positions:
             f"+s31={t_local[2, 0]} +s32={t_local[2, 1]} +s33={t_local[2, 2]}"
         )
 
-        self.local_transformer = Transformer.from_pipeline(proj_pipeline=self.pipeline_str)
+        self.local_transformer = Transformer.from_pipeline(proj_pipeline=pipeline_str)
+
+    @property
+    def pipeline_str(self) -> str:
+        """Definition of the local transformer (empty if there is none). Derived from the transformer, so that it
+        also matches a transformer that was assigned, e.g. one taken over from other positions."""
+        return "" if self.local_transformer is None else self.local_transformer.definition
 
     def export_local_transformer(self, filename: str) -> None:
         """Exports the local transformer to a file.
@@ -141,8 +146,9 @@ class Positions:
             filename (str): Path to the input file.
         """
         with open(filename, encoding="utf-8") as f:
-            self.pipeline_str = f.read()
-            self.local_transformer = Transformer.from_pipeline(proj_pipeline=self.pipeline_str)
+            pipeline_str = f.read().strip()
+        # empty for positions whose transformer was not known when they were saved
+        self.local_transformer = Transformer.from_pipeline(proj_pipeline=pipeline_str) if pipeline_str else None
 
     def __str__(self) -> str:
         return f"EPSG: {self.epsg}\nCoordinates:\n{str(self.xyz)}"
@@ -209,6 +215,9 @@ class Positions:
         """
         if not isinstance(xyz, np.ndarray):
             raise PointSetError("Input must be numpy array!")
+        # float, since coordinates are transformed in place (e.g. integer input would fail there)
+        if xyz.dtype.kind != "f":
+            xyz = xyz.astype(float)
         self.__xyz = xyz if xyz.ndim > 1 else xyz[None, :]
 
     @property

@@ -79,9 +79,10 @@ class Parameter:
         Returns:
             Parameter: New parameter with subtracted value and combined variance
         """
+        # the variances of independent parameters add up, for differences as well as for sums
         return Parameter(
             value=self.value - other.value,
-            variance=np.sqrt(self.variance**2 + other.variance**2),
+            variance=self.variance + other.variance,
         )
 
     def __add__(self, other: "Parameter") -> "Parameter":
@@ -95,7 +96,7 @@ class Parameter:
         """
         return Parameter(
             value=self.value + other.value,
-            variance=np.sqrt(self.variance**2 + other.variance**2),
+            variance=self.variance + other.variance,
         )
 
     def __neg__(self) -> "Parameter":

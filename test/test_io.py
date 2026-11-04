@@ -32,7 +32,8 @@ class TestIO(unittest.TestCase):
         from trajectopy.core.rotations import Rotations
 
         # Create trajectory with rotations
-        xyz = np.random.rand(50, 3) * 100
+        # valid geographic coordinates (latitude, longitude, height)
+        xyz = np.random.rand(50, 3) * [0.01, 0.01, 100] + [50.0, 7.0, 0.0]
         quat = np.tile([0, 0, 0, 1], (50, 1))
         timestamps = np.arange(50, dtype=float)
 
@@ -91,7 +92,12 @@ class TestIO(unittest.TestCase):
         from trajectopy.core.positions import Positions
 
         for epsg in [4326, 32632, 0]:
+            # valid coordinates of each system: latitude/longitude in degrees, UTM and local in meters
             xyz = np.random.rand(20, 3) * 100
+            if epsg == 4326:
+                xyz = xyz * [1e-4, 1e-4, 1] + [50.0, 7.0, 0.0]
+            elif epsg == 32632:
+                xyz = xyz + [364000.0, 5621000.0, 0.0]
             timestamps = np.arange(20, dtype=float)
 
             traj = Trajectory(positions=Positions(xyz=xyz, epsg=epsg), timestamps=timestamps)
