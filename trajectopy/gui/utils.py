@@ -1,7 +1,63 @@
 import sys
+from collections.abc import Callable, Hashable
 from functools import wraps
 
 from PySide6 import QtCore, QtWidgets
+
+
+class SingleWindows:
+    """Windows that are opened at most once per key (e.g. the settings of a trajectory): opening one again
+    brings the open window to the front instead of creating a second one.
+
+    The windows must delete themselves on close (``WA_DeleteOnClose``).
+    """
+
+    def __init__(self) -> None:
+        self._windows: dict[Hashable, QtWidgets.QWidget] = {}
+
+    def show(self, key: Hashable, create: Callable[[], QtWidgets.QWidget], replace: bool = False) -> QtWidgets.QWidget:
+        """Shows the window of ``key``, created with ``create`` if none is open.
+
+        Args:
+            key (Hashable): Identifies the window, e.g. the entry whose settings it shows.
+            create (Callable[[], QtWidgets.QWidget]): Creates the window.
+            replace (bool, optional): Close an open window and create a new one, e.g. if the window works on the
+                current selection. Defaults to False (the open window is brought to the front).
+
+        Returns:
+            QtWidgets.QWidget: The shown window.
+        """
+        window = self._open_window(key)
+        if window is not None and replace:
+            window.close()
+            window = None
+        if window is None:
+            window = create()
+            self._windows[key] = window
+            window.destroyed.connect(lambda _=None, key=key, window=window: self._forget(key, window))
+            window.show()
+        if window.isMinimized():
+            window.showNormal()
+        window.raise_()
+        window.activateWindow()
+        return window
+
+    def close(self, key: Hashable) -> None:
+        """Closes the window of ``key``, if it is open."""
+        if (window := self._open_window(key)) is not None:
+            window.close()
+
+    def _open_window(self, key: Hashable) -> QtWidgets.QWidget | None:
+        window = self._windows.get(key)
+        try:
+            # a closed window may still exist until Qt deletes it
+            return window if window is not None and window.isVisible() else None
+        except RuntimeError:  # already deleted
+            return None
+
+    def _forget(self, key: Hashable, window: QtWidgets.QWidget) -> None:
+        if self._windows.get(key) is window:
+            del self._windows[key]
 
 
 def app_settings() -> QtCore.QSettings:

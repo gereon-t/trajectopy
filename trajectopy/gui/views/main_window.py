@@ -31,7 +31,14 @@ from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.project import PROJECT_FILE_FILTER, PROJECT_SUFFIX, Project
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 from trajectopy.gui.update_check import Release, UpdateChecker
-from trajectopy.gui.utils import app_settings, browse_dir_dialog, center_window, set_dark_titlebar, show_msg_box
+from trajectopy.gui.utils import (
+    SingleWindows,
+    app_settings,
+    browse_dir_dialog,
+    center_window,
+    set_dark_titlebar,
+    show_msg_box,
+)
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
 from trajectopy.gui.views.preview_plot import PreviewPlot
@@ -120,6 +127,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
         self.plot_settings = self.load_plot_settings(plot_settings_path)
         self.plot_manager = PlotManager(parent=self)
+        self._windows = SingleWindows()  # e.g. the plot settings, which make no sense twice
 
         self.about_window = AboutGUI(parent=self, version_str=VERSION, year_str=YEAR)
         self.progress_window = ProgressWindow(parent=self)
@@ -512,13 +520,17 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.result_table_model.refresh()
 
     def handle_show_plot_settings(self) -> None:
-        viewer = JSONViewer(settings=self.plot_settings, parent=self)
-        viewer.applied.connect(self._mark_modified)
-        viewer.applied.connect(self._refresh_preview)
-        viewer.show()
+        def create() -> JSONViewer:
+            viewer = JSONViewer(settings=self.plot_settings, parent=self)
+            viewer.applied.connect(self._mark_modified)
+            viewer.applied.connect(self._refresh_preview)
+            return viewer
+
+        self._windows.show("plot_settings", create)
 
     @Slot(object)
     def _set_plot_settings(self, plot_settings: PlotSettings) -> None:
+        self._windows.close("plot_settings")  # it would still edit the replaced settings
         self.plot_settings = plot_settings
         self._refresh_preview()
 

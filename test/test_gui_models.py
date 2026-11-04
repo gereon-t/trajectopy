@@ -136,6 +136,42 @@ class TestSubWindows(unittest.TestCase):
         self._process_deferred_deletes()
         self.assertEqual(self.main_window.findChildren(QtWidgets.QMainWindow), [])
 
+    def _visible_windows(self) -> list:
+        return [window for window in self.main_window.findChildren(QtWidgets.QMainWindow) if window.isVisible()]
+
+    def _close_all(self) -> None:
+        for window in self.main_window.findChildren(QtWidgets.QMainWindow):
+            window.close()
+        self._process_deferred_deletes()
+
+    def test_settings_of_a_trajectory_open_only_once(self):
+        manager = UIManager(parent=self.main_window)
+        request = UIRequest(type=UIRequestType.TRAJ_SETTINGS, trajectory_selection=self.selection)
+        manager.handle_request(request)
+        first = self._visible_windows()
+        manager.handle_request(request)
+
+        self.assertEqual(self._visible_windows(), first)
+        self.assertEqual(len(first), 1)
+
+        # once closed, it opens again
+        self._close_all()
+        manager.handle_request(request)
+        self.assertEqual(len(self._visible_windows()), 1)
+        self._close_all()
+
+    def test_a_window_for_the_current_selection_replaces_the_open_one(self):
+        manager = UIManager(parent=self.main_window)
+        request = UIRequest(type=UIRequestType.DOF_ORGANIZER, trajectory_selection=self.selection)
+        manager.handle_request(request)
+        first = self._visible_windows()
+        manager.handle_request(request)
+        second = self._visible_windows()
+
+        self.assertEqual(len(second), 1)
+        self.assertIsNot(second[0], first[0])
+        self._close_all()
+
 
 if __name__ == "__main__":
     unittest.main()

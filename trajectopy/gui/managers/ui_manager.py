@@ -20,6 +20,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import (
+    SingleWindows,
     read_file_dialog,
     save_file_dialog,
     show_msg_box,
@@ -65,6 +66,8 @@ class UIManager(QObject):
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
+        # windows of which several instances make no sense (plots and playback may be opened several times)
+        self._windows = SingleWindows()
         self.REQUEST_MAPPING = {
             UIRequestType.EPSG_TRANSFORMATION: self.epsg_input,
             UIRequestType.EPSG_EDIT: self.epsg_input_edit,
@@ -115,19 +118,25 @@ class UIManager(QObject):
         show_msg_box(request.message, self._dialog_parent(), error=request.error)
 
     def show_dof_organizer(self, request: UIRequest) -> None:
-        dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
-        dof_organizer.selection_made.connect(
-            functools.partial(self.handle_dof_selection, selection=request.trajectory_selection)
-        )
-        dof_organizer.show()
+        def create() -> DOFOrganizer:
+            dof_organizer = DOFOrganizer(parent=self.parent(), selection=request.trajectory_selection)
+            dof_organizer.selection_made.connect(
+                functools.partial(self.handle_dof_selection, selection=request.trajectory_selection)
+            )
+            return dof_organizer
+
+        # works on the current selection: a new one replaces an open one
+        self._windows.show("dof_organizer", create, replace=True)
 
     def show_trajectory_settings(self, request: UIRequest) -> None:
-        settings_window = JSONViewer(
-            parent=self.parent(),
-            settings=request.trajectory_selection.entries[0].settings,
-        )
-        settings_window.applied.connect(self.settings_applied)
-        settings_window.show()
+        entry = request.trajectory_selection.entries[0]
+
+        def create() -> JSONViewer:
+            settings_window = JSONViewer(parent=self.parent(), settings=entry.settings)
+            settings_window.applied.connect(self.settings_applied)
+            return settings_window
+
+        self._windows.show(("trajectory_settings", entry.entry_id), create)
 
     def trajectory_playback(self, request: UIRequest) -> None:
         trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]
@@ -145,17 +154,20 @@ class UIManager(QObject):
             show_msg_box("Select a trajectory that is not the reference.", self._dialog_parent())
             return
 
-        manual_window = ManualAlignmentWindow(
-            trajectory=entry.trajectory,
-            reference=reference_entry.trajectory,
-            matching_settings=entry.settings.matching,
-            alignment_settings=entry.settings.alignment,
-            parent=self.parent(),
-        )
-        manual_window.alignment_accepted.connect(
-            functools.partial(self.handle_manual_alignment, selection=request.trajectory_selection)
-        )
-        manual_window.show()
+        def create() -> ManualAlignmentWindow:
+            manual_window = ManualAlignmentWindow(
+                trajectory=entry.trajectory,
+                reference=reference_entry.trajectory,
+                matching_settings=entry.settings.matching,
+                alignment_settings=entry.settings.alignment,
+                parent=self.parent(),
+            )
+            manual_window.alignment_accepted.connect(
+                functools.partial(self.handle_manual_alignment, selection=request.trajectory_selection)
+            )
+            return manual_window
+
+        self._windows.show(("manual_alignment", entry.entry_id, reference_entry.entry_id), create)
 
     def handle_manual_alignment(self, alignment_result: AlignmentResult, *, selection: TrajectorySelection) -> None:
         self.trajectory_manager_request.emit(
@@ -168,11 +180,16 @@ class UIManager(QObject):
 
     def alignment_selection(self, request: UIRequest) -> None:
         alignment_entries = [entry for entry in request.result_selection.entries if isinstance(entry, AlignmentEntry)]
-        result_selection = AlignmentSelector(parent=self.parent(), alignments=alignment_entries)
-        result_selection.selection_made.connect(
-            functools.partial(self.handle_alignment_selection, selection=request.trajectory_selection)
-        )
-        result_selection.show()
+
+        def create() -> AlignmentSelector:
+            result_selection = AlignmentSelector(parent=self.parent(), alignments=alignment_entries)
+            result_selection.selection_made.connect(
+                functools.partial(self.handle_alignment_selection, selection=request.trajectory_selection)
+            )
+            return result_selection
+
+        # works on the current selection: a new one replaces an open one
+        self._windows.show("alignment_selection", create, replace=True)
 
     def handle_alignment_selection(
         self, selected_alignment: AlignmentEntry, *, selection: TrajectorySelection
@@ -322,13 +339,16 @@ class UIManager(QObject):
         )
 
     def edit_alignment(self, request: UIRequest) -> None:
-        alignment_window = AlignmentEditWindow(parent=self.parent(), alignment_entry=request.alignment_entry)
-        alignment_window.update_signal.connect(
-            lambda: self.result_model_request.emit(
-                ResultModelRequest(
-                    type=ResultModelRequestType.UPDATE,
-                    selection=request.result_selection,
+        def create() -> AlignmentEditWindow:
+            alignment_window = AlignmentEditWindow(parent=self.parent(), alignment_entry=request.alignment_entry)
+            alignment_window.update_signal.connect(
+                lambda: self.result_model_request.emit(
+                    ResultModelRequest(
+                        type=ResultModelRequestType.UPDATE,
+                        selection=request.result_selection,
+                    )
                 )
             )
-        )
-        alignment_window.show()
+            return alignment_window
+
+        self._windows.show(("edit_alignment", request.alignment_entry.entry_id), create)
