@@ -17,6 +17,7 @@ from trajectopy.gui.managers.requests import (
 )
 from trajectopy.gui.models.selection import TrajectorySelection
 from trajectopy.gui.views.menu_helpers import SelectionMenu, add_action, add_note, add_submenu
+from trajectopy.utils.definitions import Sorting
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +307,9 @@ class TrajectoryContextMenu(SelectionMenu):
             "Divide into Laps",
             self._manager(TrajectoryManagerRequestType.DIVIDE_INTO_LAPS),
             hint="Splits a trajectory that repeatedly passes the same closed track into one trajectory per lap.",
+            unavailable=""
+            if all(entry.trajectory.sorting == Sorting.PATH_LENGTH for entry in self._selection.entries)
+            else "Sort spatially first.",
         )
         menu.addSeparator()
         add_action(
@@ -358,7 +362,8 @@ class TrajectoryContextMenu(SelectionMenu):
             unavailable=self._single,
         )
         kml_unavailable = self._single
-        if not kml_unavailable and self._selection.entries[0].trajectory.positions.epsg == 0:
+        # needs the transformation to WGS84, which local positions have if their frame is known
+        if not kml_unavailable and self._selection.entries[0].trajectory.positions.local_transformer is None:
             kml_unavailable = "The coordinate system is unknown (EPSG 0). Set or transform it under Coordinate System."
         add_action(
             self,

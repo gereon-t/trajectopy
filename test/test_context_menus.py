@@ -52,6 +52,33 @@ class TestContextMenus(unittest.TestCase):
         self.assertTrue(actions["Estimate Alignment"].isEnabled())
         self.assertFalse(any(text.startswith("ⓘ") for text in actions))
 
+    def test_laps_need_a_spatially_sorted_trajectory(self):
+        from trajectopy.utils.definitions import Sorting
+
+        self.menu.populate(self._selection(self.trajectory))
+        self.assertFalse(self._actions()["Divide into Laps"].isEnabled())
+
+        self.trajectory.trajectory.path_lengths = self.trajectory.trajectory.path_lengths[::-1].copy()
+        self.trajectory.trajectory.set_sorting(Sorting.PATH_LENGTH)
+        self.menu.populate(self._selection(self.trajectory))
+        self.assertTrue(self._actions()["Divide into Laps"].isEnabled())
+
+    def test_kml_export_of_local_positions_with_a_known_frame(self):
+        import numpy as np
+
+        from trajectopy.core.trajectory import Trajectory
+        from trajectopy.gui.models.entries import TrajectoryEntry
+
+        xyz = np.c_[np.linspace(364000, 364100, 10), np.full(10, 5621000.0), np.full(10, 100.0)]
+        trajectory = Trajectory.from_arrays(xyz, epsg=25832)
+        trajectory.positions.to_local()  # EPSG 0, but the frame is known
+        self.menu.populate(self._selection(TrajectoryEntry(full_filename="", trajectory=trajectory)))
+        self.assertTrue(self._actions()["Export to Google Earth (KML)…"].isEnabled())
+
+        unknown = Trajectory.from_arrays(xyz)  # EPSG 0 without a frame
+        self.menu.populate(self._selection(TrajectoryEntry(full_filename="", trajectory=unknown)))
+        self.assertFalse(self._actions()["Export to Google Earth (KML)…"].isEnabled())
+
     def test_selection_size(self):
         self.menu.populate(self._selection(self.trajectory))
         actions = self._actions()
