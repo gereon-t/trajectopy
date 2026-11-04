@@ -363,8 +363,7 @@ class Positions:
         # 3) from non-local to non-local
         transformer = Transformer.from_crs(crs, _crs(target_epsg))
 
-        x, y, z = transformer.transform(xx=xyz[:, 0], yy=xyz[:, 1], zz=xyz[:, 2])
-        transformed = np.c_[x, y, z]
+        transformed = transform_coordinates(transformer, xyz)
         # pyproj returns inf for positions outside the area of the coordinate system (e.g. a wrong EPSG code)
         if np.any(np.isfinite(xyz) & ~np.isfinite(transformed)):
             raise PointSetError(
@@ -487,3 +486,23 @@ def _crs(epsg: int) -> CRS:
         return CRS.from_epsg(code=epsg)
     except CRSError as error:
         raise PointSetError(f"Unknown EPSG code {epsg}.") from error
+
+
+def transform_coordinates(transformer: Transformer, xyz: np.ndarray, **options) -> np.ndarray:
+    """Transforms n x 3 coordinates with a pyproj transformer.
+
+    A single point is passed as numbers: older pyproj versions treat one-element arrays as a point and convert
+    them to numbers in a way that NumPy deprecated (and will refuse).
+
+    Args:
+        transformer (Transformer): pyproj transformer.
+        xyz (np.ndarray): Coordinates, n x 3.
+        **options: Further arguments of Transformer.transform, e.g. direction.
+
+    Returns:
+        np.ndarray: Transformed coordinates, n x 3.
+    """
+    if len(xyz) == 1:
+        x, y, z = (float(value) for value in xyz[0])
+        return np.array([transformer.transform(x, y, z, **options)], dtype=float)
+    return np.column_stack(transformer.transform(xyz[:, 0], xyz[:, 1], xyz[:, 2], **options)).astype(float)

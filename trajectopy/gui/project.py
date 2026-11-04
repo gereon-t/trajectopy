@@ -115,8 +115,8 @@ def _load_binary_project(path: str) -> Project:
     with np.load(path, allow_pickle=False) as arrays:
         try:
             manifest = json.loads(str(arrays[MANIFEST_KEY]))
-        except ValueError as error:
-            raise ProjectError(f"{path} is not a Trajectopy project.") from error
+        except Exception as error:  # the manifest exists, but cannot be read (the error depends on the version)
+            raise ProjectError(f"The project {path} is damaged (unreadable manifest: {error}).") from error
         _check_manifest(manifest, path)
         decoder = project_format.Decoder(arrays)
         try:

@@ -22,6 +22,7 @@ import pandas as pd
 import pyproj
 from pyproj.transformer import TransformerGroup
 
+from trajectopy.core.positions import transform_coordinates
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.utils.colors import COLORMAPS, color_range, value_color
@@ -302,7 +303,7 @@ def _ellipsoidal_to_sea_level(lat: np.ndarray, lon: np.ndarray, height: np.ndarr
                 "The EGM96 geoid model is not available (it is downloaded from cdn.proj.org on first use). "
                 'Check the internet connection, or use heights="sea_level" or "ground".'
             )
-        _, _, sea_level = group.transformers[0].transform(lon, lat, height)
+        sea_level = transform_coordinates(group.transformers[0], np.c_[lon, lat, height])[:, 2]
     finally:
         pyproj.network.set_network_enabled(network_enabled)
     return np.asarray(sea_level, dtype=float)
