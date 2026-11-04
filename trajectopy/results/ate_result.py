@@ -21,6 +21,11 @@ class AbsoluteTrajectoryDeviations:
     metrics such as mean/median Absolute Trajectory Error (ATE), directional
     bias, and RMS statistics.
 
+    All deviations describe how far the evaluated (test) trajectory deviates from the reference, i.e. test
+    minus reference: a positive x deviation means the test trajectory is further in x direction, a positive
+    along-track deviation that it is ahead, a positive horizontal cross-track deviation that it is to the left and
+    a positive vertical cross-track deviation that it is above.
+
     Attributes:
         pos_dev (np.ndarray): 3D array of absolute position deviation vectors
             in meters. Shape is (N, 3) for N deviation vectors with x, y, z
@@ -32,7 +37,8 @@ class AbsoluteTrajectoryDeviations:
             coordinate frame, as they are derived based on the along-track
             direction of the trajectory.
         rot_dev (Rotations | None): Optional orientation deviations represented
-            as a `Rotations` instance (radians). `None` if rotational evaluation
+            as a `Rotations` instance (radians), the rotation from the reference to the test orientation
+            (``test * reference^-1``). `None` if rotational evaluation
             was not performed.
         rotations_used (bool): Indicates whether trajectory rotation information
             was employed to derive the direction frame for `directed_pos_dev`.

@@ -91,9 +91,10 @@ class TestComparison(unittest.TestCase):
 
         deviations = compare_trajectories_abs(traj_ref=trajectory, traj_test=transformed)
 
-        np.testing.assert_almost_equal(-deviations.pos_bias_x, parameters.sim_trans_x.value)
-        np.testing.assert_almost_equal(-deviations.pos_bias_y, parameters.sim_trans_y.value)
-        np.testing.assert_almost_equal(-deviations.pos_bias_z, parameters.sim_trans_z.value)
+        # test minus reference: the test trajectory is shifted by the translation
+        np.testing.assert_almost_equal(deviations.pos_bias_x, parameters.sim_trans_x.value)
+        np.testing.assert_almost_equal(deviations.pos_bias_y, parameters.sim_trans_y.value)
+        np.testing.assert_almost_equal(deviations.pos_bias_z, parameters.sim_trans_z.value)
 
     def test_cross_track_deviations_no_rot_no_slope(self) -> None:
         # reference trajectory positions in direction 1,0 without slope

@@ -364,6 +364,59 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         self.assertFalse(result.converged)
 
+    def test_deviations_are_test_minus_reference(self):
+        from trajectopy.processing.evaluation import ate
+
+        t = np.arange(20.0)
+        reference = _line(t, rpy=np.zeros((20, 3)))
+        # 0.5 m ahead, 0.2 m to the left, 0.1 m above and turned 2 degrees to the left
+        test = _line(t, rpy=np.c_[0 * t, 0 * t, np.full(20, np.deg2rad(2.0))])
+        test.positions.xyz += [0.5, 0.2, 0.1]
+
+        result = ate(test, reference, align=False)
+
+        np.testing.assert_allclose([result.pos_bias_x, result.pos_bias_y, result.pos_bias_z], [0.5, 0.2, 0.1])
+        np.testing.assert_allclose(
+            [result.pos_bias_along, result.pos_bias_cross_h, result.pos_bias_cross_v], [0.5, 0.2, 0.1], atol=0.02
+        )
+        self.assertAlmostEqual(np.rad2deg(result.rot_bias_z), 2.0)
+
+    def test_ate_files_of_earlier_versions_are_converted_to_test_minus_reference(self):
+        import os
+        import tempfile
+
+        from trajectopy.processing.evaluation import ate
+        from trajectopy.results.ate_result import ATEResult
+
+        t = np.arange(20.0)
+        test = _line(t, rpy=np.c_[0 * t, 0 * t, np.full(20, 0.1)])
+        test.positions.xyz += [0.5, 0.2, 0.1]
+        result = ate(test, _line(t, rpy=np.zeros((20, 3))), align=False)
+
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "ate.result")
+            result.to_file(filename)
+            with open(filename, encoding="utf-8") as file:
+                lines = file.readlines()
+            # as written by an earlier version: no marker, deviations reference minus test
+            old = [line for line in lines if not line.startswith("#deviations")]
+            header = old[: next(i for i, line in enumerate(old) if not line.startswith("#")) + 1]
+            rows = [line.split(",") for line in old[len(header) :]]
+            columns = header[-1].strip().split(",")
+            for row in rows:
+                for name in ("pos_dev_x", "pos_dev_y", "pos_dev_z"):
+                    row[columns.index(name)] = str(-float(row[columns.index(name)]))
+                quat = [float(row[columns.index(f"rot_dev_{c}")]) for c in "xyzw"]
+                for c, value in zip("xyz", quat[:3]):
+                    row[columns.index(f"rot_dev_{c}")] = str(-value)  # inverse rotation
+            with open(filename, "w", encoding="utf-8") as file:
+                file.writelines(header + [",".join(row).rstrip("\n") + "\n" for row in rows])
+
+            read = ATEResult.from_file(filename)
+
+        np.testing.assert_allclose(read.abs_dev.pos_dev, result.abs_dev.pos_dev)
+        self.assertAlmostEqual(read.rot_bias_z, result.rot_bias_z)
+
 
 if __name__ == "__main__":
     unittest.main()

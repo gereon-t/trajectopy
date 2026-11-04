@@ -145,7 +145,8 @@ def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory)
         ATEResult: An object containing the absolute deviations between the two trajectories.
     """
     logger.info("Performing absolute comparison")
-    pos_dev = other.positions.xyz - trajectory.positions.xyz
+    # all deviations describe how far the evaluated trajectory deviates from the reference: test - reference
+    pos_dev = trajectory.positions.xyz - other.positions.xyz
     directed_pos_dev = _get_directed_deviations(
         xyz_ref=other.positions.xyz,
         xyz_test=trajectory.positions.xyz,
@@ -153,7 +154,7 @@ def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory)
     )
 
     if other.rotations is not None and trajectory.rotations is not None:
-        rot_dev = other.rotations - trajectory.rotations
+        rot_dev = trajectory.rotations - other.rotations
     else:
         rot_dev = None
 

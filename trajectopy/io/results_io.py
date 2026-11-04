@@ -16,6 +16,9 @@ from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResul
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
 from trajectopy.utils.definitions import Sorting
 
+# marks ATE results whose deviations are test minus reference (all others are from earlier versions)
+DEVIATIONS_TEST_MINUS_REFERENCE = "test-reference"
+
 # ---------------------------------------------------------------------------
 # Alignment parameters
 # ---------------------------------------------------------------------------
@@ -115,6 +118,7 @@ def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
         file.write(f"#name {result.name}\n")
         file.write(f"#epsg {result.trajectory.positions.epsg}\n")
         file.write(f"#sorting {result.trajectory.sorting.value}\n")
+        file.write(f"#deviations {DEVIATIONS_TEST_MINUS_REFERENCE}\n")
     result.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
 
 
@@ -161,6 +165,10 @@ def read_ate_result(filename: str) -> ATEResult:
         path_lengths=path_lengths,
         sorting=sorting,
     )
+    if header_data.deviations != DEVIATIONS_TEST_MINUS_REFERENCE:
+        # written by an earlier version, whose position and rotation deviations were reference minus test
+        pos_dev = -pos_dev
+        rot_dev = None if rot_dev is None else rot_dev.inv()
     abs_dev = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
     return ATEResult(trajectory=trajectory, abs_dev=abs_dev)
 

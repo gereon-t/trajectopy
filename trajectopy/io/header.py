@@ -32,6 +32,7 @@ HEADER_KEYS = [
     "id",
     "gps_week",
     "time_offset",
+    "deviations",
 ]
 
 
@@ -195,6 +196,11 @@ class HeaderData:
     @property
     def time_format(self) -> TimeFormat:
         return TIME_FORMAT_DICT[str(self.data.get("time_format", "unix")).lower()]
+
+    @property
+    def deviations(self) -> str:
+        """Sign convention of ATE deviations; empty for files of earlier versions (reference minus test)."""
+        return str(self.data.get("deviations", ""))
 
     @property
     def euler_rot_seq(self) -> str:
