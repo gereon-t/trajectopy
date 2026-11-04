@@ -47,7 +47,8 @@ def color_range(values: np.ndarray, max_std: float) -> tuple[float, float]:
         mean, std = float(finite.mean()), float(finite.std())
         lower, upper = max(lower, mean - max_std * std), min(upper, mean + max_std * std)
     if upper <= lower:
-        upper = lower + 1e-9
+        # a range that is not lost to rounding also for large values, e.g. timestamps
+        upper = lower + max(1e-9, abs(lower) * 1e-9)
     return lower, upper
 
 

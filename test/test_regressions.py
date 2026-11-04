@@ -446,6 +446,47 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         self.assertIn("Empty", dict2table({}, "Empty"))
 
+    def test_translation_from_a_single_pose(self):
+        import warnings
+
+        from trajectopy.core.settings import AlignmentEstimationSettings, AlignmentSettings
+        from trajectopy.processing.alignment import estimate_alignment
+
+        trajectory = Trajectory.from_arrays(np.array([[1.0, 2.0, 3.0]]), timestamps=np.array([0.0]))
+        reference = Trajectory.from_arrays(np.array([[1.5, 2.0, 3.0]]), timestamps=np.array([0.0]))
+        estimation = AlignmentEstimationSettings(
+            translation_x=True,
+            translation_y=True,
+            translation_z=True,
+            rotation_x=False,
+            rotation_y=False,
+            rotation_z=False,
+        )
+        settings = AlignmentSettings(estimation_settings=estimation)
+        settings.stochastics.variance_estimation = True  # without redundancy, there is no variance to estimate
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = estimate_alignment(trajectory, reference, alignment_settings=settings)
+
+        self.assertTrue(result.converged)
+        self.assertAlmostEqual(result.position_parameters.sim_trans_x.value, 0.5)
+
+    def test_positions_outside_of_their_coordinate_system_are_rejected(self):
+        from trajectopy.core.positions import Positions
+        from trajectopy.exceptions import PointSetError
+
+        # metric coordinates declared as latitude and longitude
+        positions = Positions(np.array([[364000.0, 5621000.0, 100.0]]), epsg=4326, init_local_transformer=False)
+        with self.assertRaisesRegex(PointSetError, "outside of the valid area"):
+            positions.to_epsg(25832)
+
+    def test_color_range_of_equal_large_values(self):
+        from trajectopy.utils.colors import color_range
+
+        lower, upper = color_range(np.full(5, 1.7e9), max_std=3.0)
+        self.assertGreater(upper - lower, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
