@@ -230,6 +230,8 @@ class _FigureWidget(QtWidgets.QWidget):
                 view.enableAutoRange(axis=pg.ViewBox.XAxis, enable=x_auto)
             if y_auto:
                 view.enableAutoRange(axis=pg.ViewBox.YAxis, enable=y_auto)
+            # enabling recalculates the range only if auto-ranging was off (e.g. after zooming)
+            view.updateAutoRange()
 
 
 def _safe_filename(name: str) -> str:

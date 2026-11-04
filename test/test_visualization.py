@@ -86,7 +86,11 @@ class TestVisualization(unittest.TestCase):
 
         self.assertGreater(y_range()[1], 900)
         curve = next(item for item in plot.listDataItems() if item.name() == "high")
-        view.setYRange(-5, 5)  # e.g. zoomed in
+        curve.setVisible(False)  # without zooming before: the view still ranges automatically
+        self.assertLess(y_range()[1], 10)
+        curve.setVisible(True)
+        self.assertGreater(y_range()[1], 900)
+        view.setYRange(-5, 5)  # zoomed in: automatic ranging is off
         curve.setVisible(False)
         self.assertLess(y_range()[1], 10)
         curve.setVisible(True)
