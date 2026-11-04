@@ -180,6 +180,8 @@ class AlignmentEstimator:
 
         while var_fac_diff > var_fac_tol and cnt < max_recomputations:
             self._estimate_robustly()
+            if not self._converged:
+                break  # there are no residuals to test (and to estimate the variances from)
             self._global_test(variance_factor=self.variance_factor, redundancy=self.redundancy)
 
             if not self.data.alignment_settings.stochastics.variance_estimation:
@@ -275,13 +277,19 @@ class AlignmentEstimator:
             a_design = a_design[:, parameter_filter]
             b_cond = self._get_condition_matrix(partials)
 
-            # factorized once per iteration and used for all solves with it
-            bbt = _FactorizedMatrix(b_cond @ self.data.sigma_ll @ b_cond.T)
-            normal_matrix = a_design.T @ bbt.solve_sparse(a_design)
+            try:
+                # factorized once per iteration and used for all solves with it
+                bbt = _FactorizedMatrix(b_cond @ self.data.sigma_ll @ b_cond.T)
+                normal_matrix = a_design.T @ bbt.solve_sparse(a_design)
 
-            # solve normal equations
-            delta_params = self._compute_parameter_deltas(contradiction_w, a_design, normal_matrix, bbt)
-            correlates_k = -bbt.solve(a_design @ delta_params + contradiction_w)
+                # solve normal equations
+                delta_params = self._compute_parameter_deltas(contradiction_w, a_design, normal_matrix, bbt)
+                correlates_k = -bbt.solve(a_design @ delta_params + contradiction_w)
+            except (RuntimeError, np.linalg.LinAlgError) as error:
+                # e.g. too few or degenerate matched poses for the enabled parameters
+                logger.error("Adjustment failed: the equations are singular (%s).", error)
+                self._converged = False
+                return
             self.data.res_vector = self.data.sigma_ll @ b_cond.T @ correlates_k
 
             # update

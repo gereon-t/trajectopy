@@ -347,6 +347,23 @@ class TestRobustnessRegressions(unittest.TestCase):
         self.assertEqual(len(interpolated.rotations), 1)
         self.assertAlmostEqual(interpolated.rpy[0, 2], 0.25)
 
+    def test_singular_adjustment_does_not_converge_instead_of_failing(self):
+        import warnings
+
+        from trajectopy.core.settings import AlignmentSettings
+        from trajectopy.processing.alignment import estimate_alignment
+
+        settings = AlignmentSettings()
+        # without any uncertainty of the positions, the equations of the adjustment are singular
+        for name in ("std_xy_from", "std_z_from", "std_xy_to", "std_z_to"):
+            setattr(settings.stochastics, name, 0.0)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            result = estimate_alignment(generated_trajectory, generated_trajectory.copy(), alignment_settings=settings)
+
+        self.assertFalse(result.converged)
+
 
 if __name__ == "__main__":
     unittest.main()
