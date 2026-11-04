@@ -108,6 +108,7 @@ from trajectopy.processing.merging import average_trajectories, merge_trajectori
 from trajectopy.processing.sorting import divide_into_laps, sort_spatially
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import ATEResult
+from trajectopy.results.correlation import DeviationCorrelation
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.utils.definitions import Sorting
 
@@ -137,6 +138,7 @@ __all__ = [
     "InterpolationMethod",
     # Results
     "ATEResult",
+    "DeviationCorrelation",
     "RPEResult",
     "AlignmentResult",
     # Parameters

@@ -7,6 +7,7 @@ import pandas as pd
 
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.results.correlation import DeviationCorrelation
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.numeric import rms
 
@@ -124,6 +125,14 @@ class ATEResult:
             "Bias Roll [°]": f"{np.rad2deg(self.rot_bias_x):.4f}" if self.abs_dev.rot_dev is not None else "-",
             "Bias Pitch [°]": f"{np.rad2deg(self.rot_bias_y):.4f}" if self.abs_dev.rot_dev is not None else "-",
             "Bias Yaw [°]": f"{np.rad2deg(self.rot_bias_z):.4f}" if self.abs_dev.rot_dev is not None else "-",
+            # temporal correlation of the deviations, see the correlation property
+            "Correlation Time Along / Cross-H / Cross-V [s]": self._correlation_summary(
+                ("along", "cross_h", "cross_v"), "correlation_time"
+            ),
+            "Correlation Time X / Y / Z [s]": self._correlation_summary(("x", "y", "z"), "correlation_time"),
+            "Independent Deviations Along / Cross-H / Cross-V": self._correlation_summary(
+                ("along", "cross_h", "cross_v"), "effective_samples"
+            ),
         }
 
     def __eq__(self, other) -> bool:
@@ -154,8 +163,22 @@ class ATEResult:
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[ate_below_idx])
 
         # the combined deviations and rotation statistics are cached and depend on the removed deviations
-        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb"):
+        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb", "correlation"):
             self.__dict__.pop(cached, None)
+
+    @cached_property
+    def correlation(self) -> DeviationCorrelation:
+        """Temporal correlation of the deviations: autocorrelation, correlation time and number of independent
+        deviations of each component (cached, see DeviationCorrelation)."""
+        return DeviationCorrelation.from_ate_result(self)
+
+    def _correlation_summary(self, components: tuple[str, ...], quantity: str) -> str:
+        if len(self.abs_dev.pos_dev) < 2:
+            return "-"
+        values = [getattr(self.correlation.components[name], quantity) for name in components]
+        if quantity == "effective_samples":
+            return " / ".join(f"{value:.0f}" for value in values)
+        return " / ".join("> max. lag" if np.isinf(value) else f"{value:.2f}" for value in values)
 
     @property
     def is_spatially_sorted(self) -> bool:
@@ -183,7 +206,7 @@ class ATEResult:
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[order])
 
         # cached per-epoch deviations follow the old order
-        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb"):
+        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb", "correlation"):
             self.__dict__.pop(cached, None)
 
     @property

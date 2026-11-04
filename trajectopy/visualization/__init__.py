@@ -25,6 +25,7 @@ _EXPORTS = {
     "set_theme": "style",
     "alignment_figures": "plots",
     "ate_components_figure": "plots",
+    "ate_correlation_figure": "plots",
     "ate_distribution_figure": "plots",
     "ate_figure": "plots",
     "ate_histogram_figure": "plots",
@@ -62,6 +63,7 @@ if TYPE_CHECKING:  # pragma: no cover - for static type checkers and IDEs
     from trajectopy.visualization.plots import (
         alignment_figures,
         ate_components_figure,
+        ate_correlation_figure,
         ate_distribution_figure,
         ate_figure,
         ate_histogram_figure,

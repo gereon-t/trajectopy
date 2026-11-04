@@ -195,11 +195,36 @@ Available figures:
 | `ate_histogram_figure` | Histograms of the deviations |
 | `ate_statistics_figure` | Min, max, mean, median, RMS and standard deviation |
 | `ate_distribution_figure` | Empirical cumulative distribution of the deviations |
+| `ate_correlation_figure` | Temporal correlation of the deviations and their standard deviation over time |
 | `ate_map_figure` | Top view colored by any deviation component |
 | `rpe_figures` | Relative pose error over the pair distance |
 | `parameter_matrix_figure` | Covariance / correlation of estimated alignment parameters |
 
 All figures use the [plot settings](settings.md#plot-settings).
+
+### Temporal Correlation of Deviations
+
+Deviations of a trajectory from a reference are usually correlated in time over seconds to minutes, for example
+for GNSS/INS. Then, neighboring epochs do not provide independent information. `ate_result.correlation` describes
+this for every deviation component (along-track, cross-track, x, y, z and, with orientations, roll, pitch and yaw):
+
+```python
+correlation = ate_result.correlation
+cross_track = correlation.components["cross_h"]
+print(cross_track.correlation_time)  # lag at which the autocorrelation drops below 1/e [s]
+print(cross_track.effective_samples)  # approximate number of independent deviations
+print(correlation.cross_correlation_directed)  # correlation of along / cross-h / cross-v at the same epochs
+```
+
+The autocorrelation is computed in chronological order, also for spatially sorted results, and gaps (e.g. losses
+of a total station's lock) are respected: no deviation is correlated across a gap. Irregular sampling is allowed.
+The correlation times and the number of independent deviations are also shown in the properties of ATE results,
+and the plots of ATE results include the autocorrelation and the standard deviation over time.
+
+A correlation time can only be determined reliably from data that is much longer than it: from one hour of data,
+a correlation time of 30 s is uncertain by about 10 to 20 %. With a reference such as a synchronized total station,
+the cross-track deviations are the most reliable measure, because timing errors affect only the along-track
+direction.
 
 ## 5. Google Earth
 

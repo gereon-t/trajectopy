@@ -13,11 +13,13 @@ from dataclasses import dataclass
 import numpy as np
 import pyqtgraph as pg
 from PySide6 import QtGui
+from PySide6.QtCore import Qt
 
 from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.settings import PairDistanceUnit, PlotSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.ate_result import ATEResult
+from trajectopy.results.correlation import COMPONENT_LABELS
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.utils.colors import color_range
 from trajectopy.utils.numeric import rms
@@ -614,6 +616,66 @@ def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
     return Figure("ATE Statistics", render)
 
 
+def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
+    """Temporal correlation of the deviations: autocorrelation over the time lag (with the 1/e level that defines
+    the correlation time) and the standard deviation in consecutive time windows."""
+    settings = _settings(settings)
+    variants: dict[str, RenderFunction] = {}
+    for result in ate_results:
+
+        def render(layout: pg.GraphicsLayout, result=result) -> None:
+            correlation = result.correlation
+            names = ("along", "cross_h", "cross_v") if settings.directed_ate else ("x", "y", "z")
+            groups = [(names, "position")]
+            rotations = ("roll", "pitch", "yaw")
+            # only with rotation deviations (without any, there is no autocorrelation)
+            if result.has_orientation and any(
+                np.isfinite(correlation.components[name].autocorrelation[0]) for name in rotations
+            ):
+                groups.append((rotations, "rotation"))
+            plots = []
+            for row, (components, quantity) in enumerate(groups):
+                plot = _add_plot(
+                    layout, row, settings, x_label="time lag [s]", y_label=f"autocorrelation ({quantity})", legend=True
+                )
+                plot.addLine(
+                    y=float(np.exp(-1.0)), pen=pg.mkPen(style.theme().foreground, width=1, style=Qt.PenStyle.DashLine)
+                )
+                for index, name in enumerate(components):
+                    component = correlation.components[name]
+                    tau = component.correlation_time
+                    label = f"{COMPONENT_LABELS[name]} ({'> max. lag' if np.isinf(tau) else f'{tau:.2f} s'})"
+                    valid = np.isfinite(component.autocorrelation)
+                    _line(plot, component.lags[valid], component.autocorrelation[valid], index, label, settings)
+                plots.append(plot)
+            _link_x(plots)
+
+            plot = _add_plot(
+                layout,
+                len(groups),
+                settings,
+                x_label="time [s]",
+                y_label=f"std. dev. per window [{settings.unit}]",
+                legend=True,
+            )
+            start = float(np.min(result.trajectory.timestamps)) if len(result.trajectory) else 0.0
+            for index, name in enumerate(names):
+                component = correlation.components[name]
+                plot.plot(
+                    component.window_centers - start,
+                    component.window_std * settings.unit_multiplier,
+                    pen=style.pen(index, settings.line_width),
+                    symbol="o",
+                    symbolSize=5,
+                    symbolBrush=style.brush(index),
+                    symbolPen=None,
+                    name=COMPONENT_LABELS[name],
+                )
+
+        variants[result.name] = render
+    return Figure("ATE Correlation", variants=variants)
+
+
 def ate_distribution_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
     """Empirical cumulative distribution of the position (and rotation) deviations."""
     settings = _settings(settings)
@@ -758,6 +820,7 @@ def deviation_figures(
             ate_histogram_figure(ate_results, settings),
             ate_statistics_figure(ate_results, settings),
             ate_distribution_figure(ate_results, settings),
+            ate_correlation_figure(ate_results, settings),
             ate_map_figure(ate_results, settings),
         ]
     figures += rpe_figures(rpe_results, settings)
