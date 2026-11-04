@@ -38,8 +38,8 @@ def dict2table(
     left_right_width = 4
 
     # how much characters are the field rows
-    max_value_width = max(value_width, max(len(str(value)) for value in input_dict.values()))
-    max_key_width = max(key_width, max(len(str(key)) for key in input_dict))
+    max_value_width = max(value_width, max((len(str(value)) for value in input_dict.values()), default=0))
+    max_key_width = max(key_width, max((len(str(key)) for key in input_dict), default=0))
     field_lengths = max_key_width + max_value_width + len(key_value_filler) + left_right_width
 
     # width of the table

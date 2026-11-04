@@ -35,19 +35,20 @@ def main():
         print(f"Trajectopy {VERSION}")
         return
 
+    # only the import: an ImportError while the GUI runs has another cause, which must not be hidden
     try:
         from trajectopy.gui.app import main as gui_main
-
-        exit_code = gui_main(
-            single_thread=args.single_thread,
-            plot_settings_path=args.plot_settings,
-            files=args.files,
-        )
-        if exit_code is not None:
-            sys.exit(exit_code)
-    except ImportError:
-        print("GUI dependencies not installed. Install with: pip install 'trajectopy[gui]'")
+    except ImportError as error:
+        print(f"GUI dependencies not installed ({error}). Install with: pip install 'trajectopy[gui]'")
         sys.exit(1)
+
+    exit_code = gui_main(
+        single_thread=args.single_thread,
+        plot_settings_path=args.plot_settings,
+        files=args.files,
+    )
+    if exit_code is not None:
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":

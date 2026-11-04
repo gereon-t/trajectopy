@@ -50,6 +50,21 @@ class TestVisualization(unittest.TestCase):
 
         np.testing.assert_allclose(_smooth(np.full(10, 5.0), window=5), 5.0)
 
+    def test_failed_export_is_reported(self):
+        from unittest import mock
+
+        window = vis.PlotWindow(vis.trajectory_figures([generated_trajectory]))
+        self.addCleanup(window.close)
+        missing = os.path.join(tempfile.gettempdir(), "trajectopy-missing-folder", "sub", "plot")
+        with (
+            mock.patch("PySide6.QtWidgets.QFileDialog.getSaveFileName", return_value=(missing, "")),
+            mock.patch("PySide6.QtWidgets.QMessageBox.warning") as warning,
+        ):
+            window.export_current()
+
+        warning.assert_called_once()
+        self.assertIn("plot.png", warning.call_args.args[2])  # the extension was added
+
     def test_trajectory_figures(self):
         figures = vis.trajectory_figures([generated_trajectory, noisy_trajectory])
         self.assertEqual([figure.title for figure in figures], ["Positions", "XYZ", "RPY", "Map"])

@@ -417,6 +417,35 @@ class TestRobustnessRegressions(unittest.TestCase):
         np.testing.assert_allclose(read.abs_dev.pos_dev, result.abs_dev.pos_dev)
         self.assertAlmostEqual(read.rot_bias_z, result.rot_bias_z)
 
+    def test_cli_reports_only_a_missing_gui_as_missing_dependencies(self):
+        import importlib
+        import sys
+        from unittest import mock
+
+        cli = importlib.import_module("trajectopy.cli.main")
+
+        app_module = mock.MagicMock()
+        app_module.main.side_effect = ImportError("broken optional package")
+        with (
+            mock.patch.dict(sys.modules, {"trajectopy.gui.app": app_module}),
+            mock.patch.object(sys, "argv", ["trajectopy"]),
+        ):
+            with self.assertRaisesRegex(ImportError, "broken optional package"):  # not hidden
+                cli.main()
+
+        with (
+            mock.patch.dict(sys.modules, {"trajectopy.gui.app": None}),
+            mock.patch.object(sys, "argv", ["trajectopy"]),
+        ):
+            with self.assertRaises(SystemExit) as exit_info, mock.patch("builtins.print"):
+                cli.main()
+        self.assertEqual(exit_info.exception.code, 1)
+
+    def test_dict2table_of_an_empty_dictionary(self):
+        from trajectopy.utils.formatting import dict2table
+
+        self.assertIn("Empty", dict2table({}, "Empty"))
+
 
 if __name__ == "__main__":
     unittest.main()

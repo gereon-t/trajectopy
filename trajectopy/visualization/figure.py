@@ -265,13 +265,28 @@ class PlotWindow(QtWidgets.QMainWindow):
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self, "Export Plot", f"{stem}.{self.export_format}", "Images (*.png *.jpg *.svg)"
         )
-        if path:
-            figure.export(path, variant=variant, width=self.export_width)
+        if not path:
+            return
+        if not os.path.splitext(path)[1]:
+            path += f".{self.export_format}"  # the image format follows from the extension
+        self._report_failure(lambda: figure.export(path, variant=variant, width=self.export_width))
 
     def export_all(self) -> None:
         directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Export All Plots")
         if directory:
-            export_figures(self.figures, directory, export_format=self.export_format, width=self.export_width)
+            self._report_failure(
+                lambda: export_figures(
+                    self.figures, directory, export_format=self.export_format, width=self.export_width
+                )
+            )
+
+    def _report_failure(self, export: Callable[[], object]) -> None:
+        """Runs ``export`` and shows why it failed, e.g. a folder without write access."""
+        try:
+            export()
+        except Exception as error:
+            logger.exception("Export failed")
+            QtWidgets.QMessageBox.warning(self, "Export failed", str(error))
 
 
 def export_figures(
