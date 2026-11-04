@@ -266,6 +266,8 @@ class Trajectory:
 
     def init_path_lengths(self):
         """Computes cumulative path lengths based on Euclidean distances between consecutive local coordinates."""
+        if len(self.positions) == 0:
+            return np.array([])  # without positions, there is no local frame either
         return lengths_from_xyz(self.positions.to_local(inplace=False).xyz)
 
     @property

@@ -3,6 +3,7 @@ import copy
 import numpy as np
 from pyproj import CRS, Transformer
 from pyproj.enums import TransformDirection
+from pyproj.exceptions import CRSError
 
 from trajectopy.exceptions import PointSetError
 
@@ -74,8 +75,8 @@ class Positions:
         if self.epsg == 0:
             return
 
-        # Create CRS and local transformer
-        if local_transformer or not init_local_transformer:
+        # Create CRS and local transformer (none for no positions: its origin is their mean)
+        if local_transformer or not init_local_transformer or len(self.xyz) == 0:
             return
 
         self.build_local_transformer()
@@ -299,7 +300,7 @@ class Positions:
         Returns:
             CRS | None: pyproj CRS object that represents the current coordinate system (None if local).
         """
-        return None if self.epsg == 0 else CRS.from_epsg(code=self.epsg)
+        return None if self.epsg == 0 else _crs(self.epsg)
 
     def to_epsg(self, target_epsg: int, inplace: bool = True) -> "Positions":
         """Performs a coordinate transformation using a target CRS.
@@ -354,13 +355,13 @@ class Positions:
                 direction=TransformDirection.INVERSE,
             )
             xyz = np.c_[x, y, z]
-            crs = CRS.from_epsg(pointset.epsg_local_cart)
+            crs = _crs(pointset.epsg_local_cart)
         else:
             xyz = pointset.xyz
-            crs = CRS.from_epsg(pointset.epsg)
+            crs = _crs(pointset.epsg)
 
         # 3) from non-local to non-local
-        transformer = Transformer.from_crs(crs, CRS.from_epsg(code=target_epsg))
+        transformer = Transformer.from_crs(crs, _crs(target_epsg))
 
         x, y, z = transformer.transform(xx=xyz[:, 0], yy=xyz[:, 1], zz=xyz[:, 2])
         transformed = np.c_[x, y, z]
@@ -474,3 +475,15 @@ class Positions:
         if isinstance(other, Positions):
             return self.__key() == other.__key()
         return NotImplemented
+
+
+def _crs(epsg: int) -> CRS:
+    """The coordinate reference system of an EPSG code.
+
+    Raises:
+        PointSetError: If the EPSG code is unknown.
+    """
+    try:
+        return CRS.from_epsg(code=epsg)
+    except CRSError as error:
+        raise PointSetError(f"Unknown EPSG code {epsg}.") from error

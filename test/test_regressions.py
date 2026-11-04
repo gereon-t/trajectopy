@@ -527,6 +527,28 @@ class TestRobustnessRegressions(unittest.TestCase):
         np.testing.assert_array_equal(earliest[1], [[4.0, -5.0, 6.0]])
         self.assertAlmostEqual(earliest[2].as_euler("xyz")[0, 2], -0.1)
 
+    def test_malformed_trajectory_files_give_clear_errors(self):
+        from trajectopy.exceptions import PointSetError
+
+        cases = {
+            "#epsg 999999\n#fields t,px,py,pz\n0,1,2,3\n": (PointSetError, "Unknown EPSG code 999999"),
+            "#fields t,px,py,pz,qx,qy,qz,qw\n0;1;2;3\n": (ValueError, "header lists 8 fields"),
+            "#fields t,px,py,pz\n0,1,2,3\n1e400,1,2,3\n": (ValueError, "Invalid timestamps"),
+            "#fields t,px,py,pz\n0,1,2,3\n1,nan,2,3\n": (ValueError, r"Invalid positions .* row\(s\) 2"),
+            "#time_format datetime\n#fields t,t,px,py,pz\n2024-01-01,,1,2,3\n": (ValueError, ""),
+        }
+        for content, (error, message) in cases.items():
+            with self.subTest(content=content.splitlines()[0]), self.assertRaisesRegex(error, message):
+                Trajectory.from_file(content, io_stream=True)
+
+    def test_georeferenced_file_without_poses(self):
+        trajectory = Trajectory.from_file("#epsg 25832\n#fields t,px,py,pz\n", io_stream=True)
+        self.assertEqual(len(trajectory), 0)
+
+    def test_invalid_derived_columns_are_derived_anew(self):
+        trajectory = Trajectory.from_file("#fields t,l,px,py,pz\n0,nan,0,0,0\n1,nan,3,4,0\n", io_stream=True)
+        np.testing.assert_allclose(trajectory.path_lengths, [0.0, 5.0])
+
 
 if __name__ == "__main__":
     unittest.main()

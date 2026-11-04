@@ -305,7 +305,7 @@ def _parse_datetime(trajectory_data: np.ndarray, time_columns: list[int], header
     """
 
     def concatenate_strings(arr, delimiter=" "):
-        return delimiter.join(arr)
+        return delimiter.join(str(item) for item in arr)  # e.g. a missing value is read as float NaN
 
     datetime_strings = np.apply_along_axis(concatenate_strings, 1, trajectory_data[:, time_columns])
 

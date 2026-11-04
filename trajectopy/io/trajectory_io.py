@@ -12,15 +12,42 @@ from trajectopy.utils.definitions import Sorting
 
 
 def _trajectory_from_data(header_data: HeaderData, trajectory_data: np.ndarray) -> Trajectory:
+    if trajectory_data.ndim != 2 or trajectory_data.shape[1] < len(header_data.fields):
+        columns = trajectory_data.shape[1] if trajectory_data.ndim == 2 else 1
+        raise ValueError(
+            f"The data has {columns} columns, but the header lists {len(header_data.fields)} fields "
+            f"({','.join(header_data.fields)}). Check the #fields and #delimiter lines."
+        )
+    timestamps = ascii.extract_trajectory_timestamps(header_data=header_data, trajectory_data=trajectory_data)
+    positions = ascii.extract_trajectory_positions(header_data=header_data, trajectory_data=trajectory_data)
+    _check_finite(timestamps, "timestamps")
+    _check_finite(positions.xyz, "positions")
     return Trajectory(
-        timestamps=ascii.extract_trajectory_timestamps(header_data=header_data, trajectory_data=trajectory_data),
-        positions=ascii.extract_trajectory_positions(header_data=header_data, trajectory_data=trajectory_data),
+        timestamps=timestamps,
+        positions=positions,
         rotations=ascii.extract_trajectory_rotations(header_data=header_data, trajectory_data=trajectory_data),
         name=header_data.name,
-        path_lengths=ascii.extract_trajectory_path_lengths(header_data=header_data, trajectory_data=trajectory_data),
-        velocity_xyz=ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data),
+        # derived quantities with invalid values are derived anew
+        path_lengths=_finite_or_none(
+            ascii.extract_trajectory_path_lengths(header_data=header_data, trajectory_data=trajectory_data)
+        ),
+        velocity_xyz=_finite_or_none(
+            ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
+        ),
         sorting=Sorting.from_str(header_data.sorting),
     )
+
+
+def _check_finite(values: np.ndarray, name: str) -> None:
+    if not np.all(np.isfinite(values)):
+        rows = np.flatnonzero(~np.isfinite(values).reshape(len(values), -1).all(axis=1))
+        raise ValueError(
+            f"Invalid {name} (missing, NaN or infinite) in data row(s) {', '.join(map(str, rows[:5] + 1))}."
+        )
+
+
+def _finite_or_none(values: np.ndarray | None) -> np.ndarray | None:
+    return values if values is not None and np.all(np.isfinite(values)) else None
 
 
 def read_trajectory(filename: str) -> Trajectory:
