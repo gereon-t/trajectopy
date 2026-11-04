@@ -33,6 +33,7 @@ HEADER_KEYS = [
     "gps_week",
     "time_offset",
     "deviations",
+    "directed_by",
 ]
 
 

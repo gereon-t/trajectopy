@@ -583,6 +583,29 @@ class TestRobustnessRegressions(unittest.TestCase):
         self.assertLess(result.rot_dev_max, before)
         self.assertEqual(len(result.pos_dev_comb), 10)
 
+    def test_ate_files_keep_how_the_deviation_directions_were_derived(self):
+        import os
+        import tempfile
+
+        from trajectopy.processing.evaluation import ate
+        from trajectopy.results.ate_result import ATEResult
+
+        t = np.arange(20.0)
+        with_rotations = _line(t, rpy=np.zeros((20, 3)))
+        for test, reference, expected in ((with_rotations, with_rotations.copy(), True), (_line(t), _line(t), False)):
+            result = ate(test, reference, align=False)
+            self.assertEqual(result.abs_dev.rotations_used, expected)
+            with tempfile.TemporaryDirectory() as directory:
+                filename = os.path.join(directory, "ate.result")
+                result.to_file(filename)
+                self.assertEqual(ATEResult.from_file(filename).abs_dev.rotations_used, expected)
+                # files of earlier versions do not say it: derived from the stored orientations
+                with open(filename, encoding="utf-8") as file:
+                    lines = [line for line in file if not line.startswith("#directed_by")]
+                with open(filename, "w", encoding="utf-8") as file:
+                    file.writelines(lines)
+                self.assertEqual(ATEResult.from_file(filename).abs_dev.rotations_used, expected)
+
 
 if __name__ == "__main__":
     unittest.main()

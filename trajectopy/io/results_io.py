@@ -149,6 +149,7 @@ def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
         file.write(f"#epsg {result.trajectory.positions.epsg}\n")
         file.write(f"#sorting {result.trajectory.sorting.value}\n")
         file.write(f"#deviations {DEVIATIONS_CONVENTION}\n")
+        file.write(f"#directed_by {'rotations' if result.abs_dev.rotations_used else 'positions'}\n")
     result.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
 
 
@@ -198,7 +199,14 @@ def read_ate_result(filename: str) -> ATEResult:
     pos_dev, directed_pos_dev, rot_dev = convert_ate_deviations(
         header_data.deviations, pos_dev, directed_pos_dev, rot_dev
     )
-    abs_dev = AbsoluteTrajectoryDeviations(pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev)
+    if directed_by := str(header_data.data.get("directed_by", "")):
+        rotations_used = directed_by == "rotations"
+    else:
+        # earlier versions did not write it: rotations were used if either trajectory had some
+        rotations_used = rot_dev is not None or rotations is not None
+    abs_dev = AbsoluteTrajectoryDeviations(
+        pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev, rotations_used=rotations_used
+    )
     return ATEResult(trajectory=trajectory, abs_dev=abs_dev)
 
 

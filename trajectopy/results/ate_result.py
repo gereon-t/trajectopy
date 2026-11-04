@@ -82,7 +82,9 @@ class ATEResult:
             "Name": self.name,
             "Type": self.__class__.__name__,
             "Number of deviations": str(len(self.abs_dev.pos_dev)),
-            "Deviation directions derived using": "Rotations" if self.abs_dev.rotations_used else "Positions / Unkown",
+            "Deviation directions derived using": "Rotations"
+            if self.abs_dev.rotations_used
+            else "Positions / Unknown",
             "Sort by": self.trajectory.sorting.value,
             "Maximum position deviation [m]": f"{self.pos_dev_max:.4f}",
             "Mean position deviation [m]": f"{self.pos_ate:.4f}",
