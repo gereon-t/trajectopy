@@ -7,6 +7,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.utils.definitions import Sorting
 from trajectopy.visualization import style
 
 SPEED_OPTIONS = [
@@ -115,13 +116,17 @@ class PlaybackWindow(QtWidgets.QDialog):
     def _build_traj_data(trajectories: list[Trajectory]) -> list[_TrajData]:
         result = []
         for i, traj in enumerate(trajectories):
-            local_xyz = traj.positions.to_local(inplace=False).xyz
-            t_rel = traj.timestamps - traj.timestamps[0]
+            # played back in chronological order, also if the trajectory is sorted spatially
+            order = traj.sort_index(Sorting.TIME)
+            local_xyz = traj.positions.to_local(inplace=False).xyz[order]
+            timestamps = traj.timestamps[order]
+            t_rel = timestamps - timestamps[0] if len(timestamps) else timestamps
             rot_mats: np.ndarray | None = None
             if traj.rotations is not None:
                 rot_mats = np.asarray(traj.rotations.as_matrix())
                 if rot_mats.ndim == 2:
                     rot_mats = rot_mats[np.newaxis]
+                rot_mats = rot_mats[order]
             result.append(_TrajData(traj.name, style.color(i), local_xyz, t_rel, rot_mats))
         return result
 

@@ -71,7 +71,9 @@ class Entry(ABC):
         self.entry_id = generate_id()
 
     def set_id(self, entry_id: str) -> None:
-        self.entry_id = entry_id
+        # entries are identified by their id, so an empty one (e.g. of a file without "#id") is not adopted
+        if entry_id:
+            self.entry_id = entry_id
 
     @property
     def type(self) -> str:

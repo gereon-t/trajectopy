@@ -408,6 +408,15 @@ class _AlignmentSignals(QtCore.QObject):
     finished = QtCore.Signal(object)  # AlignmentResult or the exception that occurred
 
 
+def _estimate_alignment(**arguments) -> AlignmentResult | Exception:
+    """Least squares alignment (see alignment.estimate_alignment), with the error returned instead of raised."""
+    try:
+        return alignment.estimate_alignment(**arguments)
+    except Exception as error:
+        logger.exception("Least squares alignment failed")
+        return error
+
+
 class ManualAlignmentWindow(QtWidgets.QMainWindow):
     """Manually align a trajectory to a reference (similarity transformation, leverarm and time shift).
 
@@ -432,6 +441,9 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         self.alignment_settings = alignment_settings or AlignmentSettings()
         self._has_orientation = trajectory.has_orientation
 
+        # copies: operations on the trajectories in the background must not change them while the window is open
+        # (it only produces an alignment result, which is applied to the trajectory in the table)
+        trajectory, reference = trajectory.copy(), reference.copy()
         self._full_trajectory = trajectory
         self._full_reference = reference
         # rotations and scale act about this point (the trajectory's center)
@@ -655,14 +667,17 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
         self._set_busy(True)
         self._status = "Aligning …"
         self.metrics_label.setText(self._status)
-        signals = _AlignmentSignals()
+        # owned by the window (not by Python), so that the worker never deletes a Qt object
+        signals = _AlignmentSignals(self)
         signals.finished.connect(lambda outcome: self._on_aligned(outcome, start))
-        self._alignment_signals = signals  # keep alive until finished
-        # read the widgets here, on the GUI thread, not in the worker
-        parameters, estimation = self.parameters, self.estimation_settings
+        self._alignment_signals = signals
+        # read the widgets here, on the GUI thread, not in the worker; the worker gets plain data only and no
+        # reference to the window, so that the window is never released (and its widgets deleted) on its thread
+        arguments = self._estimation_arguments(self.parameters, self.estimation_settings)
+        emit = signals.finished.emit
         # a daemon thread: only computes (writes nothing), so a fit still running must not keep the app alive on exit
         threading.Thread(
-            target=lambda: signals.finished.emit(self.estimate(parameters, estimation)),
+            target=lambda: emit(_estimate_alignment(**arguments)),
             name="TrajectopyAlignment",
             daemon=True,
         ).start()
@@ -694,19 +709,20 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
     ) -> AlignmentResult | Exception:
         """Least squares alignment of the full trajectories. Parameters that are not estimated stay at their
         initial values."""
+        return _estimate_alignment(**self._estimation_arguments(initial_parameters, estimation))
+
+    def _estimation_arguments(
+        self, initial_parameters: AlignmentParameters, estimation: AlignmentEstimationSettings | None
+    ) -> dict:
         settings = copy.deepcopy(self.alignment_settings)
         settings.estimation_settings = estimation if estimation is not None else self.estimation_settings
-        try:
-            return alignment.estimate_alignment(
-                trajectory=self._full_trajectory,
-                other=self._full_reference,
-                alignment_settings=settings,
-                matching_settings=self.matching_settings,
-                initial_parameters=initial_parameters,
-            )
-        except Exception as error:
-            logger.exception("Least squares alignment failed")
-            return error
+        return {
+            "trajectory": self._full_trajectory,
+            "other": self._full_reference,
+            "alignment_settings": settings,
+            "matching_settings": self.matching_settings,
+            "initial_parameters": initial_parameters,
+        }
 
     def _on_aligned(self, outcome: AlignmentResult | Exception, start: str = "current values") -> None:
         try:

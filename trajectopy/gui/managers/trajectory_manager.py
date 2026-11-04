@@ -8,6 +8,7 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal, Slot
 
 from trajectopy.core.rotations import Rotations
+from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
     ResultModelRequestType,
@@ -441,11 +442,17 @@ class TrajectoryManager(QObject):
         entry_pair: TrajectoryEntryPair,
     ) -> tuple[TrajectoryEntry]:
         """Resamples the trajectory to a uniform time grid with the given step size."""
-        t = entry_pair.entry.trajectory.timestamps
+        trajectory = entry_pair.entry.trajectory
         step = entry_pair.request.grid
-        new_timestamps = np.arange(t[0], t[-1] + step, step)
-        interpolate(entry_pair.entry.trajectory, index=new_timestamps, inplace=True)
-        entry_pair.entry.trajectory.name += f" (grid {step:.4g}s)"
+        if step <= 0:
+            raise ValueError(f"The grid step must be positive, got {step}.")
+        new_timestamps = np.arange(trajectory.time_start, trajectory.time_end + step, step)
+        # a time grid is interpolated over time, also for spatially sorted trajectories
+        sorting = trajectory.sorting
+        trajectory.set_sorting(Sorting.TIME)
+        interpolate(trajectory, index=new_timestamps, inplace=True)
+        trajectory.set_sorting(sorting)
+        trajectory.name += f" (grid {step:.4g}s)"
         return (entry_pair.entry.derive(entry_pair.entry.trajectory),)
 
     @staticmethod
@@ -462,8 +469,12 @@ class TrajectoryManager(QObject):
         Returns:
             None
         """
-        entry_pair.entry.trajectory.positions.epsg = entry_pair.request.target_epsg
-        entry_pair.entry.trajectory.positions.build_local_transformer()
+        positions = entry_pair.entry.trajectory.positions
+        positions.epsg = entry_pair.request.target_epsg
+        if positions.epsg == 0:
+            positions.local_transformer = None  # unknown system: there is no transformation to other systems
+        else:
+            positions.build_local_transformer()
         return (entry_pair.entry,)
 
     @staticmethod
@@ -523,12 +534,36 @@ class TrajectoryManager(QObject):
             new_column = (xyz_rpy_t[:, source_col_index] + mapping["bias"]) * (1.0 if mapping["sign"] == "+" else -1.0)
             new_xyz_rpy_t[:, target_col_index] = new_column
 
-        entry_pair.entry.trajectory.timestamps = new_xyz_rpy_t[:, 6]
-        entry_pair.entry.trajectory.positions.xyz = new_xyz_rpy_t[:, :3]
-        if entry_pair.entry.trajectory.has_orientation:
-            entry_pair.entry.trajectory.rotations = Rotations.from_euler(
-                seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True
-            )
+        trajectory = entry_pair.entry.trajectory
+        # velocities follow the positions if these are only swapped or mirrored, otherwise they are recomputed
+        mapped_velocity = np.zeros_like(xyz)
+        velocity_follows = True
+        for key, mapping in dof_mapping.items():
+            source_col_index = index_mapping[key.lower()]
+            target_col_index = index_mapping[mapping["target"].lower()]
+            if target_col_index < 3:
+                velocity_follows &= source_col_index < 3
+                sign = 1.0 if mapping["sign"] == "+" else -1.0
+                mapped_velocity[:, target_col_index] = sign * trajectory.velocity_xyz[:, min(source_col_index, 2)]
+        velocity_xyz = mapped_velocity if velocity_follows else None
+
+        # a new trajectory, so that the poses are in chronological order of the new timestamps again
+        positions = trajectory.positions.copy()
+        positions.xyz = new_xyz_rpy_t[:, :3]
+        entry_pair.entry.trajectory = Trajectory(
+            positions=positions,
+            rotations=(
+                Rotations.from_euler(seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True)
+                if trajectory.has_orientation
+                else None
+            ),
+            timestamps=new_xyz_rpy_t[:, 6],
+            name=trajectory.name,
+            # swapping, mirroring and shifting axes does not change the distances between the positions
+            path_lengths=trajectory.path_lengths,
+            velocity_xyz=velocity_xyz,
+            sorting=trajectory.sorting,
+        )
 
         return (entry_pair.entry,)
 

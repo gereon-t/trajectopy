@@ -192,7 +192,7 @@ class UIRequest:
     message: str = ""
     error: bool = False  # the message reports a failure
     epsg: int = 0
-    grid: int = 0
+    grid: float = 0.0
     file_path: str = ""
 
 

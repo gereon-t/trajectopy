@@ -243,7 +243,10 @@ def _thin(array: np.ndarray, max_points: int) -> np.ndarray:
 def _smooth(values: np.ndarray, window: int) -> np.ndarray:
     if window <= 1 or len(values) < window:
         return values
-    return np.convolve(values, np.ones(window) / window, mode="same")
+    # moving average over the samples inside the window: at the ends, the window is cut off instead of being
+    # filled with zeros, which would pull the values towards zero
+    kernel = np.ones(window)
+    return np.convolve(values, kernel, mode="same") / np.convolve(np.ones(len(values)), kernel, mode="same")
 
 
 _BRUSHES: list[QtGui.QBrush] = []

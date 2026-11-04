@@ -45,6 +45,11 @@ class TestVisualization(unittest.TestCase):
                 widget.selector.setCurrentText(variant)
             widget.deleteLater()
 
+    def test_smoothing_keeps_constant_values_at_the_ends(self):
+        from trajectopy.visualization.plots import _smooth
+
+        np.testing.assert_allclose(_smooth(np.full(10, 5.0), window=5), 5.0)
+
     def test_trajectory_figures(self):
         figures = vis.trajectory_figures([generated_trajectory, noisy_trajectory])
         self.assertEqual([figure.title for figure in figures], ["Positions", "XYZ", "RPY", "Map"])

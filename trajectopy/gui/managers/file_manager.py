@@ -65,13 +65,15 @@ class FileManager(QObject):
             self.operation_finished.emit()
 
     def read_trajectory_files(self, request: FileRequest) -> None:
-        for file in request.file_list:
-            if Path(file).suffix == ".bag":
-                logger.info("Reading ROS bag file: %s", file)
-                self.handle_ros_bag(file)
-            else:
-                self.handle_ascii(file)
-                logger.info("Reading ASCII file: %s", file)
+        _read_each(request.file_list, self._read_trajectory_file)
+
+    def _read_trajectory_file(self, file: str) -> None:
+        if Path(file).suffix == ".bag":
+            logger.info("Reading ROS bag file: %s", file)
+            self.handle_ros_bag(file)
+        else:
+            self.handle_ascii(file)
+            logger.info("Reading ASCII file: %s", file)
 
     def handle_ascii(self, file: str) -> None:
         """Reads an ASCII trajectory file and emits a request to add it to the model."""
@@ -100,17 +102,19 @@ class FileManager(QObject):
         trajectory_entry.to_file(request.file_list[0])
 
     def read_result_files(self, request: FileRequest) -> None:
-        for file in request.file_list:
-            logger.info("Reading file: %s", file)
+        _read_each(request.file_list, self._read_result_file)
 
-            result_entry = ResultEntry.from_file(filename=file)
+    def _read_result_file(self, file: str) -> None:
+        logger.info("Reading file: %s", file)
 
-            self.result_model_request.emit(
-                ResultModelRequest(
-                    type=ResultModelRequestType.ADD,
-                    selection=ResultSelection(entries=[result_entry]),
-                )
+        result_entry = ResultEntry.from_file(filename=file)
+
+        self.result_model_request.emit(
+            ResultModelRequest(
+                type=ResultModelRequestType.ADD,
+                selection=ResultSelection(entries=[result_entry]),
             )
+        )
 
     def write_result(self, request: FileRequest) -> None:
         result_entry = request.result_selection.entries[0]
@@ -125,3 +129,16 @@ class FileManager(QObject):
             ate_entry.deviations.to_kml(request.file_list[0], **request.kml_options)
         else:
             request.trajectory_selection.entries[0].trajectory.to_kml(request.file_list[0], **request.kml_options)
+
+
+def _read_each(files: list[str], read: Callable[[str], None]) -> None:
+    """Reads every file, also if others fail; the failures are reported together afterwards."""
+    failures = []
+    for file in files:
+        try:
+            read(file)
+        except Exception as error:
+            logger.exception("Reading %s failed", file)
+            failures.append(f"{Path(file).name}: {error}")
+    if failures:
+        raise RuntimeError("\n".join(failures))

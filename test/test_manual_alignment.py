@@ -1,3 +1,4 @@
+import gc
 import os
 import unittest
 
@@ -36,6 +37,11 @@ class TestManualAlignment(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+
+    def setUp(self) -> None:
+        # runs last: closed windows are released here, on the GUI thread, instead of whenever the garbage
+        # collector happens to run, e.g. on the thread of a background alignment, where deleting widgets crashes
+        self.addCleanup(gc.collect)
 
     def _window(self, trajectory: Trajectory, reference: Trajectory) -> "maw.ManualAlignmentWindow":
         window = maw.ManualAlignmentWindow(trajectory, reference)
@@ -268,6 +274,15 @@ class TestManualAlignment(unittest.TestCase):
         self.addCleanup(window.close)
         self.assertFalse(window._rows["lever_x"].estimate.isEnabled())
         self.assertFalse(window.estimation_settings.leverarm_x)
+
+    def test_window_is_independent_of_later_changes_to_the_trajectories(self):
+        trajectory, reference = generated_trajectory.copy(), generated_trajectory.copy()
+        window = self._window(trajectory, reference)
+        original = window._full_trajectory.xyz.copy()
+
+        trajectory.positions.xyz += 100.0  # e.g. a background operation on the trajectory in the table
+
+        np.testing.assert_allclose(window._full_trajectory.xyz, original)
 
     def _wait_for_alignment(self, window) -> None:
         import time
