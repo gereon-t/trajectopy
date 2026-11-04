@@ -606,6 +606,26 @@ class TestRobustnessRegressions(unittest.TestCase):
                     file.writelines(lines)
                 self.assertEqual(ATEResult.from_file(filename).abs_dev.rotations_used, expected)
 
+    def test_spatial_interpolation_memory_grows_linearly(self):
+        import tracemalloc
+
+        t = np.arange(3000) * 0.01
+        xyz = np.c_[np.cos(t / 50) * 100, np.sin(t / 50) * 100, np.sin(t)]
+        rpy = np.c_[0 * t, 0 * t, t / 50]
+        test = Trajectory.from_arrays(xyz + 0.01, rpy=rpy, timestamps=t)
+        reference = Trajectory.from_arrays(xyz, rpy=rpy, timestamps=t)
+        settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED)
+
+        tracemalloc.start()
+        try:
+            match_trajectories(test, reference, matching_settings=settings, inplace=False)
+            peak = tracemalloc.get_traced_memory()[1]
+        finally:
+            tracemalloc.stop()
+
+        # a copy of all quaternions per pose would take n x n x 32 bytes (about 290 MB here)
+        self.assertLess(peak, 50e6)
+
 
 if __name__ == "__main__":
     unittest.main()

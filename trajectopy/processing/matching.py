@@ -344,6 +344,9 @@ def _match_trajectories_spatial_interpolation(
     lap_length = float(np.max(other.path_lengths)) if len(other) else 0.0
     matched_arc_lengths = []
     matched_indices = []
+    # once: as_quat copies all quaternions, and a row of it kept in a list would keep the whole copy alive
+    ref_quat = other.rotations.as_quat() if other.rotations is not None else None
+    test_quat = trajectory.rotations.as_quat() if trajectory.rotations is not None else None
     for i, (dists, idxs) in enumerate(zip(distances, closest_indices)):
         valid_mask = ~np.isinf(dists)
         idxs = idxs[valid_mask]
@@ -354,12 +357,12 @@ def _match_trajectories_spatial_interpolation(
         fit_line = Line3D.from_points(ref_xyz[idxs, :])
         line_point = fit_line.evaluate_at(test_pos)
 
-        if other.rotations is not None:
-            ref_rots = Rotations.from_quat(other.rotations.as_quat()[idxs])
+        if ref_quat is not None:
+            ref_rots = Rotations.from_quat(ref_quat[idxs])
             matched_ref_rot.append(ref_rots.mean().as_quat())
 
-        if trajectory.rotations is not None:
-            matched_test_rot.append(trajectory.rotations.as_quat()[i])
+        if test_quat is not None:
+            matched_test_rot.append(test_quat[i])
 
         matched_test_pos.append(test_pos)
         matched_ref_pos.append(line_point)
