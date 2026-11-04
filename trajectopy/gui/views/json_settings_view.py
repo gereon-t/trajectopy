@@ -290,14 +290,15 @@ def construct_settings_field(parent_widget: QtWidgets.QWidget, value: Any) -> Qt
 
     if isinstance(value, int):
         spin_box = QtWidgets.QSpinBox(parent_widget)
-        spin_box.setMaximum(100000)
+        # the range must contain the value, otherwise it would be clamped (and changed when applying)
+        spin_box.setRange(min(0, value), 2**31 - 1)
         spin_box.setValue(value)
         return spin_box
 
     if isinstance(value, float):
         double_spin_box = _PreciseDoubleSpinBox(parent_widget)
         double_spin_box.setSingleStep(0.0001)
-        double_spin_box.setMaximum(1e15)
+        double_spin_box.setRange(min(0.0, value), max(1e15, value))
         double_spin_box.setValue(value)
         return double_spin_box
 

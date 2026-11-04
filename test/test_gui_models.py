@@ -172,6 +172,21 @@ class TestSubWindows(unittest.TestCase):
         self.assertIsNot(second[0], first[0])
         self._close_all()
 
+    def test_applying_settings_keeps_values_outside_of_the_usual_range(self):
+        from trajectopy.core.settings import ProcessingSettings
+        from trajectopy.gui.views.json_settings_view import JSONViewer
+
+        settings = ProcessingSettings()
+        settings.alignment.preprocessing.max_samples = 250_000
+        settings.alignment.preprocessing.time_start = -2.5
+        viewer = JSONViewer(parent=self.main_window, settings=settings)
+        viewer.apply_changes()
+        viewer.close()
+        self._process_deferred_deletes()
+
+        self.assertEqual(settings.alignment.preprocessing.max_samples, 250_000)
+        self.assertEqual(settings.alignment.preprocessing.time_start, -2.5)
+
 
 if __name__ == "__main__":
     unittest.main()
