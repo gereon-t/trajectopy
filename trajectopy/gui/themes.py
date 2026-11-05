@@ -188,6 +188,15 @@ _BASE = """
         QTabWidget::pane {
             border: 1px solid %(border)s;
         }
+        QTreeView::item {
+            min-height: 29px;
+            padding: 0 2px;
+            border-right: 1px solid %(grid)s;
+            border-bottom: 1px solid %(grid)s;
+        }
+        QTreeView::branch {
+            border-bottom: 1px solid %(grid)s;
+        }
 """
 
 DARK_STYLESHEET = (
@@ -256,7 +265,7 @@ DARK_STYLESHEET = (
             background-color: #3c3c3c;
             color: #666666;
         }
-        QTableView {
+        QTableView, QTreeView {
             background-color: #1e1e1e;
             alternate-background-color: #252526;
             color: #cccccc;
@@ -266,7 +275,7 @@ DARK_STYLESHEET = (
             selection-color: #ffffff;
             outline: none;
         }
-        QTableView::item:selected {
+        QTableView::item:selected, QTreeView::item:selected, QTreeView::branch:selected {
             background-color: #094771;
             color: #ffffff;
         }
@@ -303,6 +312,7 @@ DARK_STYLESHEET = (
         hover="#3e3e42",
         header_hover="#3e3e42",
         menu_bg="#252526",
+        grid="#2d2d30",
         input_bg="#3c3c3c",
         input_border="#555555",
         scrollbar="#424242",
@@ -378,7 +388,7 @@ LIGHT_STYLESHEET = (
             background-color: #cccccc;
             color: #888888;
         }
-        QTableView {
+        QTableView, QTreeView {
             background-color: #ffffff;
             alternate-background-color: #f8f8f8;
             color: #333333;
@@ -388,7 +398,7 @@ LIGHT_STYLESHEET = (
             selection-color: #ffffff;
             outline: none;
         }
-        QTableView::item:selected {
+        QTableView::item:selected, QTreeView::item:selected, QTreeView::branch:selected {
             background-color: #0078d4;
             color: #ffffff;
         }
@@ -425,6 +435,7 @@ LIGHT_STYLESHEET = (
         hover="#dce9f5",
         header_hover="#e0e0e0",
         menu_bg="#f3f3f3",
+        grid="#f0f0f0",
         input_bg="#ffffff",
         input_border="#cccccc",
         scrollbar="#c1c1c1",

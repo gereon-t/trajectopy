@@ -1,12 +1,57 @@
 from typing import Any
 
 from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import QItemSelection, QItemSelectionModel, Qt, Signal
+from PySide6.QtCore import QItemSelection, QItemSelectionModel, QPointF, QSize, Qt, Signal
 
 from trajectopy.gui.managers.requests import FileRequest, FileRequestType
 from trajectopy.gui.models.table_model import ENTRY_IDS_MIME_TYPE
 from trajectopy.gui.project import PROJECT_SUFFIX
 from trajectopy.gui.views.menu_helpers import SelectionMenu
+
+# width of the expand / collapse arrow at the start of group rows (including its margins)
+CHEVRON_WIDTH = 22
+
+
+class _GroupDelegate(QtWidgets.QStyledItemDelegate):
+    """Draws an arrow in front of the names of groups, which shows whether they are expanded. The arrows of the
+    tree itself are not used, so that entries outside of groups start at the left edge as in a table."""
+
+    def __init__(self, view: "EntryTableView") -> None:
+        super().__init__(view)
+        self._view = view
+        self._icons: dict[tuple[bool, str], QtGui.QIcon] = {}
+
+    def initStyleOption(self, option: QtWidgets.QStyleOptionViewItem, index: Any) -> None:
+        super().initStyleOption(option, index)
+        option.state &= ~QtWidgets.QStyle.StateFlag.State_HasFocus  # no frame around the current row (as in tables)
+        if index.column() != 0 or self._view.table_model.group_at(index) is None:
+            return
+        selected = bool(option.state & QtWidgets.QStyle.StateFlag.State_Selected)
+        role = QtGui.QPalette.ColorRole.HighlightedText if selected else QtGui.QPalette.ColorRole.Text
+        option.icon = self._chevron(self._view.isExpanded(index), option.palette.color(role))
+        option.decorationSize = QSize(10, 10)
+        option.features |= QtWidgets.QStyleOptionViewItem.ViewItemFeature.HasDecoration
+
+    def _chevron(self, expanded: bool, color: QtGui.QColor) -> QtGui.QIcon:
+        key = (expanded, color.name())
+        if key not in self._icons:
+            size = 40  # drawn large, scaled down smoothly
+            pixmap = QtGui.QPixmap(size, size)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QtGui.QPainter(pixmap)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+            pen = QtGui.QPen(color, 5)
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+            painter.setPen(pen)
+            if expanded:  # pointing down
+                points = [QPointF(8, 14), QPointF(20, 26), QPointF(32, 14)]
+            else:  # pointing right
+                points = [QPointF(14, 8), QPointF(26, 20), QPointF(14, 32)]
+            painter.drawPolyline(points)
+            painter.end()
+            self._icons[key] = QtGui.QIcon(pixmap)
+        return self._icons[key]
 
 
 class EntryTableView(QtWidgets.QTreeView):
@@ -40,9 +85,11 @@ class EntryTableView(QtWidgets.QTreeView):
         self.expanded.connect(lambda index: self._track_expansion(index, collapsed=False))
 
         self.setAlternatingRowColors(True)
-        self.setRootIsDecorated(True)
+        self.setRootIsDecorated(False)  # arrows of groups by the delegate, see _GroupDelegate
+        self.setIndentation(CHEVRON_WIDTH)  # entries of a group start below its name
+        self.setItemDelegate(_GroupDelegate(self))
         self.setUniformRowHeights(True)
-        self.setAllColumnsShowFocus(True)
+        self.setAllColumnsShowFocus(False)  # no frame around the current row (as in tables)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
@@ -55,6 +102,7 @@ class EntryTableView(QtWidgets.QTreeView):
         # the name takes the free space; the other (short) columns fit their content
         header = self.header()
         header.setStretchLastSection(False)
+        header.setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
 
@@ -103,6 +151,7 @@ class EntryTableView(QtWidgets.QTreeView):
         for row in range(model.rowCount()):
             index = model.index(row, 0)
             if (group_id := model.group_at(index)) is not None:
+                self.setFirstColumnSpanned(row, index.parent(), True)  # the name of the group may be long
                 # new groups are expanded, so that new entries are visible
                 self.setExpanded(index, group_id not in self._collapsed_groups)
         self._select(self._selected_ids, self._selected_groups)
@@ -160,6 +209,18 @@ class EntryTableView(QtWidgets.QTreeView):
         return True
 
     # --------------------------------------------------------------------------------------------------- other
+
+    def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
+        """A click on the arrow of a group expands or collapses it."""
+        index = self.indexAt(e.position().toPoint())
+        if (
+            e.button() == Qt.MouseButton.LeftButton
+            and self.table_model.group_at(index) is not None
+            and e.position().x() - self.visualRect(index).left() < CHEVRON_WIDTH
+        ):
+            self.setExpanded(index, not self.isExpanded(index))
+            return
+        super().mousePressEvent(e)
 
     def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
         """Shortcuts trigger the entries of the context menu, which shows them."""
