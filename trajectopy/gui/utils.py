@@ -2,7 +2,7 @@ import sys
 from collections.abc import Callable, Hashable
 from functools import wraps
 
-from PySide6 import QtCore, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 
 class SingleWindows:
@@ -35,6 +35,7 @@ class SingleWindows:
             window = create()
             self._windows[key] = window
             window.destroyed.connect(lambda _=None, key=key, window=window: self._forget(key, window))
+            center_window(window)
             window.show()
         if window.isMinimized():
             window.showNormal()
@@ -84,12 +85,30 @@ def set_dark_titlebar(window: QtWidgets.QWidget, use_dark: bool) -> None:
             pass
 
 
-def center_window(window: QtWidgets.QWidget) -> None:
-    """Center a window on its screen."""
-    qr = window.frameGeometry()
-    cp = window.screen().availableGeometry().center()
-    qr.moveCenter(cp)
-    window.move(qr.topLeft())
+def center_window(window: QtWidgets.QWidget, anchor: QtWidgets.QWidget | None = None) -> None:
+    """Centers a window over the Trajectopy window it belongs to, so that it opens on the screen where Trajectopy
+    is (not on the primary screen); without one, on the screen of the window. It is kept within that screen.
+
+    Args:
+        window (QtWidgets.QWidget): Window to place, with its final size.
+        anchor (QtWidgets.QWidget | None, optional): Window to center on. Defaults to the window of the parent,
+            or the active window.
+    """
+    if anchor is None:
+        parent = window.parentWidget()
+        anchor = parent.window() if parent is not None else QtWidgets.QApplication.activeWindow()
+    if anchor is not None and anchor is not window and anchor.isVisible():
+        center = anchor.frameGeometry().center()
+        screen = QtGui.QGuiApplication.screenAt(center) or anchor.screen()
+    else:
+        screen = window.screen()
+        center = screen.availableGeometry().center()
+    available = screen.availableGeometry()
+    frame = window.frameGeometry()
+    frame.moveCenter(center)
+    left = max(available.left(), min(frame.left(), available.right() + 1 - frame.width()))
+    top = max(available.top(), min(frame.top(), available.bottom() + 1 - frame.height()))
+    window.move(left, top)
 
 
 def show_progress(func):

@@ -16,6 +16,7 @@ from trajectopy.gui.models.entries import (
     RelativeDeviationEntry,
     ResultEntry,
 )
+from trajectopy.gui.utils import center_window
 from trajectopy.results.ate_result import ATEResult
 from trajectopy.results.rpe_result import RPEResult
 from trajectopy.visualization import (
@@ -70,6 +71,7 @@ class PlotManager(QObject):
         window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)  # otherwise closing only hides it
         window.destroyed.connect(lambda _=None, w=window: self._windows.remove(w) if w in self._windows else None)
         self._windows.append(window)
+        center_window(window)
         window.show()
         window.raise_()
         window.activateWindow()

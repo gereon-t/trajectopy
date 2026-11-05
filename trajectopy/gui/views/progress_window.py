@@ -61,6 +61,7 @@ class ProgressWindow(QtWidgets.QMainWindow):
     def handle_show_request(self) -> None:
         self._show_count += 1
         if self._show_count == 1:
+            center_window(self)  # where the main window is now
             self.show()
             self.raise_()
 

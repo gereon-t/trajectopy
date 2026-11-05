@@ -1,7 +1,7 @@
 from PySide6 import QtCore, QtWidgets
-from PySide6.QtGui import QGuiApplication
 
 from trajectopy.gui.models.entries import AlignmentEntry
+from trajectopy.gui.utils import center_window
 
 
 class AlignmentSelector(QtWidgets.QMainWindow):
@@ -24,9 +24,7 @@ class AlignmentSelector(QtWidgets.QMainWindow):
         self.setObjectName("Form")
         self.resize(400, 300)
 
-        screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
-        desired_pos = QtCore.QPoint(screen_geometry.center().x() - 200, screen_geometry.center().y() - 150)
-        self.move(desired_pos)
+        center_window(self)
 
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")

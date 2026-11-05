@@ -21,6 +21,7 @@ from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import (
     SingleWindows,
+    center_window,
     read_file_dialog,
     save_file_dialog,
     show_msg_box,
@@ -173,6 +174,7 @@ class UIManager(QObject):
     def trajectory_playback(self, request: UIRequest) -> None:
         trajectories = [entry.trajectory for entry in request.trajectory_selection.entries]
         playback_window = PlaybackWindow(trajectories=trajectories, parent=self.parent())
+        center_window(playback_window)
         playback_window.show()
 
     def manual_alignment(self, request: UIRequest) -> None:

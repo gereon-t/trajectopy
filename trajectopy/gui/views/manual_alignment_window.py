@@ -1044,6 +1044,8 @@ class ManualAlignmentWindow(QtWidgets.QMainWindow):
             self._series_window = TimeSeriesWindow(
                 self._reference, include_orientation=self._has_orientation and self._reference.has_orientation
             )
+        if not self._series_window.isVisible():
+            center_window(self._series_window, anchor=self)
         self._series_window.show()
         self._series_window.raise_()
         self._series_window.update_aligned(self._aligned_preview())

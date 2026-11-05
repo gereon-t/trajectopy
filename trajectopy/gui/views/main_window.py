@@ -513,6 +513,8 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
     @QtCore.Slot(object)
     def _show_timeline(self, entries) -> None:
         self._timeline_dialog.set_entries(entries)
+        if not self._timeline_dialog.isVisible():
+            center_window(self._timeline_dialog, anchor=self)
         self._timeline_dialog.show()
         self._timeline_dialog.raise_()
 

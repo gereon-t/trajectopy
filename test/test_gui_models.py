@@ -204,6 +204,23 @@ class TestSubWindows(unittest.TestCase):
         self._process_deferred_deletes()
         self.assertEqual(self.main_window.findChildren(QtWidgets.QMainWindow), [])
 
+    def test_windows_open_where_the_main_window_is(self):
+        from trajectopy.gui.utils import center_window
+
+        available = self.main_window.screen().availableGeometry()
+        self.main_window.setGeometry(available.left() + 50, available.top() + 50, 600, 400)
+        self.main_window.show()
+        window = QtWidgets.QMainWindow(self.main_window)
+        window.resize(200, 100)
+        center_window(window)
+        self.assertEqual(window.frameGeometry().center(), self.main_window.frameGeometry().center())
+
+        self.main_window.move(available.left(), available.top())  # partly beyond the screen if centered
+        window.resize(available.width(), 100)
+        center_window(window)
+        self.assertEqual(window.frameGeometry().left(), available.left())
+        self.main_window.hide()
+
     def _visible_windows(self) -> list:
         return [window for window in self.main_window.findChildren(QtWidgets.QMainWindow) if window.isVisible()]
 
