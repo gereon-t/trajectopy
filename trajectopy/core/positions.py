@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 import numpy as np
 from pyproj import CRS, Transformer
@@ -488,7 +489,7 @@ def _crs(epsg: int) -> CRS:
         raise PointSetError(f"Unknown EPSG code {epsg}.") from error
 
 
-def transform_coordinates(transformer: Transformer, xyz: np.ndarray, **options) -> np.ndarray:
+def transform_coordinates(transformer: Transformer, xyz: np.ndarray, **options: Any) -> np.ndarray:
     """Transforms n x 3 coordinates with a pyproj transformer.
 
     A single point is passed as numbers: older pyproj versions treat one-element arrays as a point and convert

@@ -32,8 +32,9 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 - **[ATEResult](results/ate_result.md)** - Absolute Trajectory Error results
 - **[RPEResult](results/rpe_result.md)** - Relative Pose Error results
 - **[AlignmentResult](results/alignment_result.md)** - Alignment parameters and statistics
+- **[DeviationCorrelation](results/correlation.md)** - Temporal correlation of ATE deviations
 
 ## Visualization
 
 - **[Figures](visualization/figures.md)** - Plots of trajectories, ATE/RPE results and alignment parameters
-- **[Showing & Exporting](visualization/display.md)** - Interactive plot window and image export
+- **[Showing & Exporting](visualization/display.md)** - Interactive plot window, image export and plot theme

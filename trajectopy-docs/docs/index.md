@@ -124,6 +124,9 @@ trajectopy --plot-settings plot_settings.json
 
 A project contains its own plot settings, which replace those given with `--plot-settings` when it is opened.
 
+The Windows app has no console window, so `--version` and `--help` print nothing there; the version is shown in
+*Help → About*. Messages of the running GUI are shown in its log (*View → Log*).
+
 ## Citation
 
 If you use Trajectopy for academic work, please cite our [paper](https://www.degruyter.com/document/doi/10.1515/jag-2024-0040/html):

@@ -295,7 +295,7 @@ Start the GUI from the Start menu (Windows app) or with `trajectopy` (Python pac
    opened by double-click (if chosen during installation), and files can be passed on the command line.
 2. **Set the reference**: right-click the ground truth and choose *Set as Reference* (`R`).
 3. **Compare**: select one or more other trajectories, right-click and choose
-   *Compare with Reference → Absolute Error (ATE), Aligned First*. The result appears in the results table.
+   *Compare with Reference → Absolute Error (ATE), with Alignment*. The result appears in the results table.
 4. **Inspect**: select the result to see its statistics in the properties table and its deviations in the
    preview; press `V` (or *Plot*) for all plots.
 5. **Save**: *File → Save* (`Ctrl+S`) keeps everything for later in a project file; *Export…* (`E`) saves single
@@ -332,6 +332,7 @@ rows to take them out of their group. Groups are saved in the project.
 | | Save As… (`Ctrl+Shift+S`) | Saves the project to a new file. |
 | | Import Session Folder… | Opens a session folder saved by earlier versions of Trajectopy as a new project. |
 | | Exit (`Ctrl+Q`) | Closes Trajectopy. |
+| View | Log (`Ctrl+L`) | Shows or hides the log panel at the bottom of the main window. |
 | Plot Settings | | Opens the [plot settings](settings.md#plot-settings), which apply to all plots opened afterwards. |
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
@@ -345,6 +346,12 @@ Trajectopy offers to save them. A project file can also be opened by dropping it
 double-click on Windows (if chosen during installation) or on the command line. Project files are binary, so
 that large projects are saved and opened quickly; use *Export…* for files that other programs can read. Projects
 saved by Trajectopy 5.1 can still be opened.
+
+**Log**: Trajectopy writes what it does, warnings and errors to a log. *View → Log* (`Ctrl+L`) opens it at the
+bottom of the main window; warnings are shown in orange, errors in red, and the context menu copies or clears the
+messages. The log shows everything since Trajectopy was started, also if it is opened later, and it reopens at the
+next start if it was open. The Windows app has no console window, so the log is the place to look when something
+does not work as expected (Python installations also print the messages to the terminal they were started from).
 
 **Updates**: the update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Python installations are updated with
@@ -373,13 +380,13 @@ The trajectory context menu is grouped by task:
 | --- | --- |
 | View | *Plot*, *Playback in 3D* (body frame axes at the current pose), *Timeline* (time spans of the trajectories, e.g. to check their overlap) |
 | Reference | *Set as Reference* / *Unset Reference* |
-| Compare with Reference | *Absolute Error (ATE), Aligned First*, *Absolute Error (ATE), as Is*, *Relative Pose Error (RPE)*, *Extract Matching Poses* |
+| Compare with Reference | *Absolute Error (ATE), without Alignment*, *Absolute Error (ATE), with Alignment*, *Relative Pose Error (RPE)*, *Extract Matching Poses* |
 | Align with Reference | *Estimate Alignment*, *Interactive Alignment…* (see below), *Match First Pose*, *Apply Existing Alignment…* |
 | Coordinate System | *Transform to EPSG…*, *Adapt EPSG from Reference*, *Set EPSG Code (No Transformation)…* |
-| Process | *Smooth (Approximate)*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
+| Process | *Approximate*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
 | Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Group*, *Remove*, *Remove Group* |
 
-Processing adds new trajectories (e.g. *Smooth* adds a smoothed copy) and comparisons add results; only the
+Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy) and comparisons add results; only the
 coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
 
 The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Group*, *Remove* and, for ATE results,

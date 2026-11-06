@@ -84,6 +84,7 @@ nav:
       - ATE Result: api/results/ate_result.md
       - RPE Result: api/results/rpe_result.md
       - Alignment Result: api/results/alignment_result.md
+      - Deviation Correlation: api/results/correlation.md
     - Visualization:
       - Figures: api/visualization/figures.md
       - Showing & Exporting: api/visualization/display.md
