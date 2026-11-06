@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/icon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1408,6 +1408,8 @@
       
         
       
+        
+      
     
     
     
@@ -1526,6 +1528,34 @@
     
   
     Alignment Result
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results/correlation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deviation Correlation
   
 
     
@@ -1948,7 +1978,7 @@ adjustment of matched poses. Its settings have four parts.</p>
 </tr>
 <tr>
 <td><code>sensor_rotation</code></td>
-<td>Constant offsets between the roll, pitch and yaw angles of both trajectories. They are computed independently of the least squares adjustment.</td>
+<td>Constant mounting rotation between both trajectories in the body frame (roll, pitch and yaw offsets). It is computed independently of the least squares adjustment.</td>
 <td><code>False</code></td>
 </tr>
 </tbody>
@@ -1998,6 +2028,11 @@ adjustment of matched poses. Its settings have four parts.</p>
 <td><code>variance_estimation</code></td>
 <td>Estimate the variance factor a posteriori</td>
 <td><code>False</code></td>
+</tr>
+<tr>
+<td><code>robust_estimation</code></td>
+<td>Down-weight epochs with large residuals (iteratively reweighted least squares with Huber weights), so that outliers hardly affect the estimated parameters</td>
+<td><code>True</code></td>
 </tr>
 </tbody>
 </table>
@@ -2188,7 +2223,7 @@ meters for spatially sorted trajectories.</p>
 <p>Sorting involves two steps:</p>
 <ol>
 <li>Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.</li>
-<li>Shortest path approximation by constructing a minimum spanning tree (MST) based on the smoothed points.</li>
+<li>Reconstruction of the point order from a minimum spanning tree (MST) of the smoothed points. The tree is traversed depth-first from one end of its longest path, visiting short side branches (caused by noise) before continuing along the trajectory.</li>
 </ol>
 <table>
 <thead>
@@ -2287,13 +2322,18 @@ meters for spatially sorted trajectories.</p>
 <td>Width of exported raster images (pixels)</td>
 <td><code>1600</code></td>
 </tr>
+<tr>
+<td><code>use_opengl</code></td>
+<td>Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets; falls back to software rendering if OpenGL is not available. Exports are not affected</td>
+<td><code>True</code></td>
+</tr>
 </tbody>
 </table>
 <p>Plot settings are saved with a GUI project (as <code>plot_settings.json</code> in the <code>.tpy</code> archive) and can be loaded at
 startup with
 <code>trajectopy --plot-settings plot_settings.json</code>.</p>
 <h3 id="ate-frame-definition-regarding-directed_ate">ATE Frame Definition (regarding <code>directed_ate</code>)<a class="headerlink" href="#ate-frame-definition-regarding-directed_ate" title="Permanent link">&para;</a></h3>
-<p>The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting <code>directed_ate</code> to <code>True</code>. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. The vertical cross-track direction is defined as positive upwards. The following image illustrates the frame definition.</p>
+<p>The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting <code>directed_ate</code> to <code>True</code>. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. With orientations, the directions are those of the body frame, which is assumed to be x forward, y left and z up (like the ENU navigation frame). The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.</p>
 <p><img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/></p>
 
 
@@ -2422,7 +2462,7 @@ startup with
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       

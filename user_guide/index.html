@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/icon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -571,6 +571,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="4. Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#temporal-correlation-of-deviations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temporal Correlation of Deviations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1507,6 +1524,8 @@
       
         
       
+        
+      
     
     
     
@@ -1625,6 +1644,34 @@
     
   
     Alignment Result
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/results/correlation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deviation Correlation
   
 
     
@@ -1894,6 +1941,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="4. Visualization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#temporal-correlation-of-deviations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temporal Correlation of Deviations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2205,6 +2269,10 @@ save the figures.</p>
 <td>Empirical cumulative distribution of the deviations</td>
 </tr>
 <tr>
+<td><code>ate_correlation_figure</code></td>
+<td>Temporal correlation of the deviations and their standard deviation over time</td>
+</tr>
+<tr>
 <td><code>ate_map_figure</code></td>
 <td>Top view colored by any deviation component</td>
 </tr>
@@ -2219,15 +2287,42 @@ save the figures.</p>
 </tbody>
 </table>
 <p>All figures use the <a href="../settings/#plot-settings">plot settings</a>.</p>
+<h3 id="temporal-correlation-of-deviations">Temporal Correlation of Deviations<a class="headerlink" href="#temporal-correlation-of-deviations" title="Permanent link">&para;</a></h3>
+<p>Deviations of a trajectory from a reference are usually correlated in time over seconds to minutes, for example
+for GNSS/INS. Then, neighboring epochs do not provide independent information. <code>ate_result.correlation</code> describes
+this for every deviation component (along-track, cross-track, x, y, z and, with orientations, roll, pitch and yaw):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">correlation</span> <span class="o">=</span> <span class="n">ate_result</span><span class="o">.</span><span class="n">correlation</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">cross_track</span> <span class="o">=</span> <span class="n">correlation</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;cross_h&quot;</span><span class="p">]</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">cross_track</span><span class="o">.</span><span class="n">white_noise_share</span><span class="p">)</span>  <span class="c1"># share of the variance that is uncorrelated white noise</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">cross_track</span><span class="o">.</span><span class="n">correlation_time</span><span class="p">)</span>  <span class="c1"># correlation time of the correlated part [s]</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">cross_track</span><span class="o">.</span><span class="n">effective_samples</span><span class="p">)</span>  <span class="c1"># approximate number of independent deviations</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">correlation</span><span class="o">.</span><span class="n">cross_correlation_directed</span><span class="p">)</span>  <span class="c1"># correlation of along / cross-h / cross-v at the same epochs</span>
+</span></code></pre></div>
+<p>Deviations are usually white noise (e.g. measurement noise of the reference, uncorrelated from one epoch to the
+next) plus a correlated part (e.g. the GNSS/INS error). The white noise makes the autocorrelation drop at once
+between the first two lags; then the correlated part decays. Its share is extrapolated to lag 0 from the first
+lags, and its correlation time is the lag at which the autocorrelation drops to 1/e of that share. Without this,
+a large white noise share would make the correlated part look like it lasted only a fraction of a sampling
+interval. Deviations whose first lag is not significantly correlated are white noise (correlation time 0).</p>
+<p>The autocorrelation is computed in chronological order, also for spatially sorted results, and gaps (e.g. losses
+of a total station's lock) are respected: no deviation is correlated across a gap. Irregular sampling is allowed. The autocorrelation is computed up to a tenth of the number of deviations
+(n / 10 sampling intervals), at most up to 600 s, since larger lags rely on too few pairs of deviations; longer
+correlation times are reported as "&gt; max. lag".
+The correlation times and the number of independent deviations are also shown in the properties of ATE results,
+and the plots of ATE results include the autocorrelation and the standard deviation over time.</p>
+<p>A correlation time can only be determined reliably from data that is much longer than it: from one hour of data,
+a correlation time of 30 s is uncertain by about 10 to 20 %. With a reference such as a synchronized total station,
+the cross-track deviations are the most reliable measure, because timing errors affect only the along-track
+direction.</p>
 <h2 id="5-google-earth">5. Google Earth<a class="headerlink" href="#5-google-earth" title="Permanent link">&para;</a></h2>
 <p>Georeferenced trajectories (trajectories with an EPSG code) and ATE results can be exported as KML and opened in
 Google Earth, which shows them in their real-world context: on imagery and terrain, and, where available,
 between photorealistic 3D buildings. In the GUI, choose <em>Export to Google Earth (KML)…</em> in the context menu of a
 trajectory or an ATE result; the dialog offers all options below and remembers them.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># trajectory and ate_result must be georeferenced (EPSG code other than 0); the KITTI example data is not</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">trajectory</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;track.kml&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#1f77b4&quot;</span><span class="p">)</span>  <span class="c1"># one color: &quot;#RRGGBB&quot; or &quot;#RRGGBBAA&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">trajectory</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;track.kml&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="s2">&quot;ellipsoidal&quot;</span><span class="p">,</span> <span class="n">extrude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">ate_result</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;ate.kml&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;along_track&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">value_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># trajectory and ate_result must be georeferenced (EPSG code other than 0); the KITTI example data is not</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">trajectory</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;track.kml&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#1f77b4&quot;</span><span class="p">)</span>  <span class="c1"># one color: &quot;#RRGGBB&quot; or &quot;#RRGGBBAA&quot;</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">trajectory</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;track.kml&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;speed&quot;</span><span class="p">,</span> <span class="n">heights</span><span class="o">=</span><span class="s2">&quot;ellipsoidal&quot;</span><span class="p">,</span> <span class="n">extrude</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">ate_result</span><span class="o">.</span><span class="n">to_kml</span><span class="p">(</span><span class="s2">&quot;ate.kml&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="s2">&quot;along_track&quot;</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">value_range</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
 </span></code></pre></div>
 <p>The trajectory is exported as a time-stamped track: the time slider of Google Earth plays it back in real
 time order (also for spatially sorted trajectories). Playback needs Google Earth Pro (desktop); Google Earth on
@@ -2271,7 +2366,7 @@ the web shows the trajectory, but has no time slider.</p>
    opened by double-click (if chosen during installation), and files can be passed on the command line.</li>
 <li><strong>Set the reference</strong>: right-click the ground truth and choose <em>Set as Reference</em> (<code>R</code>).</li>
 <li><strong>Compare</strong>: select one or more other trajectories, right-click and choose
-   <em>Compare with Reference → Absolute Error (ATE), Aligned First</em>. The result appears in the results table.</li>
+   <em>Compare with Reference → Absolute Error (ATE), with Alignment</em>. The result appears in the results table.</li>
 <li><strong>Inspect</strong>: select the result to see its statistics in the properties table and its deviations in the
    preview; press <code>V</code> (or <em>Plot</em>) for all plots.</li>
 <li><strong>Save</strong>: <em>File → Save</em> (<code>Ctrl+S</code>) keeps everything for later in a project file; <em>Export…</em> (<code>E</code>) saves single
@@ -2287,6 +2382,12 @@ preview can be turned off with the checkbox; the tables and the properties then 
 <p>Trajectory files (<code>.traj</code> and other ASCII files, ROS1 <code>.bag</code> files) are loaded into the trajectory table,
 <code>.result</code> files into the results table. Long operations run in the background; a progress window shows that
 Trajectopy is busy.</p>
+<p><strong>Groups</strong>: trajectories computed from another one (aligned, smoothed, sorted, … copies) are grouped with it
+automatically, so that the results of one measurement run stay together. Groups can be collapsed; selecting a group
+selects all of its entries. <em>Group → New Group…</em> (<code>Ctrl+G</code>) in the context menu groups any trajectories or results,
+<em>Rename Group…</em> names a group, <em>Ungroup</em> (<code>Ctrl+Shift+G</code>) takes entries out of their groups and <em>Move to Group</em> moves
+them into another group. Entries can also be dragged onto a group (or an entry) to move them there, or between the
+rows to take them out of their group. Groups are saved in the project.</p>
 <h3 id="menu-bar">Menu Bar<a class="headerlink" href="#menu-bar" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2333,6 +2434,11 @@ Trajectopy is busy.</p>
 <td>Closes Trajectopy.</td>
 </tr>
 <tr>
+<td>View</td>
+<td>Log (<code>Ctrl+L</code>)</td>
+<td>Shows or hides the log panel at the bottom of the main window.</td>
+</tr>
+<tr>
 <td>Plot Settings</td>
 <td></td>
 <td>Opens the <a href="../settings/#plot-settings">plot settings</a>, which apply to all plots opened afterwards.</td>
@@ -2363,8 +2469,14 @@ Trajectopy is busy.</p>
 reference, all results, the order of the tables and the plot settings. The title bar shows the name of the
 project and a <code>*</code> while it has unsaved changes. Before these are lost (<em>New</em>, <em>Open</em>, closing Trajectopy),
 Trajectopy offers to save them. A project file can also be opened by dropping it onto one of the tables, by
-double-click on Windows (if chosen during installation) or on the command line. It is a zip archive of the
-same <code>.traj</code>, <code>.json</code> and <code>.result</code> files that <em>Export…</em> writes, so these can be extracted, too.</p>
+double-click on Windows (if chosen during installation) or on the command line. Project files are binary, so
+that large projects are saved and opened quickly; use <em>Export…</em> for files that other programs can read. Projects
+saved by Trajectopy 5.1 can still be opened.</p>
+<p><strong>Log</strong>: Trajectopy writes what it does, warnings and errors to a log. <em>View → Log</em> (<code>Ctrl+L</code>) opens it at the
+bottom of the main window; warnings are shown in orange, errors in red, and the context menu copies or clears the
+messages. The log shows everything since Trajectopy was started, also if it is opened later, and it reopens at the
+next start if it was open. The Windows app has no console window, so the log is the place to look when something
+does not work as expected (Python installations also print the messages to the terminal they were started from).</p>
 <p><strong>Updates</strong>: the update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Python installations are updated with
 <code>pip install --upgrade "trajectopy[gui]"</code>, the Windows app with the installer of the new version.</p>
@@ -2399,7 +2511,7 @@ explains why, e.g. <em>Compare with Reference</em> needs a reference: right-clic
 </tr>
 <tr>
 <td>Compare with Reference</td>
-<td><em>Absolute Error (ATE), Aligned First</em>, <em>Absolute Error (ATE), as Is</em>, <em>Relative Pose Error (RPE)</em>, <em>Extract Matching Poses</em></td>
+<td><em>Absolute Error (ATE), without Alignment</em>, <em>Absolute Error (ATE), with Alignment</em>, <em>Relative Pose Error (RPE)</em>, <em>Extract Matching Poses</em></td>
 </tr>
 <tr>
 <td>Align with Reference</td>
@@ -2411,18 +2523,19 @@ explains why, e.g. <em>Compare with Reference</em> needs a reference: right-clic
 </tr>
 <tr>
 <td>Process</td>
-<td><em>Smooth (Approximate)</em>, <em>Resample to Time Grid…</em>, <em>Rearrange Axes / Angles…</em>, <em>Sort Spatially</em>, <em>Switch Order: Time ↔ Path</em>, <em>Divide into Laps</em>, <em>Merge</em>, <em>Average</em></td>
+<td><em>Approximate</em>, <em>Resample to Time Grid…</em>, <em>Rearrange Axes / Angles…</em>, <em>Sort Spatially</em>, <em>Switch Order: Time ↔ Path</em>, <em>Divide into Laps</em>, <em>Merge</em>, <em>Average</em></td>
 </tr>
 <tr>
 <td>Entry</td>
-<td><em>Settings…</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Export to Google Earth (KML)…</em>, <em>Remove</em>, <em>Remove Including Derived</em></td>
+<td><em>Settings…</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Export to Google Earth (KML)…</em>, <em>Group</em>, <em>Remove</em>, <em>Remove Group</em></td>
 </tr>
 </tbody>
 </table>
-<p>Processing adds new trajectories (e.g. <em>Smooth</em> adds a smoothed copy) and comparisons add results; only the
+<p>Processing adds new trajectories (e.g. <em>Approximate</em> adds a smoothed copy) and comparisons add results; only the
 coordinate system entries, <em>Rearrange Axes / Angles…</em> and <em>Switch Order: Time ↔ Path</em> change the trajectory itself.</p>
-<p>The results context menu offers <em>Plot</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Remove</em> and, for ATE results,
-<em>Export to Google Earth (KML)…</em>. For alignments, <em>Choose Parameters to Apply…</em> selects which of the estimated
+<p>The results context menu offers <em>Plot</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Group</em>, <em>Remove</em> and, for ATE results,
+<em>Export to Google Earth (KML)…</em>. ATE results of spatially sorted trajectories can also be switched between
+chronological and spatial order with <em>Switch Order: Time ↔ Path</em>, e.g. to plot the deviations over time. For alignments, <em>Choose Parameters to Apply…</em> selects which of the estimated
 parameters are used when the alignment is applied to a trajectory (<em>Apply Existing Alignment…</em>).</p>
 <h3 id="keyboard-shortcuts">Keyboard Shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Permanent link">&para;</a></h3>
 <p>Keyboard shortcuts are shown next to the entries of the context menus. They are active when the corresponding
@@ -2480,6 +2593,11 @@ table has focus and do what the menu entry does for the selected rows.</p>
 <td><code>Delete</code></td>
 <td>Remove</td>
 <td>Remove</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td>
+<td>New group / ungroup</td>
+<td>New group / ungroup</td>
 </tr>
 </tbody>
 </table>
@@ -2635,7 +2753,7 @@ trajectory away even for georeferenced coordinates.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../javascripts/mathjax.js"></script>
       
