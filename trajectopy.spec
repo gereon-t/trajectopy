@@ -73,8 +73,8 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=IS_WINDOWS,  # UPX breaks the code signature of macOS binaries
-    # the .app is started from Finder; a console would open an extra Terminal window
-    console=not IS_MACOS,
+    # no console window: log messages are shown in the log panel of the app (View > Log)
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

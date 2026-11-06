@@ -101,6 +101,24 @@ _BASE = """
         QSplitter::handle:vertical {
             height: 8px;
         }
+        QMainWindow::separator {
+            background: transparent;
+            height: 6px;
+        }
+        QMainWindow::separator:hover {
+            background-color: %(hover)s;
+        }
+        QDockWidget {
+            color: %(muted)s;
+        }
+        QDockWidget::title {
+            background-color: %(chrome)s;
+            border-top: 1px solid %(border)s;
+            padding: 4px 8px;
+        }
+        #logPanel QPlainTextEdit {
+            border: none;
+        }
         #previewToggleCorner, #previewToggleCorner QCheckBox {
             background: transparent;
         }

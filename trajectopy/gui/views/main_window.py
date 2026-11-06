@@ -11,6 +11,7 @@ from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
 from trajectopy.core.settings import PlotSettings
+from trajectopy.gui.log import log_handler
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
 from trajectopy.gui.managers.project_manager import ProjectManager
@@ -41,6 +42,7 @@ from trajectopy.gui.utils import (
 )
 from trajectopy.gui.views.about_window import AboutGUI
 from trajectopy.gui.views.json_settings_view import JSONViewer
+from trajectopy.gui.views.log_panel import LogPanel
 from trajectopy.gui.views.preview_plot import PreviewPlot
 from trajectopy.gui.views.progress_window import ProgressWindow
 from trajectopy.gui.views.properties_panel import PropertiesPanel
@@ -59,6 +61,8 @@ logger = logging.getLogger(__name__)
 PREVIEW_SETTINGS_KEY = "details/preview_enabled"
 PREVIEW_3D_SETTINGS_KEY = "details/preview_3d"
 PREVIEW_MODES = ("2D", "3D")
+
+LOG_PANEL_SETTINGS_KEY = "view/log_panel"
 
 RECENT_PROJECTS_KEY = "projects/recent"
 MAX_RECENT_PROJECTS = 10
@@ -180,6 +184,13 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         file_menu.addSeparator()
         self._add_action(file_menu, "Exit", self.close, "Ctrl+Q")
         menubar.addMenu(file_menu)
+
+        view_menu = QtWidgets.QMenu("View", parent=self)
+        log_action = self._log_panel.toggleViewAction()
+        log_action.setText("Log")
+        log_action.setShortcut(QtGui.QKeySequence("Ctrl+L"))
+        view_menu.addAction(log_action)
+        menubar.addMenu(view_menu)
 
         plot_settings_action = QAction("Plot Settings", parent=self)
         plot_settings_action.triggered.connect(self.handle_show_plot_settings)
@@ -353,6 +364,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
                 a0.ignore()
             return
 
+        self._settings.setValue(LOG_PANEL_SETTINGS_KEY, self._log_panel.isVisibleTo(self))
         self.statusBar().showMessage("Finishing the running operation …")
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
@@ -835,6 +847,12 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self.setCentralWidget(central)
         self.statusBar().showMessage("Ready")
         self.statusBar().setSizeGripEnabled(False)
+
+        # hidden unless the user opened it last time
+        self._log_panel = LogPanel(log_handler(), parent=self)
+        self.addDockWidget(QtCore.Qt.DockWidgetArea.BottomDockWidgetArea, self._log_panel)
+        # (saved when the window is closed; the panel is hidden together with the window)
+        self._log_panel.setVisible(bool(self._settings.value(LOG_PANEL_SETTINGS_KEY, False, type=bool)))
 
     @staticmethod
     def _group(

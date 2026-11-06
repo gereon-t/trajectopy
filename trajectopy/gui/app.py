@@ -10,17 +10,16 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
-from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
-
-logging.basicConfig(
-    format="%(asctime)s %(levelname)-8s %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
-)
-
 from trajectopy.__version__ import __version__ as VERSION
-from trajectopy.gui.views.main_window import TrajectopyGUI
+from trajectopy.gui.log import setup_logging
+from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
+from trajectopy.gui.views.splash_screen import SplashScreen
 from trajectopy.utils.resources import ICON_BG_FILE_PATH
+
+# Only light imports above: the main window (numpy, scipy, pandas, pyqtgraph) is imported while the splash
+# screen is shown.
+
+logger = logging.getLogger(__name__)
 
 if sys.platform == "win32":
     myappid = f"gereont.trajectopy.main.{VERSION}"
@@ -48,7 +47,9 @@ def main(
     # them valid when a 3D playback window is closed and another one is opened.
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
 
+    setup_logging()
     app = QApplication([])
+    app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
 
     if sys.platform == "darwin":
         font = QFont(".AppleSystemUIFont", 13)
@@ -64,11 +65,19 @@ def main(
     is_dark = app.styleHints().colorScheme() == Qt.ColorScheme.Dark
     app.setStyleSheet(DARK_STYLESHEET if is_dark else LIGHT_STYLESHEET)
 
+    splash = SplashScreen(dark=is_dark)
+    splash.show()
+    splash.show_status("Loading …")
+
+    from trajectopy.gui.views.main_window import TrajectopyGUI
+
+    splash.show_status("Starting …")
     window = TrajectopyGUI(
         single_thread=single_thread,
         plot_settings_path=plot_settings_path,
     )
-    app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
+    splash.finish(window)
+    logger.info("Trajectopy %s started", VERSION)
     if files:
         window.open_files(files)
     return app.exec()

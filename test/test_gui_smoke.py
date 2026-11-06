@@ -211,6 +211,51 @@ class TestGuiSmoke(unittest.TestCase):
         finally:
             window.close()
 
+    def test_log_panel(self):
+        import logging
+        import threading
+
+        from trajectopy.gui.log import log_handler
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        logger = logging.getLogger("trajectopy.test")
+        logger.setLevel(logging.INFO)
+        log_handler()  # installed on the root logger by trajectopy.gui.app.main
+        logger.info("logged before the window exists")
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            panel = window._log_panel
+            self.assertFalse(panel.isVisibleTo(window))  # hidden by default
+            self.assertIn("logged before the window exists", panel._text.toPlainText())
+
+            thread = threading.Thread(target=lambda: logger.warning("logged in another thread"))
+            thread.start()
+            thread.join()
+            self._wait_until(lambda: "logged in another thread" in panel._text.toPlainText(), timeout=5.0)
+
+            panel.toggleViewAction().trigger()
+            self.assertTrue(panel.isVisibleTo(window))
+        finally:
+            window.close()
+
+        # reopened as the user left it
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            self.assertTrue(window._log_panel.isVisibleTo(window))
+        finally:
+            window.close()
+
+    def test_splash_screen(self):
+        from trajectopy.gui.views.splash_screen import SplashScreen
+
+        for dark in (True, False):
+            splash = SplashScreen(dark=dark)
+            splash.show()
+            splash.show_status("Loading …")
+            self.assertEqual(splash.message(), "Loading …")
+            splash.close()
+
     def test_failed_properties_export_is_reported(self):
         from trajectopy.gui.models.property_model import PropertyModelRequest, PropertyModelRequestType
         from trajectopy.gui.views.main_window import TrajectopyGUI
