@@ -85,9 +85,10 @@ def _interpolate_linear(
     if trajectory.sorting == Sorting.PATH_LENGTH:
         trajectory.timestamps = np.interp(index_cropped, trajectory.path_lengths, trajectory.timestamps)
 
+    # velocities first, derived ones depend on the original positions
+    _interpolate_velocity_linear(trajectory, index_cropped)
     _interpolate_positions_linear(trajectory, index_cropped)
     _interpolate_rotations_linear(trajectory, index_cropped)
-    _interpolate_velocity_linear(trajectory, index_cropped)
 
     if trajectory.sorting == Sorting.TIME:
         trajectory.timestamps = index_cropped
