@@ -16,6 +16,18 @@ class TestTrajectory(unittest.TestCase):
     def setUp(self) -> None:
         np.random.seed(42)
 
+    def test_mask_without_stored_velocities(self) -> None:
+        """Derived velocities follow from the masked positions instead of being masked twice."""
+        trajectory = open_loop_trajectory.copy()
+        trajectory._velocity_xyz = None
+        keep = np.zeros(len(trajectory), dtype=bool)
+        keep[100:200] = True
+
+        masked = trajectory.mask(keep, inplace=False)
+
+        self.assertEqual(len(masked.velocity_xyz), 100)
+        np.testing.assert_allclose(masked.velocity_xyz[:-1], trajectory.velocity_xyz[100:199])
+
     def test_match_timestamps(self) -> None:
         trajectory_ref = open_loop_trajectory.copy()
         trajectory = open_loop_trajectory.copy()

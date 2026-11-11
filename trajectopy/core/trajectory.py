@@ -591,8 +591,9 @@ class Trajectory:
 
         traj_self.path_lengths = traj_self.path_lengths[mask]
 
-        if traj_self.velocity_xyz is not None:
-            traj_self.velocity_xyz = traj_self.velocity_xyz[mask]
+        # only stored velocities are masked, derived ones follow from the masked positions
+        if traj_self._velocity_xyz is not None:
+            traj_self._velocity_xyz = traj_self._velocity_xyz[mask]
 
         return traj_self
 
