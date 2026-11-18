@@ -197,6 +197,7 @@ Available figures:
 | `ate_distribution_figure` | Empirical cumulative distribution of the deviations |
 | `ate_correlation_figure` | Temporal correlation of the deviations and their standard deviation over time |
 | `ate_map_figure` | Top view colored by any deviation component |
+| `ate_speed_figure` | Deviations over speed (along-track by default) with the time offset estimated from their slope |
 | `rpe_figures` | Relative pose error over the pair distance |
 | `parameter_matrix_figure` | Covariance / correlation of estimated alignment parameters |
 

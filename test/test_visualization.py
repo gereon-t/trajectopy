@@ -106,6 +106,38 @@ class TestVisualization(unittest.TestCase):
             with self.subTest(results=len(ate_results)):
                 self._render_all(vis.deviation_figures(ate_results, rpe_results))
 
+    def test_speed_figure_defaults_to_along_track(self):
+        figure = vis.ate_speed_figure([self.ate_result])
+        self.assertEqual(next(iter(figure.variants)), "Along-Track")
+        self.assertIn("ATE over Speed", [f.title for f in vis.deviation_figures([self.ate_result])])
+        self._render_all([figure, vis.ate_speed_figure([self.ate_result] * 2, PlotSettings(ate_unit_is_mm=True))])
+
+    def test_speed_fit(self):
+        speed = np.linspace(0.0, 10.0, 50)
+        fit = vis.speed_fit(speed, 0.2 + 0.05 * speed)
+        self.assertAlmostEqual(fit.offset, 0.2)
+        self.assertAlmostEqual(fit.slope, 0.05)
+        self.assertIsNone(vis.speed_fit(np.full(5, 3.0), np.arange(5.0)))  # no speed variation
+
+    def test_speed_fit_recovers_time_offset(self):
+        from trajectopy.core.trajectory import Trajectory
+
+        # straight-ish curve driven with varying speed
+        t = np.arange(0.0, 60.0, 0.01)
+        s = 5.0 * t + 40.0 * np.sin(t / 5.0)  # arc length, speed between 0 and 13 m/s
+        xyz = np.c_[s, 50.0 * np.sin(s / 200.0), np.zeros_like(s)]
+        reference = Trajectory.from_arrays(xyz, timestamps=t, name="reference")
+        # noisy positions stamped 20 ms too early: the evaluated trajectory is 20 ms ahead
+        noise = np.random.default_rng(0).normal(0.0, 0.03, xyz.shape)
+        shifted = Trajectory.from_arrays(xyz + noise, timestamps=t - 0.02, name="shifted")
+        result = ate(shifted, reference, align=False)
+        fit = vis.speed_fit(vis.smoothed_speed(result.trajectory), result.pos_dev_along)
+        self.assertAlmostEqual(fit.slope, 0.02, delta=1e-3)
+        self.assertAlmostEqual(fit.offset, 0.0, delta=5e-3)
+        # without averaging, the noisy speeds flatten the fitted line
+        raw = vis.speed_fit(vis.smoothed_speed(result.trajectory, window=0.0), result.pos_dev_along)
+        self.assertLess(raw.slope, 0.015)
+
     def test_deviation_figures_only_rpe(self):
         figures = vis.deviation_figures(rpe_results=[self.rpe_result])
         self.assertTrue(all(figure.title.startswith("RPE") for figure in figures))

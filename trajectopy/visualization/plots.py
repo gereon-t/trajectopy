@@ -757,6 +757,183 @@ def ate_map_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | No
     return Figure("ATE Map", variants=variants)
 
 
+SPEED_BINS = 20
+# Velocities are averaged over this many seconds before plotting deviations over speed (see smoothed_speed).
+SPEED_WINDOW = 1.0
+_MIN_SAMPLES_PER_BIN = 5
+
+# Components offered by the deviation-over-speed figure; the first one is shown by default.
+SPEED_COMPONENTS = (
+    _Component("Along-Track", lambda r: r.pos_dev_along, False),
+    _Component("Horizontal Cross-Track", lambda r: r.pos_dev_cross_h, False),
+    _Component("Vertical Cross-Track", lambda r: r.pos_dev_cross_v, False),
+    _Component("Position", lambda r: r.pos_dev_comb, False),
+)
+
+
+@dataclass(frozen=True)
+class SpeedFit:
+    """Straight line ``deviation = offset + slope * speed`` fitted to deviations over speed.
+
+    Attributes:
+        offset: Deviation at standstill in meters (a speed-independent bias, e.g. a lever arm).
+        slope: Change of the deviation per speed in seconds. For along-track deviations, this is the time offset
+            of the evaluated trajectory: a positive slope means that it is ahead of the reference by that time,
+            i.e. adding the slope to its timestamps compensates the offset.
+    """
+
+    offset: float
+    slope: float
+
+
+def speed_fit(speed: np.ndarray, deviations: np.ndarray) -> SpeedFit | None:
+    """Fits a straight line to deviations (in meters) over speed (in m/s) by least squares.
+
+    Returns:
+        SpeedFit | None: The line, or None if there are fewer than two distinct finite speeds.
+    """
+    speed, deviations = np.asarray(speed, dtype=float), np.asarray(deviations, dtype=float)
+    valid = np.isfinite(speed) & np.isfinite(deviations)
+    speed, deviations = speed[valid], deviations[valid]
+    if speed.size < 2 or np.ptp(speed) <= 0:
+        return None
+    slope, offset = np.polyfit(speed, deviations, 1)
+    return SpeedFit(offset=float(offset), slope=float(slope))
+
+
+def smoothed_speed(trajectory: Trajectory, window: float = SPEED_WINDOW) -> np.ndarray:
+    """Speed of ``trajectory`` in m/s from its velocity vectors averaged over ``window`` seconds.
+
+    Velocities derived from noisy positions are very noisy themselves. Noise in the speed spreads deviations
+    plotted over speed and flattens the line fitted to them, so that time offsets are underestimated; averaging the
+    velocity vectors (equivalent to the distance travelled in the window) removes most of it.
+
+    Args:
+        trajectory: Trajectory, sorted by time or path length (the result follows that order).
+        window: Length of the moving average in seconds (0 = no averaging).
+    """
+    velocities = np.asarray(trajectory.velocity_xyz, dtype=float)
+    if window <= 0 or len(velocities) < 3:
+        return np.linalg.norm(velocities, axis=1)
+    order = np.argsort(trajectory.timestamps, kind="stable")
+    steps = np.diff(trajectory.timestamps[order])
+    steps = steps[steps > 0]
+    samples = int(round(window / float(np.median(steps)))) if steps.size else 1
+    smoothed = np.empty_like(velocities)
+    smoothed[order] = np.column_stack([_smooth(velocities[order, dim], samples) for dim in range(3)])
+    return np.linalg.norm(smoothed, axis=1)
+
+
+def _binned_means(x: np.ndarray, y: np.ndarray, bins: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Centers, means and standard deviations of ``y`` in equally wide bins of ``x`` with enough samples."""
+    edges = np.linspace(np.min(x), np.max(x), bins + 1)
+    index = np.clip(np.digitize(x, edges) - 1, 0, bins - 1)
+    counts = np.bincount(index, minlength=bins)
+    sums = np.bincount(index, weights=y, minlength=bins)
+    squares = np.bincount(index, weights=y**2, minlength=bins)
+    keep = counts >= _MIN_SAMPLES_PER_BIN
+    means = sums[keep] / counts[keep]
+    std = np.sqrt(np.maximum(squares[keep] / counts[keep] - means**2, 0.0))
+    return ((edges[:-1] + edges[1:]) / 2)[keep], means, std
+
+
+def _speed_fit_label(name: str, component: _Component, fit: SpeedFit | None, settings: PlotSettings) -> str:
+    if fit is None:
+        return name
+    offset = f"offset {fit.offset * settings.unit_multiplier:.3f} {settings.unit}"
+    if component.name == "Along-Track":
+        return f"{name} (Δt = {fit.slope * 1e3:.1f} ms, {offset})"
+    return f"{name} (slope {fit.slope * 1e3:.1f} ms, {offset})"
+
+
+def ate_speed_figure(
+    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, speed_window: float = SPEED_WINDOW
+) -> Figure:
+    """Position deviations over the speed of the evaluated trajectory, to reveal synchronization errors.
+
+    A time offset Δt between the trajectories shifts the evaluated positions along the track by speed times Δt.
+    Along-track deviations that grow linearly with the speed therefore indicate a synchronization error, and the
+    slope of a straight line fitted to them (see :func:`speed_fit`) estimates Δt; the legend shows it for each
+    result. Each result is drawn as a point cloud, with mean and standard deviation in speed bins and the fitted
+    line. The components are offered as variants, along-track first.
+
+    Args:
+        ate_results: Results to show, overlaid.
+        settings: Plot settings.
+        speed_window: The speed is averaged over this many seconds (see :func:`smoothed_speed`), since noise in the
+            speed would make the fitted time offsets too small.
+    """
+    settings = _settings(settings)
+    variants: dict[str, RenderFunction] = {}
+    for component in SPEED_COMPONENTS:
+
+        def render(layout: pg.GraphicsLayout, component=component) -> None:
+            plot = _add_plot(
+                layout,
+                0,
+                settings,
+                x_label="speed [m/s]",
+                y_label=f"{component.name.lower()} deviation [{settings.unit}]",
+                legend=True,
+                tight_x=False,
+            )
+            # Points are unordered in x: no clipping or downsampling, which assume increasing x values.
+            plot.setClipToView(False)
+            plot.setDownsampling(auto=False)
+            for index, result in enumerate(ate_results):
+                speed = smoothed_speed(result.trajectory, speed_window)
+                deviations = component.values(result)
+                valid = np.isfinite(speed) & np.isfinite(deviations)
+                speed, deviations = speed[valid], deviations[valid]
+                if speed.size == 0:
+                    continue
+                fit = speed_fit(speed, deviations)
+                values = deviations * settings.unit_multiplier
+
+                points = plot.plot(
+                    _thin(speed, MAX_MAP_POINTS),
+                    _thin(values, MAX_MAP_POINTS),
+                    pen=None,
+                    symbol="o",
+                    symbolSize=max(settings.marker_size - 1, 2),
+                    symbolBrush=style.brush(index, alpha=60),
+                    symbolPen=None,
+                    name=_speed_fit_label(result.name, component, fit, settings),
+                )
+
+                centers, means, std = _binned_means(speed, values, SPEED_BINS)
+                if centers.size:
+                    error_bars = pg.ErrorBarItem(x=centers, y=means, height=2 * std, beam=0, pen=style.pen(index, 1.0))
+                    plot.addItem(error_bars)
+                    _follow_visibility(error_bars, points)
+                    binned = pg.PlotDataItem(
+                        centers,
+                        means,
+                        pen=style.pen(index, settings.line_width / 2),
+                        symbol="s",
+                        symbolSize=7,
+                        symbolBrush=style.brush(index),
+                        symbolPen=None,
+                        antialias=True,
+                    )
+                    plot.addItem(binned)
+                    _follow_visibility(binned, points)
+
+                if fit is not None:
+                    x = np.array([np.min(speed), np.max(speed)])
+                    line = pg.PlotDataItem(
+                        x,
+                        (fit.offset + fit.slope * x) * settings.unit_multiplier,
+                        pen=style.pen(index, settings.line_width / 2, Qt.PenStyle.DashLine),
+                        antialias=True,
+                    )
+                    plot.addItem(line)
+                    _follow_visibility(line, points)
+
+        variants[component.name] = render
+    return Figure("ATE over Speed", variants=variants)
+
+
 # ---------------------------------------------------------------------------------------------- RPE
 
 
@@ -844,6 +1021,7 @@ def deviation_figures(
             ate_distribution_figure(ate_results, settings),
             ate_correlation_figure(ate_results, settings),
             ate_map_figure(ate_results, settings),
+            ate_speed_figure(ate_results, settings),
         ]
     figures += rpe_figures(rpe_results, settings)
     return figures
@@ -919,8 +1097,10 @@ __all__ = [
     "ate_figure",
     "ate_histogram_figure",
     "ate_map_figure",
+    "ate_speed_figure",
     "ate_statistics_figure",
     "deviation_figures",
+    "speed_fit",
     "parameter_matrix_figure",
     "positions_figure",
     "rpe_figures",
