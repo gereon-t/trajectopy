@@ -616,6 +616,141 @@ def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
     return Figure("ATE Statistics", render)
 
 
+BOX_PERCENTILES = (5, 25, 50, 75, 95)
+
+
+def ate_boxplot_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
+    """Box plots of the position (and rotation) deviations, one box per result, to compare several results.
+
+    Each box spans the 25th to 75th percentile with a line at the median; the whiskers reach the 5th and 95th
+    percentile and a diamond marks the mean.
+    """
+    settings = _settings(settings)
+    with_rotation = any(result.has_orientation for result in ate_results)
+
+    def render(layout: pg.GraphicsLayout) -> None:
+        groups = [(False, f"position deviation [{settings.unit}]")]
+        if with_rotation:
+            groups.append((True, "rotation deviation [°]"))
+        for row, (rotation, y_label) in enumerate(groups):
+            plot = _add_plot(layout, row, settings, y_label=y_label, tight_x=False)
+            plot.setClipToView(False)
+            plot.setDownsampling(auto=False)
+            plot.getAxis("bottom").setTicks([[(index, result.name) for index, result in enumerate(ate_results)]])
+            for index, result in enumerate(ate_results):
+                if rotation and not result.has_orientation:
+                    continue
+                values = (
+                    np.rad2deg(result.rot_dev_comb) if rotation else result.pos_dev_comb * settings.unit_multiplier
+                )
+                values = values[np.isfinite(values)]
+                if values.size == 0:
+                    continue
+                p5, p25, p50, p75, p95 = np.percentile(values, BOX_PERCENTILES)
+                plot.addItem(
+                    pg.BarGraphItem(
+                        x=[index], y0=[p25], height=[p75 - p25], width=0.5, brush=style.brush(index, alpha=120)
+                    )
+                )
+                pen = style.pen(index, max(settings.line_width / 2, 1.0))
+                plot.plot([index - 0.25, index + 0.25], [p50, p50], pen=pen)
+                plot.plot([index, index], [p5, p25], pen=pen)
+                plot.plot([index, index], [p75, p95], pen=pen)
+                plot.plot([index - 0.1, index + 0.1], [p5, p5], pen=pen)
+                plot.plot([index - 0.1, index + 0.1], [p95, p95], pen=pen)
+                plot.plot(
+                    [index],
+                    [float(np.mean(values))],
+                    pen=None,
+                    symbol="d",
+                    symbolSize=9,
+                    symbolBrush=style.brush(index),
+                    symbolPen=None,
+                )
+            plot.setXRange(-0.6, len(ate_results) - 0.4, padding=0)
+
+    return Figure("ATE Box Plot", render)
+
+
+# Number of segments of the segment figure if no segment length is given.
+DEFAULT_SEGMENTS = 20
+
+
+def ate_segments_figure(
+    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, segment_length: float | None = None
+) -> Figure:
+    """RMS and 95th percentile of the position deviations in consecutive segments of time or path length (see
+    :meth:`ATEResult.segment_statistics`), to see where along the trajectory the accuracy changes.
+
+    Args:
+        ate_results: Results to show, overlaid.
+        settings: Plot settings.
+        segment_length: Length of the segments in seconds (trajectories sorted by time) or meters (sorted by path
+            length). Defaults to a twentieth of the longest result.
+    """
+    settings = _settings(settings)
+    axis = index_axis([result.trajectory for result in ate_results], settings.use_relative_timestamps)
+
+    def segments(result: ATEResult) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        by = "time" if result.trajectory.sorting.value == "time" else "path_length"
+        index = result.trajectory.timestamps if by == "time" else result.trajectory.path_lengths
+        length = segment_length
+        if length is None:
+            spans = [
+                float(np.ptp(r.trajectory.timestamps if by == "time" else r.trajectory.path_lengths))
+                for r in ate_results
+                if len(r.trajectory)
+            ]
+            length = max(spans, default=0.0) / DEFAULT_SEGMENTS
+        if length <= 0 or len(index) == 0:
+            return np.array([]), np.array([]), np.array([])
+        table = result.segment_statistics(length, by=by)
+        offset = axis.offset if by == "time" else 0.0
+        edges = (
+            np.min(index)
+            - offset
+            + np.append(table["segment"].to_numpy(), table["segment"].to_numpy()[-1] + 1) * length
+        )
+        return edges, table["pos_rms"].to_numpy(), table["pos_p95"].to_numpy()
+
+    def render(layout: pg.GraphicsLayout) -> None:
+        plots = []
+        for row, (label, column) in enumerate((("RMS", 1), ("95th percentile", 2))):
+            plot = _add_plot(
+                layout,
+                row,
+                settings,
+                x_label=axis.label if row == 1 else "",
+                y_label=f"{label} position deviation [{settings.unit}]",
+                datetime_axis=axis.is_datetime,
+                legend=row == 0,
+            )
+            plot.setClipToView(False)
+            plot.setDownsampling(auto=False)
+            for index, result in enumerate(ate_results):
+                data = segments(result)
+                if data[0].size == 0:
+                    continue
+                edges, values = data[0], data[column] * settings.unit_multiplier
+                # windows without deviations (gaps) are not drawn: one step per segment
+                for start, end, value in zip(edges[:-1], edges[1:], values):
+                    plot.plot([start, end], [value, value], pen=style.pen(index, settings.line_width))
+                plot.plot(
+                    (edges[:-1] + edges[1:]) / 2,
+                    values,
+                    pen=None,
+                    symbol="o",
+                    symbolSize=settings.marker_size,
+                    symbolBrush=style.brush(index),
+                    symbolPen=None,
+                    name=result.name if row == 0 else None,
+                )
+            plots.append(plot)
+        _link_x(plots)
+
+    return Figure("ATE Segments", render)
+
+
 def _mark_correlation_time(
     plot: pg.PlotItem, curve: pg.PlotDataItem, component: ComponentCorrelation, index: int
 ) -> None:
@@ -1018,7 +1153,9 @@ def deviation_figures(
             ate_components_figure(ate_results, settings),
             ate_histogram_figure(ate_results, settings),
             ate_statistics_figure(ate_results, settings),
+            ate_boxplot_figure(ate_results, settings),
             ate_distribution_figure(ate_results, settings),
+            ate_segments_figure(ate_results, settings),
             ate_correlation_figure(ate_results, settings),
             ate_map_figure(ate_results, settings),
             ate_speed_figure(ate_results, settings),
