@@ -209,7 +209,7 @@ def run_convert(args: argparse.Namespace) -> int:
     suffix = {"tum": ".tum", "kitti": ".kitti", "euroc": ".csv"}.get(args.to, ".traj")
     for trajectory in trajectories:
         if args.epsg is not None:
-            trajectory.positions.to_epsg(args.epsg)
+            trajectory.positions.to_epsg(args.epsg, inplace=True)
         path = output / f"{_safe_name(trajectory.name)}{suffix}" if output.is_dir() else output
         write_trajectory_file(trajectory, str(path), format=args.to)
         if not args.quiet:

@@ -60,16 +60,18 @@ class AlignmentData:
             end = first_common + preprocessing.time_end if preprocessing.time_end != 0 else last_common
             # by timestamps, also for spatially sorted trajectories (crop would use the path lengths)
             for trajectory in (self.traj_from, self.traj_to):
-                trajectory.mask((trajectory.timestamps >= start) & (trajectory.timestamps <= end))
+                trajectory.mask((trajectory.timestamps >= start) & (trajectory.timestamps <= end), inplace=True)
 
         # speed filter
-        self.traj_to.mask(self.traj_to.absolute_velocity >= preprocessing.min_speed)
-        self.traj_from.mask(self.traj_from.absolute_velocity >= preprocessing.min_speed)
+        self.traj_to.mask(self.traj_to.absolute_velocity >= preprocessing.min_speed, inplace=True)
+        self.traj_from.mask(self.traj_from.absolute_velocity >= preprocessing.min_speed, inplace=True)
 
         if len(self.traj_from) == 0 or len(self.traj_to) == 0:
             raise ValueError("At least one trajectory is empty after preprocessing!")
 
-        match_trajectories(trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings)
+        match_trajectories(
+            trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings, inplace=True
+        )
         self._subsample()
 
         logger.info(
@@ -103,8 +105,8 @@ class AlignmentData:
         rng = np.random.default_rng()
         indices = np.sort(rng.choice(len(self.traj_from), size=max_samples, replace=False))
         logger.info("Randomly sampled %i of %i matched poses for alignment.", max_samples, len(self.traj_from))
-        self.traj_from.mask(indices)
-        self.traj_to.mask(indices)
+        self.traj_from.mask(indices, inplace=True)
+        self.traj_to.mask(indices, inplace=True)
 
     @cached_property
     def observation_groups(

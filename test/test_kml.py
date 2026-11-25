@@ -96,7 +96,7 @@ class TestKml(unittest.TestCase):
     def test_spatially_sorted_trajectory_is_played_back_in_time_order(self):
         trajectory = _georeferenced()
         reversed_order = trajectory.copy()
-        reversed_order.mask(np.arange(len(trajectory))[::-1])
+        reversed_order.mask(np.arange(len(trajectory))[::-1], inplace=True)
         reversed_order.set_sorting(Sorting.PATH_LENGTH)
         whens = [element.text for element in _export(reversed_order).findall(".//kml:when", NS)]
         self.assertEqual(whens, sorted(whens))

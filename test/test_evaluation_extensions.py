@@ -65,7 +65,7 @@ def test_transform_scales_position_std(reference):
     trajectory.position_std = np.tile([1.0, 2.0, 3.0], (len(trajectory), 1))
     transformation = np.eye(4)
     transformation[:3, :3] = 2.0 * np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])  # 90° yaw, scale 2
-    trajectory.transform(transformation)
+    trajectory.transform(transformation, inplace=True)
     np.testing.assert_allclose(trajectory.position_std[0], [4.0, 2.0, 6.0])
 
 

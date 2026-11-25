@@ -58,17 +58,17 @@ alignment_result = tpy.estimate_alignment(
 )
 print(alignment_result.position_parameters)
 
-# Apply it; inplace=False returns an aligned copy and leaves est_traj unchanged
-est_traj_aligned = tpy.apply_alignment(est_traj, alignment_result, inplace=False)
+# Apply it; this returns an aligned copy and leaves est_traj unchanged
+est_traj_aligned = tpy.apply_alignment(est_traj, alignment_result)
 ```
 
 The function `align` combines both steps:
 
 ```python
-est_traj_aligned = tpy.align(trajectory=est_traj, other=gt_traj, inplace=False)
+est_traj_aligned = tpy.align(est_traj, gt_traj)
 ```
 
-`apply_alignment` and `align` modify the given trajectory unless `inplace=False` is passed.
+Like all functions of trajectopy, `apply_alignment` and `align` never modify their inputs unless `inplace=True` is passed.
 
 ## 3. Evaluation
 

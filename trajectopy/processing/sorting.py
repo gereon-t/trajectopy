@@ -20,7 +20,7 @@ _MIN_EDGE_WEIGHT = 1e-12
 
 
 def sort_spatially(
-    trajectory: Trajectory, sorting_settings: SortingSettings | None = None, inplace: bool = True
+    trajectory: Trajectory, sorting_settings: SortingSettings | None = None, *, inplace: bool = False
 ) -> Trajectory:
     """
     Sorts the trajectory spatially. This is only useful for trajectories
@@ -29,7 +29,7 @@ def sort_spatially(
     Args:
         trajectory (Trajectory): Trajectory to sort.
         sorting_settings (SortingSettings): Sorting settings.
-        inplace (bool, optional): Whether to sort the trajectory in-place. Defaults to True.
+        inplace (bool, optional): Whether to sort the trajectory in-place. Defaults to False.
 
     Returns:
         Trajectory: Sorted trajectory.

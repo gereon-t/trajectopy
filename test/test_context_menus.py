@@ -71,7 +71,7 @@ class TestContextMenus(unittest.TestCase):
 
         xyz = np.c_[np.linspace(364000, 364100, 10), np.full(10, 5621000.0), np.full(10, 100.0)]
         trajectory = Trajectory.from_arrays(xyz, epsg=25832)
-        trajectory.positions.to_local()  # EPSG 0, but the frame is known
+        trajectory.positions.to_local(inplace=True)  # EPSG 0, but the frame is known
         self.menu.populate(self._selection(TrajectoryEntry(full_filename="", trajectory=trajectory)))
         self.assertTrue(self._actions()["Export to Google Earth (KML)…"].isEnabled())
 

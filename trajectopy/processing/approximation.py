@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 def approximate(
     trajectory: Trajectory,
     approximation_settings: ApproximationSettings | None = None,
+    *,
     inplace: bool = False,
 ) -> Trajectory:
     """Approximate the trajectory using piecewise cubic polynomials based on the provided settings.
@@ -104,7 +105,7 @@ def _average_rotations_per_sorted_path_length(trajectory: Trajectory, max_gap_si
     # interpolate all laps to all path lengths
     path_length_dict: dict[float, list[np.ndarray]] = {}
     for lap in lap_list:
-        interpolate(lap, trajectory.path_lengths, max_gap_size=max_gap_size)
+        interpolate(lap, trajectory.path_lengths, max_gap_size=max_gap_size, inplace=True)
 
         for path_length, quat in zip(lap.path_lengths, lap.quat):
             if path_length not in path_length_dict:

@@ -131,7 +131,7 @@ def local_xyz(trajectory: Trajectory, local_transformer, indices: np.ndarray | N
             and positions.pipeline_str != local_transformer.definition
         ):
             # local in a frame of its own: back to earth-centered coordinates first, then into the shared frame
-            positions.to_epsg(positions.epsg_local_cart)
+            positions.to_epsg(positions.epsg_local_cart, inplace=True)
         positions.local_transformer = local_transformer
         return positions.to_local(inplace=False).xyz
     except Exception:

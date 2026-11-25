@@ -167,7 +167,7 @@ class ATEResult:
             return
 
         ate_below_idx = self.pos_dev_comb < threshold
-        self.trajectory.mask(ate_below_idx)
+        self.trajectory.mask(ate_below_idx, inplace=True)
 
         self.abs_dev.pos_dev = self.abs_dev.pos_dev[ate_below_idx]
         self.abs_dev.directed_pos_dev = self.abs_dev.directed_pos_dev[ate_below_idx]

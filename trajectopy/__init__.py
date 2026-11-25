@@ -41,9 +41,9 @@ Key Components
 
 Conventions
 -----------
-    - Functions that transform a trajectory accept ``inplace``. With ``inplace=False`` the inputs are
-      never modified and a new object is returned; with ``inplace=True`` the modified input is returned.
-      Always use the return value, e.g. ``traj = tpy.align(traj, ref, inplace=False)``.
+    - Functions and methods that transform a trajectory return a new object and never modify their
+      inputs. Pass the keyword-only argument ``inplace=True`` to modify the input instead; the modified
+      input is returned then, too. Always use the return value, e.g. ``traj = tpy.align(traj, ref)``.
     - Evaluation functions (``ate``, ``rpe``, ``estimate_alignment``) never modify their inputs.
     - Settings arguments default to ``None``, which means "use the default settings".
 

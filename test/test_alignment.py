@@ -218,7 +218,7 @@ class TestAlignment(unittest.TestCase):
         """time_start/time_end refer to the first common timestamp, not to the start of the aligned trajectory."""
         reference = open_loop_trajectory.copy()
         first_common = reference.timestamps[0] + 50.0
-        reference.mask(reference.timestamps >= first_common)
+        reference.mask(reference.timestamps >= first_common, inplace=True)
         settings = AlignmentSettings(preprocessing=AlignmentPreprocessing(time_start=10.0, time_end=20.0))
 
         data = AlignmentData(open_loop_trajectory.copy(), reference, settings, MatchingSettings())

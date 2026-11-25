@@ -36,8 +36,8 @@ class TestTrajectory(unittest.TestCase):
             size=np.random.randint(1, len(trajectory) // 1.2),
             replace=False,
         )
-        trajectory.mask(random_sampling)
-        match_stamps(trajectory_ref, trajectory.index)
+        trajectory.mask(random_sampling, inplace=True)
+        match_stamps(trajectory_ref, trajectory.index, inplace=True)
 
         self.assertListEqual(sorted(trajectory_ref.index.tolist()), sorted(trajectory.index.tolist()))
 
@@ -54,8 +54,8 @@ class TestTrajectory(unittest.TestCase):
                 for _ in range(np.random.randint(1, len(trajectory) // 1.2))
             ]
         )
-        interpolate(trajectory, index=random_sampling)
-        interpolate(trajectory_ref, index=random_sampling)
+        interpolate(trajectory, index=random_sampling, inplace=True)
+        interpolate(trajectory_ref, index=random_sampling, inplace=True)
 
         traj_tstamps_set = set(trajectory.index)
         traj_ref_tstamps_set = set(trajectory_ref.index)
@@ -76,7 +76,7 @@ class TestTrajectory(unittest.TestCase):
         )
         tstamp_max = random_number(lower_bound=tstamp_min, upper_bound=trajectory.timestamps[-1])
 
-        trajectory.crop(index_start=tstamp_min, index_end=tstamp_max)
+        trajectory.crop(index_start=tstamp_min, index_end=tstamp_max, inplace=True)
 
         self.assertGreaterEqual(trajectory.timestamps[0], tstamp_min, "First timestamp should be >= crop start")
         self.assertLessEqual(trajectory.timestamps[-1], tstamp_max, "Last timestamp should be <= crop end")
@@ -90,7 +90,7 @@ class TestTrajectory(unittest.TestCase):
         trajectory_ref = open_loop_trajectory.copy()
         trajectory = self.generate_altered_trajectory()
 
-        trajectory.intersect(index=trajectory_ref.timestamps)
+        trajectory.intersect(index=trajectory_ref.timestamps, inplace=True)
 
         self.assertGreaterEqual(
             trajectory.timestamps[0],
@@ -119,7 +119,7 @@ class TestTrajectory(unittest.TestCase):
         traj_ref = Trajectory(positions=Positions(xyz_ref, epsg=0), timestamps=t_ref, name="Ref")
         traj_test = Trajectory(positions=Positions(xyz_test, epsg=0), timestamps=t_test, name="Test")
 
-        traj_test.intersect(traj_ref.timestamps, max_gap_size=10.0)
+        traj_test.intersect(traj_ref.timestamps, max_gap_size=10.0, inplace=True)
 
         # Test original timestamps inside the gap were 41.2, 42.2 ... 59.2
         # For the boundary interpolation of g_start=40.0 and g_end=60.0
@@ -145,9 +145,9 @@ class TestTrajectory(unittest.TestCase):
             ),
             replace=False,
         )
-        trajectory.mask(random_sampling)
+        trajectory.mask(random_sampling, inplace=True)
         trajectory.timestamps += np.random.rand(len(trajectory)) * np.random.rand() * 10
-        trajectory.mask(np.argsort(trajectory.timestamps))
+        trajectory.mask(np.argsort(trajectory.timestamps), inplace=True)
         return trajectory
 
     def check_trajectory_attribute(self, attribute: Any, target_length: int, target_type: Any) -> None:

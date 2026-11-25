@@ -121,7 +121,9 @@ def manual_alignment(trajectory: Trajectory, other: Trajectory, parameters: Alig
     )
 
 
-def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, inplace: bool = True) -> "Trajectory":
+def apply_alignment(
+    trajectory: Trajectory, alignment_result: AlignmentResult, *, inplace: bool = False
+) -> "Trajectory":
     """Transforms trajectory using alignment parameters.
 
     After computing the alignment parameters needed to align two trajectories, they can be
@@ -130,7 +132,7 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
     Args:
         trajectory (Trajectory): Trajectory to apply alignment to.
         alignment_result (AlignmentResult): Alignment result containing transformation parameters.
-        inplace (bool, optional): Perform in-place. Defaults to True.
+        inplace (bool, optional): Perform in-place. Defaults to False.
 
     Returns:
         Trajectory: Aligned trajectory.
@@ -197,7 +199,7 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
     )
 
     # similiarity transformation
-    trajectory.transform(alignment_result.position_parameters.sim3_matrix)
+    trajectory.transform(alignment_result.position_parameters.sim3_matrix, inplace=True)
 
     logger.info("Applied alignment parameters to positions.")
 
@@ -212,30 +214,30 @@ def apply_alignment(trajectory: Trajectory, alignment_result: AlignmentResult, i
     return trajectory
 
 
-def adopt_first_pose(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
+def adopt_first_pose(trajectory: Trajectory, other: Trajectory, *, inplace: bool = False) -> Trajectory:
     """Transform trajectory so that the first pose is identical in both.
 
     Args:
         trajectory (Trajectory): Trajectory to transform.
         other (Trajectory): Reference trajectory.
-        inplace (bool, optional): Perform transformation in place. Defaults to True.
+        inplace (bool, optional): Perform transformation in place. Defaults to False.
 
     Returns:
         Trajectory: Transformed trajectory.
     """
     trajectory = trajectory if inplace else trajectory.copy()
-    adopt_first_position(trajectory=trajectory, other=other)
-    adopt_first_orientation(trajectory=trajectory, other=other)
+    adopt_first_position(trajectory=trajectory, other=other, inplace=True)
+    adopt_first_orientation(trajectory=trajectory, other=other, inplace=True)
     return trajectory
 
 
-def adopt_first_position(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
+def adopt_first_position(trajectory: Trajectory, other: Trajectory, *, inplace: bool = False) -> Trajectory:
     """Transform trajectory so that the first position is identical in both.
 
     Args:
         trajectory (Trajectory): Trajectory to transform.
         other (Trajectory): Reference trajectory.
-        inplace (bool, optional): Perform transformation in place. Defaults to True.
+        inplace (bool, optional): Perform transformation in place. Defaults to False.
 
     Returns:
         Trajectory: Transformed trajectory.
@@ -246,13 +248,13 @@ def adopt_first_position(trajectory: Trajectory, other: Trajectory, inplace: boo
     return trajectory
 
 
-def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, inplace: bool = True) -> Trajectory:
+def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, *, inplace: bool = False) -> Trajectory:
     """Transform trajectory so that the first orientation is identical in both.
 
     Args:
         trajectory (Trajectory): Trajectory to transform.
         other (Trajectory): Reference trajectory.
-        inplace (bool, optional): Perform transformation in place. Defaults to True.
+        inplace (bool, optional): Perform transformation in place. Defaults to False.
 
     Returns:
         Trajectory: Transformed trajectory.
@@ -272,7 +274,8 @@ def align(
     other: Trajectory,
     alignment_settings: settings.AlignmentSettings | None = None,
     matching_settings: settings.MatchingSettings | None = None,
-    inplace: bool = True,
+    *,
+    inplace: bool = False,
 ) -> Trajectory:
     """Aligns the trajectory with another trajectory.
 
@@ -283,7 +286,7 @@ def align(
             Defaults to AlignmentSettings().
         matching_settings (MatchingSettings, optional): Settings for the matching process.
             Defaults to MatchingSettings().
-        inplace (bool, optional): Perform in-place. Defaults to True.
+        inplace (bool, optional): Perform in-place. Defaults to False.
 
     Returns:
         Trajectory: Aligned trajectory.

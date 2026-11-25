@@ -37,20 +37,20 @@ def match_non_overlapping_stamps(trajectory: Trajectory, other: Trajectory, max_
     return mean_offset
 
 
-def match_stamps(trajectory: Trajectory, index: np.ndarray, inplace: bool = True) -> Trajectory:
+def match_stamps(trajectory: Trajectory, index: np.ndarray, *, inplace: bool = False) -> Trajectory:
     """Truncates trajectory to only those poses where the indices exactly match "index".
 
     Args:
         trajectory (Trajectory): Input trajectory.
         index (np.ndarray): Input indices.
-        inplace (bool, optional): Perform matching in-place. Defaults to True.
+        inplace (bool, optional): Perform matching in-place. Defaults to False.
 
     Returns:
         Trajectory: Trajectory with matched indices.
     """
     traj_self = trajectory if inplace else trajectory.copy()
     _, idx_self, _ = np.intersect1d(traj_self.index, index, return_indices=True)
-    traj_self.mask(idx_self)
+    traj_self.mask(idx_self, inplace=True)
     return traj_self
 
 
@@ -58,7 +58,8 @@ def match_trajectories(
     trajectory: Trajectory,
     other: Trajectory,
     matching_settings: settings.MatchingSettings | None = None,
-    inplace: bool = True,
+    *,
+    inplace: bool = False,
 ) -> tuple[Trajectory, Trajectory]:
     """Matches two trajectories using the specified method.
 
@@ -80,7 +81,7 @@ def match_trajectories(
         other (Trajectory): Other trajectory to match against.
         matching_settings (MatchingSettings, optional): Matching settings. Defaults to
             MatchingSettings().
-        inplace (bool, optional): Whether to modify the input trajectories. Defaults to True.
+        inplace (bool, optional): Whether to modify the input trajectories. Defaults to False.
 
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
@@ -171,7 +172,7 @@ def _adopt_reference_path_lengths(trajectory: Trajectory, other: Trajectory) -> 
     offsets = np.sum((xyz - ref_xyz[nearest]) * tangents, axis=1) / np.where(norms > 0, norms, 1.0)
 
     trajectory.path_lengths = np.clip(path_lengths[nearest] + offsets, path_lengths[0], path_lengths[-1])
-    trajectory.mask(np.argsort(trajectory.path_lengths, kind="stable"))
+    trajectory.mask(np.argsort(trajectory.path_lengths, kind="stable"), inplace=True)
     logger.info("Expressed the path lengths of %s in the path length frame of %s.", trajectory.name, other.name)
 
 
@@ -197,23 +198,23 @@ def _match_trajectories_interpolation(
         logger.info("Trajectories are already matched, no interpolation required.")
         return trajectory, other
 
-    trajectory.intersect(other.index, max_gap_size=max_gap_size)
+    trajectory.intersect(other.index, max_gap_size=max_gap_size, inplace=True)
 
     if trajectory.index.shape[0] == 0:
         raise ValueError(
             "Reference trajectory has no indices after intersection! Check your matching settings, especially max_gap_size."
         )
 
-    other.intersect(trajectory.index, max_gap_size=max_gap_size)
+    other.intersect(trajectory.index, max_gap_size=max_gap_size, inplace=True)
     # the epochs of the reference are interpolated, which is not done inside gaps of the trajectory;
     # unlike the observations of the trajectory, the reference epochs at the gap edges are not needed there
-    other.mask(~inside_gaps(other.index, trajectory.index, max_gap_size))
+    other.mask(~inside_gaps(other.index, trajectory.index, max_gap_size), inplace=True)
 
     if other.index.shape[0] == 0:
         raise ValueError(
             "Test trajectory has no indices after intersection! Check your matching settings, especially max_gap_size."
         )
-    interpolate(trajectory, other.index)
+    interpolate(trajectory, other.index, inplace=True)
     # the poses now belong to the epochs of the reference: for spatially sorted trajectories, interpolated
     # timestamps would mix laps that pass the same place
     trajectory.timestamps = copy.deepcopy(other.timestamps)
@@ -243,7 +244,7 @@ def _match_trajectories_temporal(
     tstamps_test_2d = np.c_[trajectory.index, np.zeros(trajectory.index.shape)]
     ref_indices, test_indices = _kd_matcher(ref=tstamps_ref_2d, test=tstamps_test_2d, max_distance=max_distance)
     logger.info("Found %i temporal matches", len(ref_indices))
-    return trajectory.mask(test_indices), other.mask(ref_indices)
+    return trajectory.mask(test_indices, inplace=True), other.mask(ref_indices, inplace=True)
 
 
 def _match_trajectories_spatial(
@@ -267,7 +268,7 @@ def _match_trajectories_spatial(
         ref=other.positions.xyz, test=trajectory.positions.xyz, max_distance=max_distance
     )
     logger.info("Found %i spatial matches", len(ref_indices))
-    return trajectory.mask(test_indices), other.mask(ref_indices)
+    return trajectory.mask(test_indices, inplace=True), other.mask(ref_indices, inplace=True)
 
 
 def _determine_mean_arc_length(arc_lengths: np.ndarray, lap_length: float) -> float:

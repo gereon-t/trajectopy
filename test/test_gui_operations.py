@@ -142,7 +142,7 @@ class TestTrajectoryOperations(unittest.TestCase):
         first = Trajectory.from_arrays(xyz, epsg=25832)
         # the same positions, transformed into a local frame of their own (centered at the second half)
         second = Trajectory.from_arrays(xyz[5:], epsg=25832)
-        second.positions.to_local()
+        second.positions.to_local(inplace=True)
 
         shared = first.positions.local_transformer
         np.testing.assert_allclose(local_xyz(second, shared), local_xyz(first, shared)[5:], atol=1e-6)

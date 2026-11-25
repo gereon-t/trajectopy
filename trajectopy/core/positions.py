@@ -303,7 +303,7 @@ class Positions:
         """
         return None if self.epsg == 0 else _crs(self.epsg)
 
-    def to_epsg(self, target_epsg: int, inplace: bool = True) -> "Positions":
+    def to_epsg(self, target_epsg: int, *, inplace: bool = False) -> "Positions":
         """Performs a coordinate transformation using a target CRS.
 
         This method will construct the required pyproj transformer and applies it in order to
@@ -311,7 +311,7 @@ class Positions:
 
         Args:
             target_epsg (int): EPSG code of target CRS.
-            inplace (bool, optional): Perform transformation in place. Defaults to True.
+            inplace (bool, optional): Perform transformation in place. Defaults to False.
 
         Raises:
             PointSetError: Gets raised if it is not possible to recover from a local datum
@@ -336,7 +336,7 @@ class Positions:
             # geocentric cartesian (ITRF2014)
             if local_transformer is None:
                 raise PointSetError("Unable to transform to a local frame since no local transformer is defined!")
-            pointset.to_epsg(target_epsg=pointset.epsg_local_cart)
+            pointset.to_epsg(target_epsg=pointset.epsg_local_cart, inplace=True)
 
             # apply local transformer
             x, y, z = local_transformer.transform(xx=pointset.x, yy=pointset.y, zz=pointset.z)
@@ -377,20 +377,20 @@ class Positions:
 
         return pointset
 
-    def to_local(self, inplace: bool = True) -> "Positions":
+    def to_local(self, *, inplace: bool = False) -> "Positions":
         """Transform positions to a local frame tangential to the (grs80) ellipsoid.
 
         This is equivalent to a transformation to an EPSG of 0.
 
         Args:
-            inplace (bool, optional): Perform transformation in place. Defaults to True.
+            inplace (bool, optional): Perform transformation in place. Defaults to False.
 
         Returns:
             Positions: 2-dimensional object containing xyz of the transformed points.
         """
         return self.to_epsg(target_epsg=0, inplace=inplace)
 
-    def mean(self, inplace: bool = False) -> "Positions":
+    def mean(self, *, inplace: bool = False) -> "Positions":
         """Computes the mean of all points within the Positions object.
 
         Args:

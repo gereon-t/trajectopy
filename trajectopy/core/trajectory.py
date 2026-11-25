@@ -511,7 +511,9 @@ class Trajectory:
 
         return self.time_start <= other.time_end and self.time_end >= other.time_start
 
-    def crop(self, index_start: float, index_end: float, inverse: bool = False, inplace: bool = True) -> "Trajectory":
+    def crop(
+        self, index_start: float, index_end: float, *, inverse: bool = False, inplace: bool = False
+    ) -> "Trajectory":
         """
         Crops (or cuts) the trajectory based on a time window.
 
@@ -520,7 +522,7 @@ class Trajectory:
             index_end (float): End index of the window.
             inverse (bool, optional): If True, removes data *inside* the window (cutting).
                                       If False, keeps data *inside* the window (cropping). Defaults to False.
-            inplace (bool, optional): If True, modifies self. If False, returns a new instance. Defaults to True.
+            inplace (bool, optional): If True, modifies self. If False, returns a new instance. Defaults to False.
 
         Returns:
             Trajectory: The modified or new trajectory instance.
@@ -533,7 +535,7 @@ class Trajectory:
 
         return self.mask(mask=filt, inplace=inplace)
 
-    def intersect(self, index: np.ndarray, max_gap_size: float = 10.0, inplace: bool = True) -> "Trajectory":
+    def intersect(self, index: np.ndarray, *, max_gap_size: float = 10.0, inplace: bool = False) -> "Trajectory":
         """
         Filters the trajectory to overlap with a reference timestamp vector.
 
@@ -545,7 +547,7 @@ class Trajectory:
             index (np.ndarray): The reference indices to intersect with.
             max_gap_size (float, optional): The maximum allowed time gap (in seconds or meters) between
                                             reference indices to include trajectory points. Defaults to 10.0.
-            inplace (bool, optional): If True, modifies self. Defaults to True.
+            inplace (bool, optional): If True, modifies self. Defaults to False.
 
         Raises:
             ValueError: If the index spans do not overlap.
@@ -559,7 +561,7 @@ class Trajectory:
         if index_span is None:
             raise ValueError("intersect_both: Indices do not overlap!")
 
-        traj_self.crop(index_start=index_span[0], index_end=index_span[1])
+        traj_self.crop(index_start=index_span[0], index_end=index_span[1], inplace=True)
 
         index_sorted = np.sort(index)
         filter_mask = np.ones(len(traj_self), dtype=bool)
@@ -579,11 +581,11 @@ class Trajectory:
                 filter_mask[idx_start + 1 : idx_end - 1] = False
 
         filter_index = np.where(filter_mask)[0]
-        traj_self.mask(np.array(filter_index, dtype=int))
+        traj_self.mask(np.array(filter_index, dtype=int), inplace=True)
 
         return traj_self
 
-    def mask(self, mask: list | np.ndarray, inplace: bool = True) -> "Trajectory":
+    def mask(self, mask: list | np.ndarray, *, inplace: bool = False) -> "Trajectory":
         """
         Applies a boolean mask or index array to filter all trajectory components.
 
@@ -591,7 +593,7 @@ class Trajectory:
 
         Args:
             mask (Union[list, np.ndarray]): Boolean array or list of indices to keep.
-            inplace (bool, optional): If True, modifies self. Defaults to True.
+            inplace (bool, optional): If True, modifies self. Defaults to False.
 
         Returns:
             Trajectory: The masked trajectory.
@@ -616,7 +618,7 @@ class Trajectory:
 
         return traj_self
 
-    def transform(self, transformation: np.ndarray, inplace: bool = True) -> "Trajectory":
+    def transform(self, transformation: np.ndarray, *, inplace: bool = False) -> "Trajectory":
         """
         Applies a rigid body or similarity transformation to the trajectory poses.
 
@@ -626,7 +628,7 @@ class Trajectory:
 
         Args:
             transformation (np.ndarray): A 4x4 homogeneous transformation matrix.
-            inplace (bool, optional): If True, modifies self. Defaults to True.
+            inplace (bool, optional): If True, modifies self. Defaults to False.
 
         Returns:
             Trajectory: The transformed trajectory.

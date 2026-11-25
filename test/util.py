@@ -185,7 +185,7 @@ def apply_alignment_using_velocities(
     trajectory.positions.xyz += np.c_[trafo_x, trafo_y, trafo_z]
 
     # similiarity transformation
-    trajectory.transform(alignment_result.position_parameters.sim3_matrix)
+    trajectory.transform(alignment_result.position_parameters.sim3_matrix, inplace=True)
 
     # sensor orientation
     if trajectory.rotations is not None:

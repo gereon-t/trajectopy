@@ -358,12 +358,12 @@ class TrajectoryManager(QObject):
             TrajectoryEntry: The sorted trajectory.
         """
         logger.info("Sorting trajectory ...")
-        sorting.sort_spatially(
+        sorted_trajectory = sorting.sort_spatially(
             trajectory=entry_pair.entry.trajectory, sorting_settings=entry_pair.entry.settings.sorting
         )
         entry_pair.entry.state.sorting_known = True
-        entry_pair.entry.trajectory.name += " (sorted)"
-        return (entry_pair.entry.derive(entry_pair.entry.trajectory),)
+        sorted_trajectory.name += " (sorted)"
+        return (entry_pair.entry.derive(sorted_trajectory),)
 
     def operation_divide_into_laps(self, request: TrajectoryManagerRequest) -> None:
         """
@@ -499,7 +499,7 @@ class TrajectoryManager(QObject):
         Returns:
             None
         """
-        entry_pair.entry.trajectory.positions.to_epsg(entry_pair.request.target_epsg)
+        entry_pair.entry.trajectory.positions.to_epsg(entry_pair.request.target_epsg, inplace=True)
         return (entry_pair.entry,)
 
     @staticmethod
@@ -598,7 +598,7 @@ class TrajectoryManager(QObject):
             raise ValueError("Reference trajectory has an unknown EPSG code.")
 
         entry_pair.entry.trajectory.positions.local_transformer = reference_local_transformer
-        entry_pair.entry.trajectory.positions.to_epsg(reference_epsg)
+        entry_pair.entry.trajectory.positions.to_epsg(reference_epsg, inplace=True)
         return (entry_pair.entry,)
 
     @staticmethod

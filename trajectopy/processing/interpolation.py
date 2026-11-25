@@ -15,7 +15,8 @@ def interpolate(
     trajectory: Trajectory,
     index: list | np.ndarray,
     method: InterpolationMethod = InterpolationMethod.LINEAR,
-    inplace: bool = True,
+    *,
+    inplace: bool = False,
     max_gap_size: float = float("inf"),
 ) -> "Trajectory":
     """Interpolates a trajectory to specified timestamps using the given method.
@@ -24,7 +25,7 @@ def interpolate(
         trajectory (Trajectory): Trajectory to interpolate
         index (list | np.ndarray): Interpolation index
         method (InterpolationMethod, optional): Interpolation method. Defaults to InterpolationMethod.LINEAR.
-        inplace (bool, optional): Perform in-place interpolation. Defaults to True.
+        inplace (bool, optional): Perform in-place interpolation. Defaults to False.
         max_gap_size (float, optional): Maximum gap in the index over which to interpolate. Defaults to infinity.
 
     Returns:
@@ -137,7 +138,7 @@ def _drop_duplicate_index_values(trajectory: Trajectory) -> None:
         len(trajectory) - len(first_indices),
         "timestamps" if trajectory.sorting == Sorting.TIME else "path lengths",
     )
-    trajectory.mask(first_indices)
+    trajectory.mask(first_indices, inplace=True)
 
 
 def _interpolate_rotations_linear(

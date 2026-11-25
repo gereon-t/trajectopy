@@ -101,7 +101,7 @@ class TestTrajectoryOperationRegressions(unittest.TestCase):
         transformation = np.eye(4)
         transformation[:3, :3] = 2.0 * Rotations.from_euler("z", np.pi / 2).as_matrix()
 
-        trajectory.transform(transformation)
+        trajectory.transform(transformation, inplace=True)
 
         self.assertFalse(trajectory.has_orientation)
         np.testing.assert_allclose(trajectory.velocity_xyz[0], [0.0, 2.0, 0.0], atol=1e-12)
@@ -483,7 +483,7 @@ class TestRobustnessRegressions(unittest.TestCase):
         # metric coordinates declared as latitude and longitude
         positions = Positions(np.array([[364000.0, 5621000.0, 100.0]]), epsg=4326, init_local_transformer=False)
         with self.assertRaisesRegex(PointSetError, "outside of the valid area"):
-            positions.to_epsg(25832)
+            positions.to_epsg(25832, inplace=True)
 
     def test_color_range_of_equal_large_values(self):
         from trajectopy.utils.colors import color_range
