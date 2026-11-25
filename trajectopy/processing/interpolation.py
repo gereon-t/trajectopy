@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.spatial.transform import Slerp
 
 from trajectopy.core.rotations import Rotations
@@ -13,28 +14,27 @@ logger = logging.getLogger(__name__)
 
 def interpolate(
     trajectory: Trajectory,
-    index: list | np.ndarray,
-    method: InterpolationMethod = InterpolationMethod.LINEAR,
+    index: ArrayLike,
+    method: InterpolationMethod | str = InterpolationMethod.LINEAR,
     *,
-    inplace: bool = False,
     max_gap_size: float = float("inf"),
+    inplace: bool = False,
 ) -> "Trajectory":
     """Interpolates a trajectory to specified timestamps using the given method.
 
     Args:
         trajectory (Trajectory): Trajectory to interpolate
-        index (list | np.ndarray): Interpolation index
-        method (InterpolationMethod, optional): Interpolation method. Defaults to InterpolationMethod.LINEAR.
-        inplace (bool, optional): Perform in-place interpolation. Defaults to False.
+        index (ArrayLike): Interpolation index (timestamps or path lengths, depending on the sorting).
+        method (InterpolationMethod | str, optional): Interpolation method. Defaults to ``"linear"``.
         max_gap_size (float, optional): Maximum gap in the index over which to interpolate. Defaults to infinity.
+        inplace (bool, optional): Perform in-place interpolation. Defaults to False.
 
     Returns:
         Trajectory: Interpolated trajectory
     """
-    if method == InterpolationMethod.LINEAR:
-        return _interpolate_linear(trajectory, index, inplace, max_gap_size)
-    else:
-        raise ValueError(f"Interpolation method '{method}' is not supported.")
+    if InterpolationMethod(method) == InterpolationMethod.LINEAR:
+        return _interpolate_linear(trajectory, np.asarray(index, dtype=float), inplace, max_gap_size)
+    raise ValueError(f"Interpolation method '{method}' is not supported.")
 
 
 def _interpolate_linear(

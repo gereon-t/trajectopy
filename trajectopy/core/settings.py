@@ -8,12 +8,22 @@ from typing import Any, TypeVar, get_type_hints
 
 import numpy as np
 
+from trajectopy.utils.definitions import OptionEnum
+
 logger = logging.getLogger(__name__)
 
 _SettingsT = TypeVar("_SettingsT", bound="Settings")
 
 METRIC_THRESHOLD = 1e-4
 TIME_THRESHOLD = 1e-4
+
+
+def _is_option(field_type: Any) -> bool:
+    return isinstance(field_type, type) and issubclass(field_type, Enum)
+
+
+def _encode_enum(value: Any) -> Any:
+    return value.value if isinstance(value, Enum) else value
 
 
 @dataclass
@@ -31,9 +41,16 @@ class Settings(ABC):
             dict: Dictionary representation of the settings
         """
         return {
-            key: (value.to_dict() if issubclass(type(value), Settings) else self.encoder(key, value))
+            key: (value.to_dict() if isinstance(value, Settings) else _encode_enum(self.encoder(key, value)))
             for key, value in self.__dict__.items()
         }
+
+    def __post_init__(self) -> None:
+        # options may be given as strings, e.g. MatchingSettings(method="nearest_temporal")
+        for name, field_type in self._field_types().items():
+            value = getattr(self, name)
+            if _is_option(field_type) and not isinstance(value, field_type):
+                setattr(self, name, field_type(value))
 
     @staticmethod
     def encoder(name: str, value: Any) -> Any:
@@ -96,6 +113,11 @@ class Settings(ABC):
             TypeError: If the decoded value does not match the declared type.
         """
         decoded = self.decoder(name, value)
+        if _is_option(field_type) and not isinstance(decoded, field_type):
+            try:
+                return field_type(decoded)
+            except ValueError as error:
+                raise TypeError(f"{type(self).__name__}.{name}: {error}") from error
         if field_type is float and isinstance(decoded, int) and not isinstance(decoded, bool):
             return float(decoded)
         if field_type in (bool, int, float, str) and (
@@ -636,14 +658,14 @@ class AlignmentSettings(Settings):
         return str(self.preprocessing) + str(self.estimation_settings) + str(self.stochastics)
 
 
-class RotationApproximationMethod(Enum):
+class RotationApproximationMethod(OptionEnum):
     """Method for rotation approximation."""
 
     AVERAGE_PER_PATH_LENGTH = "average_per_path_length"
     AVERAGE_IN_WINDOW = "average_in_window"
 
 
-class PositionApproximationMethod(Enum):
+class PositionApproximationMethod(OptionEnum):
     """Method for position approximation."""
 
     CUBIC = "cubic"
@@ -671,63 +693,16 @@ class ApproximationSettings(Settings):
     position_approximation_method: PositionApproximationMethod = PositionApproximationMethod.CUBIC
     rotation_approximation_method: RotationApproximationMethod = RotationApproximationMethod.AVERAGE_IN_WINDOW
 
-    @staticmethod
-    def encoder(name: str, value: Any) -> Any:
-        """Encodes position_approximation_method and rotation_approximation_method enums to string values.
 
-        Args:
-            name: Attribute name
-            value: Value to encode
-
-        Returns:
-            Any: Encoded value
-        """
-        if name in ["position_approximation_method", "rotation_approximation_method"]:
-            return value.value
-        return value
-
-    @staticmethod
-    def decoder(name: str, value: Any) -> Any:
-        """Decodes position_approximation_method and rotation_approximation_method strings to enums.
-        Args:
-            name: Attribute name
-            value: Value to decode
-
-        Returns:
-            Any: Decoded value
-        """
-        if name == "position_approximation_method":
-            return PositionApproximationMethod(value)
-        if name == "rotation_approximation_method":
-            return RotationApproximationMethod(value)
-        return value
-
-
-class PairDistanceUnit(Enum):
+class PairDistanceUnit(OptionEnum):
     """Unit of measurement for pose pair distances in relative comparison."""
 
     METER = "meter"
     SECOND = "second"
 
     @classmethod
-    def from_str(cls, unit_str: str) -> "PairDistanceUnit":
-        """Converts a string to a PairDistanceUnit.
-
-        Args:
-            unit_str: String to convert ("m", "meter", "s", "sec", "second")
-
-        Returns:
-            PairDistanceUnit: Converted unit
-
-        Raises:
-            ValueError: If unit string is not recognized
-        """
-        if unit_str.lower() in {"m", "meter"}:
-            return cls.METER
-        if unit_str.lower() in {"s", "sec", "second"}:
-            return cls.SECOND
-
-        raise ValueError(f"Unknown unit string {unit_str}")
+    def aliases(cls) -> dict[str, str]:
+        return {"m": "meter", "s": "second", "sec": "second"}
 
 
 class ComparisonMethod(Enum):
@@ -789,34 +764,8 @@ class RelativeComparisonSettings(Settings):
     pair_distance_unit: PairDistanceUnit = PairDistanceUnit.METER
     use_all_pose_pairs: bool = True
 
-    @staticmethod
-    def encoder(name: str, value: Any) -> Any:
-        """Encodes pair_distance_unit enum to string value.
 
-        Args:
-            name: Attribute name
-            value: Value to encode
-
-        Returns:
-            Any: Encoded value
-        """
-        return value.value if name == "pair_distance_unit" else value
-
-    @staticmethod
-    def decoder(name: str, value: Any) -> Any:
-        """Decodes pair_distance_unit string to enum.
-
-        Args:
-            name: Attribute name
-            value: Value to decode
-
-        Returns:
-            Any: Decoded value
-        """
-        return PairDistanceUnit(value) if name == "pair_distance_unit" else value
-
-
-class MatchingMethod(Enum):
+class MatchingMethod(OptionEnum):
     """Method for matching poses between two trajectories.
 
     Attributes:
@@ -834,7 +783,7 @@ class MatchingMethod(Enum):
     UNKNOWN = "unknown"
 
 
-class InterpolationMethod(Enum):
+class InterpolationMethod(OptionEnum):
     """Method for interpolation."""
 
     LINEAR = "linear"
@@ -861,32 +810,6 @@ class MatchingSettings(Settings):
     max_distance: float = 0.00
     max_gap_size: float = 10.0
     k_nearest: int = 2
-
-    @staticmethod
-    def encoder(name: str, value: Any) -> Any:
-        """Encodes method enum to string value.
-
-        Args:
-            name: Attribute name
-            value: Value to encode
-
-        Returns:
-            Any: Encoded value
-        """
-        return value.value if name == "method" else value
-
-    @staticmethod
-    def decoder(name: str, value: Any) -> Any:
-        """Decodes method string to enum.
-
-        Args:
-            name: Attribute name
-            value: Value to decode
-
-        Returns:
-            Any: Decoded value
-        """
-        return MatchingMethod(value) if name == "method" else value
 
 
 @dataclass

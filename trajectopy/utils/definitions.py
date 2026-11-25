@@ -6,18 +6,48 @@ import numpy as np
 UNIX_TIME_THRESHOLD = 1_000_000
 
 
-class Sorting(str, Enum):
+class OptionEnum(str, Enum):
+    """Base class of all enumerations that select an option, e.g. a matching method.
+
+    Wherever an option is expected, its value can also be given as a string. The lookup ignores the case and
+    accepts the aliases returned by ``aliases()`` (a mapping from alias to value), e.g.
+    ``MatchingMethod("Interpolation") is MatchingMethod.INTERPOLATION``.
+    """
+
+    @classmethod
+    def _missing_(cls, value: object) -> "OptionEnum | None":
+        if not isinstance(value, str):
+            return None
+        key = value.strip().lower()
+        key = cls.aliases().get(key, key)
+        for member in cls:
+            if member.value == key or member.name.lower() == key:
+                return member
+        return None
+
+    @classmethod
+    def aliases(cls) -> dict[str, str]:
+        """Alternative names of the options, mapped to their values."""
+        return {}
+
+    @classmethod
+    def from_str(cls, value: str):  # noqa: ANN206 - returns the subclass
+        """Returns the option for a string (case-insensitive, aliases allowed). Same as ``cls(value)``."""
+        return cls(value)
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class Sorting(OptionEnum):
+    """Order of the poses of a trajectory: chronological or along the path (spatially sorted)."""
+
     TIME = "time"
     PATH_LENGTH = "path_length"
 
     @classmethod
-    def from_str(cls, value: str) -> "Sorting":
-        if value == "time":
-            return Sorting.TIME
-        elif value == "path_length" or value == "arc_length":
-            return Sorting.PATH_LENGTH
-        else:
-            raise ValueError(f"Unknown sorting method: {value}")
+    def aliases(cls) -> dict[str, str]:
+        return {"arc_length": "path_length"}
 
 
 class TrajectoriesSorting(Enum):
