@@ -1,0 +1,77 @@
+# API Policy
+
+This page describes what belongs to the public API of trajectopy, which conventions it follows and how it
+changes between releases.
+
+## Public API
+
+The public API consists of the names exported by these namespaces:
+
+| Namespace | Content |
+| --- | --- |
+| `trajectopy` | Trajectories, settings, processing functions (alignment, matching, evaluation, ...), results, exceptions |
+| `trajectopy.io` | Reading and writing of trajectories (trajectopy, TUM, KITTI, EuRoC, ROS bags), results and KML files |
+| `trajectopy.visualization` | Figures of trajectories, results and alignment parameters (needs `trajectopy[plot]`) |
+| `trajectopy.exceptions` | The exceptions raised by trajectopy |
+
+Each of these namespaces lists its names in `__all__`. Everything else, for example
+`trajectopy.core.trajectory`, `trajectopy.processing.lib`, `trajectopy.gui` and `trajectopy.cli`, is an
+implementation detail. Such modules remain importable, but they can change in any release.
+Methods and attributes whose names start with an underscore are private as well.
+
+```python
+import trajectopy as tpy
+from trajectopy import io, visualization as vis
+```
+
+## Conventions
+
+The whole public API follows the same conventions, so that it can grow without breaking changes:
+
+- **Inputs are never modified.** Functions and methods that transform a trajectory return a new object. The
+  keyword-only argument `inplace=True` modifies the input instead (and returns it, too). Always use the
+  return value: `trajectory = tpy.align(trajectory, reference)`.
+- **One settings argument.** Every processing function takes a single `settings` argument, either of its own
+  settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, from which it uses the part
+  it needs. So the same `ProcessingSettings` can be passed to all functions. `None` means the defaults.
+- **Options are enumerations that accept strings.** `MatchingSettings(method="nearest_temporal")` and
+  `tpy.interpolate(trajectory, index, method="linear")` work as well as the enumeration members; the lookup
+  ignores the case.
+- **Keyword-only options.** Arguments after the data (trajectories, indices, settings) are keyword-only, so
+  that new options can be added and options can be reordered without breaking calls.
+- **Results carry everything.** Results are returned as objects instead of tuples whose shape depends on a
+  flag; for example, the alignment used by `tpy.ate` is available as `ate_result.alignment`.
+- **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`)
+  and overwrite existing files unless `mode="a"` is passed.
+- **Errors.** Invalid arguments raise `TypeError` or `ValueError`; failures of the processing raise
+  subclasses of `trajectopy.TrajectopyError`.
+
+## Versioning
+
+trajectopy follows [semantic versioning](https://semver.org): `MAJOR.MINOR.PATCH`.
+
+- **Patch releases** fix bugs.
+- **Minor releases** add functionality in a backwards compatible way and may deprecate parts of the API.
+- **Major releases** remove deprecated parts of the API. Other breaking changes are avoided.
+
+The GUI and the command line interface are versioned together with the library.
+
+## Deprecations
+
+Parts of the public API are not removed without warning. They are first deprecated: they keep working,
+but emit a `trajectopy.exceptions.TrajectopyDeprecationWarning` (a subclass of `DeprecationWarning`) that
+names the replacement.
+Deprecated parts are removed in the next major release, at the earliest one minor release after the
+deprecation.
+
+To make sure that your code is ready for the next major release, turn the warnings into errors in your
+tests, e.g. with pytest:
+
+```toml
+[tool.pytest.ini_options]
+filterwarnings = ["error::trajectopy.exceptions.TrajectopyDeprecationWarning"]
+```
+
+## Bug reports
+
+Please add the output of `trajectopy.show_versions()` to bug reports.

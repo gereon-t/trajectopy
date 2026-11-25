@@ -95,6 +95,7 @@ PUBLIC_API = {
         "write_trajectory",
     ],
     "trajectopy.exceptions": [
+        "TrajectopyDeprecationWarning",
         "AlignmentError",
         "AlignmentParametersError",
         "ApproximationError",

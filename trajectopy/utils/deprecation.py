@@ -1,8 +1,8 @@
 """Helpers for deprecating parts of the public API.
 
 Deprecated names and arguments keep working for at least one minor release and emit a
-:class:`TrajectopyDeprecationWarning` (a subclass of :class:`DeprecationWarning`). They are removed in the
-next major release, see the deprecation policy in the documentation.
+:class:`trajectopy.exceptions.TrajectopyDeprecationWarning` (a subclass of :class:`DeprecationWarning`).
+They are removed in the next major release, see the deprecation policy in the documentation.
 """
 
 import functools
@@ -11,11 +11,11 @@ import warnings
 from collections.abc import Callable
 from typing import Any, TypeVar
 
+from trajectopy.exceptions import TrajectopyDeprecationWarning
+
+__all__ = ["TrajectopyDeprecationWarning", "renamed_parameters", "warn_deprecated"]
+
 _F = TypeVar("_F", bound=Callable[..., Any])
-
-
-class TrajectopyDeprecationWarning(DeprecationWarning):
-    """Warning for parts of the trajectopy API that will be removed in the next major release."""
 
 
 def warn_deprecated(message: str, stacklevel: int = 2) -> None:
@@ -57,21 +57,3 @@ def renamed_parameters(**renames: str) -> Callable[[_F], _F]:
         return wrapper  # type: ignore[return-value]
 
     return decorator
-
-
-def deprecated_module_attributes(module_name: str, aliases: dict[str, tuple[str, Callable[[], Any]]]):
-    """Returns a module ``__getattr__`` that resolves deprecated module attributes with a warning.
-
-    Args:
-        module_name: ``__name__`` of the module.
-        aliases: Maps a deprecated attribute name to ``(replacement description, loader)``.
-    """
-
-    def __getattr__(name: str) -> Any:
-        if name in aliases:
-            replacement, loader = aliases[name]
-            warn_deprecated(f"{module_name}.{name} is deprecated, use {replacement} instead.", stacklevel=2)
-            return loader()
-        raise AttributeError(f"module {module_name!r} has no attribute {name!r}")
-
-    return __getattr__

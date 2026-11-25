@@ -106,7 +106,7 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["test"]
 # the package itself must not use its deprecated API
-filterwarnings = ["error::trajectopy.utils.deprecation.TrajectopyDeprecationWarning"]
+filterwarnings = ["error::trajectopy.exceptions.TrajectopyDeprecationWarning"]
 
 [tool.coverage.run]
 source = ["trajectopy"]

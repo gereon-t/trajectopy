@@ -43,7 +43,12 @@ class PointSetError(TrajectopyError):
     pass
 
 
+class TrajectopyDeprecationWarning(DeprecationWarning):
+    """Warning for parts of the API that will be removed in the next major release."""
+
+
 __all__ = [
+    "TrajectopyDeprecationWarning",
     "TrajectopyError",
     "TrajectoryError",
     "AlignmentError",
