@@ -32,6 +32,8 @@ maintainers = [
 ]
 license = {text = "GPLv3"}
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python",
@@ -40,7 +42,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: Implementation :: CPython"
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Typing :: Typed",
 ]
 keywords = ["trajectory", "evaluation", "alignment", "similarity", "leverarm", "epsg", "robotics"]
 dynamic = ["version"]
@@ -68,6 +72,7 @@ Homepage = "https://gereon-t.github.io/trajectopy/"
 Documentation = "https://gereon-t.github.io/trajectopy/"
 Repository = "https://github.com/gereon-t/trajectopy"
 "Bug Tracker" = "https://github.com/gereon-t/trajectopy/issues"
+Changelog = "https://github.com/gereon-t/trajectopy/blob/main/CHANGELOG.md"
 
 [project.scripts]
 trajectopy = "trajectopy.cli.main:main"
