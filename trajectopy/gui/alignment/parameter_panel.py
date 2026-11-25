@@ -8,7 +8,7 @@ from PySide6 import QtCore, QtWidgets
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentEstimationSettings
 from trajectopy.gui.alignment.session import AlignmentSession
-from trajectopy.processing.lib.alignment.interactive import AlignmentState
+from trajectopy.processing._lib.alignment.interactive import AlignmentState
 
 DEG = float(np.rad2deg(1.0))
 

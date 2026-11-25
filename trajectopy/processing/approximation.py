@@ -12,10 +12,10 @@ from trajectopy.core.settings import (
     resolve_settings,
 )
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.interpolation import interpolate
-from trajectopy.processing.lib.approximation.cubic_approximation import (
+from trajectopy.processing._lib.approximation.cubic_approximation import (
     CubicApproximation,
 )
+from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.sorting import divide_into_laps
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.deprecation import renamed_parameters

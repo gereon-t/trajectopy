@@ -13,13 +13,13 @@ from trajectopy.core.settings import (
     AlignmentStochastics,
     MatchingSettings,
 )
+from trajectopy.processing._lib.alignment.data import AlignmentData
+from trajectopy.processing._lib.alignment.direct import align_rotations
 from trajectopy.processing.alignment import (
     apply_alignment,
     estimate_alignment,
     manual_alignment,
 )
-from trajectopy.processing.lib.alignment.data import AlignmentData
-from trajectopy.processing.lib.alignment.direct import align_rotations
 
 
 class TestAlignment(unittest.TestCase):
@@ -77,7 +77,7 @@ class TestAlignment(unittest.TestCase):
             time_threshold=1e3,  # any update is small enough
         )
         prior = AlignmentParameters()  # starts at zero, so that the first update is large
-        with self.assertLogs("trajectopy.processing.lib.alignment.estimation", level="INFO") as logs:
+        with self.assertLogs("trajectopy.processing._lib.alignment.estimation", level="INFO") as logs:
             estimate_alignment(
                 trajectory=open_loop_trajectory.copy(),
                 other=transformed,

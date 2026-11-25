@@ -1,7 +1,7 @@
 """The public API of trajectopy.
 
 The public API consists of the names exported by the namespaces below. Everything else, e.g.
-``trajectopy.core.trajectory`` or ``trajectopy.processing.lib``, is an implementation detail that may change
+``trajectopy.core.trajectory`` or ``trajectopy.processing._lib``, is an implementation detail that may change
 in any release. Changing these lists is an API change: adding a name requires a minor release, removing or
 renaming one requires a deprecation period and a major release (see the API policy in the documentation).
 """

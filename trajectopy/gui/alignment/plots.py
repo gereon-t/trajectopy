@@ -13,8 +13,8 @@ import pyqtgraph as pg
 from PySide6 import QtCore, QtWidgets
 
 from trajectopy.gui.alignment.session import AlignmentSession
-from trajectopy.processing.lib.alignment import diagnostics
-from trajectopy.processing.lib.alignment.diagnostics import Diagnosis, Residuals
+from trajectopy.processing._lib.alignment import diagnostics
+from trajectopy.processing._lib.alignment.diagnostics import Diagnosis, Residuals
 from trajectopy.visualization import style
 
 LINE_WIDTH = 2.0

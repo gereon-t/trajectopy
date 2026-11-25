@@ -7,8 +7,8 @@ import numpy as np
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.alignment import diagnostics, interactive
-from trajectopy.processing.lib.alignment.interactive import AlignmentPreview, AlignmentState
+from trajectopy.processing._lib.alignment import diagnostics, interactive
+from trajectopy.processing._lib.alignment.interactive import AlignmentPreview, AlignmentState
 
 
 def drive(duration: float = 400.0, rate: float = 10.0, noise: float = 0.0, seed: int = 0) -> Trajectory:

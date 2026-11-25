@@ -12,7 +12,7 @@ import pyqtgraph as pg
 from PySide6 import QtCore, QtGui
 
 from trajectopy.gui.alignment.session import AlignmentSession
-from trajectopy.processing.lib.alignment.interactive import AlignmentState, axis_rotation
+from trajectopy.processing._lib.alignment.interactive import AlignmentState, axis_rotation
 from trajectopy.visualization import style
 
 LINE_WIDTH = 2.5

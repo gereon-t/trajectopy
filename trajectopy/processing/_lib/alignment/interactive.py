@@ -22,7 +22,7 @@ from scipy.spatial.transform import Rotation
 
 from trajectopy.core.parameters import AlignmentParameters
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.alignment.direct import direct_helmert_transformation
+from trajectopy.processing._lib.alignment.direct import direct_helmert_transformation
 
 logger = logging.getLogger(__name__)
 

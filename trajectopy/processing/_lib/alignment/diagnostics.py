@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from trajectopy.processing.lib.alignment.interactive import AlignmentPreview, AlignmentState, axis_rotation
+from trajectopy.processing._lib.alignment.interactive import AlignmentPreview, AlignmentState, axis_rotation
 
 MIN_EPOCHS = 10
 INSEPARABLE_CORRELATION = 0.999  # parameters whose effects correlate more cannot be told apart

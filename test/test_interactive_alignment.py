@@ -9,8 +9,8 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing import alignment
-from trajectopy.processing.lib.alignment import interactive
-from trajectopy.processing.lib.alignment.interactive import AlignmentPreview, AlignmentState
+from trajectopy.processing._lib.alignment import interactive
+from trajectopy.processing._lib.alignment.interactive import AlignmentPreview, AlignmentState
 
 UTM_OFFSET = np.array([364800.0, 5621500.0, 60.0])
 Z_AXIS = np.array([0.0, 0.0, 1.0])

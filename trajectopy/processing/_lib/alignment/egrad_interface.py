@@ -5,8 +5,8 @@ import autograd.numpy as np
 from autograd import elementwise_grad as egrad
 
 from trajectopy.core.parameters import AlignmentParameters
-from trajectopy.processing.lib.alignment.data import AlignmentData
-from trajectopy.processing.lib.alignment.equations import (
+from trajectopy.processing._lib.alignment.data import AlignmentData
+from trajectopy.processing._lib.alignment.equations import (
     functional_relationship_x,
     functional_relationship_y,
     functional_relationship_z,

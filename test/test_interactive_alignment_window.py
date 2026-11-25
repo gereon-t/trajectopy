@@ -23,8 +23,8 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.settings import AlignmentEstimationSettings, AlignmentSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing import alignment
-from trajectopy.processing.lib.alignment import diagnostics
-from trajectopy.processing.lib.alignment.interactive import AlignmentState, axis_rotation
+from trajectopy.processing._lib.alignment import diagnostics
+from trajectopy.processing._lib.alignment.interactive import AlignmentState, axis_rotation
 
 Z_AXIS = np.array([0.0, 0.0, 1.0])
 

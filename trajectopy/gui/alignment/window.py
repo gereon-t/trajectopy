@@ -10,8 +10,8 @@ The window guides through three phases:
    explain, and the views below the map show their signatures, each with the matching correction.
 3. **Least squares**: the rigorous estimation of the checked parameters, with statistics, then "Apply".
 
-Every step can be undone. The logic lives in :mod:`trajectopy.processing.lib.alignment.interactive` (placement),
-:mod:`trajectopy.processing.lib.alignment.diagnostics` (signatures, corrections) and in the
+Every step can be undone. The logic lives in :mod:`trajectopy.processing._lib.alignment.interactive` (placement),
+:mod:`trajectopy.processing._lib.alignment.diagnostics` (signatures, corrections) and in the
 :class:`~trajectopy.gui.alignment.session.AlignmentSession`.
 """
 
@@ -32,7 +32,7 @@ from trajectopy.gui.alignment.plots import (
 )
 from trajectopy.gui.alignment.session import AlignmentSession
 from trajectopy.gui.utils import center_window
-from trajectopy.processing.lib.alignment import diagnostics
+from trajectopy.processing._lib.alignment import diagnostics
 
 SIDE_WIDTH = 410
 ARROW_MAGNIFICATIONS = (

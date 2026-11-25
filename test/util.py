@@ -7,7 +7,7 @@ from trajectopy.core.parameters import (
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.alignment.equations import leverarm_time_component
+from trajectopy.processing._lib.alignment.equations import leverarm_time_component
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.utils.definitions import Unit
 

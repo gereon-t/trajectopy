@@ -8,8 +8,8 @@ from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import MatchingMethod, MatchingSettings, ProcessingSettings, resolve_settings
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.processing._lib.approximation.line_approximation import Line3D
 from trajectopy.processing.interpolation import inside_gaps, interpolate
-from trajectopy.processing.lib.approximation.line_approximation import Line3D
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.deprecation import renamed_parameters
 

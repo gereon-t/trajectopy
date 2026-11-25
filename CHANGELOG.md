@@ -57,6 +57,9 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`
   (use `trajectopy.AlignmentParameters`).
 
+- The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
+  private.
+
 ### Deprecations
 
 These keep working in version 7 and will be removed in version 8:

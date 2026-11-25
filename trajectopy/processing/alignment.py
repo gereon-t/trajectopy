@@ -19,10 +19,10 @@ from trajectopy.core.settings import (
     resolve_settings,
 )
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.alignment.data import AlignmentData
-from trajectopy.processing.lib.alignment.direct import align_rotations
-from trajectopy.processing.lib.alignment.equations import leverarm_time_component
-from trajectopy.processing.lib.alignment.estimation import AlignmentEstimator
+from trajectopy.processing._lib.alignment.data import AlignmentData
+from trajectopy.processing._lib.alignment.direct import align_rotations
+from trajectopy.processing._lib.alignment.equations import leverarm_time_component
+from trajectopy.processing._lib.alignment.estimation import AlignmentEstimator
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.utils.deprecation import warn_deprecated
 

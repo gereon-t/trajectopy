@@ -15,7 +15,7 @@ The public API consists of the names exported by these namespaces:
 | `trajectopy.exceptions` | The exceptions raised by trajectopy |
 
 Each of these namespaces lists its names in `__all__`. Everything else, for example
-`trajectopy.core.trajectory`, `trajectopy.processing.lib`, `trajectopy.gui` and `trajectopy.cli`, is an
+`trajectopy.core.trajectory`, `trajectopy.processing._lib`, `trajectopy.gui` and `trajectopy.cli`, is an
 implementation detail. Such modules remain importable, but they can change in any release.
 Methods and attributes whose names start with an underscore are private as well.
 

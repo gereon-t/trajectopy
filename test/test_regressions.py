@@ -48,7 +48,7 @@ class TestRegressions(unittest.TestCase):
 
     def test_direct_helmert_on_planar_points_is_a_rotation(self):
         from trajectopy.core.rotations import Rotations
-        from trajectopy.processing.lib.alignment.direct import direct_helmert_transformation
+        from trajectopy.processing._lib.alignment.direct import direct_helmert_transformation
 
         xyz_from = generated_trajectory.xyz  # lies exactly in a plane
         rotation = Rotations.from_euler("z", 0.3).as_matrix()
@@ -221,7 +221,7 @@ class TestRobustnessRegressions(unittest.TestCase):
         np.testing.assert_allclose(yaw, np.deg2rad(lap_position), atol=1e-9)
 
     def test_cubic_approximation_with_a_last_interval_of_exactly_the_window_size(self):
-        from trajectopy.processing.lib.approximation.cubic_approximation import CubicApproximation
+        from trajectopy.processing._lib.approximation.cubic_approximation import CubicApproximation
 
         index = np.arange(8.0)
         values = np.sin(index) + 5.0
@@ -231,7 +231,7 @@ class TestRobustnessRegressions(unittest.TestCase):
 
     def test_cubic_approximation_of_too_few_observations(self):
         from trajectopy.exceptions import ApproximationError
-        from trajectopy.processing.lib.approximation.cubic_approximation import CubicApproximation
+        from trajectopy.processing._lib.approximation.cubic_approximation import CubicApproximation
 
         with self.assertRaises(ApproximationError):
             CubicApproximation(np.arange(2.0), np.ones(2), min_win_size=3.0, min_obs=3)
@@ -260,7 +260,7 @@ class TestRobustnessRegressions(unittest.TestCase):
             Trajectory.from_arrays(np.zeros((5, 3)), timestamps=np.arange(4.0))
 
     def test_voxels_of_different_cells_stay_separate(self):
-        from trajectopy.processing.lib.approximation.voxelizer import Voxelizer
+        from trajectopy.processing._lib.approximation.voxelizer import Voxelizer
 
         # the cells (1, 12, 3) and (11, 2, 3) must not share a voxel
         points = np.array([[0, 0, 0], [1, 12, 3], [11, 2, 3]], dtype=float) - 0.5

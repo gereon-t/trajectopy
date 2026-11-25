@@ -6,7 +6,7 @@ import pytest
 import trajectopy as tpy
 from test.testdata import generated_trajectory
 from trajectopy.core.settings import AlignmentSettings, AlignmentStochastics
-from trajectopy.processing.lib.alignment.data import AlignmentData
+from trajectopy.processing._lib.alignment.data import AlignmentData
 from trajectopy.results.summary import format_table, summary_table
 from trajectopy.utils.statistics import block_bootstrap_ci, block_length
 

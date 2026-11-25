@@ -21,8 +21,8 @@ from trajectopy.core.settings import (
 )
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing import alignment
-from trajectopy.processing.lib.alignment import diagnostics, interactive
-from trajectopy.processing.lib.alignment.interactive import AlignmentPreview, AlignmentState
+from trajectopy.processing._lib.alignment import diagnostics, interactive
+from trajectopy.processing._lib.alignment.interactive import AlignmentPreview, AlignmentState
 from trajectopy.results.alignment_result import AlignmentResult
 
 logger = logging.getLogger(__name__)

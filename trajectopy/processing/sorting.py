@@ -8,8 +8,8 @@ from scipy.spatial import KDTree
 
 from trajectopy.core.settings import ProcessingSettings, SortingSettings, resolve_settings
 from trajectopy.core.trajectory import Trajectory
-from trajectopy.processing.lib.approximation.line_approximation import Line3D
-from trajectopy.processing.lib.approximation.voxelizer import Voxelizer
+from trajectopy.processing._lib.approximation.line_approximation import Line3D
+from trajectopy.processing._lib.approximation.voxelizer import Voxelizer
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.deprecation import renamed_parameters
 from trajectopy.utils.geometry import lengths_from_xyz

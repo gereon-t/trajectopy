@@ -14,13 +14,13 @@ from trajectopy.core.parameters import (
     Parameter,
 )
 from trajectopy.core.settings import AlignmentSettings
-from trajectopy.processing.lib.alignment.data import AlignmentData
-from trajectopy.processing.lib.alignment.direct import (
+from trajectopy.processing._lib.alignment.data import AlignmentData
+from trajectopy.processing._lib.alignment.direct import (
     direct_helmert_transformation,
     direct_leverarm,
     direct_timeshift,
 )
-from trajectopy.processing.lib.alignment.egrad_interface import FunctionalRelationship
+from trajectopy.processing._lib.alignment.egrad_interface import FunctionalRelationship
 from trajectopy.utils.definitions import UNIT_FORMAT_RULES, Unit
 from trajectopy.utils.formatting import dict2table
 

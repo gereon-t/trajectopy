@@ -9,8 +9,8 @@ import numpy as np
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from trajectopy.gui.alignment.session import AlignmentSession
-from trajectopy.processing.lib.alignment import diagnostics
-from trajectopy.processing.lib.alignment.diagnostics import Correction, Diagnosis, Residuals
+from trajectopy.processing._lib.alignment import diagnostics
+from trajectopy.processing._lib.alignment.diagnostics import Correction, Diagnosis, Residuals
 
 RESIDUALS_DELAY_MS = 60  # the deviation follows the placement closely
 DIAGNOSIS_DELAY_MS = 350  # the ranking waits until the input pauses
