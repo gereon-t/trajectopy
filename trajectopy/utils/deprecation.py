@@ -1,0 +1,77 @@
+"""Helpers for deprecating parts of the public API.
+
+Deprecated names and arguments keep working for at least one minor release and emit a
+:class:`TrajectopyDeprecationWarning` (a subclass of :class:`DeprecationWarning`). They are removed in the
+next major release, see the deprecation policy in the documentation.
+"""
+
+import functools
+import inspect
+import warnings
+from collections.abc import Callable
+from typing import Any, TypeVar
+
+_F = TypeVar("_F", bound=Callable[..., Any])
+
+
+class TrajectopyDeprecationWarning(DeprecationWarning):
+    """Warning for parts of the trajectopy API that will be removed in the next major release."""
+
+
+def warn_deprecated(message: str, stacklevel: int = 2) -> None:
+    """Emits a :class:`TrajectopyDeprecationWarning` that points at the caller of the deprecated code."""
+    warnings.warn(message, TrajectopyDeprecationWarning, stacklevel=stacklevel + 1)
+
+
+def renamed_parameters(**renames: str) -> Callable[[_F], _F]:
+    """Decorator that accepts the old names of renamed keyword arguments.
+
+    Example:
+        >>> @renamed_parameters(alignment_settings="settings")
+        ... def align(trajectory, other, *, settings=None): ...
+
+    Passing an old name emits a deprecation warning and forwards the value to the new name. Passing both
+    raises a TypeError.
+    """
+
+    def decorator(func: _F) -> _F:
+        signature = inspect.signature(func)
+        for new in renames.values():
+            if new not in signature.parameters:
+                raise ValueError(f"{func.__qualname__} has no parameter {new!r}")
+
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            for old, new in renames.items():
+                if old not in kwargs:
+                    continue
+                if new in kwargs:
+                    raise TypeError(f"{func.__qualname__}() got values for both {old!r} and {new!r}")
+                warn_deprecated(
+                    f"The argument {old!r} of {func.__qualname__}() is deprecated, use {new!r} instead.",
+                    stacklevel=2,
+                )
+                kwargs[new] = kwargs.pop(old)
+            return func(*args, **kwargs)
+
+        return wrapper  # type: ignore[return-value]
+
+    return decorator
+
+
+def deprecated_module_attributes(module_name: str, aliases: dict[str, tuple[str, Callable[[], Any]]]):
+    """Returns a module ``__getattr__`` that resolves deprecated module attributes with a warning.
+
+    Args:
+        module_name: ``__name__`` of the module.
+        aliases: Maps a deprecated attribute name to ``(replacement description, loader)``.
+    """
+
+    def __getattr__(name: str) -> Any:
+        if name in aliases:
+            replacement, loader = aliases[name]
+            warn_deprecated(f"{module_name}.{name} is deprecated, use {replacement} instead.", stacklevel=2)
+            return loader()
+        raise AttributeError(f"module {module_name!r} has no attribute {name!r}")
+
+    return __getattr__
