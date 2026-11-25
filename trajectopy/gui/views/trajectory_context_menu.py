@@ -207,8 +207,9 @@ class TrajectoryContextMenu(SelectionMenu):
         add_action(
             menu,
             "Interactive Alignment…",
-            self._ui(UIRequestType.MANUAL_ALIGNMENT),
-            hint="Opens a window to align the trajectory by hand and/or by least squares, with a live preview. "
+            self._ui(UIRequestType.INTERACTIVE_ALIGNMENT),
+            hint="Opens a window to align the trajectory by hand (drag it, pick point pairs, synchronize the time) "
+            "and/or by least squares, with a live preview and undo. "
             "Helpful if the automatic alignment fails, e.g. for unrelated frames or large time offsets.",
             unavailable=needs_reference or self._single,
         )

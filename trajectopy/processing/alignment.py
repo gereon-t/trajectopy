@@ -38,7 +38,9 @@ def estimate_alignment(
         matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
         initial_parameters (AlignmentParameters, optional): Prior (e.g. from a manual alignment) used as
             start values of the least squares adjustment instead of the direct initialization. Parameters
-            that are not estimated stay fixed at their prior value. Defaults to None.
+            that are not estimated stay fixed at their prior value. A time shift of the prior may be large
+            (e.g. trajectories recorded with unrelated clocks): the timestamps are shifted by it before the
+            trajectories are matched, and only the remaining time shift is estimated. Defaults to None.
 
     Returns:
         AlignmentResult: Result of the alignment process.
@@ -50,6 +52,16 @@ def estimate_alignment(
 
     logger.info("Aligning trajectory positions ...")
 
+    # The time shift is modelled by the velocity (x + v * dt), which only holds for small shifts. A prior time
+    # shift is therefore applied to the timestamps beforehand and added to the estimated (remaining) one.
+    prior_time_shift = 0.0 if initial_parameters is None else float(initial_parameters.time_shift.value)
+    if initial_parameters is not None and prior_time_shift != 0.0:
+        trajectory = trajectory.copy()
+        trajectory.timestamps = trajectory.timestamps - prior_time_shift
+        initial_parameters = copy.deepcopy(initial_parameters)
+        initial_parameters.time_shift.value = 0.0
+        initial_parameters.time_shift.default = 0.0
+
     alignment_data = AlignmentData(
         traj_from=trajectory,
         traj_to=other,
@@ -58,6 +70,10 @@ def estimate_alignment(
     )
     ghm_alignment = AlignmentEstimator(alignment_data=alignment_data, initial_parameters=initial_parameters)
     estimated_parameters = ghm_alignment.estimate_parameters()
+    if prior_time_shift != 0.0:
+        time_shift = estimated_parameters.time_shift
+        time_shift.value = time_shift.value + prior_time_shift
+        time_shift.default = time_shift.default + prior_time_shift
 
     pre_aligned_rotations = (
         alignment_data.traj_from.transform(estimated_parameters.sim3_matrix, inplace=False).rotations

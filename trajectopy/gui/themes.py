@@ -180,6 +180,15 @@ _BASE = """
         QLineEdit:focus {
             border-color: %(accent)s;
         }
+        QProgressBar {
+            background-color: %(input_bg)s;
+            border: none;
+            border-radius: 2px;
+        }
+        QProgressBar::chunk {
+            background-color: %(accent)s;
+            border-radius: 2px;
+        }
         QSizeGrip {
             width: 0;
             height: 0;
@@ -276,8 +285,11 @@ DARK_STYLESHEET = (
         QPushButton:hover {
             background-color: #1177bb;
         }
-        QPushButton:pressed {
+        QPushButton:pressed, QPushButton:checked {
             background-color: #094771;
+        }
+        QPushButton:checked {
+            border: 1px solid #3794ff;
         }
         QPushButton:disabled {
             background-color: #3c3c3c;
@@ -399,8 +411,11 @@ LIGHT_STYLESHEET = (
         QPushButton:hover {
             background-color: #106ebe;
         }
-        QPushButton:pressed {
+        QPushButton:pressed, QPushButton:checked {
             background-color: #005a9e;
+        }
+        QPushButton:checked {
+            border: 1px solid #003d6b;
         }
         QPushButton:disabled {
             background-color: #cccccc;

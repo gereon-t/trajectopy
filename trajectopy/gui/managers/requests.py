@@ -111,7 +111,7 @@ class UIRequestType(Enum):
     IMPORT_RES = auto()
     MESSAGE = auto()
     EDIT_ALIGNMENT = auto()
-    MANUAL_ALIGNMENT = auto()
+    INTERACTIVE_ALIGNMENT = auto()
     PLAYBACK = auto()
     RENAME_TRAJ = auto()
     RENAME_RES = auto()

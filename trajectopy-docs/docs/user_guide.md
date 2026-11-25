@@ -461,30 +461,73 @@ table has focus and do what the menu entry does for the selected rows.
 
 ### Interactive Alignment
 
-If the automatic alignment cannot find a solution on its own (e.g. trajectories in unrelated frames or
-with a large time offset), a trajectory can be aligned manually: set a reference, then choose
-*Align with Reference → Interactive Alignment…* in the context menu of the trajectory.
+Set a reference, then choose *Align with Reference → Interactive Alignment…* in the context menu of a trajectory.
+The window helps in two situations: when the automatic alignment fails (unrelated frames, a different scale, a
+large time offset), and when you want to understand *what* is wrong with an alignment, e.g. to calibrate a
+leverarm or a time offset. It works in three steps; every step can be undone (`Ctrl+Z`, redo with `Ctrl+Y`).
 
-1. **Auto align** runs the spatio-temporal least squares alignment and shows its result. Only the parameters
-   checked with *estimate* are estimated (preselected from the trajectory settings); the others keep their
-   values. The start values are chosen automatically: the current values, the first pose matched, a fit on
-   poses matched in time or the centers matched, whatever brings the trajectory closest to the reference.
-   The leverarm can only be estimated for trajectories with orientations.
-2. If Auto align does not find the right solution, **place the trajectory manually** and press
-   *Refine manual alignment*: it runs the same least squares alignment, but starts exactly from the values shown.
-   *Match first pose* puts the first position onto the reference's first position and aligns the initial
-   direction of travel. It does not use the timestamps, so it also works with an unknown time offset.
-   In the plots, drag ● to move and ◆ to rotate the trajectory. The top view rotates about the vertical
-   axis (yaw), the side view about y (pitch) and the front view about x (roll).
-   Single parameters can be fine-tuned with the jog sliders (drag and hold: the further you drag, the faster
-   the value changes; they snap back when released), by typing values or with the spin box arrows / mouse
-   wheel (Ctrl: 10× steps), or with the keyboard after clicking into the plots (arrows, PgUp/PgDn, Q/E;
-   Shift: 10× faster, Ctrl: 10× finer).
-3. **Apply** aligns the trajectory with the values shown and saves the alignment. If they come unchanged from
-   the least squares alignment, the saved alignment includes its statistics (e.g. the covariance).
+**1 · Place roughly.** Bring the trajectory onto the reference, in space and in time.
 
-Position, heading and scale are relative to the trajectory's center, so rotating does not move the
-trajectory away even for georeferenced coordinates.
+- **Auto align** tries several rough placements (the current one, the first pose, a fit on poses at equal time,
+  the centers, the time from the speed profiles), keeps the closest and refines it by least squares.
+- **Drag** the trajectory in the view to move it; `Ctrl`+drag rotates and `Shift`+drag scales it about the pivot
+  (+). Rotations turn about the viewing direction (top, side or front view). Double-click places the pivot.
+  Keyboard: arrows move, `Q`/`E` rotate (`Shift`: 10× larger, `Ctrl`: 10× finer).
+- **Pick point pairs**: click a point on the trajectory and the reference position it belongs to. One pair fixes
+  the position, two add the heading (and the scale with *fit scale*), three or more the full rotation.
+- **Match first pose** puts the first pose onto the reference's first pose.
+- **Sync time** finds the time offset by comparing the speed profiles, which do not depend on the coordinate
+  frame. You can also drag left/right in the speed plot (*Over time*).
+
+**2 · Diagnose and correct.** Once the trajectories overlap, the *deviation at equal time* remains: the position of
+the trajectory minus that of the reference at the same timestamp. It is split into *along-track* (direction of
+travel of the reference), *cross-track* (to its left) and *vertical*. Every alignment parameter leaves its own
+signature in it:
+
+| Error | Signature | View |
+| --- | --- | --- |
+| Time shift | along-track deviation proportional to the speed, none at standstills | *Time shift* |
+| Leverarm | constant in the body frame, also at standstills | *Shift and leverarm* |
+| Shift | constant in the world frame: in the body frame it changes with the heading | *Shift and leverarm* |
+| Heading | tangential deviation (about the pivot) proportional to the distance from it | *Rotation and scale* |
+| Scale | radial deviation proportional to the distance from the pivot | *Rotation and scale* |
+| Roll, pitch | vertical deviation growing along x or y | *Rotation and scale* |
+
+The **diagnosis** lists the parameters that explain the deviation, most important first. It considers only the
+parameters checked with *estimate* (under *Values and estimated parameters*, preselected from the trajectory
+settings): *Explains* is the part of the deviation (RMS) that only this parameter accounts for compared to the
+other estimated ones, *Correction* its error. If a parameter that is not estimated would reduce the deviation
+considerably, the diagnosis points it out. A parameter is listed only if it explains clearly more than noise
+would (taking into account that the deviation of trajectories is correlated from pose to pose) and if it
+matters compared to the deviation that remains after correcting everything; so correcting removes rows but
+does not bring up new ones made of noise. The corrections are determined for the estimated parameters jointly, so that effects that look alike are attributed correctly; for a vehicle, for example, a
+leverarm along the direction of travel and a time shift both deviate along-track, but only the time shift grows
+with the speed. Parameters that cannot be told apart with the data at hand are named (e.g. the vertical leverarm
+and the vertical shift of a platform that is always level).
+
+Selecting a row opens the view with the signature of the parameter. By default, a view removes the effects of all
+other parameters (*Hide effects of other parameters*), so that its plot shows just this signature plus what no parameter
+explains; uncheck it to see the actual deviation. Hovering over the data marks the poses of that time in the main
+view, and the *deviation arrows* there show the pattern on the map (parallel: shift; along the path: time shift;
+swirl: heading; away from the pivot: scale).
+
+The plots keep their axes while you drag, so that nothing jumps; they adapt when the data leaves the visible range
+or fills only a small part of it. After zooming or panning a plot, double-click it to let its axes follow the data
+again. The ranking of the parameters is updated once you pause, so that the rows do not reorder under the mouse;
+the values of the placement (*Values and estimated parameters*) are folded away until you open them. Messages
+appear in the status bar at the bottom.
+
+Corrections are made with *Correct* in the diagnosis, with *Correct all* (all estimated parameters together),
+or with the buttons of the views,
+e.g. *Correct shift and leverarm*, which uses only the standstills, where a time shift has no effect. Every
+correction is estimated together with all other parameters, so the order in which they are applied does not
+matter.
+
+**3 · Least squares.** *Refine by least squares* runs the rigorous spatio-temporal least squares alignment of the
+parameters checked with *estimate* (preselected from the trajectory settings), starting from the placement shown;
+it runs in the background and can be cancelled. The values of all parameters can also be typed in.
+**Apply** aligns the trajectory as shown and saves the alignment; if the placement comes unchanged from the least
+squares alignment, its statistics (e.g. the covariance) are saved, too.
 
 ## 7. Command Line
 

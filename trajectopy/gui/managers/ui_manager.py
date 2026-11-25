@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6 import QtWidgets
 from PySide6.QtCore import QObject, Qt, Signal, Slot
 
+from trajectopy.gui.alignment.window import InteractiveAlignmentWindow
 from trajectopy.gui.managers.requests import (
     FileRequest,
     FileRequestType,
@@ -30,7 +31,6 @@ from trajectopy.gui.utils import (
 from trajectopy.gui.views.alignment_edit_window import AlignmentEditWindow
 from trajectopy.gui.views.dof_organizer import DOFOrganizer
 from trajectopy.gui.views.json_settings_view import JSONViewer
-from trajectopy.gui.views.manual_alignment_window import ManualAlignmentWindow
 from trajectopy.gui.views.playback_window import PlaybackWindow
 from trajectopy.gui.views.result_selection_window import AlignmentSelector
 from trajectopy.io.kml import ate_kml_fields, trajectory_kml_fields
@@ -84,7 +84,7 @@ class UIManager(QObject):
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
             UIRequestType.TRAJ_SETTINGS: self.show_trajectory_settings,
             UIRequestType.EDIT_ALIGNMENT: self.edit_alignment,
-            UIRequestType.MANUAL_ALIGNMENT: self.manual_alignment,
+            UIRequestType.INTERACTIVE_ALIGNMENT: self.interactive_alignment,
             UIRequestType.GRID_SELECTION: self.grid_selection,
             UIRequestType.PLAYBACK: self.trajectory_playback,
             UIRequestType.RENAME_TRAJ: self.rename_trajectory,
@@ -179,7 +179,7 @@ class UIManager(QObject):
         center_window(playback_window)
         playback_window.show()
 
-    def manual_alignment(self, request: UIRequest) -> None:
+    def interactive_alignment(self, request: UIRequest) -> None:
         selection = request.trajectory_selection
         if (reference_entry := selection.reference_entry) is None:
             show_msg_box("No reference trajectory selected.", self._dialog_parent())
@@ -190,22 +190,24 @@ class UIManager(QObject):
             show_msg_box("Select a trajectory that is not the reference.", self._dialog_parent())
             return
 
-        def create() -> ManualAlignmentWindow:
-            manual_window = ManualAlignmentWindow(
+        def create() -> InteractiveAlignmentWindow:
+            alignment_window = InteractiveAlignmentWindow(
                 trajectory=entry.trajectory,
                 reference=reference_entry.trajectory,
                 matching_settings=entry.settings.matching,
                 alignment_settings=entry.settings.alignment,
                 parent=self.parent(),
             )
-            manual_window.alignment_accepted.connect(
-                functools.partial(self.handle_manual_alignment, selection=request.trajectory_selection)
+            alignment_window.alignment_accepted.connect(
+                functools.partial(self.handle_interactive_alignment, selection=request.trajectory_selection)
             )
-            return manual_window
+            return alignment_window
 
-        self._windows.show(("manual_alignment", entry.entry_id, reference_entry.entry_id), create)
+        self._windows.show(("interactive_alignment", entry.entry_id, reference_entry.entry_id), create)
 
-    def handle_manual_alignment(self, alignment_result: AlignmentResult, *, selection: TrajectorySelection) -> None:
+    def handle_interactive_alignment(
+        self, alignment_result: AlignmentResult, *, selection: TrajectorySelection
+    ) -> None:
         self.trajectory_manager_request.emit(
             TrajectoryManagerRequest(
                 type=TrajectoryManagerRequestType.ALIGN,
