@@ -190,13 +190,13 @@ class Trajectory:
         Returns:
             Trajectory: The loaded trajectory object.
         """
-        from trajectopy.io.formats import read_trajectory_file
+        from trajectopy.io.formats import read_trajectory
 
         if io_stream is not None:
             warn_deprecated("The argument 'io_stream' of Trajectory.from_file() is deprecated, use from_string().")
             if io_stream:
                 return cls.from_string(str(filename))
-        return read_trajectory_file(os.fspath(filename), format=format)
+        return read_trajectory(filename, format=format)
 
     @classmethod
     def from_string(cls, text: str) -> "Trajectory":
@@ -795,17 +795,26 @@ class Trajectory:
 
         return trajectory_to_string(self)
 
-    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
+    def to_file(
+        self,
+        filename: str | os.PathLike,
+        mode: str = "w",
+        *,
+        format: str = "auto",  # noqa: A002
+    ) -> None:
         """
-        Writes the trajectory to an ASCII file using the format defined in `to_string`.
+        Writes the trajectory to a file.
 
         Args:
-            filename (str): The output file path.
-            mode (str, optional): File open mode. Defaults to "w".
+            filename (str | os.PathLike): The output file path.
+            mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+            format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
+                ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``) and writes
+                the trajectopy format (see :meth:`to_string`) otherwise.
         """
-        from trajectopy.io.trajectory_io import write_trajectory
+        from trajectopy.io.formats import write_trajectory
 
-        write_trajectory(self, filename=os.fspath(filename), mode=mode)
+        write_trajectory(self, filename, format=format, mode=mode)
 
     def to_kml(
         self, filename: str | os.PathLike, precision: float = 1e-6, color: str = "#ff0000", **options: Any

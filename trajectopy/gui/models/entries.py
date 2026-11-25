@@ -129,7 +129,7 @@ class TrajectoryEntry(Entry):
         with open(filename, "w", newline="\n", encoding="utf-8") as file:
             file.write(f"#state {self.state}\n")
 
-        self.trajectory.to_file(filename=filename, mode="a")
+        self.trajectory.to_file(filename=filename, mode="a", format="trajectopy")
 
     @classmethod
     def from_file(

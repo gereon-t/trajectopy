@@ -12,7 +12,6 @@ recognized by :func:`detect_format`:
 import logging
 import os
 from collections.abc import Callable
-from enum import Enum
 from pathlib import Path
 
 import numpy as np
@@ -21,11 +20,12 @@ import pandas as pd
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.utils.definitions import OptionEnum
 
 logger = logging.getLogger(__name__)
 
 
-class TrajectoryFormat(str, Enum):
+class TrajectoryFormat(OptionEnum):
     """File formats of trajectories."""
 
     AUTO = "auto"
@@ -35,12 +35,11 @@ class TrajectoryFormat(str, Enum):
     EUROC = "euroc"
 
     @classmethod
-    def from_str(cls, value: "str | TrajectoryFormat") -> "TrajectoryFormat":
-        try:
-            return cls(str(value.value if isinstance(value, TrajectoryFormat) else value).lower())
-        except ValueError as error:
-            options = ", ".join(item.value for item in cls)
-            raise ValueError(f"Unknown trajectory format '{value}'. Options: {options}.") from error
+    def _missing_(cls, value: object) -> "TrajectoryFormat":
+        if (member := super()._missing_(value)) is not None:
+            return member  # type: ignore[return-value]
+        options = ", ".join(item.value for item in cls)
+        raise ValueError(f"Unknown trajectory format '{value}'. Options: {options}.")
 
 
 _KITTI_COLUMNS = 12
@@ -182,30 +181,32 @@ def read_euroc(filename: str | os.PathLike, name: str = "") -> Trajectory:
     )
 
 
-def read_trajectory_file(
-    filename: str | os.PathLike, format: "str | TrajectoryFormat" = TrajectoryFormat.AUTO
-) -> Trajectory:  # noqa: A002
+def read_trajectory(
+    filename: str | os.PathLike,
+    *,
+    format: "str | TrajectoryFormat" = TrajectoryFormat.AUTO,  # noqa: A002
+) -> Trajectory:
     """Reads a trajectory file in any supported format.
 
     Args:
-        filename (str): Path to the file.
+        filename (str | os.PathLike): Path to the file.
         format (str | TrajectoryFormat, optional): One of ``auto``, ``trajectopy``, ``tum``, ``kitti`` and
             ``euroc``. With ``auto`` (default), the format is recognized by :func:`detect_format`.
 
     Returns:
         Trajectory: The loaded trajectory.
     """
-    from trajectopy.io.trajectory_io import read_trajectory
+    from trajectopy.io import trajectory_io
 
     filename = os.fspath(filename)
-    file_format = TrajectoryFormat.from_str(format)
+    file_format = TrajectoryFormat(format)
     if file_format == TrajectoryFormat.AUTO:
         file_format = detect_format(filename)
         if file_format != TrajectoryFormat.TRAJECTOPY:
             logger.info("Recognized %s as a %s file.", filename, file_format.value.upper())
 
     if file_format == TrajectoryFormat.TRAJECTOPY:
-        return read_trajectory(filename, default_name=_name(filename))
+        return trajectory_io.read_trajectory(filename, default_name=_name(filename))
     readers: dict[TrajectoryFormat, Callable[[str], Trajectory]] = {
         TrajectoryFormat.TUM: read_tum,
         TrajectoryFormat.KITTI: read_kitti,
@@ -250,29 +251,33 @@ def to_euroc_string(trajectory: Trajectory) -> str:
     return header + "".join(lines)
 
 
-def write_trajectory_file(
+def write_trajectory(
     trajectory: Trajectory,
-    filename: str,
-    format: "str | TrajectoryFormat" = TrajectoryFormat.TRAJECTOPY,  # noqa: A002
+    filename: str | os.PathLike,
+    *,
+    format: "str | TrajectoryFormat" = TrajectoryFormat.AUTO,  # noqa: A002
+    mode: str = "w",
 ) -> None:
     """Writes a trajectory in one of the supported formats.
 
     Args:
         trajectory (Trajectory): Trajectory to write.
-        filename (str): Output path.
-        format (str | TrajectoryFormat, optional): One of ``trajectopy`` (default), ``tum``, ``kitti`` and
-            ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``) and writes
-            trajectopy files otherwise.
+        filename (str | os.PathLike): Output path.
+        format (str | TrajectoryFormat, optional): One of ``auto`` (default), ``trajectopy``, ``tum``,
+            ``kitti`` and ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``)
+            and writes trajectopy files otherwise.
+        mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
     """
-    from trajectopy.io.trajectory_io import write_trajectory
+    from trajectopy.io import trajectory_io
 
-    file_format = TrajectoryFormat.from_str(format)
+    filename = os.fspath(filename)
+    file_format = TrajectoryFormat(format)
     if file_format == TrajectoryFormat.AUTO:
         suffixes = {".tum": TrajectoryFormat.TUM, ".kitti": TrajectoryFormat.KITTI}
         file_format = suffixes.get(Path(filename).suffix.lower(), TrajectoryFormat.TRAJECTOPY)
 
     if file_format == TrajectoryFormat.TRAJECTOPY:
-        write_trajectory(trajectory, filename)
+        trajectory_io.write_trajectory(trajectory, filename, mode=mode)
         return
 
     writers = {
@@ -280,5 +285,10 @@ def write_trajectory_file(
         TrajectoryFormat.KITTI: to_kitti_string,
         TrajectoryFormat.EUROC: to_euroc_string,
     }
-    with open(filename, "w", newline="\n", encoding="utf-8") as file:
+    with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write(writers[file_format](trajectory))
+
+
+# names used before trajectopy 7
+read_trajectory_file = read_trajectory
+write_trajectory_file = write_trajectory

@@ -10,8 +10,8 @@ from trajectopy.io.formats import (
     detect_format,
     read_euroc,
     read_kitti,
-    read_trajectory_file,
-    write_trajectory_file,
+    read_trajectory,
+    write_trajectory,
 )
 
 
@@ -23,7 +23,7 @@ def trajectory() -> Trajectory:
 @pytest.mark.parametrize("file_format", ["tum", "euroc"])
 def test_round_trip_with_timestamps(tmp_path, trajectory, file_format):
     path = tmp_path / f"trajectory.{file_format}"
-    write_trajectory_file(trajectory, str(path), format=file_format)
+    write_trajectory(trajectory, str(path), format=file_format)
 
     assert detect_format(str(path)) == (
         TrajectoryFormat.EUROC if file_format == "euroc" else TrajectoryFormat.TRAJECTOPY
@@ -37,7 +37,7 @@ def test_round_trip_with_timestamps(tmp_path, trajectory, file_format):
 
 def test_kitti_round_trip_and_detection(tmp_path, trajectory):
     path = tmp_path / "poses.txt"
-    write_trajectory_file(trajectory, str(path), format="kitti")
+    write_trajectory(trajectory, str(path), format="kitti")
 
     assert detect_format(str(path)) == TrajectoryFormat.KITTI
     loaded = Trajectory.from_file(str(path))
@@ -49,7 +49,7 @@ def test_kitti_round_trip_and_detection(tmp_path, trajectory):
 
 def test_kitti_with_timestamps_file(tmp_path, trajectory):
     path, times = tmp_path / "poses.txt", tmp_path / "times.txt"
-    write_trajectory_file(trajectory, str(path), format="kitti")
+    write_trajectory(trajectory, str(path), format="kitti")
     np.savetxt(times, trajectory.timestamps)
 
     loaded = read_kitti(str(path), timestamps=str(times))
@@ -76,9 +76,9 @@ def test_trajectopy_files_are_not_misdetected(tmp_path, trajectory):
     path = tmp_path / "trajectory.traj"
     trajectory.to_file(str(path))
     assert detect_format(str(path)) == TrajectoryFormat.TRAJECTOPY
-    assert read_trajectory_file(str(path)) == trajectory
+    assert read_trajectory(str(path)) == trajectory
 
 
 def test_unknown_format():
     with pytest.raises(ValueError, match="Unknown trajectory format"):
-        TrajectoryFormat.from_str("bogus")
+        TrajectoryFormat("bogus")

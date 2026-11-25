@@ -31,7 +31,7 @@ class CommandError(Exception):
 
 def load_trajectories(path: str, topics: Sequence[str] | None = None, file_format: str = "auto") -> list:
     """Trajectories of a file: one for a trajectory file, one per topic for a ROS bag."""
-    from trajectopy.io.formats import read_trajectory_file
+    from trajectopy.io.formats import read_trajectory
     from trajectopy.io.rosbag import is_ros_bag, trajectories_from_rosbag
 
     if not Path(path).exists():
@@ -41,7 +41,7 @@ def load_trajectories(path: str, topics: Sequence[str] | None = None, file_forma
         if not trajectories:
             raise CommandError(f"No trajectories of a supported message type found in {path}.")
         return trajectories
-    return [read_trajectory_file(path, format=file_format)]
+    return [read_trajectory(path, format=file_format)]
 
 
 def load_reference(args: argparse.Namespace):
@@ -169,7 +169,7 @@ def _export_figures(directory: Path, ate_results, rpe_results, plot_settings) ->
 
 def run_align(args: argparse.Namespace) -> int:
     import trajectopy as tpy
-    from trajectopy.io.formats import write_trajectory_file
+    from trajectopy.io.formats import write_trajectory
 
     settings = load_settings(args.settings)
     reference = load_reference(args)
@@ -189,7 +189,7 @@ def run_align(args: argparse.Namespace) -> int:
         if args.output:
             output = Path(args.output)
             path = output / f"{_safe_name(estimate.name)}_aligned.traj" if output.is_dir() else output
-            write_trajectory_file(aligned, str(path), format=args.to)
+            write_trajectory(aligned, str(path), format=args.to)
             logger.info("Wrote %s", path)
         if args.parameters:
             Path(args.parameters).unlink(missing_ok=True)
@@ -198,7 +198,7 @@ def run_align(args: argparse.Namespace) -> int:
 
 
 def run_convert(args: argparse.Namespace) -> int:
-    from trajectopy.io.formats import write_trajectory_file
+    from trajectopy.io.formats import write_trajectory
 
     trajectories = [t for path in args.files for t in load_trajectories(path, args.topic, args.format)]
     output = Path(args.output)
@@ -209,7 +209,7 @@ def run_convert(args: argparse.Namespace) -> int:
         if args.epsg is not None:
             trajectory.positions.to_epsg(args.epsg, inplace=True)
         path = output / f"{_safe_name(trajectory.name)}{suffix}" if output.is_dir() else output
-        write_trajectory_file(trajectory, str(path), format=args.to)
+        write_trajectory(trajectory, str(path), format=args.to)
         if not args.quiet:
             print(f"Wrote {path}")
     return 0
