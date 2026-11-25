@@ -143,24 +143,29 @@ class Trajectory:
         Trajectory._counter += 1
 
     @classmethod
-    def from_file(cls, filename: str, io_stream: bool = False) -> "Trajectory":
+    def from_file(cls, filename: str, io_stream: bool = False, format: str = "auto") -> "Trajectory":  # noqa: A002
         """
         Create a trajectory instance from a file.
 
         The file is expected to be a CSV-like format. It handles extraction of
         timestamps, xyz positions, rotations, path lengths, and velocities via `ascii` trajectory reader.
+        Files in the TUM, KITTI and EuRoC formats are recognized automatically, see
+        :func:`trajectopy.io.formats.detect_format`.
 
         Args:
             filename (str): Path to the file or string content if io_stream is True.
             io_stream (bool, optional): If True, `filename` is treated as the raw string content
-                                        of the file/stream. Defaults to False.
+                                        of the file/stream (trajectopy format). Defaults to False.
+            format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
+                ``euroc``.
 
         Returns:
             Trajectory: The loaded trajectory object.
         """
-        from trajectopy.io.trajectory_io import read_trajectory, read_trajectory_string
+        from trajectopy.io.formats import read_trajectory_file
+        from trajectopy.io.trajectory_io import read_trajectory_string
 
-        return read_trajectory_string(filename) if io_stream else read_trajectory(filename)
+        return read_trajectory_string(filename) if io_stream else read_trajectory_file(filename, format=format)
 
     @classmethod
     def from_arrays(

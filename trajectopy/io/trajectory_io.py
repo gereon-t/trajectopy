@@ -51,16 +51,21 @@ def _finite_or_none(values: np.ndarray | None) -> np.ndarray | None:
     return values if values is not None and np.all(np.isfinite(values)) else None
 
 
-def read_trajectory(filename: str) -> Trajectory:
+def read_trajectory(filename: str, default_name: str = "") -> Trajectory:
     """Reads a trajectory from a trajectopy ASCII file.
 
     Args:
         filename (str): Path to the file.
+        default_name (str, optional): Name of the trajectory if the file has no ``#name`` header line.
+            Defaults to "Trajectory".
 
     Returns:
         Trajectory: The loaded trajectory.
     """
-    return _trajectory_from_data(*ascii.read_trajectory_data(filename))
+    header_data, trajectory_data = ascii.read_trajectory_data(filename)
+    if default_name and "name" not in header_data.data:  # e.g. files without a header
+        header_data.data["name"] = default_name
+    return _trajectory_from_data(header_data, trajectory_data)
 
 
 def read_trajectory_string(content: str) -> Trajectory:
