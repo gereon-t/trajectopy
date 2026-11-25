@@ -106,6 +106,15 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["test"]
 
+[tool.coverage.run]
+source = ["trajectopy"]
+omit = ["trajectopy/readers/*"]  # deprecated aliases of trajectopy.io
+
+[tool.coverage.report]
+# CI fails if the coverage drops below this (it was 88% when the threshold was introduced)
+fail_under = 85
+skip_covered = true
+
 [tool.mypy]
 files = ["trajectopy"]
 python_version = "3.10"

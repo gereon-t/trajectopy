@@ -63,4 +63,4 @@ trajectopy-docs/site/
 .python-version
 scripts
 
-.sync-exclude.lst
+.sync-exclude.lstcoverage.xml
