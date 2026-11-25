@@ -44,8 +44,12 @@ Conventions
     - Functions and methods that transform a trajectory return a new object and never modify their
       inputs. Pass the keyword-only argument ``inplace=True`` to modify the input instead; the modified
       input is returned then, too. Always use the return value, e.g. ``traj = tpy.align(traj, ref)``.
-    - Evaluation functions (``ate``, ``rpe``, ``estimate_alignment``) never modify their inputs.
-    - Settings arguments default to ``None``, which means "use the default settings".
+    - Every processing function takes one ``settings`` argument: its own settings type or the complete
+      ``ProcessingSettings``. ``None`` means the default settings.
+    - Options (e.g. ``MatchingMethod``) can be given as strings, e.g. ``method="nearest_temporal"``.
+    - File functions accept ``str`` and ``os.PathLike`` and overwrite existing files by default.
+    - The public API consists of the names exported here and by ``trajectopy.io``,
+      ``trajectopy.visualization`` and ``trajectopy.exceptions``; see the API policy in the documentation.
 
 Quick Start
 -----------
@@ -55,10 +59,11 @@ Quick Start
     >>> traj_test = tpy.Trajectory.from_file("test.traj")
     >>> traj_ref = tpy.Trajectory.from_file("reference.traj")
     >>>
-    >>> # Align and evaluate
-    >>> traj_test_aligned = tpy.align(traj_test, traj_ref)
-    >>> ate_result = tpy.ate(traj_test_aligned, traj_ref)
-    >>> rpe_result = tpy.rpe(traj_test_aligned, traj_ref)
+    >>> # Evaluate (the ATE aligns the trajectories first)
+    >>> settings = tpy.ProcessingSettings()
+    >>> ate_result = tpy.ate(traj_test, traj_ref, settings)
+    >>> rpe_result = tpy.rpe(traj_test, traj_ref, settings)
+    >>> traj_test_aligned = tpy.apply_alignment(traj_test, ate_result.alignment)
 """
 
 import importlib

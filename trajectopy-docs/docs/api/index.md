@@ -2,6 +2,10 @@
 
 Welcome to the Trajectopy API reference. This section provides detailed documentation for all public modules, classes, and functions.
 
+All names documented here are available from the public namespaces `trajectopy`, `trajectopy.io`,
+`trajectopy.visualization` and `trajectopy.exceptions`; import them from there rather than from the modules
+they are defined in. See the [API policy](../api_policy.md) for the conventions and the stability guarantees.
+
 ## Core Modules
 
 - **[Trajectory](core/trajectory.md)** - Main trajectory class for representing and manipulating trajectory data
@@ -22,10 +26,11 @@ Welcome to the Trajectopy API reference. This section provides detailed document
 
 ## File I/O
 
-- **[Trajectory I/O](io/trajectory_io.md)** - Read and write trajectories (ASCII)
+- **[TUM, KITTI & EuRoC](io/formats.md)** - `trajectopy.io.read_trajectory` and `write_trajectory` for all formats
+- **[Trajectory I/O](io/trajectory_io.md)** - The trajectopy ASCII format
 - **[Results I/O](io/results_io.md)** - Read and write ATE/RPE/alignment results and parameters
 - **[Google Earth (KML)](io/kml.md)** - Export trajectories and ATE results to Google Earth
-- **[ROS Bags](io/rosbag.md)** - Read trajectories from ROS1 bag files
+- **[ROS Bags](io/rosbag.md)** - Read trajectories from ROS1 and ROS2 bag files
 
 ## Results
 
