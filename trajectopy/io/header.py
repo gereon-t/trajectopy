@@ -1,6 +1,7 @@
 """Parsing of the ``#key value`` header lines used by all trajectopy file formats."""
 
 import logging
+import os
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -240,7 +241,7 @@ class HeaderData:
                 logger.warning("Ignoring the header line '%s' since its value is missing or invalid.", line.strip())
 
     @classmethod
-    def from_file(cls, filename: str) -> "HeaderData":
+    def from_file(cls, filename: str | os.PathLike) -> "HeaderData":
         """Reads the header of a trajectory file.
 
         Args:
@@ -249,6 +250,7 @@ class HeaderData:
         Returns:
             HeaderData: The header data.
         """
+        filename = os.fspath(filename)
         return cls.from_lines(scan_header(filename).lines, source=filename)
 
     @classmethod

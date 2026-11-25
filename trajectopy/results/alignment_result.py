@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -43,15 +44,17 @@ class AlignmentResult:
             and self.estimation_of == other.estimation_of
         )
 
-    def to_file(self, filename: str) -> None:
-        """Appends the result to a file."""
+    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
+        """Writes the result to a file (``mode="a"`` appends it)."""
         from trajectopy.io import results_io
 
-        results_io.write_alignment_result(self, filename)
+        filename = os.fspath(filename)
+        results_io.write_alignment_result(self, filename, mode=mode)
 
     @classmethod
-    def from_file(cls, filename: str) -> "AlignmentResult":
+    def from_file(cls, filename: str | os.PathLike) -> "AlignmentResult":
         """Loads the result from a file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         return results_io.read_alignment_result(filename)

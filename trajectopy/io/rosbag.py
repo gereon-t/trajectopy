@@ -12,6 +12,7 @@ Supported message types (each topic becomes one trajectory, named after the topi
 """
 
 import logging
+import os
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
@@ -141,7 +142,7 @@ def supported_message_types() -> list[str]:
     return sorted([*ROS_MESSAGE_HANDLERS, PATH_MSGTYPE])
 
 
-def list_topics(filename: str) -> dict[str, str]:
+def list_topics(filename: str | os.PathLike) -> dict[str, str]:
     """The topics of a bag with a supported message type, mapped to their message type.
 
     Args:
@@ -150,6 +151,7 @@ def list_topics(filename: str) -> dict[str, str]:
     Returns:
         dict[str, str]: Topic name to message type.
     """
+    filename = os.fspath(filename)
     with AnyReader([Path(filename)], default_typestore=typestore) as reader:
         return {
             connection.topic: connection.msgtype
@@ -158,7 +160,7 @@ def list_topics(filename: str) -> dict[str, str]:
         }
 
 
-def trajectories_from_rosbag(filename: str, topics: Iterable[str] | None = None) -> list[Trajectory]:
+def trajectories_from_rosbag(filename: str | os.PathLike, topics: Iterable[str] | None = None) -> list[Trajectory]:
     """Creates trajectories from a ROS1 or ROS2 bag.
 
     Args:
@@ -169,6 +171,7 @@ def trajectories_from_rosbag(filename: str, topics: Iterable[str] | None = None)
     Returns:
         list[Trajectory]: One trajectory per topic (and per frame pair of transform topics).
     """
+    filename = os.fspath(filename)
     data = read_ros_bag(filename, topics=topics)
 
     trajectories = []
@@ -199,7 +202,7 @@ def trajectories_from_rosbag(filename: str, topics: Iterable[str] | None = None)
     return trajectories
 
 
-def read_ros_bag(filename: str, topics: Iterable[str] | None = None) -> dict[str, dict[str, list[Any]]]:
+def read_ros_bag(filename: str | os.PathLike, topics: Iterable[str] | None = None) -> dict[str, dict[str, list[Any]]]:
     """Reads the messages of supported types from a ROS1 or ROS2 bag.
 
     Args:
@@ -209,6 +212,7 @@ def read_ros_bag(filename: str, topics: Iterable[str] | None = None) -> dict[str
     Returns:
         dict[str, dict[str, list[Any]]]: For each trajectory (topic), the values of each field.
     """
+    filename = os.fspath(filename)
     wanted = set(topics) if topics is not None else None
     data: dict[str, dict[str, list[Any]]] = {}
     unsupported: set[str] = set()

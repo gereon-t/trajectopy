@@ -14,6 +14,7 @@ Example:
 import base64
 import html
 import logging
+import os
 import tempfile
 from collections.abc import Sequence
 from datetime import datetime, timezone
@@ -182,11 +183,12 @@ def report_html(
     )
 
 
-def write_report(filename: str, *args, **kwargs) -> None:
+def write_report(filename: str | os.PathLike, *args, **kwargs) -> None:
     """Writes a self-contained HTML report of an evaluation; see :func:`report_html` for the arguments.
 
     Args:
         filename (str): Output path, e.g. ``report.html``.
     """
+    filename = os.fspath(filename)
     Path(filename).write_text(report_html(*args, **kwargs), encoding="utf-8")
     logger.info("Wrote the report %s", filename)

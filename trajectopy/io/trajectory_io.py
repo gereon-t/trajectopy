@@ -1,6 +1,7 @@
 """Reading and writing of trajectories (trajectopy ASCII format). For KML, see :mod:`trajectopy.io.kml`."""
 
 import io
+import os
 
 import numpy as np
 import pandas as pd
@@ -51,7 +52,7 @@ def _finite_or_none(values: np.ndarray | None) -> np.ndarray | None:
     return values if values is not None and np.all(np.isfinite(values)) else None
 
 
-def read_trajectory(filename: str, default_name: str = "") -> Trajectory:
+def read_trajectory(filename: str | os.PathLike, default_name: str = "") -> Trajectory:
     """Reads a trajectory from a trajectopy ASCII file.
 
     Args:
@@ -62,6 +63,7 @@ def read_trajectory(filename: str, default_name: str = "") -> Trajectory:
     Returns:
         Trajectory: The loaded trajectory.
     """
+    filename = os.fspath(filename)
     header_data, trajectory_data = ascii.read_trajectory_data(filename)
     if default_name and "name" not in header_data.data:  # e.g. files without a header
         header_data.data["name"] = default_name
@@ -118,7 +120,7 @@ def trajectory_to_string(trajectory: Trajectory) -> str:
     return output.getvalue()
 
 
-def write_trajectory(trajectory: Trajectory, filename: str, mode: str = "w") -> None:
+def write_trajectory(trajectory: Trajectory, filename: str | os.PathLike, mode: str = "w") -> None:
     """Writes a trajectory to a trajectopy ASCII file.
 
     Args:
@@ -126,5 +128,6 @@ def write_trajectory(trajectory: Trajectory, filename: str, mode: str = "w") -> 
         filename (str): The output file path.
         mode (str, optional): File open mode. Defaults to "w".
     """
+    filename = os.fspath(filename)
     with open(filename, mode=mode, newline="\n", encoding="utf-8") as file:
         file.write(trajectory_to_string(trajectory))

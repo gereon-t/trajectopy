@@ -1,6 +1,7 @@
 import copy
 import json
 import logging
+import os
 from abc import ABC
 from dataclasses import dataclass, field, fields
 from enum import Enum, auto
@@ -86,12 +87,13 @@ class Settings(ABC):
         """
         return json.dumps(self.to_dict(), indent=4)
 
-    def to_file(self, path: str) -> None:
+    def to_file(self, path: str | os.PathLike) -> None:
         """Writes settings to a JSON file.
 
         Args:
             path: Path to the output file
         """
+        path = os.fspath(path)
         with open(path, "w", encoding="utf-8") as f:
             f.write(self.to_json())
 
@@ -149,7 +151,7 @@ class Settings(ABC):
         return settings
 
     @classmethod
-    def from_file(cls: type[_SettingsT], path: str) -> _SettingsT:
+    def from_file(cls: type[_SettingsT], path: str | os.PathLike) -> _SettingsT:
         """Loads settings from a JSON file.
 
         Args:
@@ -158,6 +160,7 @@ class Settings(ABC):
         Returns:
             Settings: Settings instance loaded from file
         """
+        path = os.fspath(path)
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
 

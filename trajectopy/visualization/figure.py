@@ -109,7 +109,7 @@ class Figure:
         """
         return _FigureWidget(self, use_opengl=use_opengl)
 
-    def export(self, path: str, variant: str | None = None, width: int = 1600) -> None:
+    def export(self, path: str | os.PathLike, variant: str | None = None, width: int = 1600) -> None:
         """Exports the figure (or one of its variants) to a PNG, JPG or SVG file.
 
         Args:
@@ -117,6 +117,7 @@ class Figure:
             variant: Name of the variant to export. Defaults to the first one.
             width: Width in pixels of raster images.
         """
+        path = os.fspath(path)
         app = ensure_app()
         render = self.variants[variant if variant is not None else next(iter(self.variants))]
         graphics = pg.GraphicsLayoutWidget()

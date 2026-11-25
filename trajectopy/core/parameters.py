@@ -1,3 +1,4 @@
+import os
 from abc import ABC
 from collections.abc import Iterator
 from dataclasses import dataclass, field, fields
@@ -813,10 +814,11 @@ class AlignmentParameters(ParameterSet):
         """
         return Leverarm(x=self.lever_x, y=self.lever_y, z=self.lever_z)
 
-    def to_file(self, filename: str) -> None:
+    def to_file(self, filename: str | os.PathLike) -> None:
         """Writes the alignment parameters and their covariance matrix to a CSV file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         results_io.write_alignment_parameters(self, filename)
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -830,10 +832,11 @@ class AlignmentParameters(ParameterSet):
         return pd.concat([parameters, variances], axis=1)
 
     @classmethod
-    def from_file(cls, filename: str) -> "AlignmentParameters":
+    def from_file(cls, filename: str | os.PathLike) -> "AlignmentParameters":
         """Reads alignment parameters from a file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         return results_io.read_alignment_parameters(filename)
 
     def to_estimation_settings(self) -> AlignmentEstimationSettings:
@@ -927,14 +930,16 @@ class SensorRotationParameters(ParameterSet):
         return Rotations.from_euler(seq="xyz", angles=self.rotation).as_matrix()
 
     @classmethod
-    def from_file(cls, filename: str) -> "SensorRotationParameters":
+    def from_file(cls, filename: str | os.PathLike) -> "SensorRotationParameters":
         """Reads sensor rotation parameters from an alignment file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         return results_io.read_sensor_rotation_parameters(filename)
 
-    def to_file(self, filename: str) -> None:
+    def to_file(self, filename: str | os.PathLike) -> None:
         """Appends sensor rotation parameters to a file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         results_io.write_sensor_rotation_parameters(self, filename)

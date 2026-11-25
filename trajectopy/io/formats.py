@@ -10,6 +10,7 @@ recognized by :func:`detect_format`:
 """
 
 import logging
+import os
 from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
@@ -46,7 +47,7 @@ _KITTI_COLUMNS = 12
 _DETECTION_LINES = 50
 
 
-def detect_format(filename: str) -> TrajectoryFormat:
+def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
     """Recognizes the format of a trajectory file from its first lines.
 
     Files with a ``#fields`` header line are trajectopy files. Without one, a ``#timestamp`` header with comma
@@ -59,6 +60,7 @@ def detect_format(filename: str) -> TrajectoryFormat:
     Returns:
         TrajectoryFormat: The recognized format.
     """
+    filename = os.fspath(filename)
     first_data_line = ""
     with open(filename, encoding="utf-8", errors="replace") as file:
         for number, line in enumerate(file):
@@ -97,7 +99,7 @@ def _name(filename: str) -> str:
     return Path(filename).stem
 
 
-def read_tum(filename: str, name: str = "") -> Trajectory:
+def read_tum(filename: str | os.PathLike, name: str = "") -> Trajectory:
     """Reads a trajectory in the TUM format (``timestamp tx ty tz qx qy qz qw``).
 
     Args:
@@ -107,6 +109,7 @@ def read_tum(filename: str, name: str = "") -> Trajectory:
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0).
     """
+    filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
     if data.ndim != 2 or data.shape[1] < 8:
         raise ValueError(
@@ -120,7 +123,7 @@ def read_tum(filename: str, name: str = "") -> Trajectory:
     )
 
 
-def read_kitti(filename: str, timestamps: np.ndarray | str | None = None, name: str = "") -> Trajectory:
+def read_kitti(filename: str | os.PathLike, timestamps: np.ndarray | str | None = None, name: str = "") -> Trajectory:
     """Reads a trajectory in the KITTI odometry format (one row-major 3x4 pose matrix per line).
 
     Args:
@@ -132,6 +135,7 @@ def read_kitti(filename: str, timestamps: np.ndarray | str | None = None, name: 
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0).
     """
+    filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
     if data.ndim != 2 or data.shape[1] != _KITTI_COLUMNS:
         raise ValueError(f"A KITTI file has 12 values per line (3x4 pose matrix), {filename} has {data.shape[-1]}.")
@@ -150,7 +154,7 @@ def read_kitti(filename: str, timestamps: np.ndarray | str | None = None, name: 
     )
 
 
-def read_euroc(filename: str, name: str = "") -> Trajectory:
+def read_euroc(filename: str | os.PathLike, name: str = "") -> Trajectory:
     """Reads a trajectory in the EuRoC ground truth format.
 
     The columns are ``timestamp [ns], px, py, pz, qw, qx, qy, qz``, optionally followed by velocities
@@ -163,6 +167,7 @@ def read_euroc(filename: str, name: str = "") -> Trajectory:
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0), with timestamps in seconds.
     """
+    filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=",")
     if data.ndim != 2 or data.shape[1] < 8:
         raise ValueError(
@@ -177,7 +182,9 @@ def read_euroc(filename: str, name: str = "") -> Trajectory:
     )
 
 
-def read_trajectory_file(filename: str, format: "str | TrajectoryFormat" = TrajectoryFormat.AUTO) -> Trajectory:  # noqa: A002
+def read_trajectory_file(
+    filename: str | os.PathLike, format: "str | TrajectoryFormat" = TrajectoryFormat.AUTO
+) -> Trajectory:  # noqa: A002
     """Reads a trajectory file in any supported format.
 
     Args:
@@ -190,6 +197,7 @@ def read_trajectory_file(filename: str, format: "str | TrajectoryFormat" = Traje
     """
     from trajectopy.io.trajectory_io import read_trajectory
 
+    filename = os.fspath(filename)
     file_format = TrajectoryFormat.from_str(format)
     if file_format == TrajectoryFormat.AUTO:
         file_format = detect_format(filename)

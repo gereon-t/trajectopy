@@ -1,3 +1,4 @@
+import os
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -275,15 +276,17 @@ class RPEResult:
         else:
             return pd.DataFrame(np.c_[self.all_pair_distances, self.pos_dev_all], columns=self.columns)
 
-    def to_file(self, filename: str, mode: str = "a") -> None:
+    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
         """Exports the result as CSV with a metadata header."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         results_io.write_rpe_result(self, filename, mode=mode)
 
     @classmethod
-    def from_file(cls, filename: str) -> "RPEResult":
+    def from_file(cls, filename: str | os.PathLike) -> "RPEResult":
         """Reads an RPE result from a file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         return results_io.read_rpe_result(filename)

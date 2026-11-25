@@ -12,6 +12,7 @@ Vertically, the trajectory is either clamped to the terrain of Google Earth or d
 converted with the geoid model, which pyproj downloads from the PROJ CDN (cdn.proj.org) where needed.
 """
 
+import os
 import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -143,7 +144,7 @@ class _ColorScale:
 
 def write_kml(
     trajectory: Trajectory,
-    filename: str,
+    filename: str | os.PathLike,
     color: str = DEFAULT_KML_COLOR,
     field: str | None = None,
     colormap: str = "rdylbu",
@@ -192,6 +193,7 @@ def write_kml(
         ValueError: If the trajectory does not have a known EPSG code, an option is invalid, or the geoid model
             is not available.
     """
+    filename = os.fspath(filename)
     scale = _ColorScale(colormap, max_std, value_range, color_classes)
     placement = _placement(trajectory, heights, height_offset)
     root, document = _document(trajectory.name)
@@ -209,7 +211,7 @@ def write_kml(
 
 def write_ate_kml(
     ate_result: ATEResult,
-    filename: str,
+    filename: str | os.PathLike,
     field: str = "position",
     colormap: str = "rdylbu",
     max_std: float = 3.0,
@@ -247,6 +249,7 @@ def write_ate_kml(
         ValueError: If the trajectory has no known EPSG code, the field is not available, an option is invalid,
             or the geoid model is not available.
     """
+    filename = os.fspath(filename)
     selected = _field(ate_kml_fields(ate_result), field)
     scale = _ColorScale(colormap, max_std, value_range, color_classes)
     placement = _placement(ate_result.trajectory, heights, height_offset)

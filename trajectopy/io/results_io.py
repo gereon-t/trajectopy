@@ -1,6 +1,7 @@
 """Reading and writing of evaluation results and alignment parameters."""
 
 import csv
+import os
 
 import numpy as np
 import pandas as pd
@@ -52,19 +53,21 @@ def convert_ate_deviations(
 # ---------------------------------------------------------------------------
 
 
-def write_alignment_parameters(parameters: AlignmentParameters, filename: str) -> None:
+def write_alignment_parameters(parameters: AlignmentParameters, filename: str | os.PathLike) -> None:
     """Writes alignment parameters together with their covariance matrix to a CSV file.
 
     All parameters are written no matter if they are enabled or not. The order of the parameters is:
     translation x/y/z, rotation x/y/z, scale, time shift, leverarm x/y/z. The covariance matrix is
     written row by row next to the parameters.
     """
+    filename = os.fspath(filename)
     dataframe = pd.DataFrame(np.c_[parameters.values, parameters.covariance_matrix])
     dataframe.to_csv(filename, index=False, header=False)
 
 
-def read_alignment_parameters(filename: str) -> AlignmentParameters:
+def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameters:
     """Reads alignment parameters (values, enabled flags and optional covariance) from a file."""
+    filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
     params = AlignmentParameters()
     params.values = alignment_data.iloc[:11, 0].to_numpy()
@@ -76,20 +79,22 @@ def read_alignment_parameters(filename: str) -> AlignmentParameters:
     return params
 
 
-def write_sensor_rotation_parameters(parameters: SensorRotationParameters, filename: str) -> None:
+def write_sensor_rotation_parameters(parameters: SensorRotationParameters, filename: str | os.PathLike) -> None:
     """Appends sensor rotation parameters to a file."""
+    filename = os.fspath(filename)
     with open(filename, mode="a", encoding="utf-8") as file:
         file.write(f"{parameters.sensor_rot_x.value},{parameters.sensor_rot_x.enabled}\n")
         file.write(f"{parameters.sensor_rot_y.value},{parameters.sensor_rot_y.enabled}\n")
         file.write(f"{parameters.sensor_rot_z.value},{parameters.sensor_rot_z.enabled}\n")
 
 
-def read_sensor_rotation_parameters(filename: str) -> SensorRotationParameters:
+def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotationParameters:
     """Reads sensor rotation parameters from an alignment file.
 
     Raises:
         ValueError: If the file doesn't contain exactly 14 lines.
     """
+    filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
 
     if len(alignment_data) != 14:
@@ -106,12 +111,13 @@ def read_sensor_rotation_parameters(filename: str) -> SensorRotationParameters:
 # ---------------------------------------------------------------------------
 
 
-def write_alignment_result(result: AlignmentResult, filename: str) -> None:
-    """Appends an alignment result to a file."""
+def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike, mode: str = "w") -> None:
+    """Writes an alignment result to a file (``mode="a"`` appends it)."""
+    filename = os.fspath(filename)
     if result.position_parameters is None:
         raise ValueError("No estimated parameters available!")
 
-    with open(filename, "a", newline="\n", encoding="utf-8") as file:
+    with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write("#type Alignment\n")  # so that the GUI recognizes the file
         file.write(f"#name {result.name}\n")
 
@@ -121,8 +127,9 @@ def write_alignment_result(result: AlignmentResult, filename: str) -> None:
     write_sensor_rotation_parameters(result.rotation_parameters, filename)
 
 
-def read_alignment_result(filename: str) -> AlignmentResult:
+def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
     """Reads an alignment result from a file."""
+    filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     estimated_parameters = read_alignment_parameters(filename)
     sensor_rot_parameters = read_sensor_rotation_parameters(filename)
@@ -141,8 +148,9 @@ def read_alignment_result(filename: str) -> AlignmentResult:
 # ---------------------------------------------------------------------------
 
 
-def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
+def write_ate_result(result: ATEResult, filename: str | os.PathLike, mode: str = "w") -> None:
     """Writes an ATE result as CSV with a metadata header."""
+    filename = os.fspath(filename)
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write("#type ATE Result\n")  # so that the GUI recognizes the file
         file.write(f"#name {result.name}\n")
@@ -153,8 +161,9 @@ def write_ate_result(result: ATEResult, filename: str, mode: str = "a") -> None:
     result.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
 
 
-def read_ate_result(filename: str) -> ATEResult:
+def read_ate_result(filename: str | os.PathLike) -> ATEResult:
     """Reads an ATE result from a file."""
+    filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
     sorting = Sorting.from_str(header_data.sorting)
@@ -215,8 +224,9 @@ def read_ate_result(filename: str) -> ATEResult:
 # ---------------------------------------------------------------------------
 
 
-def write_rpe_result(result: RPEResult, filename: str, mode: str = "a") -> None:
+def write_rpe_result(result: RPEResult, filename: str | os.PathLike, mode: str = "w") -> None:
     """Writes an RPE result as CSV with a metadata header."""
+    filename = os.fspath(filename)
     with open(filename, mode, encoding="utf-8", newline="") as file:
         file.write("#type RPE Result\n")  # so that the GUI recognizes the file
         file.write(f"#relative_dist_unit {result.rpe_dev.pair_distance_unit.name}\n")
@@ -228,8 +238,9 @@ def write_rpe_result(result: RPEResult, filename: str, mode: str = "a") -> None:
     result.to_dataframe().to_csv(filename, index=False, mode="a", float_format="%.12f")
 
 
-def read_rpe_result(filename: str) -> RPEResult:
+def read_rpe_result(filename: str | os.PathLike) -> RPEResult:
     """Reads an RPE result from a file."""
+    filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
 

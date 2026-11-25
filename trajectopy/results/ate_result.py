@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any
@@ -677,10 +678,11 @@ class ATEResult:
         return trajectory_columns
 
     @classmethod
-    def from_file(cls, filename: str) -> "ATEResult":
+    def from_file(cls, filename: str | os.PathLike) -> "ATEResult":
         """Reads an ATE result from a file."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         return results_io.read_ate_result(filename)
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -705,7 +707,9 @@ class ATEResult:
 
         return pd.DataFrame(all_data, columns=self.columns)
 
-    def to_kml(self, filename: str, field: str = "position", max_std: float = 3.0, **options: Any) -> None:
+    def to_kml(
+        self, filename: str | os.PathLike, field: str = "position", max_std: float = 3.0, **options: Any
+    ) -> None:
         """Exports the result to a Google Earth KML file: the trajectory colored by a deviation field, with
         playback in Google Earth's time slider. Requires a trajectory with a known EPSG code.
 
@@ -721,10 +725,12 @@ class ATEResult:
         """
         from trajectopy.io.kml import write_ate_kml
 
+        filename = os.fspath(filename)
         write_ate_kml(self, filename, field=field, max_std=max_std, **options)
 
-    def to_file(self, filename: str, mode: str = "a") -> None:
+    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
         """Exports the result as CSV with a metadata header."""
         from trajectopy.io import results_io
 
+        filename = os.fspath(filename)
         results_io.write_ate_result(self, filename, mode=mode)

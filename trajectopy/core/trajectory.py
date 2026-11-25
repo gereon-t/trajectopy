@@ -807,7 +807,9 @@ class Trajectory:
 
         write_trajectory(self, filename=os.fspath(filename), mode=mode)
 
-    def to_kml(self, filename: str, precision: float = 1e-6, color: str = "#ff0000", **options: Any) -> None:
+    def to_kml(
+        self, filename: str | os.PathLike, precision: float = 1e-6, color: str = "#ff0000", **options: Any
+    ) -> None:
         """
         Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
         Google Earth plays back.
@@ -828,6 +830,7 @@ class Trajectory:
         """
         from trajectopy.io.kml import write_kml
 
+        filename = os.fspath(filename)
         write_kml(self, filename=filename, precision=precision, color=color, **options)
 
 

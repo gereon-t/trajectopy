@@ -375,7 +375,7 @@ class AbsoluteDeviationEntry(DeviationsEntry):
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
-        self.deviations.to_file(filename)
+        self.deviations.to_file(filename, mode="a")
 
     @classmethod
     def from_file(cls, filename: str) -> "AbsoluteDeviationEntry":
@@ -400,7 +400,7 @@ class RelativeDeviationEntry(DeviationsEntry):
 
     def to_file(self, filename: str) -> None:
         super().to_file(filename=filename)
-        self.deviations.to_file(filename)
+        self.deviations.to_file(filename, mode="a")
 
     @classmethod
     def from_file(cls, filename: str) -> "RelativeDeviationEntry":
@@ -471,7 +471,7 @@ class AlignmentEntry(ResultEntry):
             raise ValueError("No estimated parameters available!")
 
         super().to_file(filename=filename)
-        self.alignment_result.to_file(filename=filename)
+        self.alignment_result.to_file(filename=filename, mode="a")
 
     @classmethod
     def from_file(cls, filename: str) -> "AlignmentEntry":
