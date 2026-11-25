@@ -7,8 +7,19 @@ from trajectopy.__version__ import __version__ as VERSION
 
 
 def main():
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(prog="trajectopy", description="Trajectopy - Trajectory Evaluation in Python")
+    """Main CLI entry point: a headless subcommand (see trajectopy.cli.commands) or the GUI."""
+    from trajectopy.cli.commands import COMMANDS
+
+    if len(sys.argv) > 1 and sys.argv[1] in COMMANDS:
+        from trajectopy.cli.commands import run
+
+        sys.exit(run(sys.argv[1:]))
+
+    parser = argparse.ArgumentParser(
+        prog="trajectopy",
+        description="Trajectopy - Trajectory Evaluation in Python. Starts the GUI; for headless evaluation, use one "
+        f"of the commands {', '.join(COMMANDS)} (e.g. trajectopy ate --help).",
+    )
     parser.add_argument(
         "files",
         nargs="*",
