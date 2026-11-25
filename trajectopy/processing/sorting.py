@@ -51,17 +51,17 @@ def sort_spatially(
 
 
 @overload
-def divide_into_laps(trajectory: Trajectory, return_lap_indices: Literal[False] = False) -> list[Trajectory]: ...
+def divide_into_laps(trajectory: Trajectory, *, return_lap_indices: Literal[False] = False) -> list[Trajectory]: ...
 
 
 @overload
 def divide_into_laps(
-    trajectory: Trajectory, return_lap_indices: Literal[True]
+    trajectory: Trajectory, *, return_lap_indices: Literal[True]
 ) -> tuple[list[Trajectory], np.ndarray]: ...
 
 
 def divide_into_laps(
-    trajectory: Trajectory, return_lap_indices: bool = False
+    trajectory: Trajectory, *, return_lap_indices: bool = False
 ) -> list[Trajectory] | tuple[list[Trajectory], np.ndarray]:
     """
     Divides the trajectory into laps. This is only useful for trajectories

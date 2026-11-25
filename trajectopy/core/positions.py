@@ -26,6 +26,7 @@ class Positions:
         self,
         xyz: np.ndarray | list,
         epsg: int = 0,
+        *,
         local_transformer: Transformer | None = None,
         init_local_transformer: bool = True,
         epsg_local_cart: int = 4936,

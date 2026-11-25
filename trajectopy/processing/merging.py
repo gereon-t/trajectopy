@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 
 import numpy as np
 
@@ -9,14 +10,14 @@ from trajectopy.core.trajectory import Trajectory
 logger = logging.getLogger(__name__)
 
 
-def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
+def merge_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
     """Merges a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and merges the trajectories based on their timestamps.
     Therefore, all trajectories should be in the same coordinate system before merging.
 
     Args:
-        trajectories (List[Trajectory]): List of trajectories to merge.
+        trajectories (Iterable[Trajectory]): List of trajectories to merge.
 
     Returns:
         Trajectory: Merged trajectory.
@@ -24,6 +25,7 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     Raises:
         ValueError: If no trajectories are provided.
     """
+    trajectories = list(trajectories)
     if not trajectories:
         raise ValueError("Cannot merge empty list of trajectories")
 
@@ -65,13 +67,13 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     )
 
 
-def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
+def average_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
     """Averages a list of trajectories into one trajectory.
 
     This function ignores EPSG codes and averages trajectories.
 
     Args:
-        trajectories (List[Trajectory]): List of trajectories to average.
+        trajectories (Iterable[Trajectory]): List of trajectories to average.
 
     Returns:
         Trajectory: Averaged trajectory.
@@ -79,6 +81,7 @@ def average_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     Raises:
         ValueError: If trajectories have different lengths or no trajectories provided.
     """
+    trajectories = list(trajectories)
     if not trajectories:
         raise ValueError("Cannot average empty list of trajectories")
 
