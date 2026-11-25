@@ -60,3 +60,8 @@ def geometry_pose_stamped_handler(msg: PoseMessage) -> dict[str, Any]:
         "qz": msg.pose.orientation.z,
         "qw": msg.pose.orientation.w,
     }
+
+
+def stamp_to_seconds(stamp: Stamp) -> float:
+    """Seconds of a ROS time stamp."""
+    return stamp.sec + stamp.nanosec * 1e-9

@@ -247,7 +247,8 @@ class UIManager(QObject):
 
     def trajectory_import_dialog(self, _: UIRequest) -> None:
         if selected_files := read_file_dialog(
-            self._dialog_parent(), file_filter="Trajectory Files (*.traj);;All Files (*.*)"
+            self._dialog_parent(),
+            file_filter="Trajectory Files (*.traj *.txt *.csv *.tum *.kitti);;ROS Bags (*.bag *.mcap *.db3);;All Files (*.*)",
         ):
             self.file_request.emit(FileRequest(type=FileRequestType.READ_TRAJ, file_list=selected_files))
         else:

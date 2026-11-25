@@ -17,7 +17,7 @@ from trajectopy.gui.managers.requests import (
 from trajectopy.gui.models.entries import AbsoluteDeviationEntry, ResultEntry, TrajectoryEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.worker import BackgroundWorker
-from trajectopy.io.rosbag import trajectories_from_rosbag
+from trajectopy.io.rosbag import is_ros_bag, trajectories_from_rosbag
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class FileManager(QObject):
         _read_each(request.file_list, self._read_trajectory_file)
 
     def _read_trajectory_file(self, file: str) -> None:
-        if Path(file).suffix == ".bag":
+        if is_ros_bag(file):
             logger.info("Reading ROS bag file: %s", file)
             self.handle_ros_bag(file)
         else:
