@@ -63,6 +63,7 @@ PUBLIC_API = {
         "match_trajectories",
         "merge_trajectories",
         "rpe",
+        "show_versions",
         "sort_spatially",
         "summary_table",
         "write_report",

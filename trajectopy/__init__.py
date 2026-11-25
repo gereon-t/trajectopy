@@ -62,9 +62,13 @@ Quick Start
 """
 
 import importlib
+import logging
 from typing import TYPE_CHECKING
 
 from trajectopy.__version__ import __version__
+
+# trajectopy logs, but leaves the configuration of the output to the application
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 if TYPE_CHECKING:
     from trajectopy.core.parameters import (
@@ -116,6 +120,7 @@ if TYPE_CHECKING:
     from trajectopy.results.rpe_result import RPEResult
     from trajectopy.results.summary import format_table, summary_table
     from trajectopy.utils.definitions import Sorting
+    from trajectopy.utils.versions import show_versions
 
 # The public names below are imported on first access (PEP 562): importing numpy, scipy and pandas takes
 # seconds on a cold start, which the GUI covers with its splash screen and `trajectopy --version` does not
@@ -172,6 +177,7 @@ _LAZY_IMPORTS = {
     "format_table": "trajectopy.results.summary",
     "write_report": "trajectopy.report",
     "Sorting": "trajectopy.utils.definitions",
+    "show_versions": "trajectopy.utils.versions",
 }
 
 
@@ -204,6 +210,7 @@ def __dir__() -> list[str]:
 __all__ = [
     # Version
     "__version__",
+    "show_versions",
     # Core
     "Trajectory",
     "Pose",
