@@ -1,24 +1,39 @@
 import copy
 import logging
+import os
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, overload
 
 import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike
 
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
 from trajectopy.exceptions import TrajectoryError
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
+from trajectopy.utils.deprecation import warn_deprecated
 from trajectopy.utils.geometry import common_span, gradient_3d, lengths_from_xyz
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Pose:
+    """A single pose of a trajectory, as returned by indexing a trajectory with an integer or iterating over it.
+
+    Attributes:
+        timestamp (float): Time of the pose in seconds.
+        path_length (float): Path length from the start of the trajectory in meters.
+        position (tuple[float, float, float]): Position (x, y, z).
+        rpy (tuple[float, float, float]): Orientation as roll, pitch and yaw angles in radians (zeros if the
+            trajectory has no orientations).
+        velocity (tuple[float, float, float]): Velocity along x, y and z in meters per second.
+        epsg (int): EPSG code of the position; 0 for a local frame.
+    """
+
     timestamp: float
     path_length: float
     position: tuple[float, float, float]
@@ -45,9 +60,10 @@ class Trajectory:
 
     def __init__(
         self,
-        positions: Positions,
-        rotations: Rotations | None = None,
-        timestamps: np.ndarray | None = None,
+        positions: Positions | ArrayLike,
+        rotations: Rotations | ArrayLike | None = None,
+        timestamps: ArrayLike | None = None,
+        *,
         name: str = "",
         path_lengths: np.ndarray | None = None,
         velocity_xyz: np.ndarray | None = None,
@@ -58,9 +74,11 @@ class Trajectory:
         Initialize a Trajectory object.
 
         Args:
-            positions (Positions): Container for spatial coordinates and coordinate reference system (EPSG) data.
-            rotations (Rotations | None, optional): Container for orientation data (quaternions). Defaults to None.
-            timestamps (np.ndarray | None, optional): Array of timestamps. If None, a range index is used.
+            positions (Positions | ArrayLike): Positions, either as a Positions container (which holds the EPSG
+                code) or as an array of shape (N, 3) in a local frame (EPSG 0).
+            rotations (Rotations | ArrayLike | None, optional): Orientations, either as Rotations or as an array of
+                quaternions (x, y, z, w) of shape (N, 4). Defaults to None (no orientations).
+            timestamps (ArrayLike | None, optional): Timestamps in seconds. If None, a range index is used.
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
             path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
             velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
@@ -71,6 +89,11 @@ class Trajectory:
         Raises:
             TrajectoryError: If the number of positions and rotations or timestamps do not match.
         """
+        if not isinstance(positions, Positions):
+            positions = Positions(xyz=np.asarray(positions, dtype=float), epsg=0)
+        if rotations is not None and not isinstance(rotations, Rotations):
+            rotations = Rotations.from_quat(np.asarray(rotations, dtype=float))
+
         # check dimensions
         if rotations is not None and len(positions) != len(rotations):
             raise TrajectoryError(
@@ -143,7 +166,13 @@ class Trajectory:
         Trajectory._counter += 1
 
     @classmethod
-    def from_file(cls, filename: str, io_stream: bool = False, format: str = "auto") -> "Trajectory":  # noqa: A002
+    def from_file(
+        cls,
+        filename: str | os.PathLike,
+        io_stream: bool | None = None,
+        *,
+        format: str = "auto",  # noqa: A002
+    ) -> "Trajectory":
         """
         Create a trajectory instance from a file.
 
@@ -153,9 +182,8 @@ class Trajectory:
         :func:`trajectopy.io.formats.detect_format`.
 
         Args:
-            filename (str): Path to the file or string content if io_stream is True.
-            io_stream (bool, optional): If True, `filename` is treated as the raw string content
-                                        of the file/stream (trajectopy format). Defaults to False.
+            filename (str | os.PathLike): Path to the file.
+            io_stream (bool, optional): Deprecated, use :meth:`from_string` to parse the content of a file.
             format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
                 ``euroc``.
 
@@ -163,9 +191,26 @@ class Trajectory:
             Trajectory: The loaded trajectory object.
         """
         from trajectopy.io.formats import read_trajectory_file
+
+        if io_stream is not None:
+            warn_deprecated("The argument 'io_stream' of Trajectory.from_file() is deprecated, use from_string().")
+            if io_stream:
+                return cls.from_string(str(filename))
+        return read_trajectory_file(os.fspath(filename), format=format)
+
+    @classmethod
+    def from_string(cls, text: str) -> "Trajectory":
+        """Creates a trajectory from the content of a file in the trajectopy format (see :meth:`to_string`).
+
+        Args:
+            text (str): Content of a trajectory file with header lines.
+
+        Returns:
+            Trajectory: The parsed trajectory.
+        """
         from trajectopy.io.trajectory_io import read_trajectory_string
 
-        return read_trajectory_string(filename) if io_stream else read_trajectory_file(filename, format=format)
+        return read_trajectory_string(text)
 
     @classmethod
     def from_arrays(
@@ -222,7 +267,44 @@ class Trajectory:
         )
 
     def __repr__(self) -> str:
-        return str(self)
+        orientation = "with orientations" if self.has_orientation else "without orientations"
+        return (
+            f"<Trajectory {self.name!r}: {len(self)} poses {orientation}, {self.total_length:.3f} m, "
+            f"EPSG {self.positions.epsg}, sorted by {self.sorting.value}>"
+        )
+
+    @overload
+    def __getitem__(self, key: int | np.integer) -> "Pose": ...
+
+    @overload
+    def __getitem__(self, key: slice | list | np.ndarray) -> "Trajectory": ...
+
+    def __getitem__(self, key: int | np.integer | slice | list | np.ndarray) -> "Pose | Trajectory":
+        """Selects poses like a numpy array.
+
+        An integer returns a single :class:`Pose`. A slice, an integer array or a boolean mask returns a new
+        trajectory with the selected poses (the trajectory itself is not modified).
+        """
+        if isinstance(key, (int, np.integer)):
+            index = int(key)
+            if not -len(self) <= index < len(self):
+                raise IndexError(f"Pose index {index} is out of range for a trajectory with {len(self)} poses.")
+            return self._pose(index % len(self))
+        if isinstance(key, slice):
+            return self.mask(np.arange(len(self))[key])
+        return self.mask(np.asarray(key))
+
+    def _pose(self, index: int) -> "Pose":
+        rpy = self.rotations[index].as_euler("xyz") if self.rotations is not None else np.zeros(3)
+        position, velocity = self.xyz[index], self.velocity_xyz[index]
+        return Pose(
+            timestamp=float(self.timestamps[index]),
+            path_length=float(self.path_lengths[index]),
+            position=(float(position[0]), float(position[1]), float(position[2])),
+            rpy=(float(rpy[0]), float(rpy[1]), float(rpy[2])),
+            velocity=(float(velocity[0]), float(velocity[1]), float(velocity[2])),
+            epsg=self.positions.epsg,
+        )
 
     def __len__(self) -> int:
         """Returns the number of poses in the trajectory."""
@@ -247,30 +329,38 @@ class Trajectory:
             )
 
     def __eq__(self, other: object) -> bool:
-        """
-        Checks equality between two trajectories using `np.allclose` for numerical arrays.
-        Compares positions, rotations, timestamps, path lengths, velocities, and names.
-        """
+        """Checks whether two trajectories have the same name and data, see :meth:`equals`."""
         if not isinstance(other, Trajectory):
             return NotImplemented
+        return self.name == other.name and self.equals(other)
 
-        if len(self) != len(other):
+    __hash__ = None  # type: ignore[assignment]  # trajectories are mutable
+
+    def equals(self, other: "Trajectory", *, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
+        """Checks whether two trajectories hold the same data within a tolerance (the names are not compared).
+
+        Compares positions, orientations, timestamps, path lengths and velocities with :func:`numpy.allclose`.
+
+        Args:
+            other (Trajectory): Trajectory to compare with.
+            rtol (float, optional): Relative tolerance. Defaults to 1e-5.
+            atol (float, optional): Absolute tolerance. Defaults to 1e-8.
+
+        Returns:
+            bool: True if the trajectories are equal.
+        """
+        if len(self) != len(other) or self.has_orientation != other.has_orientation:
             return False
 
-        if self.rotations is not None and other.rotations is not None:
-            rot_equal = np.allclose(self.rotations.as_quat(), other.rotations.as_quat())
-        elif self.rotations is None and other.rotations is None:
-            rot_equal = True
-        else:
-            rot_equal = False
+        def close(a: np.ndarray, b: np.ndarray) -> bool:
+            return bool(np.allclose(a, b, rtol=rtol, atol=atol))
 
         return (
-            np.allclose(self.positions.xyz, other.positions.xyz)
-            and rot_equal
-            and np.allclose(self.timestamps, other.timestamps)
-            and np.allclose(self.path_lengths, other.path_lengths)
-            and np.allclose(self._velocity_xyz, other._velocity_xyz)
-            and self.name == other.name
+            (not self.has_orientation or close(self.quat, other.quat))
+            and close(self.positions.xyz, other.positions.xyz)
+            and close(self.timestamps, other.timestamps)
+            and close(self.path_lengths, other.path_lengths)
+            and close(self.velocity_xyz, other.velocity_xyz)
         )
 
     def copy(self) -> "Trajectory":
@@ -705,7 +795,7 @@ class Trajectory:
 
         return trajectory_to_string(self)
 
-    def to_file(self, filename: str, mode: str = "w") -> None:
+    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
         """
         Writes the trajectory to an ASCII file using the format defined in `to_string`.
 
@@ -715,7 +805,7 @@ class Trajectory:
         """
         from trajectopy.io.trajectory_io import write_trajectory
 
-        write_trajectory(self, filename=filename, mode=mode)
+        write_trajectory(self, filename=os.fspath(filename), mode=mode)
 
     def to_kml(self, filename: str, precision: float = 1e-6, color: str = "#ff0000", **options: Any) -> None:
         """

@@ -539,14 +539,14 @@ class TestRobustnessRegressions(unittest.TestCase):
         }
         for content, (error, message) in cases.items():
             with self.subTest(content=content.splitlines()[0]), self.assertRaisesRegex(error, message):
-                Trajectory.from_file(content, io_stream=True)
+                Trajectory.from_string(content)
 
     def test_georeferenced_file_without_poses(self):
-        trajectory = Trajectory.from_file("#epsg 25832\n#fields t,px,py,pz\n", io_stream=True)
+        trajectory = Trajectory.from_string("#epsg 25832\n#fields t,px,py,pz\n")
         self.assertEqual(len(trajectory), 0)
 
     def test_invalid_derived_columns_are_derived_anew(self):
-        trajectory = Trajectory.from_file("#fields t,l,px,py,pz\n0,nan,0,0,0\n1,nan,3,4,0\n", io_stream=True)
+        trajectory = Trajectory.from_string("#fields t,l,px,py,pz\n0,nan,0,0,0\n1,nan,3,4,0\n")
         np.testing.assert_allclose(trajectory.path_lengths, [0.0, 5.0])
 
     def test_rpe_deviations_are_arrays_for_fast_copies(self):

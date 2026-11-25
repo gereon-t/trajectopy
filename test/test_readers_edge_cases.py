@@ -66,7 +66,7 @@ class TestReadersEdgeCases(unittest.TestCase):
 
     def test_trajectory_from_string_io_stream(self):
         content = "#name StreamTest\n#fields t,px,py,pz,qx,qy,qz,qw\n0,1,2,3,0,0,0,1\n1,4,5,6,0,0,0,1\n"
-        traj = Trajectory.from_file(content, io_stream=True)
+        traj = Trajectory.from_string(content)
         self.assertEqual(traj.name, "StreamTest")
         self.assertEqual(len(traj), 2)
         self.assertIsNotNone(traj.rotations)

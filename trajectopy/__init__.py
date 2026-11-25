@@ -93,7 +93,7 @@ if TYPE_CHECKING:
         Settings,
         SortingSettings,
     )
-    from trajectopy.core.trajectory import Trajectory
+    from trajectopy.core.trajectory import Pose, Trajectory
     from trajectopy.exceptions import (
         AlignmentError,
         AlignmentParametersError,
@@ -145,6 +145,7 @@ _LAZY_IMPORTS = {
     "RotationApproximationMethod": "trajectopy.core.settings",
     "Settings": "trajectopy.core.settings",
     "SortingSettings": "trajectopy.core.settings",
+    "Pose": "trajectopy.core.trajectory",
     "Trajectory": "trajectopy.core.trajectory",
     "AlignmentError": "trajectopy.exceptions",
     "AlignmentParametersError": "trajectopy.exceptions",
@@ -195,6 +196,7 @@ __all__ = [
     "__version__",
     # Core
     "Trajectory",
+    "Pose",
     "Positions",
     "Rotations",
     "Settings",
