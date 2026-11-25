@@ -69,6 +69,7 @@ Notes:
 | `qx`, `qy`, `qz`, `qw` | Orientation as quaternion | No |
 | `ex`, `ey`, `ez` | Orientation as Euler angles (roll, pitch, yaw; see `#rot_unit` and `#euler_rot_seq`) | No |
 | `vx`, `vy`, `vz` | Velocity in meters per second | No |
+| `sx`, `sy`, `sz` | Standard deviations of the positions in meters, used to weight the alignment (see `use_position_std`) | No |
 | `-` | Column that is not used | Yes |
 
 Only `px`, `py` and `pz` are required. Without time column, the line number is used as timestamp; without
@@ -148,24 +149,71 @@ Date and time can also be in separate columns: `#fields t,t,px,py,pz` (they are 
 Files with millions of poses load several times faster with the optional pyarrow reader:
 `pip install "trajectopy[fast]"`. It is used automatically when installed, for files without date/time strings.
 
-## ROS Bags
+## TUM, KITTI and EuRoC Files
 
-ROS1 bag files (`.bag`) can be opened in the GUI like ASCII files, or read in Python:
+Files of common benchmarks are recognized automatically by `Trajectory.from_file`, the GUI and the command line,
+so they need no header:
+
+| Format | Layout | Recognized by |
+| --- | --- | --- |
+| TUM | `timestamp tx ty tz qx qy qz qw`, separated by spaces | the default columns of trajectopy files |
+| KITTI | one row-major 3×4 pose matrix (12 values) per line, no timestamps | 12 values per line |
+| EuRoC | `timestamp [ns], px, py, pz, qw, qx, qy, qz[, vx, vy, vz, ...]` | a first line starting with `#timestamp` and commas |
+
+The format can also be given explicitly, and trajectories can be written in these formats:
 
 ```python
-from trajectopy.io.rosbag import trajectories_from_rosbag
+import trajectopy as tpy
+from trajectopy.io.formats import read_kitti, write_trajectory_file
 
-trajectories = trajectories_from_rosbag("recording.bag")
+trajectory = tpy.Trajectory.from_file("poses.txt", format="kitti")
+trajectory = read_kitti("poses.txt", timestamps="times.txt")  # KITTI poses are numbered otherwise
+write_trajectory_file(trajectory, "poses.tum", format="tum")  # or "kitti", "euroc", "trajectopy"
 ```
 
-Every topic with `geometry_msgs/PoseStamped` (position and orientation) or `geometry_msgs/PointStamped`
-(position only) messages becomes one trajectory, named after the topic; the timestamps are taken from the message
-headers. Messages of other types are skipped.
+Without a `#name` header line, a trajectory is named after its file.
+
+## ROS Bags
+
+ROS1 bags (`.bag`) and ROS2 bags (`.mcap` or `.db3` files, or a bag directory with `metadata.yaml`) can be opened
+in the GUI like ASCII files, or read in Python:
+
+```python
+from trajectopy.io.rosbag import list_topics, trajectories_from_rosbag
+
+print(list_topics("recording.mcap"))  # topics with a supported message type
+trajectories = trajectories_from_rosbag("recording.mcap", topics=["/odom"])  # all supported topics by default
+```
+
+Each topic becomes one trajectory, named after the topic; the timestamps are taken from the message headers.
+
+| Message type | Trajectory |
+| --- | --- |
+| `geometry_msgs/PoseStamped` | positions and orientations |
+| `geometry_msgs/PoseWithCovarianceStamped`, `nav_msgs/Odometry` | positions and orientations, with position standard deviations from the covariance |
+| `geometry_msgs/PointStamped` | positions |
+| `geometry_msgs/TransformStamped`, `tf2_msgs/TFMessage` (`/tf`) | one trajectory per frame pair, named `topic: parent -> child` |
+| `nav_msgs/Path` | the poses of the last message (paths are usually republished as a whole) |
+| `sensor_msgs/NavSatFix` | latitude, longitude and ellipsoidal height (EPSG 4326) with standard deviations; fixes without a position are skipped |
+
+Messages of other types are skipped.
+
+## Position Standard Deviations
+
+Trajectories can carry the standard deviations of their positions (`Trajectory.position_std`, in meters along x,
+y and z). They are read from the covariances of ROS messages and from the fields `sx`, `sy`, `sz` of trajectopy
+files, and written to those fields. The alignment weights each position by them instead of the global
+`std_*` values of the [alignment stochastics](settings.md#alignment-settings) (see `use_position_std`); the
+horizontal variance is the mean of the x and y variances.
 
 ## Files Written by Trajectopy
 
 - **Trajectories** (`Trajectory.to_file`, *Export…* in the GUI) are ASCII files as described above, with the
-  fields `t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz` (without `qx`…`qw` for trajectories without orientation).
+  fields `t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz` (without `qx`…`qw` for trajectories without orientation, and
+  followed by `sx,sy,sz` for trajectories with position standard deviations). The command
+  `trajectopy convert` writes the TUM, KITTI and EuRoC formats, too.
+- **Reports** (`.html`): self-contained evaluation reports (`trajectopy.write_report`, `--report` of the command
+  line, *Export Report or Summary Table…* in the GUI), and summary tables (`.md`, `.csv`, `.tex`).
 - **Results** (`.result`): ATE, RPE and alignment results (`ATEResult.to_file`, `RPEResult.to_file`,
   `AlignmentResult.to_file`). They are text files with a header, too, and can be opened in the GUI.
 - **Settings** (`.json`): [processing settings](settings.md#processing-settings) and

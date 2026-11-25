@@ -51,6 +51,14 @@ print(f"Position ATE: {ate_result.pos_ate:.3f} m")
 
 Or start the GUI with `trajectopy` (or from the Start menu), drop trajectory files onto it, right-click the ground truth → *Set as Reference*, then right-click another trajectory → *Compare with Reference*.
 
+Or evaluate from the command line, without the GUI:
+
+```bash
+trajectopy evaluate example_data/KITTI_ORB.traj example_data/KITTI_SPTAM.traj --ref example_data/KITTI_gt.traj --report report.html
+```
+
+A walkthrough with output is in [`example_scripts/evaluation_walkthrough.ipynb`](example_scripts/evaluation_walkthrough.ipynb).
+
 ## Documentation
 
 <a href="https://gereon-t.github.io/trajectopy/" target="_blank">https://gereon-t.github.io/trajectopy/</a>
@@ -59,8 +67,10 @@ Or start the GUI with `trajectopy` (or from the Start menu), drop trajectory fil
 
 - __Interactive GUI__: Load, plot, align and compare trajectories without writing code. Every action explains itself in the context menus, and trajectories can be aligned interactively if an automatic alignment is not possible.
 - __Alignment__: A spatio-temporal least squares alignment that can be tailored to the application: similarity transformation, leverarm and time shift, each of them optional.
-- __Comparison__: Absolute and relative trajectory error (__ATE and RPE__), computed with various pose-matching methods.
-- __Data Import/Export__: ASCII files with configurable columns, time formats and coordinate systems (any EPSG code), and ROS bags.
+- __Comparison__: Absolute and relative trajectory error (__ATE and RPE__), computed with various pose-matching methods, with percentiles, confidence intervals that account for temporally correlated deviations, and statistics per segment of the trajectory.
+- __Benchmarking__: Summary tables of several estimates (Markdown, CSV, LaTeX) and self-contained HTML reports with all statistics, figures and settings.
+- __Command Line__: `trajectopy ate | rpe | evaluate | align | convert | info` for scripts, servers and CI pipelines.
+- __Data Import/Export__: ASCII files with configurable columns, time formats and coordinate systems (any EPSG code), TUM, KITTI and EuRoC files (recognized automatically), and ROS1/ROS2 bags (poses, odometry, TF, paths, GNSS fixes; covariances weight the alignment).
 - __Fast, Interactive Visualization__: Powered by [pyqtgraph](https://www.pyqtgraph.org/), the same plots are available in the GUI and in Python scripts, stay fluid for large trajectories, and can be exported to PNG, JPG or SVG. Georeferenced trajectories and ATE results can be exported to Google Earth, colored by speed, height or deviations, on the terrain or at their own heights, with playback.
 
 ## Web Application (Docker)

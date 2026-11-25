@@ -77,6 +77,7 @@ nav:
       - Approximation: api/processing/approximation.md
     - I/O:
       - Trajectory I/O: api/io/trajectory_io.md
+      - TUM, KITTI & EuRoC: api/io/formats.md
       - Results I/O: api/io/results_io.md
       - Google Earth (KML): api/io/kml.md
       - ROS Bags: api/io/rosbag.md
@@ -85,6 +86,8 @@ nav:
       - RPE Result: api/results/rpe_result.md
       - Alignment Result: api/results/alignment_result.md
       - Deviation Correlation: api/results/correlation.md
+      - Summary Tables: api/results/summary.md
+      - Reports: api/results/report.md
     - Visualization:
       - Figures: api/visualization/figures.md
       - Showing & Exporting: api/visualization/display.md

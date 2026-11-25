@@ -73,6 +73,7 @@ Standard deviations of the observations, which weight them in the least squares 
 | `error_probability` | Error probability of the statistical tests | `0.05` |
 | `variance_estimation` | Estimate the variance factor a posteriori | `False` |
 | `robust_estimation` | Down-weight epochs with large residuals (iteratively reweighted least squares with Huber weights), so that outliers hardly affect the estimated parameters | `True` |
+| `use_position_std` | Weight the positions by the standard deviations stored with the trajectories (covariances of ROS messages or the `sx`, `sy`, `sz` columns of a file) instead of the `std_*` values, for each trajectory that has them | `True` |
 
 #### Convergence (`alignment`)
 

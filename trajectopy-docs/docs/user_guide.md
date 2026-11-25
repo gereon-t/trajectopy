@@ -22,13 +22,16 @@ print(trajectory.name, len(trajectory), trajectory.has_orientation)
 trajectory.to_file("copy.traj")  # trajectopy ASCII format
 ```
 
-Trajectories can also be created from NumPy arrays (`Trajectory.from_arrays`, see
-[File Formats](file_formats.md#creating-trajectories-in-python)) and read from ROS bags:
+Files in the TUM, KITTI and EuRoC formats are recognized automatically
+(see [File Formats](file_formats.md#tum-kitti-and-euroc-files)). Trajectories can also be created from NumPy
+arrays (`Trajectory.from_arrays`, see [File Formats](file_formats.md#creating-trajectories-in-python)) and read
+from ROS1 and ROS2 bags (poses, odometry, TF, paths and GNSS fixes, see
+[File Formats](file_formats.md#ros-bags)):
 
 ```python
 from trajectopy.io.rosbag import trajectories_from_rosbag
 
-trajectories = trajectories_from_rosbag("recording.bag")  # one trajectory per topic
+trajectories = trajectories_from_rosbag("recording.mcap")  # one trajectory per topic
 ```
 
 ## 2. Alignment
@@ -135,6 +138,48 @@ ate_result = tpy.ATEResult.from_file("ate.result")
 rpe_result.to_file("rpe.result")
 alignment_result.to_file("alignment.result")
 ```
+
+### Percentiles, Confidence Intervals and Segments
+
+Besides mean, median, RMS and maximum, ATE results offer percentiles and confidence intervals. Deviations of
+trajectories are correlated in time, so the usual standard error (`std / sqrt(n)`) is far too optimistic; the
+confidence intervals come from a block bootstrap whose blocks are twice as long as the correlation time of the
+deviations. They show, for example, whether two estimates differ significantly.
+
+```python
+print(ate_result.pos_dev_p95)                     # 95th percentile of the position deviations [m]
+print(ate_result.pos_dev_percentile(99))
+low, high = ate_result.confidence_interval("position", "mean")  # or "rms"; "rotation" in radians
+```
+
+`segment_statistics` evaluates parts of the trajectory separately: consecutive windows of time or path length,
+or segments given by a label of each deviation (e.g. tunnel / open sky). The figure *ATE Segments* shows the
+windows.
+
+```python
+table = ate_result.segment_statistics(segment_length=100.0, by="path_length")  # pandas DataFrame
+labels = np.where(in_tunnel, "tunnel", "open sky")                               # one label per deviation
+table = ate_result.segment_statistics(labels=labels)
+```
+
+### Comparing Several Results
+
+To benchmark several estimates against one reference, `summary_table` puts the main statistics of all results
+into one table (one row per result), which `format_table` writes as Markdown, CSV or LaTeX. `write_report`
+creates a self-contained HTML file with the summary, the statistics of each result, all figures and the
+processing settings, e.g. to archive the evaluation of a paper.
+
+```python
+ate_results = [tpy.ate(trajectory=est, other=gt_traj) for est in (orb, sptam)]
+rpe_results = [tpy.rpe(trajectory=est, other=gt_traj) for est in (orb, sptam)]
+
+table = tpy.summary_table(ate_results, rpe_results)  # pandas DataFrame
+print(tpy.format_table(table, "markdown"))           # or "csv", "latex"
+tpy.write_report("report.html", ate_results=ate_results, rpe_results=rpe_results, settings=settings)
+```
+
+The notebook [`example_scripts/evaluation_walkthrough.ipynb`](https://github.com/gereon-t/trajectopy/blob/main/example_scripts/evaluation_walkthrough.ipynb)
+walks through such a comparison with its output.
 
 ## 4. Visualization
 
@@ -391,7 +436,8 @@ Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy) and c
 coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
 
 The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Group*, *Remove* and, for ATE results,
-*Export to Google Earth (KML)…*. ATE results of spatially sorted trajectories can also be switched between
+*Export to Google Earth (KML)…*. *Export Report or Summary Table…* saves the selected ATE and RPE results as an
+HTML report or as a summary table (Markdown, CSV or LaTeX) with one row per result. ATE results of spatially sorted trajectories can also be switched between
 chronological and spatial order with *Switch Order: Time ↔ Path*, e.g. to plot the deviations over time. For alignments, *Choose Parameters to Apply…* selects which of the estimated
 parameters are used when the alignment is applied to a trajectory (*Apply Existing Alignment…*).
 
@@ -439,3 +485,36 @@ with a large time offset), a trajectory can be aligned manually: set a reference
 
 Position, heading and scale are relative to the trajectory's center, so rotating does not move the
 trajectory away even for georeferenced coordinates.
+
+## 7. Command Line
+
+Besides starting the GUI, the `trajectopy` command evaluates trajectories without Qt, e.g. in scripts, on servers
+or in CI pipelines. All commands read trajectopy, TUM, KITTI and EuRoC files and ROS bags (select topics with
+`--topic`), and take [processing settings](settings.md) with `--settings`. `trajectopy <command> --help` lists all
+options.
+
+```bash
+# ATE of one or more estimates; prints a summary
+trajectopy ate orb.traj sptam.traj --ref gt.traj
+
+# ATE and RPE with custom settings, a summary table, the result files, all figures and an HTML report
+trajectopy evaluate orb.traj sptam.traj --ref gt.traj --settings settings.json \
+    --table summary.md --output-dir results --figures figures --report report.html
+
+# RPE of an odometry topic of a ROS2 bag against a TUM file, without alignment
+trajectopy rpe recording.mcap --topic /odom --ref gt.tum --no-align
+
+# Align a trajectory and save it (any format) together with the alignment parameters
+trajectopy align estimate.traj --ref gt.traj -o aligned.traj --parameters alignment.result
+
+# Convert between formats and coordinate systems
+trajectopy convert poses.txt --format kitti --to tum -o poses.tum
+trajectopy convert gnss.traj --epsg 25832 -o gnss_utm.traj
+
+# Show the trajectories of a file and the topics of a bag
+trajectopy info recording.bag
+```
+
+The format of the summary table follows the file extension of `--table` (`.md`, `.tex`, otherwise CSV) or
+`--table-format`. Errors are reported with exit code 1 (2 for invalid input), so the commands can be used in
+pipelines.
