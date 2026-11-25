@@ -92,6 +92,16 @@ class ResultContextMenu(SelectionMenu):
             shortcuts=("E",),
             unavailable=single,
         )
+        deviations_only = all(isinstance(entry, AbsoluteDeviationEntry | RelativeDeviationEntry) for entry in entries)
+        add_action(
+            self,
+            "Export Report or Summary Table…",
+            self._ui(UIRequestType.EXPORT_REPORT),
+            hint="Saves a self-contained HTML report (summary, statistics and figures of all selected results) or "
+            "a summary table of the selected results with one row per result (Markdown, CSV or LaTeX), e.g. to "
+            "compare several algorithms against one reference.",
+            unavailable="" if deviations_only else "Select ATE or RPE results only.",
+        )
         if isinstance(first := entries[0], AbsoluteDeviationEntry) and all(
             isinstance(entry, AbsoluteDeviationEntry) for entry in entries
         ):

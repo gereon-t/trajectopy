@@ -111,10 +111,12 @@ if TYPE_CHECKING:
     from trajectopy.processing.matching import match_trajectories
     from trajectopy.processing.merging import average_trajectories, merge_trajectories
     from trajectopy.processing.sorting import divide_into_laps, sort_spatially
+    from trajectopy.report import write_report
     from trajectopy.results.alignment_result import AlignmentResult
     from trajectopy.results.ate_result import ATEResult
     from trajectopy.results.correlation import DeviationCorrelation
     from trajectopy.results.rpe_result import RPEResult
+    from trajectopy.results.summary import format_table, summary_table
     from trajectopy.utils.definitions import Sorting
 
 # The public names below are imported on first access (PEP 562): importing numpy, scipy and pandas takes
@@ -168,6 +170,9 @@ _LAZY_IMPORTS = {
     "ATEResult": "trajectopy.results.ate_result",
     "DeviationCorrelation": "trajectopy.results.correlation",
     "RPEResult": "trajectopy.results.rpe_result",
+    "summary_table": "trajectopy.results.summary",
+    "format_table": "trajectopy.results.summary",
+    "write_report": "trajectopy.report",
     "Sorting": "trajectopy.utils.definitions",
 }
 
@@ -231,6 +236,10 @@ __all__ = [
     "match_trajectories",
     "sort_spatially",
     "divide_into_laps",
+    # Summaries and reports
+    "summary_table",
+    "format_table",
+    "write_report",
     # Exceptions
     "TrajectopyError",
     "TrajectoryError",

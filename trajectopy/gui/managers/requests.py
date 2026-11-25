@@ -107,6 +107,7 @@ class UIRequestType(Enum):
     EXPORT_KML = auto()
     IMPORT_TRAJ = auto()
     EXPORT_RES = auto()
+    EXPORT_REPORT = auto()
     IMPORT_RES = auto()
     MESSAGE = auto()
     EDIT_ALIGNMENT = auto()

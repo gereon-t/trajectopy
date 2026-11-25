@@ -1,8 +1,9 @@
 import functools
 import logging
+from pathlib import Path
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Qt, Signal, Slot
 
 from trajectopy.gui.managers.requests import (
     FileRequest,
@@ -17,7 +18,7 @@ from trajectopy.gui.managers.requests import (
     UIRequestType,
     generic_request_handler,
 )
-from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry
+from trajectopy.gui.models.entries import AbsoluteDeviationEntry, AlignmentEntry, RelativeDeviationEntry
 from trajectopy.gui.models.selection import ResultSelection, TrajectorySelection
 from trajectopy.gui.utils import (
     SingleWindows,
@@ -78,6 +79,7 @@ class UIManager(QObject):
             UIRequestType.EXPORT_TRAJ: self.trajectory_export_dialog,
             UIRequestType.EXPORT_KML: self.kml_export_dialog,
             UIRequestType.EXPORT_RES: self.result_export_dialog,
+            UIRequestType.EXPORT_REPORT: self.report_export_dialog,
             UIRequestType.MESSAGE: self.message_box,
             UIRequestType.DOF_ORGANIZER: self.show_dof_organizer,
             UIRequestType.TRAJ_SETTINGS: self.show_trajectory_settings,
@@ -306,6 +308,42 @@ class UIManager(QObject):
             )
         else:
             return
+
+    def report_export_dialog(self, request: UIRequest) -> None:
+        """HTML report or summary table of the selected ATE and RPE results.
+
+        Runs on the GUI thread, since the figures of the report are rendered with Qt.
+        """
+        from trajectopy.report import write_report
+        from trajectopy.results.summary import format_table, summary_table
+
+        entries = request.result_selection.entries
+        ate_results = [entry.deviations for entry in entries if isinstance(entry, AbsoluteDeviationEntry)]
+        rpe_results = [entry.deviations for entry in entries if isinstance(entry, RelativeDeviationEntry)]
+        if not ate_results and not rpe_results:
+            return
+        file_filter = (
+            "HTML Report (*.html);;Summary Table, Markdown (*.md);;Summary Table, CSV (*.csv);;"
+            "Summary Table, LaTeX (*.tex)"
+        )
+        if not (selected_file := save_file_dialog(self._dialog_parent(), file_filter=file_filter)):
+            return
+
+        suffix = Path(selected_file).suffix.lower()
+        QtWidgets.QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            if suffix in (".md", ".csv", ".tex"):
+                table_format = {".md": "markdown", ".csv": "csv", ".tex": "latex"}[suffix]
+                text = format_table(summary_table(ate_results, rpe_results), table_format)
+                Path(selected_file).write_text(text, encoding="utf-8")
+            else:
+                write_report(selected_file, ate_results=ate_results, rpe_results=rpe_results)
+            logger.info("Exported %s", selected_file)
+        except Exception as error:
+            logger.exception("Export of %s failed", selected_file)
+            show_msg_box(f"The export failed: {error}", self._dialog_parent(), error=True)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def result_import_dialog(self, _: UIRequest) -> None:
         if selected_files := read_file_dialog(
