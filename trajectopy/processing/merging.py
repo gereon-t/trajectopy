@@ -48,6 +48,11 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
     )
     merged_timestamps = np.concatenate([t.timestamps for t in trajectories], axis=0)
     merged_velocities = np.concatenate([t.velocity_xyz for t in trajectories], axis=0)
+    merged_std = (
+        np.concatenate([t.position_std for t in trajectories if t.position_std is not None], axis=0)
+        if all(t.position_std is not None for t in trajectories)
+        else None
+    )
 
     # the trajectory orders the poses chronologically before it derives the path lengths
     return Trajectory(
@@ -56,6 +61,7 @@ def merge_trajectories(trajectories: list[Trajectory]) -> Trajectory:
         positions=Positions(xyz=merged_xyz, epsg=epsg),
         rotations=merged_rotations,
         velocity_xyz=merged_velocities,
+        position_std=merged_std,
     )
 
 

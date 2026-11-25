@@ -37,6 +37,8 @@ class Trajectory:
         name (str): An identifier string for the trajectory.
         path_lengths (np.ndarray): A 1D array of cumulative path lengths starting from zero.
         sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH).
+        position_std (np.ndarray | None): Standard deviations of the positions along x, y and z in meters,
+            shape (N, 3), or None if unknown. The alignment weights the positions by them.
     """
 
     _counter = 1
@@ -50,6 +52,7 @@ class Trajectory:
         path_lengths: np.ndarray | None = None,
         velocity_xyz: np.ndarray | None = None,
         sorting: Sorting = Sorting.TIME,
+        position_std: np.ndarray | None = None,
     ) -> None:
         """
         Initialize a Trajectory object.
@@ -62,6 +65,8 @@ class Trajectory:
             path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
             velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
             sorting (Sorting, optional): Definition of the sorting logic (TIME or ARC_LENGTH). Defaults to Sorting.TIME.
+            position_std (np.ndarray | None, optional): Standard deviations of the positions along x, y and z in
+                meters, shape (N, 3). Defaults to None (unknown).
 
         Raises:
             TrajectoryError: If the number of positions and rotations or timestamps do not match.
@@ -92,6 +97,7 @@ class Trajectory:
         path_lengths = (
             np.asarray(path_lengths) if path_lengths is not None and len(path_lengths) == num_poses else None
         )
+        self.position_std = _valid_position_std(position_std, num_poses)
 
         # velocities and path lengths are derived from consecutive poses, so the data has to be in chronological
         # order with strictly increasing timestamps first
@@ -114,6 +120,8 @@ class Trajectory:
                 velocity_xyz = velocity_xyz[first_of_epoch]
             if path_lengths is not None:
                 path_lengths = path_lengths[first_of_epoch]
+            if self.position_std is not None:
+                self.position_std = self.position_std[first_of_epoch]
 
         if velocity_xyz is not None and len(velocity_xyz) == len(self.positions):
             self._velocity_xyz = velocity_xyz
@@ -355,6 +363,9 @@ class Trajectory:
         if self._velocity_xyz is not None:
             self._velocity_xyz = self._velocity_xyz[sort_index, :]
 
+        if self.position_std is not None:
+            self.position_std = self.position_std[sort_index, :]
+
     @property
     def index(self) -> np.ndarray:
         """
@@ -595,13 +606,17 @@ class Trajectory:
         if traj_self._velocity_xyz is not None:
             traj_self._velocity_xyz = traj_self._velocity_xyz[mask]
 
+        if traj_self.position_std is not None:
+            traj_self.position_std = traj_self.position_std[mask]
+
         return traj_self
 
     def transform(self, transformation: np.ndarray, inplace: bool = True) -> "Trajectory":
         """
         Applies a rigid body or similarity transformation to the trajectory poses.
 
-        Velocities are rotated and scaled alike, path lengths are scaled. A trajectory without
+        Velocities and position standard deviations are rotated and scaled alike, path lengths are scaled.
+        A trajectory without
         orientations stays without orientations.
 
         Args:
@@ -614,8 +629,13 @@ class Trajectory:
         traj_self = self if inplace else self.copy()
         linear = transformation[:3, :3]
 
+        scale = float(np.cbrt(abs(np.linalg.det(linear))))
         traj_self.velocity_xyz = traj_self.velocity_xyz @ linear.T
-        traj_self.path_lengths = traj_self.path_lengths * float(np.cbrt(abs(np.linalg.det(linear))))
+        traj_self.path_lengths = traj_self.path_lengths * scale
+        if traj_self.position_std is not None:
+            # the variances of the rotated axes (correlations are not stored)
+            rotation = linear / scale if scale > 0 else linear
+            traj_self.position_std = np.sqrt(traj_self.position_std**2 @ (rotation**2).T) * scale
 
         has_orientation = traj_self.has_orientation
         traj_self.se3 = [np.dot(transformation, p) for p in traj_self.se3]
@@ -663,6 +683,9 @@ class Trajectory:
                 columns=["time", "path_length", "pos_x", "pos_y", "pos_z", "speed_x", "speed_y", "speed_z"],
             )
 
+        if self.position_std is not None:
+            dataframe[["std_x", "std_y", "std_z"]] = self.position_std
+
         return dataframe.sort_values(by=sort_by)
 
     def to_string(self) -> str:
@@ -709,3 +732,19 @@ class Trajectory:
         from trajectopy.io.kml import write_kml
 
         write_kml(self, filename=filename, precision=precision, color=color, **options)
+
+
+def _valid_position_std(position_std: np.ndarray | None, num_poses: int) -> np.ndarray | None:
+    """Position standard deviations of shape (N, 3) with finite, positive values, or None."""
+    if position_std is None:
+        return None
+    position_std = np.asarray(position_std, dtype=float)
+    if position_std.shape != (num_poses, 3):
+        logger.warning(
+            "Ignoring position standard deviations of shape %s (expected (%i, 3)).", position_std.shape, num_poses
+        )
+        return None
+    if not np.all(np.isfinite(position_std) & (position_std > 0)):
+        logger.warning("Ignoring position standard deviations since some are not positive or not finite.")
+        return None
+    return position_std

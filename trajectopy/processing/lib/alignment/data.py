@@ -292,11 +292,9 @@ class AlignmentData:
         """
         variances = np.ones_like(self._obs_vector)
 
-        variances_xyz_from = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_xy_from
-        variances_xyz_from[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_z_from
-
-        variances_xyz_to = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_xy_to
-        variances_xyz_to[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_z_to
+        stochastics = self.alignment_settings.stochastics
+        variances_xyz_from = self._position_variances(self.traj_from, stochastics.var_xy_from, stochastics.var_z_from)
+        variances_xyz_to = self._position_variances(self.traj_to, stochastics.var_xy_to, stochastics.var_z_to)
 
         variances_rpy_body = np.ones((self.number_of_epochs, 3)) * self.alignment_settings.stochastics.var_roll_pitch
         variances_rpy_body[:, 2] = np.ones((self.number_of_epochs,)) * self.alignment_settings.stochastics.var_yaw
@@ -311,6 +309,28 @@ class AlignmentData:
 
         if self.alignment_settings.estimation_settings.time_shift_enabled:
             self._set_vector_components(vector=variances, values=variances_speed_to, key="SPEED")
+        return variances
+
+    def _position_variances(self, trajectory: Trajectory, var_xy: float, var_z: float) -> np.ndarray:
+        """Variances of the positions of one trajectory per epoch: from its position standard deviations if it
+        has them (and they are to be used), otherwise the given values.
+
+        The horizontal variance is the mean of the x and y variances, so that it does not depend on the
+        orientation of the horizontal axes (e.g. east/north or latitude/longitude order).
+        """
+        position_std = trajectory.position_std
+        if (
+            self.alignment_settings.stochastics.use_position_std
+            and position_std is not None
+            and len(position_std) == self.number_of_epochs
+        ):
+            variances = position_std**2
+            var_h = np.mean(variances[:, :2], axis=1)
+            logger.info("Using the position standard deviations of %s.", trajectory.name)
+            return np.c_[var_h, var_h, variances[:, 2]]
+
+        variances = np.full((self.number_of_epochs, 3), var_xy)
+        variances[:, 2] = var_z
         return variances
 
     def build_res_vector(self) -> np.ndarray:

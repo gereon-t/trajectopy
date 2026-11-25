@@ -71,6 +71,7 @@ def encode_trajectory(trajectory: Trajectory, encoder: Encoder) -> dict:
         "xyz": encoder.put(trajectory.positions.xyz),
         "quat": None if trajectory.rotations is None else encoder.put(trajectory.rotations.as_quat()),
         "velocity": encoder.put(trajectory.velocity_xyz),
+        "position_std": None if trajectory.position_std is None else encoder.put(trajectory.position_std),
     }
 
 
@@ -91,6 +92,8 @@ def decode_trajectory(data: dict, decoder: Decoder) -> Trajectory:
     # exactly as saved: the constructor orders the poses itself, which could change the order of equal values
     trajectory.timestamps, trajectory.path_lengths, trajectory.positions.xyz = timestamps, path_lengths, xyz
     trajectory.rotations, trajectory.velocity_xyz = rotations, velocity
+    if data.get("position_std") is not None:  # projects of earlier versions have none
+        trajectory.position_std = decoder.get(data["position_std"])
     return trajectory
 
 

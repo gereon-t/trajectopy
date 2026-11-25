@@ -388,6 +388,7 @@ def _match_trajectories_spatial_interpolation(
         path_lengths=np.array(matched_arc_lengths),
         timestamps=timestamps,
         velocity_xyz=velocities,
+        position_std=None if trajectory.position_std is None else trajectory.position_std[matched_indices],
     )
     other = Trajectory(
         name=other.name,

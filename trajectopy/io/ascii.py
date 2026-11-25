@@ -24,6 +24,7 @@ __all__ = [
     "extract_trajectory_velocity_xyz",
     "extract_trajectory_path_lengths",
     "extract_trajectory_positions",
+    "extract_trajectory_position_std",
 ]
 
 try:  # optional: much faster reading of large files
@@ -383,6 +384,21 @@ def extract_trajectory_path_lengths(header_data: HeaderData, trajectory_data: np
         np.ndarray: Arc lengths read from the trajectory file
     """
     return None if "l" not in header_data.fields else trajectory_data[:, header_data.fields.index("l")].astype(float)
+
+
+def extract_trajectory_position_std(header_data: HeaderData, trajectory_data: np.ndarray) -> None | np.ndarray:
+    """Extracts the standard deviations of the positions (fields sx, sy, sz, in meters), if present.
+
+    Args:
+        header_data (HeaderData): Holds information about the header of the trajectory file
+        trajectory_data (np.ndarray): Holds the trajectory data
+
+    Returns:
+        np.ndarray | None: Standard deviations of shape (N, 3), or None if the file has none.
+    """
+    if any(item not in header_data.fields for item in ["sx", "sy", "sz"]):
+        return None
+    return trajectory_data[:, [header_data.fields.index(field) for field in ("sx", "sy", "sz")]].astype(float)
 
 
 def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.ndarray) -> Positions:

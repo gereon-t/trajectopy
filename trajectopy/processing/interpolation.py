@@ -89,6 +89,7 @@ def _interpolate_linear(
     _interpolate_velocity_linear(trajectory, index_cropped)
     _interpolate_positions_linear(trajectory, index_cropped)
     _interpolate_rotations_linear(trajectory, index_cropped)
+    _interpolate_position_std_linear(trajectory, index_cropped)
 
     if trajectory.sorting == Sorting.TIME:
         trajectory.timestamps = index_cropped
@@ -190,6 +191,16 @@ def _interpolate_positions_linear(trajectory: Trajectory, index: np.ndarray, inp
     z_i = np.interp(index, trajectory.index, xyz[:, 2])
     trajectory.positions.xyz = np.c_[x_i, y_i, z_i]
     return trajectory
+
+
+def _interpolate_position_std_linear(trajectory: Trajectory, index: np.ndarray) -> None:
+    """Interpolates the position standard deviations linearly, if the trajectory has them."""
+    if trajectory.position_std is None:
+        return
+    # the index is still the one of the observations, it is replaced after all values are interpolated
+    trajectory.position_std = np.column_stack(
+        [np.interp(index, trajectory.index, trajectory.position_std[:, axis]) for axis in range(3)]
+    )
 
 
 def _interpolate_velocity_linear(trajectory: Trajectory, index: np.ndarray, inplace: bool = True) -> "Trajectory":

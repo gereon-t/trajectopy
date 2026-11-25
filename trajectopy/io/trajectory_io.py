@@ -35,6 +35,7 @@ def _trajectory_from_data(header_data: HeaderData, trajectory_data: np.ndarray) 
             ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
         ),
         sorting=Sorting.from_str(header_data.sorting),
+        position_std=ascii.extract_trajectory_position_std(header_data=header_data, trajectory_data=trajectory_data),
     )
 
 
@@ -80,6 +81,8 @@ def trajectory_to_string(trajectory: Trajectory) -> str:
     Headers included: #epsg, #name, #nframe, #sorting, #fields.
     """
     fields = "t,l,px,py,pz,vx,vy,vz" if trajectory.rotations is None else "t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz"
+    if trajectory.position_std is not None:
+        fields += ",sx,sy,sz"
     header = [
         f"#epsg {trajectory.positions.epsg}",
         f"#name {trajectory.name}",
@@ -100,6 +103,9 @@ def trajectory_to_string(trajectory: Trajectory) -> str:
             trajectory.rotations.as_quat(),
             trajectory.velocity_xyz,
         ]
+
+    if trajectory.position_std is not None:
+        trajectory_data = np.c_[trajectory_data, trajectory.position_std]
 
     output = io.StringIO()
     output.write("\n".join(header) + "\n")

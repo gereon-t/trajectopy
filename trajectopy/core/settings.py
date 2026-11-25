@@ -524,6 +524,9 @@ class AlignmentStochastics(Settings):
         robust_estimation: Down-weight epochs with large residuals (iteratively reweighted least squares with
             Huber weights), so that outliers, e.g. from wrong matches or GNSS multipath, hardly affect the
             estimated parameters. Defaults to True.
+        use_position_std: Weight the positions by the standard deviations stored with the trajectories (e.g. from
+            the covariances of a ROS bag or the sx, sy, sz columns of a file) instead of the std_* values above,
+            for each trajectory that has them. Defaults to True.
     """
 
     std_xy_from: float = 1.0
@@ -536,6 +539,7 @@ class AlignmentStochastics(Settings):
     error_probability: float = 0.05
     variance_estimation: bool = False
     robust_estimation: bool = True
+    use_position_std: bool = True
 
     @property
     def var_xy_from(self) -> float:
