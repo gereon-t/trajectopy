@@ -45,7 +45,11 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
 - Arguments after the data arguments are keyword-only, e.g. `estimate_alignment(..., initial_parameters=)`,
   `ate(..., align=)`, `Trajectory(..., name=)`, `Positions(..., local_transformer=)`,
   `divide_into_laps(..., return_lap_indices=)`, `Trajectory.crop(..., inverse=)` and
-  `Trajectory.intersect(..., max_gap_size=)`.
+  `Trajectory.intersect(..., max_gap_size=)`. In `trajectopy.visualization`, the same holds for
+  `ate_segments_figure(..., segment_length=)`, `ate_speed_figure(..., speed_window=)`,
+  `parameter_matrix_figure(..., correlation=)`, `smoothed_speed(..., window=)`,
+  `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=, width=)` and
+  `show(..., title=, block=, use_opengl=)`.
 - `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
   functions) overwrite existing files; pass `mode="a"` to append.
 - `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file

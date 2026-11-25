@@ -109,7 +109,7 @@ class Figure:
         """
         return _FigureWidget(self, use_opengl=use_opengl)
 
-    def export(self, path: str | os.PathLike, variant: str | None = None, width: int = 1600) -> None:
+    def export(self, path: str | os.PathLike, *, variant: str | None = None, width: int = 1600) -> None:
         """Exports the figure (or one of its variants) to a PNG, JPG or SVG file.
 
         Args:
@@ -327,7 +327,7 @@ class PlotWindow(QtWidgets.QMainWindow):
 
 
 def export_figures(
-    figures: Sequence[Figure], directory: str, export_format: str = "png", width: int = 1600
+    figures: Sequence[Figure], directory: str | os.PathLike, *, export_format: str = "png", width: int = 1600
 ) -> list[str]:
     """Exports all figures (and all their variants) to image files in ``directory``.
 
@@ -346,7 +346,7 @@ def export_figures(
 
 
 def show(
-    figures: Figure | Sequence[Figure], title: str = "Trajectopy", block: bool = True, use_opengl: bool = True
+    figures: Figure | Sequence[Figure], *, title: str = "Trajectopy", block: bool = True, use_opengl: bool = True
 ) -> PlotWindow:
     """Shows figures in a plot window.
 

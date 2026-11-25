@@ -677,7 +677,7 @@ DEFAULT_SEGMENTS = 20
 
 
 def ate_segments_figure(
-    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, segment_length: float | None = None
+    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, *, segment_length: float | None = None
 ) -> Figure:
     """RMS and 95th percentile of the position deviations in consecutive segments of time or path length (see
     :meth:`ATEResult.segment_statistics`), to see where along the trajectory the accuracy changes.
@@ -936,7 +936,7 @@ def speed_fit(speed: np.ndarray, deviations: np.ndarray) -> SpeedFit | None:
     return SpeedFit(offset=float(offset), slope=float(slope))
 
 
-def smoothed_speed(trajectory: Trajectory, window: float = SPEED_WINDOW) -> np.ndarray:
+def smoothed_speed(trajectory: Trajectory, *, window: float = SPEED_WINDOW) -> np.ndarray:
     """Speed of ``trajectory`` in m/s from its velocity vectors averaged over ``window`` seconds.
 
     Velocities derived from noisy positions are very noisy themselves. Noise in the speed spreads deviations
@@ -982,7 +982,7 @@ def _speed_fit_label(name: str, component: _Component, fit: SpeedFit | None, set
 
 
 def ate_speed_figure(
-    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, speed_window: float = SPEED_WINDOW
+    ate_results: Sequence[ATEResult], settings: PlotSettings | None = None, *, speed_window: float = SPEED_WINDOW
 ) -> Figure:
     """Position deviations over the speed of the evaluated trajectory, to reveal synchronization errors.
 
@@ -1016,7 +1016,7 @@ def ate_speed_figure(
             plot.setClipToView(False)
             plot.setDownsampling(auto=False)
             for index, result in enumerate(ate_results):
-                speed = smoothed_speed(result.trajectory, speed_window)
+                speed = smoothed_speed(result.trajectory, window=speed_window)
                 deviations = component.values(result)
                 valid = np.isfinite(speed) & np.isfinite(deviations)
                 speed, deviations = speed[valid], deviations[valid]
@@ -1168,7 +1168,7 @@ def deviation_figures(
 
 
 def parameter_matrix_figure(
-    parameters: AlignmentParameters, correlation: bool = False, settings: PlotSettings | None = None
+    parameters: AlignmentParameters, settings: PlotSettings | None = None, *, correlation: bool = False
 ) -> Figure:
     """Covariance or correlation matrix of estimated alignment parameters."""
     settings = _settings(settings)
