@@ -10,6 +10,10 @@ from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.correlation import DeviationCorrelation
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.numeric import rms
+from trajectopy.utils.statistics import DEFAULT_CONFIDENCE, block_bootstrap_ci, segment_ids
+
+# cached properties that depend on the deviations and their order
+_CACHED = ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb", "correlation", "_confidence_intervals")
 
 
 @dataclass
@@ -93,6 +97,9 @@ class ATEResult:
             "Minimum position deviation [m]": f"{self.pos_dev_min:.4f}",
             "RMS Position [m]": f"{self.pos_dev_rms:.4f}",
             "STD Position [m]": f"{self.pos_dev_std:.4f}",
+            "95th Percentile Position [m]": f"{self.pos_dev_p95:.4f}",
+            "Mean Position 95% Confidence Interval [m]": self._interval_summary("position", "mean"),
+            "RMS Position 95% Confidence Interval [m]": self._interval_summary("position", "rms"),
             "Bias X [m]": f"{self.pos_bias_x:.4f}",
             "Bias Y [m]": f"{self.pos_bias_y:.4f}",
             "Bias Z [m]": f"{self.pos_bias_z:.4f}",
@@ -119,6 +126,9 @@ class ATEResult:
             ),
             "RMS Rotation [°]": f"{np.rad2deg(self.rot_dev_rms):.4f}" if self.abs_dev.rot_dev is not None else "-",
             "STD Rotation [°]": f"{np.rad2deg(self.rot_dev_std):.4f}" if self.abs_dev.rot_dev is not None else "-",
+            "95th Percentile Rotation [°]": (
+                f"{np.rad2deg(self.rot_dev_p95):.4f}" if self.abs_dev.rot_dev is not None else "-"
+            ),
             "RMS Roll [°]": f"{np.rad2deg(self.rot_rms_x):.4f}" if self.abs_dev.rot_dev is not None else "-",
             "RMS Pitch [°]": f"{np.rad2deg(self.rot_rms_y):.4f}" if self.abs_dev.rot_dev is not None else "-",
             "RMS Yaw [°]": f"{np.rad2deg(self.rot_rms_z):.4f}" if self.abs_dev.rot_dev is not None else "-",
@@ -167,7 +177,7 @@ class ATEResult:
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[ate_below_idx])
 
         # the combined deviations and rotation statistics are cached and depend on the removed deviations
-        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb", "correlation"):
+        for cached in _CACHED:
             self.__dict__.pop(cached, None)
 
     @cached_property
@@ -185,6 +195,128 @@ class ATEResult:
         if quantity == "white_noise_share":
             return " / ".join(f"{100 * value:.0f}" for value in values)
         return " / ".join("> max. lag" if np.isinf(value) else f"{value:.2f}" for value in values)
+
+    @cached_property
+    def _confidence_intervals(self) -> dict[tuple[str, str, float], tuple[float, float]]:
+        return {}
+
+    def confidence_interval(
+        self, quantity: str = "position", statistic: str = "mean", confidence: float = DEFAULT_CONFIDENCE
+    ) -> tuple[float, float]:
+        """Confidence interval of the mean (ATE) or RMS of the position or rotation deviations.
+
+        The deviations are usually correlated in time, so that the interval is derived with a moving block
+        bootstrap whose blocks are twice as long as the correlation time (see
+        :func:`trajectopy.utils.statistics.block_bootstrap_ci`). It describes how precisely the deviations of
+        this evaluation determine the statistic, e.g. whether two estimates differ significantly. It is
+        reproducible (fixed seed) and cached.
+
+        Args:
+            quantity (str, optional): ``position`` (meters) or ``rotation`` (radians). Defaults to ``position``.
+            statistic (str, optional): ``mean`` or ``rms``. Defaults to ``mean``.
+            confidence (float, optional): Confidence level. Defaults to 0.95.
+
+        Returns:
+            tuple[float, float]: Lower and upper bound.
+        """
+        if quantity not in ("position", "rotation"):
+            raise ValueError(f"Unknown quantity '{quantity}', use 'position' or 'rotation'.")
+        key = (quantity, statistic, confidence)
+        if key not in self._confidence_intervals:
+            values = self.pos_dev_comb if quantity == "position" else self.rot_dev_comb
+            order = np.argsort(self.trajectory.timestamps, kind="stable")  # chronological, also if sorted spatially
+            self._confidence_intervals[key] = block_bootstrap_ci(
+                values[order], self.trajectory.timestamps[order], statistic=statistic, confidence=confidence
+            )
+        return self._confidence_intervals[key]
+
+    def _interval_summary(self, quantity: str, statistic: str) -> str:
+        if quantity == "rotation" and not self.has_orientation:
+            return "-"
+        lower, upper = self.confidence_interval(quantity, statistic)
+        if not np.isfinite(lower):
+            return "-"
+        return f"{lower:.4f} - {upper:.4f}"
+
+    def pos_dev_percentile(self, percentile: float) -> float:
+        """Percentile (0-100) of the 3d position deviations in meters, e.g. 95 for the value that 95% of the
+        deviations do not exceed."""
+        return float(np.percentile(self.pos_dev_comb, percentile)) if len(self.pos_dev_comb) else float("nan")
+
+    def rot_dev_percentile(self, percentile: float) -> float:
+        """Percentile (0-100) of the rotation deviations in radians."""
+        return float(np.percentile(self.rot_dev_comb, percentile)) if len(self.rot_dev_comb) else float("nan")
+
+    @property
+    def pos_dev_p95(self) -> float:
+        """95th percentile of the 3d position deviations in meters."""
+        return self.pos_dev_percentile(95)
+
+    @property
+    def rot_dev_p95(self) -> float:
+        """95th percentile of the rotation deviations in radians."""
+        return self.rot_dev_percentile(95)
+
+    def segment_statistics(
+        self,
+        segment_length: float | None = None,
+        by: str = "time",
+        labels: np.ndarray | list | None = None,
+    ) -> pd.DataFrame:
+        """Statistics of the deviations in segments of the trajectory, e.g. to compare sections of different
+        conditions (tunnel and open sky) or to see whether the accuracy changes over time.
+
+        Segments are either consecutive windows of ``segment_length`` seconds (``by="time"``) or meters
+        (``by="path_length"``), or given by a label of each deviation (``labels``, e.g. from a classification of
+        the environment).
+
+        Args:
+            segment_length (float | None, optional): Length of the windows. Required unless labels are given.
+            by (str, optional): ``time`` or ``path_length``. Defaults to ``time``.
+            labels (np.ndarray | list | None, optional): Segment label of each deviation (in the current order of
+                the result). Overrides segment_length.
+
+        Returns:
+            pd.DataFrame: One row per segment with the columns ``segment``, ``start`` and ``end`` (smallest and
+            largest time or path length), ``count``, ``pos_mean``, ``pos_median``, ``pos_rms``, ``pos_p95``,
+            ``pos_max`` (meters) and, with orientations, ``rot_mean``, ``rot_rms`` and ``rot_max`` (degrees).
+        """
+        if by not in ("time", "path_length"):
+            raise ValueError(f"Unknown segment index '{by}', use 'time' or 'path_length'.")
+        index = self.trajectory.timestamps if by == "time" else self.trajectory.path_lengths
+        if labels is not None:
+            segment = np.asarray(labels)
+            if len(segment) != len(self.pos_dev_comb):
+                raise ValueError(f"{len(segment)} labels were given for {len(self.pos_dev_comb)} deviations.")
+        elif segment_length is not None:
+            segment = segment_ids(index, segment_length)
+        else:
+            raise ValueError("Give either a segment length or labels.")
+
+        frame = pd.DataFrame({"segment": segment, "index": index, "pos": self.pos_dev_comb})
+        if self.has_orientation:
+            frame["rot"] = np.rad2deg(self.rot_dev_comb)
+
+        def p95(values: pd.Series) -> float:
+            return float(np.percentile(values, 95))
+
+        def rms_of(values: pd.Series) -> float:
+            return float(rms(values.to_numpy()))
+
+        grouped = frame.groupby("segment", sort=True)
+        table = grouped.agg(
+            start=("index", "min"),
+            end=("index", "max"),
+            count=("pos", "size"),
+            pos_mean=("pos", "mean"),
+            pos_median=("pos", "median"),
+            pos_rms=("pos", rms_of),
+            pos_p95=("pos", p95),
+            pos_max=("pos", "max"),
+        )
+        if self.has_orientation:
+            table = table.join(grouped.agg(rot_mean=("rot", "mean"), rot_rms=("rot", rms_of), rot_max=("rot", "max")))
+        return table.reset_index()
 
     @property
     def is_spatially_sorted(self) -> bool:
@@ -212,7 +344,7 @@ class ATEResult:
             self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[order])
 
         # cached per-epoch deviations follow the old order
-        for cached in ("rot_dev_xyz", "rot_bias_xyz", "rot_dev_comb", "pos_dev_comb", "correlation"):
+        for cached in _CACHED:
             self.__dict__.pop(cached, None)
 
     @property

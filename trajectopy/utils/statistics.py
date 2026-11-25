@@ -170,3 +170,99 @@ def windowed_std(
     stds = np.sqrt(np.maximum(variances, 0.0))
     stds[counts[used] < min_samples] = np.nan
     return start + (np.flatnonzero(used) + 0.5) * window, stds
+
+
+DEFAULT_CONFIDENCE = 0.95
+DEFAULT_RESAMPLES = 1000
+
+
+def block_length(timestamps: np.ndarray, values: np.ndarray) -> int:
+    """Block length (in samples) for a block bootstrap of a correlated series: twice its correlation time (the
+    distance between independent samples, see effective_samples), at least one sample and at most a quarter of
+    the series."""
+    num_samples = len(values)
+    step = sampling_interval(timestamps)
+    if num_samples < 4 or step == 0:
+        return 1
+    lags, rho, pairs = autocorrelation(timestamps, values)
+    correlated = white_noise_split(lags, rho, pairs)
+    tau = correlation_time(lags, rho, level=correlated) if correlated > 0 else 0.0
+    if not np.isfinite(tau):
+        tau = float(lags[-1])
+    return int(np.clip(np.ceil(2 * tau / step), 1, max(1, num_samples // 4)))
+
+
+def block_bootstrap_ci(
+    values: np.ndarray,
+    timestamps: np.ndarray | None = None,
+    statistic: str = "mean",
+    confidence: float = DEFAULT_CONFIDENCE,
+    num_resamples: int = DEFAULT_RESAMPLES,
+    block: int | None = None,
+    seed: int = 0,
+) -> tuple[float, float]:
+    """Confidence interval of the mean or RMS of a series with a moving block bootstrap.
+
+    Deviations of trajectories are correlated in time, so that the ordinary standard error (std / sqrt(n))
+    underestimates the uncertainty of their mean by far. The moving block bootstrap resamples blocks of
+    consecutive values that are about as long as the correlation, which keeps the correlation within each
+    resampled series. Block sums come from cumulative sums, so that even millions of values take little time.
+
+    Args:
+        values (np.ndarray): Values in chronological order.
+        timestamps (np.ndarray | None, optional): Times of the values [s], used to derive the block length from
+            the correlation time. Without them (and without block), the values are treated as uncorrelated.
+        statistic (str, optional): ``mean`` or ``rms``. Defaults to ``mean``.
+        confidence (float, optional): Confidence level. Defaults to 0.95.
+        num_resamples (int, optional): Number of bootstrap resamples. Defaults to 1000.
+        block (int | None, optional): Block length in samples. Defaults to twice the correlation time
+            (see block_length).
+        seed (int, optional): Seed of the random numbers, so that the interval is reproducible. Defaults to 0.
+
+    Returns:
+        tuple[float, float]: Lower and upper bound (NaN for fewer than two values).
+    """
+    if statistic not in ("mean", "rms"):
+        raise ValueError(f"Unknown statistic '{statistic}', use 'mean' or 'rms'.")
+    values = np.asarray(values, dtype=float)
+    values = values[np.isfinite(values)] if timestamps is None else values
+    if timestamps is not None:
+        valid = np.isfinite(values) & np.isfinite(timestamps)
+        values, timestamps = values[valid], np.asarray(timestamps, dtype=float)[valid]
+    num_samples = len(values)
+    if num_samples < 2:
+        return float("nan"), float("nan")
+
+    if block is None:
+        block = block_length(timestamps, values) if timestamps is not None else 1
+    block = int(np.clip(block, 1, num_samples))
+
+    samples = values**2 if statistic == "rms" else values
+    cumulative = np.concatenate([[0.0], np.cumsum(samples)])
+    num_blocks = int(np.ceil(num_samples / block))
+    rng = np.random.default_rng(seed)
+    statistics = np.empty(num_resamples)
+    # in chunks, so that the memory stays bounded for many blocks
+    chunk = max(1, 10_000_000 // num_blocks)
+    for first in range(0, num_resamples, chunk):
+        count = min(chunk, num_resamples - first)
+        starts = rng.integers(0, num_samples - block + 1, size=(count, num_blocks))
+        sums = np.sum(cumulative[starts + block] - cumulative[starts], axis=1)
+        statistics[first : first + count] = sums / (num_blocks * block)
+    if statistic == "rms":
+        statistics = np.sqrt(statistics)
+
+    alpha = (1.0 - confidence) / 2
+    lower, upper = np.quantile(statistics, [alpha, 1.0 - alpha])
+    return float(lower), float(upper)
+
+
+def segment_ids(index: np.ndarray, window: float) -> np.ndarray:
+    """Number of the window of length ``window`` that each index value (time or path length) falls into,
+    counted from the smallest value."""
+    index = np.asarray(index, dtype=float)
+    if window <= 0:
+        raise ValueError("The segment length must be positive.")
+    if len(index) == 0:
+        return np.array([], dtype=np.int64)
+    return np.floor((index - np.min(index)) / window).astype(np.int64)
