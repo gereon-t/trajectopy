@@ -1,29 +1,73 @@
 import copy
+import functools
 import logging
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 import numpy as np
 
-from trajectopy.core import settings
 from trajectopy.core.parameters import (
     AlignmentParameters,
     SensorRotationParameters,
 )
 from trajectopy.core.rotations import Rotations
+from trajectopy.core.settings import (
+    AlignmentSettings,
+    MatchingSettings,
+    ProcessingSettings,
+    Settings,
+    resolve_settings,
+)
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.alignment.data import AlignmentData
 from trajectopy.processing.lib.alignment.direct import align_rotations
 from trajectopy.processing.lib.alignment.equations import leverarm_time_component
 from trajectopy.processing.lib.alignment.estimation import AlignmentEstimator
 from trajectopy.results.alignment_result import AlignmentResult
+from trajectopy.utils.deprecation import warn_deprecated
 
 logger = logging.getLogger(__name__)
 
+_F = TypeVar("_F", bound=Callable[..., Any])
 
+
+def _accept_legacy_settings(func: _F) -> _F:
+    """Maps the deprecated arguments ``alignment_settings`` and ``matching_settings`` to ``settings``."""
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        legacy = {name: kwargs.pop(name) for name in ("alignment_settings", "matching_settings") if name in kwargs}
+        if legacy:
+            if kwargs.get("settings") is not None:
+                raise TypeError(f"{func.__name__}() got values for both 'settings' and {', '.join(map(repr, legacy))}")
+            warn_deprecated(
+                f"The arguments {', '.join(map(repr, legacy))} of {func.__name__}() are deprecated, pass "
+                "'settings' (AlignmentSettings or ProcessingSettings) instead.",
+                stacklevel=2,
+            )
+            kwargs["settings"] = ProcessingSettings(
+                alignment=legacy.get("alignment_settings") or AlignmentSettings(),
+                matching=legacy.get("matching_settings") or MatchingSettings(),
+            )
+        return func(*args, **kwargs)
+
+    return wrapper  # type: ignore[return-value]
+
+
+def _alignment_and_matching_settings(
+    processing: Settings | None,
+) -> tuple[AlignmentSettings, MatchingSettings]:
+    if isinstance(processing, ProcessingSettings):
+        return processing.alignment, processing.matching
+    return resolve_settings(processing, AlignmentSettings), MatchingSettings()
+
+
+@_accept_legacy_settings
 def estimate_alignment(
     trajectory: Trajectory,
     other: Trajectory,
-    alignment_settings: settings.AlignmentSettings | None = None,
-    matching_settings: settings.MatchingSettings | None = None,
+    settings: AlignmentSettings | ProcessingSettings | None = None,
+    *,
     initial_parameters: AlignmentParameters | None = None,
 ) -> AlignmentResult:
     """Estimates the alignment between two trajectories.
@@ -34,8 +78,8 @@ def estimate_alignment(
     Args:
         trajectory (Trajectory): Trajectory to align.
         other (Trajectory): Reference trajectory to align to.
-        alignment_settings (AlignmentSettings, optional): Settings for the alignment process. Defaults to AlignmentSettings().
-        matching_settings (MatchingSettings, optional): Settings for the matching process. Defaults to MatchingSettings().
+        settings (AlignmentSettings | ProcessingSettings, optional): Alignment settings, or processing
+            settings whose alignment and matching settings are used. Defaults to the default settings.
         initial_parameters (AlignmentParameters, optional): Prior (e.g. from a manual alignment) used as
             start values of the least squares adjustment instead of the direct initialization. Parameters
             that are not estimated stay fixed at their prior value. A time shift of the prior may be large
@@ -45,10 +89,7 @@ def estimate_alignment(
     Returns:
         AlignmentResult: Result of the alignment process.
     """
-    if alignment_settings is None:
-        alignment_settings = settings.AlignmentSettings()
-    if matching_settings is None:
-        matching_settings = settings.MatchingSettings()
+    alignment_settings, matching_settings = _alignment_and_matching_settings(settings)
 
     logger.info("Aligning trajectory positions ...")
 
@@ -269,11 +310,11 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, *, inplac
     return trajectory
 
 
+@_accept_legacy_settings
 def align(
     trajectory: Trajectory,
     other: Trajectory,
-    alignment_settings: settings.AlignmentSettings | None = None,
-    matching_settings: settings.MatchingSettings | None = None,
+    settings: AlignmentSettings | ProcessingSettings | None = None,
     *,
     inplace: bool = False,
 ) -> Trajectory:
@@ -282,24 +323,12 @@ def align(
     Args:
         trajectory (Trajectory): Trajectory to align.
         other (Trajectory): Reference trajectory.
-        alignment_settings (AlignmentSettings, optional): Settings for the alignment process.
-            Defaults to AlignmentSettings().
-        matching_settings (MatchingSettings, optional): Settings for the matching process.
-            Defaults to MatchingSettings().
+        settings (AlignmentSettings | ProcessingSettings, optional): Alignment settings, or processing
+            settings whose alignment and matching settings are used. Defaults to the default settings.
         inplace (bool, optional): Perform in-place. Defaults to False.
 
     Returns:
         Trajectory: Aligned trajectory.
     """
-    if alignment_settings is None:
-        alignment_settings = settings.AlignmentSettings()
-    if matching_settings is None:
-        matching_settings = settings.MatchingSettings()
-
-    alignment = estimate_alignment(
-        trajectory=trajectory,
-        other=other,
-        alignment_settings=alignment_settings,
-        matching_settings=matching_settings,
-    )
+    alignment = estimate_alignment(trajectory, other, settings)
     return apply_alignment(trajectory=trajectory, alignment_result=alignment, inplace=inplace)

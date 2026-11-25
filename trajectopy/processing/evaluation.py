@@ -1,59 +1,36 @@
 import logging
-from typing import Literal, overload
 
 import numpy as np
 
-from trajectopy.core import settings
 from trajectopy.core.rotations import Rotations
+from trajectopy.core.settings import (
+    MatchingSettings,
+    PairDistanceUnit,
+    ProcessingSettings,
+    RelativeComparisonSettings,
+    resolve_settings,
+)
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.alignment import apply_alignment, estimate_alignment
 from trajectopy.processing.matching import match_trajectories
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
+from trajectopy.utils.deprecation import renamed_parameters, warn_deprecated
 from trajectopy.utils.geometry import nearest_point
 
 logger = logging.getLogger(__name__)
 
 
-@overload
+@renamed_parameters(processing_settings="settings")
 def ate(
     trajectory: Trajectory,
     other: Trajectory,
-    processing_settings: settings.ProcessingSettings | None = None,
-    return_alignment: Literal[False] = False,
-    align: bool = True,
-) -> ATEResult: ...
-
-
-@overload
-def ate(
-    trajectory: Trajectory,
-    other: Trajectory,
-    processing_settings: settings.ProcessingSettings | None = None,
+    settings: ProcessingSettings | None = None,
     *,
-    return_alignment: Literal[True],
     align: bool = True,
-) -> tuple[ATEResult, AlignmentResult]: ...
-
-
-@overload
-def ate(
-    trajectory: Trajectory,
-    other: Trajectory,
-    processing_settings: settings.ProcessingSettings | None,
-    return_alignment: Literal[True],
-    align: bool = True,
-) -> tuple[ATEResult, AlignmentResult]: ...
-
-
-def ate(
-    trajectory: Trajectory,
-    other: Trajectory,
-    processing_settings: settings.ProcessingSettings | None = None,
-    return_alignment: bool = False,
-    align: bool = True,
-) -> ATEResult | tuple[ATEResult, AlignmentResult]:
+    return_alignment: bool | None = None,
+) -> ATEResult:
     """Computes the absolute trajectory error (ATE) between two trajectories.
 
     The ATE is computed by first matching the estimated trajectory to the ground truth trajectory.
@@ -64,48 +41,42 @@ def ate(
     Args:
         trajectory (Trajectory): Trajectory to be evaluated.
         other (Trajectory): Ground truth trajectory.
-        processing_settings (ProcessingSettings, optional): Processing settings.
-        return_alignment (bool, optional): Whether to return the alignment result.
-            Defaults to False.
-        align (bool, optional): Whether to perform alignment. Defaults to True.
+        settings (ProcessingSettings, optional): Processing settings, of which the matching and alignment
+            settings are used. Defaults to the default settings.
+        align (bool, optional): Whether to align the trajectory before computing the deviations.
+            Defaults to True.
+        return_alignment (bool, optional): Deprecated. The alignment is available as ``result.alignment``.
 
     Returns:
-        ATEResult: Result of the ATE computation. If return_alignment is True, returns a tuple
-            containing (ATEResult, AlignmentResult).
+        ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment.
     """
-    if processing_settings is None:
-        processing_settings = settings.ProcessingSettings()
+    processing = resolve_settings(settings, ProcessingSettings)
 
-    trajectory, other = match_trajectories(
-        trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
-    )
+    trajectory, other = match_trajectories(trajectory, other, processing.matching)
 
     if align:
-        alignment = estimate_alignment(
-            trajectory=trajectory,
-            other=other,
-            alignment_settings=processing_settings.alignment,
-            matching_settings=processing_settings.matching,
-        )
-        trajectory_est_aligned = apply_alignment(trajectory, alignment_result=alignment, inplace=False)
+        alignment = estimate_alignment(trajectory, other, processing)
+        trajectory = apply_alignment(trajectory, alignment)
     else:
         alignment = AlignmentResult()
-        trajectory_est_aligned = trajectory
 
-    return (
-        (
-            _compare_trajectories_absolute(other=other, trajectory=trajectory_est_aligned),
-            alignment,
+    result = _compare_trajectories_absolute(other=other, trajectory=trajectory)
+    result.alignment = alignment
+
+    if return_alignment is not None:
+        warn_deprecated(
+            "The argument 'return_alignment' of ate() is deprecated, use the attribute 'alignment' of the result."
         )
-        if return_alignment
-        else _compare_trajectories_absolute(other=other, trajectory=trajectory_est_aligned)
-    )
+        if return_alignment:
+            return result, alignment  # type: ignore[return-value]
+    return result
 
 
+@renamed_parameters(processing_settings="settings")
 def rpe(
     trajectory: Trajectory,
     other: Trajectory,
-    processing_settings: settings.ProcessingSettings | None = None,
+    settings: ProcessingSettings | RelativeComparisonSettings | None = None,
 ) -> RPEResult:
     """Computes the relative pose error (RPE) between two trajectories.
 
@@ -116,21 +87,24 @@ def rpe(
     Args:
         trajectory (Trajectory): Trajectory to be evaluated.
         other (Trajectory): Ground truth trajectory.
-        processing_settings (ProcessingSettings, optional): Processing settings.
+        settings (ProcessingSettings | RelativeComparisonSettings, optional): Relative comparison settings,
+            or processing settings whose matching and relative comparison settings are used. Defaults to the
+            default settings.
 
     Returns:
         RPEResult: Result of the RPE computation.
     """
-    if processing_settings is None:
-        processing_settings = settings.ProcessingSettings()
+    if isinstance(settings, RelativeComparisonSettings):
+        matching, relative_comparison = MatchingSettings(), settings
+    else:
+        processing = resolve_settings(settings, ProcessingSettings)
+        matching, relative_comparison = processing.matching, processing.relative_comparison
 
-    trajectory, other = match_trajectories(
-        trajectory=trajectory, other=other, matching_settings=processing_settings.matching, inplace=False
-    )
+    trajectory, other = match_trajectories(trajectory, other, matching)
     return _compare_trajectories_relative(
         trajectory=trajectory,
         other=other,
-        relative_comparison_settings=processing_settings.relative_comparison,
+        relative_comparison_settings=relative_comparison,
     )
 
 
@@ -172,7 +146,7 @@ def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory)
     )
 
 
-def _get_pair_indices(distances: np.ndarray, settings: settings.RelativeComparisonSettings, dist: float) -> np.ndarray:
+def _get_pair_indices(distances: np.ndarray, settings: RelativeComparisonSettings, dist: float) -> np.ndarray:
     """Get indices of pose pairs for a given distance.
 
     Args:
@@ -210,11 +184,11 @@ def _compare_trajectories_relative(
     *,
     trajectory: Trajectory,
     other: Trajectory,
-    relative_comparison_settings: settings.RelativeComparisonSettings | None = None,
+    relative_comparison_settings: RelativeComparisonSettings | None = None,
 ) -> RPEResult:
     """This function compares two trajectories using the relative comparison method."""
     if relative_comparison_settings is None:
-        relative_comparison_settings = settings.RelativeComparisonSettings()
+        relative_comparison_settings = RelativeComparisonSettings()
 
     logger.info("Performing relative comparison")
     if relative_comparison_settings.pair_min_distance > relative_comparison_settings.pair_max_distance:
@@ -233,9 +207,9 @@ def _compare_trajectories_relative(
     rot_dev: dict[float, np.ndarray] = {}
     pair_distance: dict[float, np.ndarray] = {}
 
-    if relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.METER:
+    if relative_comparison_settings.pair_distance_unit == PairDistanceUnit.METER:
         index = other.path_lengths
-    elif relative_comparison_settings.pair_distance_unit == settings.PairDistanceUnit.SECOND:
+    elif relative_comparison_settings.pair_distance_unit == PairDistanceUnit.SECOND:
         index = other.timestamps
     else:
         raise ValueError(f"Unknown unit {relative_comparison_settings.pair_distance_unit}")

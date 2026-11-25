@@ -69,9 +69,7 @@ class AlignmentData:
         if len(self.traj_from) == 0 or len(self.traj_to) == 0:
             raise ValueError("At least one trajectory is empty after preprocessing!")
 
-        match_trajectories(
-            trajectory=self.traj_from, other=self.traj_to, matching_settings=self.matching_settings, inplace=True
-        )
+        match_trajectories(self.traj_from, self.traj_to, self.matching_settings, inplace=True)
         self._subsample()
 
         logger.info(

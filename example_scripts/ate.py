@@ -14,7 +14,7 @@ def main():
     processing_settings = ProcessingSettings()
 
     # align = True is the default, but can be disabled if you want to evaluate the unaligned trajectories
-    ate_result = ate(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings, align=True)
+    ate_result = ate(other=gt_traj, trajectory=est_traj, settings=processing_settings, align=True)
 
     width = max(len(key) for key in ate_result.property_dict)
     for key, value in ate_result.property_dict.items():

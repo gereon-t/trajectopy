@@ -39,7 +39,7 @@ class TestAlignment(unittest.TestCase):
         alignment_result = estimate_alignment(
             trajectory=open_loop_trajectory.copy(),
             other=transformed,
-            alignment_settings=AlignmentSettings(
+            settings=AlignmentSettings(
                 estimation_settings=AlignmentEstimationSettings.from_components(
                     similarity=similarity_enabled,
                     time_shift=time_shift_enabled,
@@ -48,7 +48,6 @@ class TestAlignment(unittest.TestCase):
                 ),
                 stochastics=AlignmentStochastics(),
             ),
-            matching_settings=MatchingSettings(),
         )
 
         self._verify_alignment(target=groundtruth, estimation=alignment_result.position_parameters, lazy=lazy)
@@ -82,8 +81,7 @@ class TestAlignment(unittest.TestCase):
             estimate_alignment(
                 trajectory=open_loop_trajectory.copy(),
                 other=transformed,
-                alignment_settings=settings,
-                matching_settings=MatchingSettings(),
+                settings=settings,
                 initial_parameters=prior,
             )
         self.assertIn("Adjustment did converge after 1 iterations", "\n".join(logs.output))
@@ -105,8 +103,7 @@ class TestAlignment(unittest.TestCase):
         result = estimate_alignment(
             trajectory=open_loop_trajectory.copy(),
             other=transformed,
-            alignment_settings=settings,
-            matching_settings=MatchingSettings(),
+            settings=settings,
             initial_parameters=prior,
         )
         self._verify_alignment(target=groundtruth, estimation=result.position_parameters)
@@ -117,8 +114,7 @@ class TestAlignment(unittest.TestCase):
         fixed_result = estimate_alignment(
             trajectory=open_loop_trajectory.copy(),
             other=transformed,
-            alignment_settings=fixed_settings,
-            matching_settings=MatchingSettings(),
+            settings=fixed_settings,
             initial_parameters=prior,
         )
         np.testing.assert_allclose(fixed_result.position_parameters.values, prior.values)
@@ -183,7 +179,7 @@ class TestAlignment(unittest.TestCase):
         settings = AlignmentSettings(
             estimation_settings=AlignmentEstimationSettings.from_components(similarity=True, sensor_rotation=True)
         )
-        result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings, MatchingSettings())
+        result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings)
         np.testing.assert_allclose(np.rad2deg(result.rotation_parameters.rotation), [2.0, -3.0, 5.0], atol=1e-3)
 
         aligned = apply_alignment(open_loop_trajectory, result, inplace=False)
@@ -206,7 +202,7 @@ class TestAlignment(unittest.TestCase):
                 stochastics=AlignmentStochastics(robust_estimation=robust),
                 preprocessing=AlignmentPreprocessing(max_samples=0),
             )
-            result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings, MatchingSettings())
+            result = estimate_alignment(open_loop_trajectory.copy(), transformed, settings)
             self.assertTrue(result.converged)
             errors[robust] = np.max(
                 np.abs(result.position_parameters.helmert.translation - groundtruth.helmert.translation)
@@ -231,9 +227,7 @@ class TestAlignment(unittest.TestCase):
         settings = AlignmentSettings(
             estimation_settings=AlignmentEstimationSettings.from_components(similarity=False, sensor_rotation=True)
         )
-        result = estimate_alignment(
-            open_loop_trajectory.copy(), open_loop_trajectory.copy(), settings, MatchingSettings()
-        )
+        result = estimate_alignment(open_loop_trajectory.copy(), open_loop_trajectory.copy(), settings)
         self.assertTrue(result.converged)
 
     def _verify_alignment(

@@ -13,12 +13,12 @@ def main():
 
     processing_settings = ProcessingSettings()
     ate_results = [
-        ate(trajectory=orb_traj, other=gt_traj, processing_settings=processing_settings),
-        ate(trajectory=sptam_traj, other=gt_traj, processing_settings=processing_settings),
+        ate(trajectory=orb_traj, other=gt_traj, settings=processing_settings),
+        ate(trajectory=sptam_traj, other=gt_traj, settings=processing_settings),
     ]
     rpe_results = [
-        rpe(trajectory=orb_traj, other=gt_traj, processing_settings=processing_settings),
-        rpe(trajectory=sptam_traj, other=gt_traj, processing_settings=processing_settings),
+        rpe(trajectory=orb_traj, other=gt_traj, settings=processing_settings),
+        rpe(trajectory=sptam_traj, other=gt_traj, settings=processing_settings),
     ]
 
     # The same figures work for one or several results.

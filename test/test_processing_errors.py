@@ -7,7 +7,6 @@ from trajectopy.core.settings import (
     AlignmentEstimationSettings,
     AlignmentSettings,
     AlignmentStochastics,
-    MatchingSettings,
 )
 from trajectopy.processing.alignment import estimate_alignment
 
@@ -24,13 +23,12 @@ class TestProcessingErrors(unittest.TestCase):
         result = estimate_alignment(
             trajectory=traj_a,
             other=traj_b,
-            alignment_settings=AlignmentSettings(
+            settings=AlignmentSettings(
                 estimation_settings=AlignmentEstimationSettings.from_components(
                     similarity=True, time_shift=False, leverarm=False, sensor_rotation=False
                 ),
                 stochastics=AlignmentStochastics(),
             ),
-            matching_settings=MatchingSettings(),
         )
         from trajectopy.results.alignment_result import AlignmentResult
 
@@ -38,14 +36,12 @@ class TestProcessingErrors(unittest.TestCase):
 
     def test_estimate_alignment_invalid_settings(self):
         traj = open_loop_trajectory.copy()
-        with self.assertRaises(AttributeError):
-            estimate_alignment(
-                trajectory=traj, other=traj, alignment_settings="invalid", matching_settings=MatchingSettings()
-            )
+        with self.assertRaises(TypeError):
+            estimate_alignment(trajectory=traj, other=traj, settings="invalid")
 
     def test_estimate_alignment_none_settings_uses_defaults(self):
         traj = open_loop_trajectory.copy()
-        result = estimate_alignment(trajectory=traj, other=traj, alignment_settings=None, matching_settings=None)
+        result = estimate_alignment(trajectory=traj, other=traj, settings=None)
         self.assertTrue(result.converged)
 
 

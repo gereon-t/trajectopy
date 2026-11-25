@@ -13,7 +13,12 @@ from dataclasses import dataclass
 import numpy as np
 from PySide6 import QtCore
 
-from trajectopy.core.settings import AlignmentEstimationSettings, AlignmentSettings, MatchingSettings
+from trajectopy.core.settings import (
+    AlignmentEstimationSettings,
+    AlignmentSettings,
+    MatchingSettings,
+    ProcessingSettings,
+)
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing import alignment
 from trajectopy.processing.lib.alignment import diagnostics, interactive
@@ -386,8 +391,7 @@ class AlignmentSession(QtCore.QObject):
         return {
             "trajectory": self.trajectory,
             "other": self.reference,
-            "alignment_settings": settings,
-            "matching_settings": self.matching_settings,
+            "settings": ProcessingSettings(alignment=settings, matching=self.matching_settings),
             "initial_parameters": self.state.to_parameters(),
         }
 

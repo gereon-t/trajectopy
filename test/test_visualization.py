@@ -26,9 +26,8 @@ class TestVisualization(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         ensure_app()
-        cls.ate_result, cls.alignment = ate(
-            noisy_trajectory.copy(), generated_trajectory.copy(), return_alignment=True
-        )
+        cls.ate_result = ate(noisy_trajectory.copy(), generated_trajectory.copy())
+        cls.alignment = cls.ate_result.alignment
         cls.rpe_result = rpe(noisy_trajectory.copy(), generated_trajectory.copy())
 
     def _render_all(self, figures: list) -> None:

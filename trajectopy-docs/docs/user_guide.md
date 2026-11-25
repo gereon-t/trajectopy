@@ -50,12 +50,7 @@ est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 settings = tpy.ProcessingSettings()  # default settings
 
 # Estimate the alignment of est_traj to gt_traj
-alignment_result = tpy.estimate_alignment(
-    trajectory=est_traj,
-    other=gt_traj,
-    alignment_settings=settings.alignment,
-    matching_settings=settings.matching,
-)
+alignment_result = tpy.estimate_alignment(est_traj, gt_traj, settings)
 print(alignment_result.position_parameters)
 
 # Apply it; this returns an aligned copy and leaves est_traj unchanged
@@ -86,8 +81,8 @@ est_traj = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
 ate_result = tpy.ate(trajectory=est_traj, other=gt_traj)
 print(f"Position ATE: {ate_result.pos_ate:.3f} m, rotation ATE: {ate_result.rot_ate:.3f} rad")
 
-# Also return the alignment that was used
-ate_result, alignment_result = tpy.ate(trajectory=est_traj, other=gt_traj, return_alignment=True)
+# The alignment that was applied before the deviations were computed
+alignment_result = ate_result.alignment
 ```
 
 The result contains the deviations of each matched pose (e.g. `pos_dev_x`, `pos_dev_along`) and their
@@ -120,8 +115,8 @@ settings.relative_comparison.pair_min_distance = 10.0
 settings.relative_comparison.pair_max_distance = 60.0
 settings.relative_comparison.pair_distance_step = 10.0
 
-ate_result = tpy.ate(trajectory=est_traj, other=gt_traj, processing_settings=settings)
-rpe_result = tpy.rpe(trajectory=est_traj, other=gt_traj, processing_settings=settings)
+ate_result = tpy.ate(trajectory=est_traj, other=gt_traj, settings=settings)
+rpe_result = tpy.rpe(trajectory=est_traj, other=gt_traj, settings=settings)
 
 settings.to_file("settings.json")  # the GUI reads this format, too
 settings = tpy.ProcessingSettings.from_file("settings.json")
@@ -203,7 +198,8 @@ sptam_traj = tpy.Trajectory.from_file("./example_data/KITTI_SPTAM.traj")
 
 ate_results = [tpy.ate(orb_traj, gt_traj), tpy.ate(sptam_traj, gt_traj)]
 rpe_results = [tpy.rpe(orb_traj, gt_traj), tpy.rpe(sptam_traj, gt_traj)]
-ate_result, alignment = tpy.ate(orb_traj, gt_traj, return_alignment=True)
+ate_result = ate_results[0]
+alignment = ate_result.alignment
 
 settings = tpy.PlotSettings(ate_unit_is_mm=True)
 

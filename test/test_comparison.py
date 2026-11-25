@@ -30,7 +30,7 @@ from trajectopy.utils.definitions import Unit
 def compare_trajectories_abs(traj_ref: Trajectory, traj_test: Trajectory) -> ATEResult:
     matching_settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL)
 
-    traj_test, traj_ref = match_trajectories(trajectory=traj_test, other=traj_ref, matching_settings=matching_settings)
+    traj_test, traj_ref = match_trajectories(trajectory=traj_test, other=traj_ref, settings=matching_settings)
 
     if len(traj_ref) != len(traj_test):
         raise ValueError("Something went wrong during matching.")
@@ -43,7 +43,7 @@ def compare_trajectories_rel(
 ) -> RPEResult:
     matching_settings = MatchingSettings(method=MatchingMethod.NEAREST_TEMPORAL)
 
-    traj_test, traj_ref = match_trajectories(trajectory=traj_test, other=traj_ref, matching_settings=matching_settings)
+    traj_test, traj_ref = match_trajectories(trajectory=traj_test, other=traj_ref, settings=matching_settings)
 
     if len(traj_ref) != len(traj_test):
         raise ValueError("Something went wrong during matching.")

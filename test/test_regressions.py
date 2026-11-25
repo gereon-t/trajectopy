@@ -28,7 +28,7 @@ class TestRegressions(unittest.TestCase):
         test.positions.xyz[::10] += 1000.0  # far away from the reference: no neighbours within max_distance
 
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED, max_distance=1.0)
-        matched_test, matched_ref = match_trajectories(test, ref, matching_settings=settings, inplace=False)
+        matched_test, matched_ref = match_trajectories(test, ref, settings=settings, inplace=False)
 
         self.assertEqual(len(matched_test), len(matched_ref))
         self.assertLess(len(matched_test), len(test))
@@ -139,7 +139,7 @@ class TestTrajectoryOperationRegressions(unittest.TestCase):
         test = Trajectory.from_arrays(xyz + 0.05, epsg=25832)
 
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED)
-        matched_test, matched_ref = match_trajectories(test, reference, matching_settings=settings)
+        matched_test, matched_ref = match_trajectories(test, reference, settings=settings)
 
         self.assertEqual(matched_test.positions.epsg, 25832)
         self.assertEqual(matched_ref.positions.epsg, 25832)
@@ -182,7 +182,7 @@ class TestRobustnessRegressions(unittest.TestCase):
     def test_spatial_interpolation_needs_two_neighbours(self):
         settings = MatchingSettings(method=MatchingMethod.NEAREST_SPATIAL_INTERPOLATED, k_nearest=1)
         with self.assertRaises(ValueError):
-            match_trajectories(_line(np.arange(10.0)), _line(np.arange(10.0)), matching_settings=settings)
+            match_trajectories(_line(np.arange(10.0)), _line(np.arange(10.0)), settings=settings)
 
     def test_interpolating_a_single_pose(self):
         from trajectopy.processing.interpolation import interpolate
@@ -360,7 +360,7 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            result = estimate_alignment(generated_trajectory, generated_trajectory.copy(), alignment_settings=settings)
+            result = estimate_alignment(generated_trajectory, generated_trajectory.copy(), settings=settings)
 
         self.assertFalse(result.converged)
 
@@ -471,7 +471,7 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            result = estimate_alignment(trajectory, reference, alignment_settings=settings)
+            result = estimate_alignment(trajectory, reference, settings=settings)
 
         self.assertTrue(result.converged)
         self.assertAlmostEqual(result.position_parameters.sim_trans_x.value, 0.5)
@@ -505,7 +505,7 @@ class TestRobustnessRegressions(unittest.TestCase):
         )
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            result = estimate_alignment(trajectory, reference, alignment_settings=settings)
+            result = estimate_alignment(trajectory, reference, settings=settings)
 
         self.assertFalse(result.converged)
 
@@ -618,7 +618,7 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         tracemalloc.start()
         try:
-            match_trajectories(test, reference, matching_settings=settings, inplace=False)
+            match_trajectories(test, reference, settings=settings, inplace=False)
             peak = tracemalloc.get_traced_memory()[1]
         finally:
             tracemalloc.stop()

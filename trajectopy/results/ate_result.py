@@ -7,6 +7,7 @@ import pandas as pd
 
 from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.correlation import DeviationCorrelation
 from trajectopy.utils.definitions import Sorting
 from trajectopy.utils.numeric import rms
@@ -69,6 +70,8 @@ class ATEResult:
         trajectory (Trajectory): The trajectory the deviations are belonging to
         abs_dev (AbsoluteTrajectoryDeviations): The absolute trajectory deviations
         name (str): The name of the result
+        alignment (AlignmentResult | None): The alignment that was applied to the trajectory before the
+            deviations were computed, or None if unknown (e.g. for results read from a file).
     """
 
     def __init__(
@@ -76,10 +79,12 @@ class ATEResult:
         trajectory: Trajectory,
         abs_dev: AbsoluteTrajectoryDeviations,
         name: str = "",
+        alignment: AlignmentResult | None = None,
     ) -> None:
         self.name = name or trajectory.name
         self.trajectory = trajectory
         self.abs_dev = abs_dev
+        self.alignment = alignment
 
     @property
     def property_dict(self) -> dict[str, str]:

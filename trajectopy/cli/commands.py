@@ -88,17 +88,15 @@ def run_evaluation(args: argparse.Namespace, with_ate: bool, with_rpe: bool) -> 
         logger.info("Evaluating %s against %s", estimate.name, reference.name)
         trajectory = estimate
         if with_ate:
-            ate_result, alignment = tpy.ate(
-                estimate, reference, processing_settings=settings, return_alignment=True, align=not args.no_align
-            )
+            ate_result = tpy.ate(estimate, reference, settings, align=not args.no_align)
             ate_results.append(ate_result)
-            alignments.append(alignment)
-            if not args.no_align:
-                trajectory = tpy.apply_alignment(estimate, alignment_result=alignment, inplace=False)
+            alignments.append(ate_result.alignment)
+            if not args.no_align and ate_result.alignment is not None:
+                trajectory = tpy.apply_alignment(estimate, ate_result.alignment)
         elif not args.no_align:
-            trajectory = tpy.align(estimate, reference, settings.alignment, settings.matching, inplace=False)
+            trajectory = tpy.align(estimate, reference, settings)
         if with_rpe:
-            rpe_results.append(tpy.rpe(trajectory, reference, processing_settings=settings))
+            rpe_results.append(tpy.rpe(trajectory, reference, settings=settings))
 
     table = summary_table(ate_results, rpe_results, confidence_intervals=not args.no_ci)
     text = format_table(table, args.table_format)
@@ -180,8 +178,8 @@ def run_align(args: argparse.Namespace) -> int:
         raise CommandError("Several trajectories are aligned: give a directory as output.")
 
     for estimate in estimates:
-        alignment = tpy.estimate_alignment(estimate, reference, settings.alignment, settings.matching)
-        aligned = tpy.apply_alignment(estimate, alignment_result=alignment, inplace=False)
+        alignment = tpy.estimate_alignment(estimate, reference, settings)
+        aligned = tpy.apply_alignment(estimate, alignment)
         if not args.quiet:
             print(f"{estimate.name}:")
             for line in (

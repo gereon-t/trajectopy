@@ -4,13 +4,14 @@ import logging
 import numpy as np
 from scipy.spatial import KDTree
 
-from trajectopy.core import settings
 from trajectopy.core.positions import Positions
 from trajectopy.core.rotations import Rotations
+from trajectopy.core.settings import MatchingMethod, MatchingSettings, ProcessingSettings, resolve_settings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import inside_gaps, interpolate
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.deprecation import renamed_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +55,11 @@ def match_stamps(trajectory: Trajectory, index: np.ndarray, *, inplace: bool = F
     return traj_self
 
 
+@renamed_parameters(matching_settings="settings")
 def match_trajectories(
     trajectory: Trajectory,
     other: Trajectory,
-    matching_settings: settings.MatchingSettings | None = None,
+    settings: MatchingSettings | ProcessingSettings | None = None,
     *,
     inplace: bool = False,
 ) -> tuple[Trajectory, Trajectory]:
@@ -79,15 +81,14 @@ def match_trajectories(
     Args:
         trajectory (Trajectory): Trajectory to match.
         other (Trajectory): Other trajectory to match against.
-        matching_settings (MatchingSettings, optional): Matching settings. Defaults to
-            MatchingSettings().
+        settings (MatchingSettings | ProcessingSettings, optional): Matching settings, or processing settings
+            whose matching settings are used. Defaults to the default settings.
         inplace (bool, optional): Whether to modify the input trajectories. Defaults to False.
 
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
     """
-    if matching_settings is None:
-        matching_settings = settings.MatchingSettings()
+    matching_settings = resolve_settings(settings, MatchingSettings)
 
     trajectory = trajectory if inplace else trajectory.copy()
     other = other if inplace else other.copy()
@@ -95,15 +96,14 @@ def match_trajectories(
     if (
         trajectory.sorting == Sorting.PATH_LENGTH
         and other.sorting == Sorting.PATH_LENGTH
-        and matching_settings.method
-        in [settings.MatchingMethod.NEAREST_TEMPORAL, settings.MatchingMethod.INTERPOLATION]
+        and matching_settings.method in [MatchingMethod.NEAREST_TEMPORAL, MatchingMethod.INTERPOLATION]
         and not np.array_equal(trajectory.index, other.index)
     ):
         _adopt_reference_path_lengths(trajectory=trajectory, other=other)
 
     if not trajectory.overlaps_with(other) and matching_settings.method in [
-        settings.MatchingMethod.NEAREST_TEMPORAL,
-        settings.MatchingMethod.INTERPOLATION,
+        MatchingMethod.NEAREST_TEMPORAL,
+        MatchingMethod.INTERPOLATION,
     ]:
         logger.warning("Trajectories do not overlap! Performing rough matching first.")
         timeshift = match_non_overlapping_stamps(
@@ -118,22 +118,22 @@ def match_trajectories(
 
     logger.info("Matching trajectories using method %s", matching_settings.method.name)
 
-    if matching_settings.method == settings.MatchingMethod.INTERPOLATION:
+    if matching_settings.method == MatchingMethod.INTERPOLATION:
         return _match_trajectories_interpolation(
             trajectory=trajectory, other=other, max_gap_size=matching_settings.max_gap_size
         )
 
-    if matching_settings.method == settings.MatchingMethod.NEAREST_TEMPORAL:
+    if matching_settings.method == MatchingMethod.NEAREST_TEMPORAL:
         return _match_trajectories_temporal(
             trajectory=trajectory, other=other, max_distance=matching_settings.max_time_diff
         )
 
-    if matching_settings.method == settings.MatchingMethod.NEAREST_SPATIAL:
+    if matching_settings.method == MatchingMethod.NEAREST_SPATIAL:
         return _match_trajectories_spatial(
             trajectory=trajectory, other=other, max_distance=matching_settings.max_distance
         )
 
-    if matching_settings.method == settings.MatchingMethod.NEAREST_SPATIAL_INTERPOLATED:
+    if matching_settings.method == MatchingMethod.NEAREST_SPATIAL_INTERPOLATED:
         return _match_trajectories_spatial_interpolation(
             trajectory=trajectory,
             other=other,

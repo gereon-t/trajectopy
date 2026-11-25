@@ -9,7 +9,7 @@ def main():
     # default settings
     processing_settings = ProcessingSettings()
 
-    rpe_result = rpe(other=gt_traj, trajectory=est_traj, processing_settings=processing_settings)
+    rpe_result = rpe(other=gt_traj, trajectory=est_traj, settings=processing_settings)
 
     width = max(len(key) for key in rpe_result.property_dict)
     for key, value in rpe_result.property_dict.items():

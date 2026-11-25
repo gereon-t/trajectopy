@@ -6,11 +6,12 @@ from scipy.sparse import csr_array
 from scipy.sparse.csgraph import breadth_first_order, connected_components, dijkstra, minimum_spanning_tree
 from scipy.spatial import KDTree
 
-from trajectopy.core.settings import SortingSettings
+from trajectopy.core.settings import ProcessingSettings, SortingSettings, resolve_settings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.lib.approximation.line_approximation import Line3D
 from trajectopy.processing.lib.approximation.voxelizer import Voxelizer
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.deprecation import renamed_parameters
 from trajectopy.utils.geometry import lengths_from_xyz
 
 logger = logging.getLogger(__name__)
@@ -19,8 +20,12 @@ logger = logging.getLogger(__name__)
 _MIN_EDGE_WEIGHT = 1e-12
 
 
+@renamed_parameters(sorting_settings="settings")
 def sort_spatially(
-    trajectory: Trajectory, sorting_settings: SortingSettings | None = None, *, inplace: bool = False
+    trajectory: Trajectory,
+    settings: SortingSettings | ProcessingSettings | None = None,
+    *,
+    inplace: bool = False,
 ) -> Trajectory:
     """
     Sorts the trajectory spatially. This is only useful for trajectories
@@ -28,17 +33,17 @@ def sort_spatially(
 
     Args:
         trajectory (Trajectory): Trajectory to sort.
-        sorting_settings (SortingSettings): Sorting settings.
+        settings (SortingSettings | ProcessingSettings, optional): Sorting settings, or processing settings
+            whose sorting settings are used. Defaults to the default settings.
         inplace (bool, optional): Whether to sort the trajectory in-place. Defaults to False.
 
     Returns:
         Trajectory: Sorted trajectory.
 
     """
-    if sorting_settings is None:
-        sorting_settings = SortingSettings()
-
-    sort_idx, arc_lengths = _sort_xyz(xyz=trajectory.positions.xyz, settings=sorting_settings)
+    sort_idx, arc_lengths = _sort_xyz(
+        xyz=trajectory.positions.xyz, settings=resolve_settings(settings, SortingSettings)
+    )
     trajectory = trajectory.mask(sort_idx, inplace=inplace)
     trajectory.path_lengths = arc_lengths
     trajectory.set_sorting(Sorting.PATH_LENGTH)

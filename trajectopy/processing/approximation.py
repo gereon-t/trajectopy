@@ -7,7 +7,9 @@ from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     ApproximationSettings,
     PositionApproximationMethod,
+    ProcessingSettings,
     RotationApproximationMethod,
+    resolve_settings,
 )
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
@@ -16,14 +18,16 @@ from trajectopy.processing.lib.approximation.cubic_approximation import (
 )
 from trajectopy.processing.sorting import divide_into_laps
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.deprecation import renamed_parameters
 from trajectopy.utils.numeric import rndodd
 
 logger = logging.getLogger(__name__)
 
 
+@renamed_parameters(approximation_settings="settings")
 def approximate(
     trajectory: Trajectory,
-    approximation_settings: ApproximationSettings | None = None,
+    settings: ApproximationSettings | ProcessingSettings | None = None,
     *,
     inplace: bool = False,
 ) -> Trajectory:
@@ -31,14 +35,14 @@ def approximate(
 
     Args:
         trajectory (Trajectory): The trajectory to approximate.
-        approximation_settings (ApproximationSettings): Settings for the approximation.
+        settings (ApproximationSettings | ProcessingSettings, optional): Approximation settings, or processing
+            settings whose approximation settings are used. Defaults to the default settings.
         inplace (bool): If True, modify the trajectory in place. Defaults to False.
 
     Returns:
         Trajectory: The approximated trajectory.
     """
-    if approximation_settings is None:
-        approximation_settings = ApproximationSettings()
+    approximation_settings = resolve_settings(settings, ApproximationSettings)
 
     if approximation_settings.position_approximation_method == PositionApproximationMethod.CUBIC:
         xyz_approx = _piecewise_cubic(

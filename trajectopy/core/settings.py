@@ -979,3 +979,41 @@ class ProcessingSettings(Settings):
     relative_comparison: RelativeComparisonSettings = field(default_factory=RelativeComparisonSettings)
     approximation: ApproximationSettings = field(default_factory=ApproximationSettings)
     sorting: SortingSettings = field(default_factory=SortingSettings)
+
+
+_PROCESSING_FIELDS: dict[type[Settings], str] = {
+    AlignmentSettings: "alignment",
+    MatchingSettings: "matching",
+    RelativeComparisonSettings: "relative_comparison",
+    ApproximationSettings: "approximation",
+    SortingSettings: "sorting",
+}
+
+
+def resolve_settings(settings: Settings | None, settings_type: type[_SettingsT]) -> _SettingsT:
+    """Returns the settings of the given type that a processing function should use.
+
+    Every processing function accepts either its own settings type or the complete
+    :class:`ProcessingSettings`, from which the matching part is taken. ``None`` means the default settings.
+
+    Args:
+        settings (Settings | None): Settings passed by the user.
+        settings_type (type[Settings]): Settings type the function needs.
+
+    Raises:
+        TypeError: If the settings are neither of the requested type nor ProcessingSettings.
+
+    Returns:
+        Settings: Settings of the requested type.
+    """
+    if settings is None:
+        return settings_type()
+    if isinstance(settings, settings_type):
+        return settings
+    if isinstance(settings, ProcessingSettings) and settings_type in _PROCESSING_FIELDS:
+        return getattr(settings, _PROCESSING_FIELDS[settings_type])
+    raise TypeError(
+        f"Expected {settings_type.__name__} or ProcessingSettings, got {type(settings).__name__}."
+        if settings_type in _PROCESSING_FIELDS
+        else f"Expected {settings_type.__name__}, got {type(settings).__name__}."
+    )

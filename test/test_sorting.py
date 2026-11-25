@@ -43,9 +43,7 @@ class TestSorting(unittest.TestCase):
 
     def test_sort_spatially_basic(self):
         """Test basic spatial sorting functionality."""
-        result = sort_spatially(
-            trajectory=self.unsorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
-        )
+        result = sort_spatially(trajectory=self.unsorted_trajectory.copy(), settings=SortingSettings(), inplace=False)
 
         # Verify structure
         self.assertIsNotNone(result)
@@ -66,7 +64,7 @@ class TestSorting(unittest.TestCase):
         """Test that inplace sorting modifies the original trajectory."""
         traj_copy = self.unsorted_trajectory.copy()
 
-        result = sort_spatially(trajectory=traj_copy, sorting_settings=SortingSettings(), inplace=True)
+        result = sort_spatially(trajectory=traj_copy, settings=SortingSettings(), inplace=True)
 
         # Result should be the same object
         self.assertIs(result, traj_copy)
@@ -77,9 +75,7 @@ class TestSorting(unittest.TestCase):
 
     def test_sort_spatially_path_lengths_properties(self):
         """Test properties of computed path lengths after sorting."""
-        result = sort_spatially(
-            trajectory=self.unsorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
-        )
+        result = sort_spatially(trajectory=self.unsorted_trajectory.copy(), settings=SortingSettings(), inplace=False)
 
         # Path lengths should be computed for all points
         self.assertEqual(len(result.path_lengths), len(result))
@@ -111,7 +107,7 @@ class TestSorting(unittest.TestCase):
         num_points = len(traj_with_rot)
         traj_with_rot.rotations = Rotations.from_quat(np.tile([0, 0, 0, 1], (num_points, 1)))
 
-        result = sort_spatially(trajectory=traj_with_rot, sorting_settings=SortingSettings(), inplace=False)
+        result = sort_spatially(trajectory=traj_with_rot, settings=SortingSettings(), inplace=False)
 
         # Properties should be preserved
         self.assertEqual(len(result), len(traj_with_rot))
@@ -122,7 +118,7 @@ class TestSorting(unittest.TestCase):
         """Test basic lap division functionality."""
         # First sort the trajectory
         sorted_traj = sort_spatially(
-            trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
+            trajectory=self.sorted_trajectory.copy(), settings=SortingSettings(), inplace=False
         )
 
         laps = divide_into_laps(trajectory=sorted_traj, return_lap_indices=False)
@@ -139,7 +135,7 @@ class TestSorting(unittest.TestCase):
     def test_divide_into_laps_with_indices(self):
         """Test lap division with indices return."""
         sorted_traj = sort_spatially(
-            trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
+            trajectory=self.sorted_trajectory.copy(), settings=SortingSettings(), inplace=False
         )
 
         laps, lap_indices = divide_into_laps(trajectory=sorted_traj, return_lap_indices=True)
@@ -158,7 +154,7 @@ class TestSorting(unittest.TestCase):
     def test_divide_into_laps_preserves_total_length(self):
         """Test that lap division preserves the total trajectory length."""
         sorted_traj = sort_spatially(
-            trajectory=self.sorted_trajectory.copy(), sorting_settings=SortingSettings(), inplace=False
+            trajectory=self.sorted_trajectory.copy(), settings=SortingSettings(), inplace=False
         )
 
         laps = divide_into_laps(trajectory=sorted_traj, return_lap_indices=False)
@@ -191,11 +187,11 @@ class TestSorting(unittest.TestCase):
         settings_large = SortingSettings(voxel_size=20.0)
 
         result_small = sort_spatially(
-            trajectory=self.unsorted_trajectory.copy(), sorting_settings=settings_small, inplace=False
+            trajectory=self.unsorted_trajectory.copy(), settings=settings_small, inplace=False
         )
 
         result_large = sort_spatially(
-            trajectory=self.unsorted_trajectory.copy(), sorting_settings=settings_large, inplace=False
+            trajectory=self.unsorted_trajectory.copy(), settings=settings_large, inplace=False
         )
 
         # Both should produce valid results

@@ -40,7 +40,7 @@ class TestApproximation(unittest.TestCase):
             position_interval_size=0.5, position_min_observations=5, rotation_window_size=0.5
         )
 
-        result = approximate(trajectory=self.trajectory, approximation_settings=settings, inplace=False)
+        result = approximate(trajectory=self.trajectory, settings=settings, inplace=False)
 
         # Verify structure
         self.assertIsNotNone(result)
@@ -59,7 +59,7 @@ class TestApproximation(unittest.TestCase):
         """Test that inplace parameter works correctly."""
         traj_copy = self.trajectory.copy()
 
-        result = approximate(trajectory=traj_copy, approximation_settings=ApproximationSettings(), inplace=True)
+        result = approximate(trajectory=traj_copy, settings=ApproximationSettings(), inplace=True)
 
         # Result should be the same object
         self.assertIs(result, traj_copy)
@@ -73,7 +73,7 @@ class TestApproximation(unittest.TestCase):
             positions=self.trajectory.positions.copy(), timestamps=self.trajectory.timestamps.copy()
         )
 
-        result = approximate(trajectory=traj_no_rot, approximation_settings=ApproximationSettings(), inplace=False)
+        result = approximate(trajectory=traj_no_rot, settings=ApproximationSettings(), inplace=False)
 
         # Should work without rotations
         self.assertIsNotNone(result)
@@ -82,7 +82,7 @@ class TestApproximation(unittest.TestCase):
 
     def test_approximate_cubic_preserves_length(self):
         """Test that approximation preserves trajectory length."""
-        result = approximate(trajectory=self.trajectory, approximation_settings=ApproximationSettings(), inplace=False)
+        result = approximate(trajectory=self.trajectory, settings=ApproximationSettings(), inplace=False)
 
         self.assertEqual(len(result), len(self.trajectory))
         self.assertEqual(result.positions.xyz.shape, self.trajectory.positions.xyz.shape)
@@ -93,9 +93,9 @@ class TestApproximation(unittest.TestCase):
 
         settings_large = ApproximationSettings(position_interval_size=1.0, position_min_observations=10)
 
-        result_small = approximate(trajectory=self.trajectory, approximation_settings=settings_small, inplace=False)
+        result_small = approximate(trajectory=self.trajectory, settings=settings_small, inplace=False)
 
-        result_large = approximate(trajectory=self.trajectory, approximation_settings=settings_large, inplace=False)
+        result_large = approximate(trajectory=self.trajectory, settings=settings_large, inplace=False)
 
         # Both should produce valid results
         self.assertIsNotNone(result_small)
@@ -114,7 +114,7 @@ class TestApproximation(unittest.TestCase):
 
         settings = ApproximationSettings(rotation_window_size=0.5)
 
-        result = approximate(trajectory=self.trajectory, approximation_settings=settings, inplace=False)
+        result = approximate(trajectory=self.trajectory, settings=settings, inplace=False)
 
         # Verify rotations exist
         self.assertIsNotNone(result.rotations)
