@@ -18,7 +18,6 @@ ALLOWED_DEPENDENCIES: dict[str, set[str]] = {
     "results": {"core", "utils", "exceptions"},
     "processing": {"core", "results", "utils", "exceptions"},
     "io": {"core", "results", "utils", "exceptions"},
-    "readers": {"io"},  # deprecated re-export shims
     "visualization": {"core", "results", "utils", "exceptions"},
 }
 

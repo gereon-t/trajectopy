@@ -110,7 +110,6 @@ filterwarnings = ["error::trajectopy.utils.deprecation.TrajectopyDeprecationWarn
 
 [tool.coverage.run]
 source = ["trajectopy"]
-omit = ["trajectopy/readers/*"]  # deprecated aliases of trajectopy.io
 
 [tool.coverage.report]
 # CI fails if the coverage drops below this (it was 88% when the threshold was introduced)

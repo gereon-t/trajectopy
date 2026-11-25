@@ -80,7 +80,6 @@ if TYPE_CHECKING:
         AlignmentSettings,
         AlignmentStochastics,
         ApproximationSettings,
-        ComparisonMethod,
         InterpolationMethod,
         MatchingMethod,
         MatchingSettings,
@@ -98,13 +97,12 @@ if TYPE_CHECKING:
         AlignmentError,
         AlignmentParametersError,
         ApproximationError,
-        IOError,  # Deprecated: use TrajectopyIOError
         PointSetError,
         TrajectopyError,
         TrajectopyIOError,
         TrajectoryError,
     )
-    from trajectopy.processing.alignment import align, apply_alignment, estimate_alignment
+    from trajectopy.processing.alignment import adopt_first_pose, align, apply_alignment, estimate_alignment
     from trajectopy.processing.approximation import approximate
     from trajectopy.processing.evaluation import ate, rpe
     from trajectopy.processing.interpolation import interpolate
@@ -133,7 +131,6 @@ _LAZY_IMPORTS = {
     "AlignmentSettings": "trajectopy.core.settings",
     "AlignmentStochastics": "trajectopy.core.settings",
     "ApproximationSettings": "trajectopy.core.settings",
-    "ComparisonMethod": "trajectopy.core.settings",
     "InterpolationMethod": "trajectopy.core.settings",
     "MatchingMethod": "trajectopy.core.settings",
     "MatchingSettings": "trajectopy.core.settings",
@@ -150,11 +147,11 @@ _LAZY_IMPORTS = {
     "AlignmentError": "trajectopy.exceptions",
     "AlignmentParametersError": "trajectopy.exceptions",
     "ApproximationError": "trajectopy.exceptions",
-    "IOError": "trajectopy.exceptions",
     "PointSetError": "trajectopy.exceptions",
     "TrajectopyError": "trajectopy.exceptions",
     "TrajectopyIOError": "trajectopy.exceptions",
     "TrajectoryError": "trajectopy.exceptions",
+    "adopt_first_pose": "trajectopy.processing.alignment",
     "align": "trajectopy.processing.alignment",
     "apply_alignment": "trajectopy.processing.alignment",
     "estimate_alignment": "trajectopy.processing.alignment",
@@ -178,7 +175,20 @@ _LAZY_IMPORTS = {
 }
 
 
+# Deprecated top-level names: name -> (module, attribute, message)
+_DEPRECATED = {
+    "IOError": ("trajectopy.exceptions", "TrajectopyIOError", "use trajectopy.TrajectopyIOError instead"),
+    "ComparisonMethod": ("trajectopy.core.settings", "ComparisonMethod", "it is an internal detail of the file I/O"),
+}
+
+
 def __getattr__(name: str):
+    if name in _DEPRECATED:
+        from trajectopy.utils.deprecation import warn_deprecated
+
+        deprecated_module, attribute, message = _DEPRECATED[name]
+        warn_deprecated(f"trajectopy.{name} is deprecated, {message}.")
+        return getattr(importlib.import_module(deprecated_module), attribute)
     module = _LAZY_IMPORTS.get(name)
     if module is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
@@ -213,7 +223,6 @@ __all__ = [
     "SortingSettings",
     "PlotSettings",
     "PairDistanceUnit",
-    "ComparisonMethod",
     "MatchingMethod",
     "InterpolationMethod",
     # Results
@@ -229,6 +238,7 @@ __all__ = [
     "estimate_alignment",
     "apply_alignment",
     "align",
+    "adopt_first_pose",
     "approximate",
     "ate",
     "rpe",
@@ -248,7 +258,6 @@ __all__ = [
     "AlignmentError",
     "AlignmentParametersError",
     "TrajectopyIOError",
-    "IOError",  # Deprecated: use TrajectopyIOError
     "ApproximationError",
     "PointSetError",
     # Sorting
