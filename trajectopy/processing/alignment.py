@@ -181,7 +181,7 @@ def apply_alignment(
 
     def _prepare_alignment_application(
         trajectory: Trajectory, alignment_parameters: AlignmentParameters
-    ) -> tuple[float, ...]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, float, float, float]:
         if trajectory.rotations is not None:
             rpy = trajectory.rotations.as_euler("xyz", degrees=False)
             euler_x, euler_y, euler_z = rpy[:, 0], rpy[:, 1], rpy[:, 2]
@@ -200,8 +200,8 @@ def apply_alignment(
                 )
             ):
                 logger.warning("Trajectory has no orientations. Cannot apply leverarm.")
-            euler_x, euler_y, euler_z = 0, 0, 0
-            lever_x, lever_y, lever_z = 0, 0, 0
+            euler_x = euler_y = euler_z = np.zeros(len(trajectory))
+            lever_x, lever_y, lever_z = 0.0, 0.0, 0.0
 
         return euler_x, euler_y, euler_z, lever_x, lever_y, lever_z
 

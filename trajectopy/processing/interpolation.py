@@ -167,7 +167,7 @@ def _interpolate_rotations_linear(
 
     # spherical linear orientation interpolation
     # Slerp interpolation, as geodetic curve on unit sphere
-    slerp = Slerp(trajectory.index, trajectory.rotations)
+    slerp = Slerp(trajectory.index, trajectory.rotations.to_scipy())
     r_i = slerp(index)
     trajectory.rotations = Rotations.from_quat(r_i.as_quat())
     return trajectory

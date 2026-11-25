@@ -48,6 +48,10 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   functions) overwrite existing files; pass `mode="a"` to append.
 - `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file
   extension (`.tum`, `.kitti`) and writes the trajectopy format otherwise.
+- `Rotations` wraps a `scipy.spatial.transform.Rotation` instead of subclassing it, so that trajectopy does not
+  depend on scipy's internals. It offers the same constructors, conversions and operations; use
+  `rotations.to_scipy()` where a scipy `Rotation` is needed (e.g. for `Slerp`) and `Rotations.from_scipy()`
+  for the opposite direction. `Rotations.random` takes `rng` instead of `random_state`.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
 - Removed the modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`),
   `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`

@@ -109,8 +109,8 @@ class TestTrajectoryOperationRegressions(unittest.TestCase):
 
     def test_adopt_first_orientation_keeps_relative_rotations(self):
         num = 5
-        trajectory = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, random_state=1).as_quat())
-        other = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, random_state=2).as_quat())
+        trajectory = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, rng=1).as_quat())
+        other = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, rng=2).as_quat())
 
         adopted = adopt_first_orientation(trajectory, other, inplace=False)
 
