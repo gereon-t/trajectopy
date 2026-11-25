@@ -87,6 +87,47 @@ class ATEResult:
         self.abs_dev = abs_dev
         self.alignment = alignment
 
+    def __len__(self) -> int:
+        """Number of compared poses."""
+        return len(self.abs_dev.pos_dev)
+
+    def __repr__(self) -> str:
+        rotation = f", rotation ATE {np.rad2deg(self.rot_ate):.4f} deg" if self.has_orientation else ""
+        return f"<ATEResult {self.name!r}: {len(self)} poses, position ATE {self.pos_ate:.4f} m{rotation}>"
+
+    def describe(self) -> pd.Series:
+        """Statistics of the deviations, like :meth:`pandas.DataFrame.describe`.
+
+        Position statistics are in meters, rotation statistics in radians; rotation statistics are NaN
+        without orientations. ``pos_mean`` is the position ATE, ``rot_mean`` the rotation ATE.
+
+        Returns:
+            pd.Series: Statistics, named after the result.
+        """
+        statistics: dict[str, float] = {
+            "poses": float(len(self)),
+            "pos_mean": float(self.pos_ate),
+            "pos_median": float(self.pos_dev_median),
+            "pos_rms": float(self.pos_dev_rms),
+            "pos_std": float(self.pos_dev_std),
+            "pos_p95": float(self.pos_dev_p95),
+            "pos_min": float(self.pos_dev_min),
+            "pos_max": float(self.pos_dev_max),
+            "pos_bias_x": float(self.pos_bias_x),
+            "pos_bias_y": float(self.pos_bias_y),
+            "pos_bias_z": float(self.pos_bias_z),
+            "pos_bias_along": float(self.pos_bias_along),
+            "pos_bias_cross_h": float(self.pos_bias_cross_h),
+            "pos_bias_cross_v": float(self.pos_bias_cross_v),
+        }
+        rotation_keys = ("rot_mean", "rot_rms", "rot_std", "rot_p95", "rot_max")
+        if self.has_orientation:
+            values = (self.rot_ate, self.rot_dev_rms, self.rot_dev_std, self.rot_dev_p95, self.rot_dev_max)
+            statistics |= {key: float(value) for key, value in zip(rotation_keys, values)}
+        else:
+            statistics |= dict.fromkeys(rotation_keys, np.nan)
+        return pd.Series(statistics, name=self.name)
+
     @property
     def property_dict(self) -> dict[str, str]:
         return {

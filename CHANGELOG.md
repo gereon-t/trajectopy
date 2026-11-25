@@ -27,6 +27,8 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
     `trajectory[mask]` and `trajectory[[0, 5]]` return new trajectories;
   - has a one-line `repr`, `equals(other, rtol=..., atol=...)` and `Trajectory.from_string`;
   - writes all formats: `trajectory.to_file("out.tum")`.
+- **Results** have one-line `repr`s and `describe()`: `ATEResult.describe()` returns the statistics as a
+  `pandas.Series`, `RPEResult.describe()` the drift statistics per pair distance as a `pandas.DataFrame`.
 - **File I/O**: all reading and writing functions accept `pathlib.Path`. `trajectopy.io.read_trajectory`
   and `write_trajectory` handle all formats (trajectopy, TUM, KITTI, EuRoC); `trajectopy.io` also exports
   `detect_format`, `read_tum`, `read_kitti`, `read_euroc`, `list_topics` and `trajectories_from_rosbag`.

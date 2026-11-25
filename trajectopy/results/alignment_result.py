@@ -33,6 +33,10 @@ class AlignmentResult:
     estimation_of: AlignmentEstimationSettings = field(default_factory=AlignmentEstimationSettings)
     converged: bool = True
 
+    def __repr__(self) -> str:
+        state = "converged" if self.converged else "not converged"
+        return f"<AlignmentResult {self.name!r}: {self.estimation_of.short_mode_str.strip() or 'nothing'} estimated, {state}>"
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, AlignmentResult):
             return NotImplemented

@@ -81,7 +81,44 @@ class RPEResult:
         return list(self.property_dict.values()) == list(other.property_dict.values())
 
     def __len__(self) -> int:
+        """Number of compared pose pairs."""
         return self.rpe_dev.num_pairs
+
+    def __repr__(self) -> str:
+        rotation = f", rotation drift {np.rad2deg(self.rot_rpe):.4f} {self.rot_drift_unit}" if self.has_rot_dev else ""
+        return (
+            f"<RPEResult {self.name!r}: {len(self)} pose pairs, "
+            f"position drift {self.pos_rpe:.4f} {self.pos_drift_unit}{rotation}>"
+        )
+
+    def describe(self) -> pd.DataFrame:
+        """Statistics of the drift per pair distance, like :meth:`pandas.DataFrame.describe`.
+
+        Position drifts are in % (pairs by distance) or m/s (pairs by time), rotation drifts in rad/100m or
+        rad/s; rotation statistics are NaN without orientations.
+
+        Returns:
+            pd.DataFrame: One row per pair distance, indexed by the mean distance of the pairs.
+        """
+        columns: dict[str, list] = {
+            "pairs": self.num_pairs,
+            "pos_mean": self.pos_dev_mean,
+            "pos_median": self.pos_dev_median,
+            "pos_std": self.pos_std,
+            "pos_min": self.pos_dev_min,
+            "pos_max": self.pos_dev_max,
+        }
+        rotation = {
+            "rot_mean": self.rot_dev_mean,
+            "rot_median": self.rot_dev_median,
+            "rot_std": self.rot_std,
+            "rot_min": self.rot_dev_min,
+            "rot_max": self.rot_dev_max,
+        }
+        for key, values in rotation.items():
+            columns[key] = values if self.has_rot_dev else [np.nan] * len(self.num_pairs)
+        index = pd.Index(self.mean_pair_distances, name=f"pair_distance [{self.pair_distance_unit}]")
+        return pd.DataFrame(columns, index=index)
 
     @property
     def has_rot_dev(self) -> bool:
