@@ -130,6 +130,9 @@ class ATEResult:
 
     @property
     def property_dict(self) -> dict[str, str]:
+        """Name, type, number of deviations and the main statistics as display texts (used by the GUI's
+        properties table).
+        """
         return {
             "Name": self.name,
             "Type": self.__class__.__name__,
@@ -286,12 +289,26 @@ class ATEResult:
         return f"{lower:.4f} - {upper:.4f}"
 
     def pos_dev_percentile(self, percentile: float) -> float:
-        """Percentile (0-100) of the 3d position deviations in meters, e.g. 95 for the value that 95% of the
-        deviations do not exceed."""
+        """Percentile of the 3D position deviations, e.g. 95 for the value that 95 % of the deviations do not
+        exceed.
+
+        Args:
+            percentile (float): Percentile between 0 and 100.
+
+        Returns:
+            float: The percentile in meters; NaN without deviations.
+        """
         return float(np.percentile(self.pos_dev_comb, percentile)) if len(self.pos_dev_comb) else float("nan")
 
     def rot_dev_percentile(self, percentile: float) -> float:
-        """Percentile (0-100) of the rotation deviations in radians."""
+        """Percentile of the rotation deviations (rotation angles of the deviation rotations).
+
+        Args:
+            percentile (float): Percentile between 0 and 100.
+
+        Returns:
+            float: The percentile in radians; NaN without rotation deviations.
+        """
         return float(np.percentile(self.rot_dev_comb, percentile)) if len(self.rot_dev_comb) else float("nan")
 
     @property
@@ -722,15 +739,28 @@ class ATEResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "ATEResult":
-        """Reads an ATE result from a file."""
+        """Reads a result written by :meth:`to_file`.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+
+        Returns:
+            ATEResult: The result.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
         return results_io.read_ate_result(filename)
 
     def to_dataframe(self) -> pd.DataFrame:
-        """
-        Exports results as pandas dataframe
+        """Returns the deviations of all poses as a table.
+
+        Returns:
+            pd.DataFrame: One row per pose: ``time`` [s], ``arc_lengths`` (path length) [m], the position
+            ``pos_x/y/z`` and, with orientations, the orientation ``rot_x/y/z/w`` (quaternion) of the evaluated
+            trajectory, followed by the deviations (test minus reference) ``pos_dev_x/y/z`` and
+            ``pos_dev_along/cross_h/cross_v`` [m] and, with orientations, the deviation rotation
+            ``rot_dev_x/y/z/w`` (quaternion).
         """
         trajectory_data = np.c_[
             self.trajectory.timestamps,
@@ -772,7 +802,12 @@ class ATEResult:
         write_ate_kml(self, filename, field=field, max_std=max_std, **options)
 
     def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
-        """Exports the result as CSV with a metadata header."""
+        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+            mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)

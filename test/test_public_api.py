@@ -68,7 +68,6 @@ PUBLIC_API = {
         "write_report",
     ],
     "trajectopy.io": [
-        "HeaderData",
         "TrajectoryFormat",
         "detect_format",
         "list_topics",
@@ -132,7 +131,11 @@ PUBLIC_API = {
     ],
 }
 
-DEPRECATED = {"trajectopy": ["ComparisonMethod", "IOError", "Rotations"], "trajectopy.exceptions": ["IOError"]}
+DEPRECATED = {
+    "trajectopy": ["ComparisonMethod", "IOError", "Rotations"],
+    "trajectopy.exceptions": ["IOError"],
+    "trajectopy.io": ["HeaderData"],
+}
 
 
 class TestPublicApi(unittest.TestCase):

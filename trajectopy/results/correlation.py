@@ -101,10 +101,13 @@ class DeviationCorrelation:
 
         Args:
             ate_result (ATEResult): Result to analyze.
-            max_lag (float, optional): Largest lag of the autocorrelation [s], at most n / 10 sampling intervals.
-                Defaults to DEFAULT_MAX_LAG.
+            max_lag (float, optional): Largest lag of the autocorrelation [s], at most n / 10 sampling
+                intervals. Defaults to DEFAULT_MAX_LAG (600 s).
             window (float, optional): Length of the windows of the windowed standard deviations [s], at most a
                 tenth of the duration (at least MIN_WINDOWS windows). Defaults to DEFAULT_WINDOW.
+
+        Returns:
+            DeviationCorrelation: Correlation of every deviation component and the cross-correlations.
         """
         timestamps = ate_result.trajectory.timestamps
         if (duration := float(np.ptp(timestamps)) if len(timestamps) else 0.0) > 0:

@@ -676,17 +676,23 @@ class PositionApproximationMethod(OptionEnum):
 
 @dataclass
 class ApproximationSettings(Settings):
-    """Configuration for trajectory approximation and smoothing.
+    """Configuration for trajectory approximation (smoothing).
+
+    The sizes refer to the index of the trajectory: seconds for trajectories sorted by time, meters for
+    spatially sorted ones.
 
     Attributes:
-        position_interval_size: Size of position intervals in meters for cubic approximation.
-            Defaults to 0.15.
-        position_min_observations: Minimum number of observations required in each interval
-            for cubic approximation. Defaults to 25.
-        rotation_window_size: Size of rotation smoothing window in meters (not cubic).
-            Defaults to 0.15.
-        max_path_length_gap: Maximum gap size in path length for interpolation.
-            Defaults to 0.15.
+        position_interval_size: Size of the intervals of the piecewise cubic approximation of the
+            positions. Defaults to 0.15.
+        position_min_observations: Minimum number of observations per interval. Defaults to 25.
+        rotation_window_size: Size of the moving average window of the rotations. Defaults to 0.15.
+        max_path_length_gap: Largest gap in path length (m) that is bridged when the rotations of several
+            laps are averaged (``AVERAGE_PER_PATH_LENGTH``). Defaults to 0.15.
+        position_approximation_method: Method for the positions; only ``CUBIC`` (piecewise cubic
+            polynomials). Defaults to ``CUBIC``.
+        rotation_approximation_method: ``AVERAGE_IN_WINDOW`` (moving average) or
+            ``AVERAGE_PER_PATH_LENGTH`` (mean of all laps at the same path length). Defaults to
+            ``AVERAGE_IN_WINDOW``.
     """
 
     position_interval_size: float = 0.15

@@ -50,6 +50,7 @@ class RelativeTrajectoryDeviations:
 
     @property
     def num_pairs(self) -> int:
+        """Total number of compared pose pairs over all pair distances."""
         return sum(len(values) for values in self.pair_distance.values())
 
 
@@ -122,41 +123,66 @@ class RPEResult:
 
     @property
     def has_rot_dev(self) -> bool:
+        """Whether rotation drifts are available (both trajectories have orientations)."""
         return any(len(values) for values in self.rpe_dev.rot_dev.values())
 
     @property
     def step(self) -> float:
+        """Mean step between the pair distances (m or s); 0 for a single pair distance."""
         return float(np.mean(np.diff(self.mean_pair_distances))) if len(self.mean_pair_distances) > 1 else 0.0
 
     @property
     def pair_distance_unit(self) -> str:
+        """Unit of the pair distances: ``"m"`` or ``"s"``."""
         return "m" if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else "s"
 
     @property
     def pos_drift_unit(self) -> str:
+        """Display unit of the position drift: ``"%"`` (pairs by distance) or ``"m/s"``."""
         return "%" if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else "m/s"
 
     @property
     def rot_drift_unit(self) -> str:
+        """Display unit of the rotation drift: ``"deg/100m"`` or ``"deg/s"``.
+
+        The rotation values of the result are in radians; convert them with :func:`numpy.rad2deg` for display.
+        """
         return "deg/100m" if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else "deg/s"
 
     @property
     def drift_factor(self) -> float:
+        """Factor from the stored relative deviations to the drift unit: 100 for pairs by distance (per 100 m or
+        %), 1 for pairs by time.
+        """
         return 100.0 if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else 1.0
 
     def compute_metric(self, key: str, func: Callable[[Any], float], factor: float = 1.0) -> list[float]:
+        """Applies a statistic to the deviations of each pair distance.
+
+        Args:
+            key (str): ``"pos_dev"``, ``"rot_dev"`` or ``"pair_distance"``.
+            func (Callable): Statistic of an array, e.g. :func:`numpy.mean`.
+            factor (float, optional): Factor applied to the statistic, e.g. :attr:`drift_factor`.
+                Defaults to 1.
+
+        Returns:
+            list[float]: One value per pair distance with deviations.
+        """
         return [float(func(values) * factor) for values in self.rpe_dev.__dict__[key].values() if len(values)]
 
     @property
     def num_pairs(self) -> list[int]:
+        """Number of pose pairs per pair distance."""
         return [len(values) for values in self.rpe_dev.pair_distance.values() if len(values)]
 
     @property
     def mean_pair_distances(self) -> list[float]:
+        """Mean distance (m or s) of the pose pairs per pair distance."""
         return self.compute_metric(key="pair_distance", func=np.mean)
 
     @property
     def pos_rpe(self) -> float:
+        """Average position drift over all pair distances (see :attr:`pos_drift_unit`)."""
         return float(np.mean(self.pos_dev_mean))
 
     @property
@@ -170,10 +196,12 @@ class RPEResult:
 
     @property
     def pos_std(self) -> list[float]:
+        """Standard deviation of the position drift per pair distance. in % (pairs by distance) or m/s (pairs by time)."""
         return self.compute_metric(key="pos_dev", func=np.std, factor=self.drift_factor)
 
     @property
     def rot_std(self) -> list[float]:
+        """Standard deviation of the rotation drift per pair distance (empty without rotations)."""
         if not self.has_rot_dev:
             return []
 
@@ -181,22 +209,27 @@ class RPEResult:
 
     @property
     def pos_dev_mean(self) -> list[float]:
+        """Mean position drift per pair distance. in % (pairs by distance) or m/s (pairs by time)."""
         return self.compute_metric(key="pos_dev", func=np.mean, factor=self.drift_factor)
 
     @property
     def pos_dev_min(self) -> list[float]:
+        """Minimum position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.min, factor=self.drift_factor)
 
     @property
     def pos_dev_max(self) -> list[float]:
+        """Maximum position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.max, factor=self.drift_factor)
 
     @property
     def pos_dev_median(self) -> list[float]:
+        """Median position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.median, factor=self.drift_factor)
 
     @property
     def rot_dev_mean(self) -> list[float]:
+        """Mean rotation drift per pair distance, in rad/100 m (pairs by distance) or rad/s (pairs by time) (empty without rotations)."""
         if not self.has_rot_dev:
             return []
 
@@ -204,6 +237,7 @@ class RPEResult:
 
     @property
     def rot_dev_min(self) -> list[float]:
+        """Minimum rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
         if not self.has_rot_dev:
             return []
 
@@ -211,6 +245,7 @@ class RPEResult:
 
     @property
     def rot_dev_max(self) -> list[float]:
+        """Maximum rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
         if not self.has_rot_dev:
             return []
 
@@ -218,12 +253,22 @@ class RPEResult:
 
     @property
     def rot_dev_median(self) -> list[float]:
+        """Median rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
         if not self.has_rot_dev:
             return []
 
         return self.compute_metric(key="rot_dev", func=np.median, factor=self.drift_factor)
 
     def get_all(self, key: str) -> np.ndarray:
+        """Returns the values of all pose pairs of one quantity, concatenated over the pair distances.
+
+        Args:
+            key (str): ``"pos_dev"``, ``"rot_dev"`` or ``"pair_distance"``.
+
+        Returns:
+            np.ndarray: The values as stored (relative deviations, not multiplied by :attr:`drift_factor`);
+            empty if there are none.
+        """
         model_dict = self.rpe_dev.__dict__
         if key not in model_dict or not model_dict[key]:
             return np.array([])
@@ -231,18 +276,22 @@ class RPEResult:
 
     @property
     def all_pair_distances(self) -> np.ndarray:
+        """Distances (m or s) of all pose pairs."""
         return self.get_all(key="pair_distance")
 
     @property
     def pos_dev_all(self) -> np.ndarray:
+        """Relative position deviations of all pose pairs (m/m or m/s)."""
         return self.get_all(key="pos_dev")
 
     @property
     def all_rot_devs(self) -> np.ndarray:
+        """Relative rotation deviations of all pose pairs (rad/m or rad/s)."""
         return self.get_all(key="rot_dev")
 
     @property
     def dynamic_pos_dict(self) -> dict[str, str]:
+        """Mean position drift per pair distance as display texts (used by the GUI)."""
         return {
             f"Average position drift at {dist:.3f} (avg) {self.pair_distance_unit}": f"{dev:.3f} {self.pos_drift_unit}"
             for dist, dev in zip(self.mean_pair_distances, self.pos_dev_mean)
@@ -250,6 +299,7 @@ class RPEResult:
 
     @property
     def dynamic_rot_dict(self) -> dict[str, str]:
+        """Mean rotation drift per pair distance as display texts (used by the GUI)."""
         if not self.has_rot_dev:
             return {}
 
@@ -300,12 +350,19 @@ class RPEResult:
 
     @property
     def columns(self) -> list[str]:
+        """Column names of :meth:`to_dataframe`."""
         if self.has_rot_dev:
             return ["pair_distance", "pos_dev", "rot_dev"]
 
         return ["pair_distance", "pos_dev"]
 
     def to_dataframe(self) -> pd.DataFrame:
+        """Returns the deviations of all pose pairs as a table.
+
+        Returns:
+            pd.DataFrame: Columns ``pair_distance`` (m or s), ``pos_dev`` (m/m or m/s) and, with orientations,
+            ``rot_dev`` (rad/m or rad/s); one row per pose pair.
+        """
         if self.has_rot_dev:
             return pd.DataFrame(
                 np.c_[self.all_pair_distances, self.pos_dev_all, self.all_rot_devs], columns=self.columns
@@ -314,7 +371,12 @@ class RPEResult:
             return pd.DataFrame(np.c_[self.all_pair_distances, self.pos_dev_all], columns=self.columns)
 
     def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
-        """Exports the result as CSV with a metadata header."""
+        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+            mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
@@ -322,7 +384,14 @@ class RPEResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "RPEResult":
-        """Reads an RPE result from a file."""
+        """Reads a result written by :meth:`to_file`.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+
+        Returns:
+            RPEResult: The result.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)

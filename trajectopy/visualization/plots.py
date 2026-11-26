@@ -367,7 +367,15 @@ def _variant_name(result_name: str, quantity: str, multiple_results: bool) -> st
 
 
 def positions_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None = None) -> Figure:
-    """Top view (x/y) of the trajectories."""
+    """Top view (x/y) of the trajectories.
+
+    Args:
+        trajectories (Sequence[Trajectory]): Trajectories to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
 
     def render(layout: pg.GraphicsLayout) -> None:
@@ -381,7 +389,15 @@ def positions_figure(trajectories: Sequence[Trajectory], settings: PlotSettings 
 
 
 def xyz_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None = None) -> Figure:
-    """Coordinates of the trajectories over time or path length."""
+    """Coordinates of the trajectories over time or path length.
+
+    Args:
+        trajectories (Sequence[Trajectory]): Trajectories to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     axis = index_axis(trajectories, settings.use_relative_timestamps)
     labels = get_axis_label(trajectories)
@@ -408,7 +424,15 @@ def xyz_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
 
 
 def rpy_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None = None) -> Figure | None:
-    """Roll, pitch and yaw of the trajectories over time or path length (None without orientations)."""
+    """Roll, pitch and yaw of the trajectories over time or path length (None without orientations).
+
+    Args:
+        trajectories (Sequence[Trajectory]): Trajectories to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure | None: The figure, or None if no trajectory has orientations.
+    """
     settings = _settings(settings)
     oriented = [trajectory for trajectory in trajectories if trajectory.has_orientation]
     if not oriented:
@@ -439,7 +463,15 @@ def rpy_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
 
 
 def trajectory_map_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None = None) -> Figure:
-    """Top view of each trajectory colored by velocity or height."""
+    """Top view of each trajectory colored by velocity or height.
+
+    Args:
+        trajectories (Sequence[Trajectory]): Trajectories to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     z_label = get_axis_label(trajectories)[2]
     multiple = len(trajectories) > 1
@@ -457,7 +489,15 @@ def trajectory_map_figure(trajectories: Sequence[Trajectory], settings: PlotSett
 
 
 def trajectory_figures(trajectories: Sequence[Trajectory], settings: PlotSettings | None = None) -> list[Figure]:
-    """All figures describing the given trajectories."""
+    """All figures describing the given trajectories.
+
+    Args:
+        trajectories (Sequence[Trajectory]): Trajectories to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        list[Figure]: Positions, coordinates, orientations (if available) and the colored map.
+    """
     if not trajectories:
         return []
     figures = [
@@ -473,7 +513,15 @@ def trajectory_figures(trajectories: Sequence[Trajectory], settings: PlotSetting
 
 
 def ate_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Position (and rotation) deviations over time or path length."""
+    """Position (and rotation) deviations over time or path length.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     axis = index_axis([result.trajectory for result in ate_results], settings.use_relative_timestamps)
     with_rotation = any(result.has_orientation for result in ate_results)
@@ -512,7 +560,15 @@ def ate_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None =
 
 
 def ate_components_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Deviations of the single degrees of freedom over time or path length."""
+    """Deviations of the single degrees of freedom over time or path length.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
     for result in ate_results:
@@ -550,7 +606,15 @@ def ate_components_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
 
 
 def ate_histogram_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Histograms of the deviations of the single degrees of freedom."""
+    """Histograms of the deviations of the single degrees of freedom.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
     for result in ate_results:
@@ -572,7 +636,15 @@ def ate_histogram_figure(ate_results: Sequence[ATEResult], settings: PlotSetting
 
 
 def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Min, max, mean, median, RMS and standard deviation of the deviations as bar charts."""
+    """Min, max, mean, median, RMS and standard deviation of the deviations as bar charts.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
 
@@ -624,6 +696,13 @@ def ate_boxplot_figure(ate_results: Sequence[ATEResult], settings: PlotSettings 
 
     Each box spans the 25th to 75th percentile with a line at the median; the whiskers reach the 5th and 95th
     percentile and a diamond marks the mean.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
     """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
@@ -694,7 +773,15 @@ def _mark_correlation_time(
 def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
     """Temporal correlation of the deviations: autocorrelation over the time lag (with the level that defines the
     correlation time of each component, 1/e of its correlated share, and the correlation time as a point) and the
-    standard deviation in consecutive time windows."""
+    standard deviation in consecutive time windows.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
     for result in ate_results:
@@ -755,7 +842,15 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
 
 
 def ate_distribution_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Empirical cumulative distribution of the position (and rotation) deviations."""
+    """Empirical cumulative distribution of the position (and rotation) deviations.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
 
@@ -786,7 +881,16 @@ def ate_distribution_figure(ate_results: Sequence[ATEResult], settings: PlotSett
 
 
 def ate_map_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None = None) -> Figure:
-    """Top view of the evaluated trajectories colored by their deviations."""
+    """Top view of the evaluated trajectories colored by their deviations.
+
+    Args:
+        ate_results (Sequence[ATEResult]): ATE results. Each combination of result and deviation component
+            (e.g. position, along-track, yaw) is offered as a variant of the figure.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     multiple = len(ate_results) > 1
     variants: dict[str, RenderFunction] = {}
@@ -847,6 +951,10 @@ def speed_fit(speed: np.ndarray, deviations: np.ndarray) -> SpeedFit | None:
 
     Returns:
         SpeedFit | None: The line, or None if there are fewer than two distinct finite speeds.
+
+    Args:
+        speed (np.ndarray): Speeds in m/s, e.g. from :func:`smoothed_speed`.
+        deviations (np.ndarray): Deviations in meters, one per speed, e.g. ``ate_result.pos_dev_along``.
     """
     speed, deviations = np.asarray(speed, dtype=float), np.asarray(deviations, dtype=float)
     valid = np.isfinite(speed) & np.isfinite(deviations)
@@ -867,6 +975,9 @@ def smoothed_speed(trajectory: Trajectory, *, window: float = SPEED_WINDOW) -> n
     Args:
         trajectory: Trajectory, sorted by time or path length (the result follows that order).
         window: Length of the moving average in seconds (0 = no averaging).
+
+    Returns:
+        np.ndarray: Speed of each pose in m/s.
     """
     velocities = np.asarray(trajectory.velocity_xyz, dtype=float)
     if window <= 0 or len(velocities) < 3:
@@ -918,6 +1029,9 @@ def ate_speed_figure(
         settings: Plot settings.
         speed_window: The speed is averaged over this many seconds (see :func:`smoothed_speed`), since noise in the
             speed would make the fitted time offsets too small.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
     """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
@@ -994,7 +1108,15 @@ def ate_speed_figure(
 
 
 def rpe_figures(rpe_results: Sequence[RPEResult], settings: PlotSettings | None = None) -> list[Figure]:
-    """Relative pose errors over the pair distance, one figure per pair distance unit."""
+    """Relative pose errors over the pair distance, one figure per pair distance unit.
+
+    Args:
+        rpe_results (Sequence[RPEResult]): RPE results to show, overlaid.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        list[Figure]: One figure per pair distance unit (meters, seconds) in use.
+    """
     settings = _settings(settings)
     figures = []
     for unit, title in ((PairDistanceUnit.METER, "RPE (per meter)"), (PairDistanceUnit.SECOND, "RPE (per second)")):
@@ -1064,6 +1186,14 @@ def deviation_figures(
 
     The same figures are used for one and for several results; figures that show one result at a time
     offer the results as variants.
+
+    Args:
+        ate_results (Sequence[ATEResult], optional): ATE results. Defaults to none.
+        rpe_results (Sequence[RPEResult], optional): RPE results. Defaults to none.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        list[Figure]: The ATE figures followed by the RPE figures.
     """
     settings = _settings(settings)
     ate_results = _plottable_ate_results(ate_results, settings.ate_remove_above)
@@ -1090,7 +1220,17 @@ def deviation_figures(
 def parameter_matrix_figure(
     parameters: AlignmentParameters, settings: PlotSettings | None = None, *, correlation: bool = False
 ) -> Figure:
-    """Covariance or correlation matrix of estimated alignment parameters."""
+    """Covariance or correlation matrix of estimated alignment parameters.
+
+    Args:
+        parameters (AlignmentParameters): Estimated alignment parameters, e.g.
+            ``ate_result.alignment.position_parameters``.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+        correlation (bool, optional): Show the correlation instead of the covariance matrix. Defaults to False.
+
+    Returns:
+        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+    """
     settings = _settings(settings)
     labels = parameters.params_labels(enabled_only=True, lower_case=True)
     matrix = np.array(parameters.get_covariance_matrix(enabled_only=True), dtype=float)
@@ -1140,7 +1280,16 @@ def parameter_matrix_figure(
 
 
 def alignment_figures(parameters: AlignmentParameters, settings: PlotSettings | None = None) -> list[Figure]:
-    """Covariance and correlation of estimated alignment parameters."""
+    """Covariance and correlation of estimated alignment parameters.
+
+    Args:
+        parameters (AlignmentParameters): Estimated alignment parameters, e.g.
+            ``ate_result.alignment.position_parameters``.
+        settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
+
+    Returns:
+        list[Figure]: The covariance and the correlation matrix of the estimated parameters.
+    """
     return [
         parameter_matrix_figure(parameters, correlation=False, settings=settings),
         parameter_matrix_figure(parameters, correlation=True, settings=settings),

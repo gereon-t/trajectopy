@@ -372,7 +372,11 @@ class Trajectory:
         )
 
     def copy(self) -> "Trajectory":
-        """Returns a deep copy of the trajectory instance."""
+        """Returns a deep copy.
+
+        Returns:
+            Trajectory: The copy, which shares no data with this trajectory.
+        """
         return copy.deepcopy(self)
 
     def init_path_lengths(self):
@@ -794,10 +798,10 @@ class Trajectory:
         return dataframe.sort_values(by=sort_by)
 
     def to_string(self) -> str:
-        """
-        Serializes the trajectory to a CSV-formatted string with metadata headers.
+        """Returns the trajectory in the trajectopy ASCII format (see :func:`trajectopy.io.trajectory_to_string`).
 
-        Headers included: #epsg, #name, #nframe, #sorting, #fields.
+        Returns:
+            str: Content of a trajectory file, which :meth:`from_string` reads.
         """
         from trajectopy.io.trajectory_io import trajectory_to_string
 

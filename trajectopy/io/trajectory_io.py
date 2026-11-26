@@ -83,9 +83,17 @@ def read_trajectory_string(content: str) -> Trajectory:
 
 
 def trajectory_to_string(trajectory: Trajectory) -> str:
-    """Serializes a trajectory to a CSV-formatted string with metadata headers.
+    """Returns a trajectory in the trajectopy ASCII format, as :func:`write_trajectory` writes it.
 
-    Headers included: #epsg, #name, #nframe, #sorting, #fields.
+    The header contains the EPSG code, the name, the navigation frame (always ENU), the sorting and the
+    fields ``t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz`` (without the quaternion for trajectories without
+    orientations, followed by ``sx,sy,sz`` for trajectories with position standard deviations).
+
+    Args:
+        trajectory (Trajectory): Trajectory to convert.
+
+    Returns:
+        str: Content of a trajectory file.
     """
     fields = "t,l,px,py,pz,vx,vy,vz" if trajectory.rotations is None else "t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz"
     if trajectory.position_std is not None:

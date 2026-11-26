@@ -47,7 +47,11 @@ ANTIALIAS_MAX_POINTS = 50_000
 
 
 def set_theme(dark: bool) -> None:
-    """Selects the theme for plots created from now on."""
+    """Selects the theme for plots created from now on.
+
+    Args:
+        dark (bool): Dark background (True) or light background (False).
+    """
     global _current_theme
     _current_theme = DARK if dark else LIGHT
     # Antialiasing is enabled per curve (see ``antialias``), because Qt draws antialiased wide lines very slowly.

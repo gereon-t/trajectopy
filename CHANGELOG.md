@@ -90,6 +90,7 @@ These keep working in version 7 and will be removed in version 8:
 | `Trajectory.from_file(text, io_stream=True)` | `Trajectory.from_string(text)` |
 | `trajectopy.IOError`, `trajectopy.exceptions.IOError` | `trajectopy.TrajectopyIOError` |
 | `trajectopy.ComparisonMethod` | none (an internal detail of the file I/O) |
+| `trajectopy.io.HeaderData` | none (an internal detail of reading files) |
 
 ### Migrating from version 6
 

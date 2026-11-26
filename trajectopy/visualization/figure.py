@@ -100,13 +100,18 @@ class Figure:
 
     @property
     def has_variants(self) -> bool:
+        """Whether the figure has several variants to choose from (see ``variants``)."""
         return len(self.variants) > 1 or "" not in self.variants
 
     def create_widget(self, use_opengl: bool = False) -> QtWidgets.QWidget:
         """Creates an interactive widget showing the figure (with a variant selector if needed).
 
         Args:
-            use_opengl: Draw with OpenGL, if available. Much faster for large data sets.
+            use_opengl (bool, optional): Draw with OpenGL, if available. Much faster for large data sets.
+                Defaults to False.
+
+        Returns:
+            QtWidgets.QWidget: The widget, e.g. to embed the figure in an own Qt application.
         """
         return _FigureWidget(self, use_opengl=use_opengl)
 
@@ -248,7 +253,19 @@ def _safe_filename(name: str) -> str:
 
 
 class PlotWindow(QtWidgets.QMainWindow):
-    """Window showing figures as tabs. Tabs are rendered when they are first opened."""
+    """Window showing figures as tabs. Tabs are rendered when they are first opened.
+
+    Usually created by :func:`show`.
+
+    Args:
+        figures (Sequence[Figure]): Figures to show, one tab each.
+        title (str, optional): Window title. Defaults to "Trajectopy".
+        export_format (str, optional): File format of *Export Plot…*: ``png``, ``jpg`` or ``svg``.
+            Defaults to "png".
+        export_width (int, optional): Width of exported raster images in pixels. Defaults to 1600.
+        use_opengl (bool, optional): Draw with OpenGL, if available. Defaults to True.
+        parent (QtWidgets.QWidget, optional): Parent widget. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -287,6 +304,14 @@ class PlotWindow(QtWidgets.QMainWindow):
         self._ensure_rendered(0)
 
     def figure_widget(self, index: int) -> _FigureWidget | None:
+        """Returns the widget of a tab, or None if the tab has not been opened (rendered) yet.
+
+        Args:
+            index (int): Index of the tab.
+
+        Returns:
+            QtWidgets.QWidget | None: The widget of the figure.
+        """
         container = self.tabs.widget(index)
         if container is None or (layout := container.layout()) is None or layout.count() == 0:
             return None
@@ -300,6 +325,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         container.layout().addWidget(self.figures[index].create_widget(self.use_opengl))  # type: ignore[union-attr]
 
     def export_current(self) -> None:
+        """Asks for a file and exports the figure (and variant) of the current tab."""
         index = self.tabs.currentIndex()
         if index < 0:
             return
@@ -321,6 +347,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         self._report_failure(lambda: figure.export(path, variant=variant, width=self.export_width))
 
     def export_all(self) -> None:
+        """Asks for a folder and exports all figures with all their variants to it."""
         directory = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Export All Plots", "", QtWidgets.QFileDialog.Option.ShowDirsOnly | _dialog_options()
         )
@@ -344,6 +371,15 @@ def export_figures(
     figures: Sequence[Figure], directory: str | os.PathLike, *, export_format: str = "png", width: int = 1600
 ) -> list[str]:
     """Exports all figures (and all their variants) to image files in ``directory``.
+
+    The files are named after the position, title and variant of the figures, e.g.
+    ``01_ATE_Position.png``.
+
+    Args:
+        figures (Sequence[Figure]): Figures to export.
+        directory (str | os.PathLike): Folder of the files; it is created if needed.
+        export_format (str, optional): ``png``, ``jpg`` or ``svg``. Defaults to "png".
+        width (int, optional): Width of raster images in pixels. Defaults to 1600.
 
     Returns:
         list[str]: Paths of the written files.

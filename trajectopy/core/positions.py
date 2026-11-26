@@ -85,6 +85,13 @@ class Positions:
 
     def build_local_transformer(self):
         # geodetic
+        """Defines the local frame of the positions and stores the transformation into it as
+        ``local_transformer``.
+
+        The local frame is a tangential east-north-up frame at the mean of the positions, with the origin at
+        their mean; it is used for computations that need metric, locally Cartesian coordinates (e.g. path
+        lengths). The transformation starts in the earth-centered frame ``epsg_local_cart``.
+        """
         llh_geod = self.to_epsg(target_epsg=self.epsg_local_geod, inplace=False)
 
         # mean latitude and longitude
@@ -161,7 +168,11 @@ class Positions:
         return len(self.xyz)
 
     def copy(self) -> "Positions":
-        """Deep copy"""
+        """Returns a deep copy.
+
+        Returns:
+            Positions: The copy.
+        """
         return copy.deepcopy(self)
 
     def __get_column(self, idx: int) -> int | float | np.ndarray:

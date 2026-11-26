@@ -69,7 +69,15 @@ def write_alignment_parameters(parameters: AlignmentParameters, filename: str | 
 
 
 def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameters:
-    """Reads alignment parameters (values, enabled flags and optional covariance) from a file."""
+    """Reads alignment parameters written by :func:`write_alignment_parameters`.
+
+    Args:
+        filename (str | os.PathLike): Path of the file.
+
+    Returns:
+        AlignmentParameters: The parameter values, which of them are enabled and, if the file contains it,
+        their covariance matrix.
+    """
     filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
     params = AlignmentParameters()
@@ -83,7 +91,15 @@ def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameter
 
 
 def write_sensor_rotation_parameters(parameters: SensorRotationParameters, filename: str | os.PathLike) -> None:
-    """Appends sensor rotation parameters to a file."""
+    """Appends sensor rotation parameters to a file, e.g. to an alignment result written before.
+
+    Three lines are appended, one per rotation angle (x, y, z): the value in radians and whether it is
+    enabled.
+
+    Args:
+        parameters (SensorRotationParameters): Parameters to write.
+        filename (str | os.PathLike): Path of the file.
+    """
     filename = os.fspath(filename)
     with open(filename, mode="a", encoding="utf-8") as file:
         file.write(f"{parameters.sensor_rot_x.value},{parameters.sensor_rot_x.enabled}\n")
@@ -92,10 +108,18 @@ def write_sensor_rotation_parameters(parameters: SensorRotationParameters, filen
 
 
 def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotationParameters:
-    """Reads sensor rotation parameters from an alignment file.
+    """Reads the sensor rotation parameters of an alignment result file.
+
+    The sensor rotation follows the eleven alignment parameters, so that the file has 14 data lines.
+
+    Args:
+        filename (str | os.PathLike): Path of an alignment result file.
+
+    Returns:
+        SensorRotationParameters: The rotation angles (radians) and which of them are enabled.
 
     Raises:
-        ValueError: If the file doesn't contain exactly 14 lines.
+        ValueError: If the file does not contain exactly 14 data lines.
     """
     filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
@@ -115,7 +139,16 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
 
 
 def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike, mode: str = "w") -> None:
-    """Writes an alignment result to a file (``mode="a"`` appends it)."""
+    """Writes an alignment result to a file that :func:`read_alignment_result` and the GUI can read.
+
+    Args:
+        result (AlignmentResult): Result to write.
+        filename (str | os.PathLike): Path of the file.
+        mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+    Raises:
+        ValueError: If the result has no estimated parameters.
+    """
     filename = os.fspath(filename)
     if result.position_parameters is None:
         raise ValueError("No estimated parameters available!")
@@ -131,7 +164,14 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
 
 
 def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
-    """Reads an alignment result from a file."""
+    """Reads an alignment result written by :func:`write_alignment_result`.
+
+    Args:
+        filename (str | os.PathLike): Path of the file.
+
+    Returns:
+        AlignmentResult: The alignment parameters, the sensor rotation and which of them were estimated.
+    """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     estimated_parameters = read_alignment_parameters(filename)
@@ -152,7 +192,17 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
 
 
 def write_ate_result(result: ATEResult, filename: str | os.PathLike, mode: str = "w") -> None:
-    """Writes an ATE result as CSV with a metadata header."""
+    """Writes an ATE result as CSV file with a metadata header, which :func:`read_ate_result` and the GUI
+    can read.
+
+    The file contains the deviations of each pose together with the timestamps, path lengths and
+    positions of the evaluated trajectory (see :meth:`ATEResult.to_dataframe`).
+
+    Args:
+        result (ATEResult): Result to write.
+        filename (str | os.PathLike): Path of the file.
+        mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+    """
     filename = os.fspath(filename)
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write("#type ATE Result\n")  # so that the GUI recognizes the file
@@ -165,7 +215,17 @@ def write_ate_result(result: ATEResult, filename: str | os.PathLike, mode: str =
 
 
 def read_ate_result(filename: str | os.PathLike) -> ATEResult:
-    """Reads an ATE result from a file."""
+    """Reads an ATE result written by :func:`write_ate_result`.
+
+    Files written by trajectopy versions with an earlier sign convention of the deviations are
+    converted to the current one (test minus reference).
+
+    Args:
+        filename (str | os.PathLike): Path of the file.
+
+    Returns:
+        ATEResult: The result. Its ``alignment`` is None, since result files do not store it.
+    """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
@@ -228,7 +288,14 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 
 
 def write_rpe_result(result: RPEResult, filename: str | os.PathLike, mode: str = "w") -> None:
-    """Writes an RPE result as CSV with a metadata header."""
+    """Writes an RPE result as CSV file with a metadata header, which :func:`read_rpe_result` and the GUI
+    can read.
+
+    Args:
+        result (RPEResult): Result to write.
+        filename (str | os.PathLike): Path of the file.
+        mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+    """
     filename = os.fspath(filename)
     with open(filename, mode, encoding="utf-8", newline="") as file:
         file.write("#type RPE Result\n")  # so that the GUI recognizes the file
@@ -242,7 +309,14 @@ def write_rpe_result(result: RPEResult, filename: str | os.PathLike, mode: str =
 
 
 def read_rpe_result(filename: str | os.PathLike) -> RPEResult:
-    """Reads an RPE result from a file."""
+    """Reads an RPE result written by :func:`write_rpe_result`.
+
+    Args:
+        filename (str | os.PathLike): Path of the file.
+
+    Returns:
+        RPEResult: The result.
+    """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")

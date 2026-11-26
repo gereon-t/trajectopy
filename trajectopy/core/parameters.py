@@ -666,23 +666,26 @@ class Leverarm(ParameterSet):
 
 @dataclass
 class AlignmentParameters(ParameterSet):
-    """Parameter set for spatio-temporal trajectory alignment.
+    """Parameters of the spatio-temporal alignment of two trajectories.
 
-    Contains all parameters for aligning two trajectories including similarity
-    transformation (translation, rotation, scale), time shift, and leverarm.
+    The parameters of a similarity transformation (translation, rotation, scale), a time shift and a
+    leverarm. Each is a :class:`Parameter` with value, variance and whether it is estimated (enabled);
+    disabled parameters keep their default value, which has no effect.
 
     Attributes:
-        sim_trans_x: Similarity transformation translation in x
-        sim_trans_y: Similarity transformation translation in y
-        sim_trans_z: Similarity transformation translation in z
-        sim_rot_x: Similarity transformation rotation around x
-        sim_rot_y: Similarity transformation rotation around y
-        sim_rot_z: Similarity transformation rotation around z
-        sim_scale: Similarity transformation scale factor
-        time_shift: Temporal offset between trajectories
-        lever_x: Leverarm offset in x
-        lever_y: Leverarm offset in y
-        lever_z: Leverarm offset in z
+        enabled: Whether the parameter set is used at all.
+        covariance_matrix: Covariance matrix of the 11 parameters in the order of the attributes below.
+        sim_trans_x: Translation along x [m].
+        sim_trans_y: Translation along y [m].
+        sim_trans_z: Translation along z [m].
+        sim_rot_x: Rotation about x [rad].
+        sim_rot_y: Rotation about y [rad].
+        sim_rot_z: Rotation about z [rad].
+        sim_scale: Scale factor (1 = no scaling).
+        time_shift: Time shift [s], subtracted from the timestamps of the aligned trajectory.
+        lever_x: Leverarm along x of the body frame [m].
+        lever_y: Leverarm along y of the body frame [m].
+        lever_z: Leverarm along z of the body frame [m].
     """
 
     sim_trans_x: Parameter = field(
@@ -816,7 +819,11 @@ class AlignmentParameters(ParameterSet):
         return Leverarm(x=self.lever_x, y=self.lever_y, z=self.lever_z)
 
     def to_file(self, filename: str | os.PathLike) -> None:
-        """Writes the alignment parameters and their covariance matrix to a CSV file."""
+        """Writes the parameters with their covariance matrix to a CSV file that :meth:`from_file` can read.
+
+        Args:
+            filename (str | os.PathLike): Path of the file; an existing file is overwritten.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
@@ -834,7 +841,14 @@ class AlignmentParameters(ParameterSet):
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "AlignmentParameters":
-        """Reads alignment parameters from a file."""
+        """Reads parameters written by :meth:`to_file`.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+
+        Returns:
+            AlignmentParameters: The parameters.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
@@ -863,14 +877,14 @@ class AlignmentParameters(ParameterSet):
 
 @dataclass
 class SensorRotationParameters(ParameterSet):
-    """Parameter set for sensor body-frame rotation.
-
-    Represents the rotational offset between the sensor frame and body frame.
+    """Constant rotation between the body frames of two trajectories (mounting rotation).
 
     Attributes:
-        sensor_rot_x: Sensor rotation around x-axis
-        sensor_rot_y: Sensor rotation around y-axis
-        sensor_rot_z: Sensor rotation around z-axis
+        enabled: Whether the parameter set is used at all.
+        covariance_matrix: Covariance matrix of the three angles.
+        sensor_rot_x: Rotation about x [rad].
+        sensor_rot_y: Rotation about y [rad].
+        sensor_rot_z: Rotation about z [rad].
     """
 
     sensor_rot_x: Parameter = field(
@@ -932,14 +946,25 @@ class SensorRotationParameters(ParameterSet):
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "SensorRotationParameters":
-        """Reads sensor rotation parameters from an alignment file."""
+        """Reads the sensor rotation of an alignment result file.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+
+        Returns:
+            SensorRotationParameters: The parameters.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
         return results_io.read_sensor_rotation_parameters(filename)
 
     def to_file(self, filename: str | os.PathLike) -> None:
-        """Appends sensor rotation parameters to a file."""
+        """Appends the parameters to a file, e.g. to an alignment result written before.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)

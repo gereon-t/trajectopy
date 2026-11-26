@@ -1,8 +1,8 @@
 """Reading and writing of trajectories, evaluation results and alignment parameters.
 
 This package is the only place that knows about file formats. Domain classes such as
-:class:`~trajectopy.core.trajectory.Trajectory` expose ``from_file``/``to_file`` as thin
-convenience wrappers around the functions defined here.
+:class:`trajectopy.Trajectory` expose ``from_file``/``to_file`` as thin convenience wrappers around the
+functions defined here.
 """
 
 from typing import TYPE_CHECKING
@@ -16,7 +16,6 @@ from trajectopy.io.formats import (
     read_tum,
     write_trajectory,
 )
-from trajectopy.io.header import HeaderData
 from trajectopy.io.kml import write_ate_kml, write_kml
 from trajectopy.io.results_io import (
     read_alignment_parameters,
@@ -36,7 +35,6 @@ if TYPE_CHECKING:
     from trajectopy.io.rosbag import list_topics, trajectories_from_rosbag
 
 __all__ = [
-    "HeaderData",
     "TrajectoryFormat",
     "detect_format",
     "read_trajectory",
@@ -69,4 +67,10 @@ def __getattr__(name: str):
         from trajectopy.io import rosbag
 
         return getattr(rosbag, name)
+    if name == "HeaderData":  # an implementation detail of reading files
+        from trajectopy.io.header import HeaderData
+        from trajectopy.utils.deprecation import warn_deprecated
+
+        warn_deprecated("trajectopy.io.HeaderData is deprecated; it is an internal detail of reading files.")
+        return HeaderData
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

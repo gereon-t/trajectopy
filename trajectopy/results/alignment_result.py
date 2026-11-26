@@ -49,7 +49,12 @@ class AlignmentResult:
         )
 
     def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
-        """Writes the result to a file (``mode="a"`` appends it)."""
+        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+            mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
@@ -57,7 +62,14 @@ class AlignmentResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "AlignmentResult":
-        """Loads the result from a file."""
+        """Reads a result written by :meth:`to_file`.
+
+        Args:
+            filename (str | os.PathLike): Path of the file.
+
+        Returns:
+            AlignmentResult: The result.
+        """
         from trajectopy.io import results_io
 
         filename = os.fspath(filename)
