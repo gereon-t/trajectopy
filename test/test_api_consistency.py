@@ -40,6 +40,16 @@ class TestInplace(unittest.TestCase):
         np.testing.assert_allclose(positions.xyz, [[1.0, 2.0, 3.0]])
 
 
+class TestInputsAreCopied(unittest.TestCase):
+    def test_trajectory_does_not_reorder_the_callers_data(self):
+        positions = tpy.Positions(np.array([[2.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 0.0]]))
+        timestamps = np.array([2.0, 1.0, 0.0])
+        trajectory = tpy.Trajectory(positions, timestamps=timestamps)
+        np.testing.assert_array_equal(trajectory.timestamps, [0.0, 1.0, 2.0])
+        np.testing.assert_array_equal(positions.xyz[:, 0], [2.0, 1.0, 0.0])
+        np.testing.assert_array_equal(timestamps, [2.0, 1.0, 0.0])
+
+
 class TestKeywordOnlyOptions(unittest.TestCase):
     def test_boolean_options_are_keyword_only(self):
         """Flags are the options that are most easily passed by position by mistake."""
