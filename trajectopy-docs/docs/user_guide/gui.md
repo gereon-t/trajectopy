@@ -53,7 +53,7 @@ rows to take them out of their group. Groups are saved in the project.
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
 | | About | Version, author and a link to the repository. |
-| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes. |
+| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes; a theme chosen here applies until Trajectopy is closed. |
 
 ## Projects
 
@@ -98,7 +98,7 @@ Every trajectory has its own [processing settings](settings.md#processing-settin
 relative comparison, approximation, sorting), which are used when it is processed. Edit them with *Settings…*
 (`S`) in its context menu; the editor can also import and export them as JSON. When a trajectory file is
 loaded, a JSON file with the same name in the same folder (e.g. `run1.json` next to `run1.traj`) is used as its
-settings.
+settings (for ASCII files, not for ROS bags).
 
 ## Context Menus
 
@@ -117,7 +117,7 @@ The trajectory context menu is grouped by task:
 | Align with Reference | *Estimate Alignment*, *Interactive Alignment…* (see below), *Match First Pose*, *Apply Existing Alignment…* |
 | Coordinate System | *Transform to EPSG…*, *Adapt EPSG from Reference*, *Set EPSG Code (No Transformation)…* |
 | Process | *Approximate*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
-| Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Group*, *Remove*, *Remove Group* |
+| Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Group*, *Remove*, *Remove Group* (removes the trajectories together with all trajectories of their groups, e.g. their aligned or smoothed copies) |
 
 Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy), comparisons add results (except
 *Extract Matching Poses*, which adds the matched trajectories), and *Estimate Alignment* adds an aligned copy and
@@ -157,6 +157,13 @@ The window helps in two situations: when the automatic alignment fails (unrelate
 large time offset), and when you want to understand *what* is wrong with an alignment, e.g. to calibrate a
 leverarm or a time offset. It works in three steps; every step can be undone (`Ctrl+Z`, redo with `Ctrl+Y` or `Ctrl+Shift+Z`).
 
+The window shows both trajectories in a view above and plots of their deviation below. Its toolbar offers *Undo*,
+*Redo*, *Reset* (back to the unaligned trajectory), the viewing direction (*View*: top, side or front), *Fit view*,
+*Pivot to center* and the magnification of the *Deviation arrows*. The plots below are arranged in tabs: *Over
+time* (deviation components and speed over time), *Time shift*, *Shift and leverarm* and *Rotation and scale*
+(the views of the diagnosis, see below) and *Coordinates* (both trajectories over time). Click into the view before
+using the keyboard there.
+
 **1 · Place roughly.** Bring the trajectory onto the reference, in space and in time.
 
 - **Auto align** tries several rough placements (the current one, the first pose, a fit on poses at equal time,
@@ -164,7 +171,8 @@ leverarm or a time offset. It works in three steps; every step can be undone (`C
 - **Drag** the trajectory in the view to move it; `Ctrl`+drag rotates and `Shift`+drag scales it about the pivot
   (+). Rotations turn about the viewing direction (top, side or front view). Double-click places the pivot.
   Keyboard: arrows move, `Q`/`E` rotate (`Shift`: 10× larger, `Ctrl`: 10× finer).
-- **Pick point pairs**: click a point on the trajectory and the reference position it belongs to. One pair fixes
+- **Pick point pairs**: click a point on the trajectory and the reference position it belongs to (`Esc` cancels a
+  started pair; *Remove last* and *Clear* remove pairs). One pair fixes
   the position, two add the heading (and the scale with *fit scale*), three or more the full rotation.
 - **Match first pose** moves the first position onto the first position of the reference and turns the
   trajectory so that its initial direction of travel matches that of the reference (unlike *Match First Pose*
