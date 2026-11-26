@@ -1,12 +1,14 @@
 """GUI entry point for trajectopy."""
 
 import ctypes
+import importlib
 import logging
 import os
 import sys
+import threading
 
 from PySide6 import QtGui
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QEventLoop, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
@@ -21,6 +23,23 @@ from trajectopy.utils.resources import ICON_BG_FILE_PATH
 # screen is shown.
 
 logger = logging.getLogger(__name__)
+
+# Libraries that take seconds to import. They are imported in a background thread while the splash screen is
+# shown, so that it keeps responding; the main window is imported afterwards in a fraction of a second.
+_PRELOADED_MODULES = (
+    "numpy",
+    "pandas",
+    "scipy.spatial",
+    "scipy.stats",
+    "scipy.signal",
+    "pyproj",
+    "autograd",
+    "pyqtgraph",
+    "pyqtgraph.opengl",
+    "rosbags.highlevel",
+    "trajectopy.processing.evaluation",
+    "trajectopy.visualization.plots",
+)
 
 if sys.platform == "win32":
     myappid = f"gereont.trajectopy.main.{VERSION}"
@@ -74,6 +93,7 @@ def main(
     splash = SplashScreen(dark=is_dark)
     splash.show()
     splash.show_status("Loading …")
+    _preload_in_background(app, _PRELOADED_MODULES)
 
     from trajectopy.gui.views.main_window import TrajectopyGUI
 
@@ -87,6 +107,24 @@ def main(
     if files:
         window.open_files(files)
     return app.exec()
+
+
+def _preload(modules: tuple[str, ...]) -> None:
+    for name in modules:
+        try:
+            importlib.import_module(name)
+        except Exception:  # pylint: disable=broad-except
+            # imported again in the main thread, which reports the error
+            logger.debug("Could not preload %s", name, exc_info=True)
+
+
+def _preload_in_background(app: QApplication, modules: tuple[str, ...]) -> None:
+    """Imports modules in a background thread and keeps processing events until they are imported."""
+    thread = threading.Thread(target=_preload, args=(modules,), name="TrajectopyPreload", daemon=True)
+    thread.start()
+    while thread.is_alive():
+        app.processEvents(QEventLoop.ProcessEventsFlag.AllEvents, 20)
+        thread.join(0.01)
 
 
 if __name__ == "__main__":
