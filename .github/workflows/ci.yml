@@ -43,6 +43,16 @@ jobs:
           name: coverage
           path: coverage.xml
 
+  docs:
+    # broken links, anchors and API references fail the build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --group dev
+      - run: uv run mkdocs build --strict
+        working-directory: trajectopy-docs
+
   core-only:
     # the package must work without the optional plotting/GUI dependencies
     runs-on: ubuntu-latest
