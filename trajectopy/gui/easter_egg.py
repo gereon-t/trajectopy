@@ -1,6 +1,6 @@
 """A hidden jingle: clicking the logo in the About window often enough plays the first two bars of the Trajectopy song.
 
-The clip (with a fade-out of half a second) is stored as 4-bit IMA ADPCM (mono, 16000 Hz, about 46 KB) in
+The clip (with a fade-out of 1.5 seconds) is stored as 4-bit IMA ADPCM (mono, 16000 Hz, about 54 KB) in
 ``resources/jingle.adpcm``. It is played with what the operating system offers (``winsound`` on Windows, ``afplay`` on macOS, ``pw-play``, ``paplay`` or ``aplay`` on
 Linux) instead of Qt Multimedia, which would add many megabytes to the app.
 """

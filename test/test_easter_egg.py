@@ -26,10 +26,10 @@ class TestClickCounter(unittest.TestCase):
 
 class TestJingle(unittest.TestCase):
     def test_asset_is_small_and_decodes(self):
-        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 50_000)
+        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 60_000)
         signal, sample_rate = easter_egg.read_jingle()
         self.assertEqual(sample_rate, 16000)
-        self.assertAlmostEqual(len(signal) / sample_rate, 5.8, places=1)
+        self.assertAlmostEqual(len(signal) / sample_rate, 6.8, places=1)
         self.assertLessEqual(np.max(np.abs(signal)), 1.0)
         self.assertGreater(np.max(np.abs(signal)), 0.5)
 
@@ -44,7 +44,7 @@ class TestJingle(unittest.TestCase):
         (path,), _ = play_file.call_args
         with wave.open(path) as file:
             self.assertEqual((file.getnchannels(), file.getframerate()), (1, 16000))
-            self.assertAlmostEqual(file.getnframes() / file.getframerate(), 5.8, places=1)
+            self.assertAlmostEqual(file.getnframes() / file.getframerate(), 6.8, places=1)
 
     def test_errors_do_not_escape(self):
         with mock.patch.object(easter_egg, "read_jingle", side_effect=OSError("missing")):
