@@ -23,6 +23,13 @@ class TestOptions(unittest.TestCase):
         relative = tpy.RelativeComparisonSettings(pair_distance_unit="s")
         self.assertIs(relative.pair_distance_unit, tpy.PairDistanceUnit.SECOND)
 
+    def test_assigned_strings_become_options(self):
+        settings = tpy.ProcessingSettings()
+        settings.matching.method = "Nearest_Temporal"
+        self.assertIs(settings.matching.method, tpy.MatchingMethod.NEAREST_TEMPORAL)
+        with self.assertRaises(ValueError):
+            settings.matching.method = "closest"
+
     def test_settings_round_trip_options_as_strings(self):
         settings = tpy.ProcessingSettings()
         settings.matching.method = tpy.MatchingMethod.NEAREST_TEMPORAL

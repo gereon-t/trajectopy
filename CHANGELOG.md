@@ -19,7 +19,8 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `tpy.ate(est, ref, settings)`, `tpy.align(est, ref, settings)`, `tpy.match_trajectories(est, ref, settings)`.
 - **`ate_result.alignment`** holds the alignment that was applied before the deviations were computed.
 - **Options accept strings**, e.g. `tpy.MatchingSettings(method="nearest_temporal")` or
-  `tpy.interpolate(trajectory, index, method="linear")`. All option enumerations share the base
+  `tpy.interpolate(trajectory, index, method="linear")`, also when assigned to a setting
+  (`settings.matching.method = "nearest_temporal"`). All option enumerations share the base
   `OptionEnum`, whose lookup ignores the case.
 - **`Trajectory`**
   - accepts arrays in the constructor: `tpy.Trajectory(xyz, quat, timestamps, name="...")`;

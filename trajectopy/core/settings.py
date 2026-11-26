@@ -1,4 +1,5 @@
 import copy
+import functools
 import json
 import logging
 import os
@@ -17,6 +18,13 @@ _SettingsT = TypeVar("_SettingsT", bound="Settings")
 
 METRIC_THRESHOLD = 1e-4
 TIME_THRESHOLD = 1e-4
+
+
+@functools.cache
+def _option_types(cls: type) -> dict[str, type[Enum]]:
+    """The fields of a settings class whose values are options (enumerations)."""
+    hints = get_type_hints(cls)
+    return {f.name: hints[f.name] for f in fields(cls) if _is_option(hints[f.name])}
 
 
 def _is_option(field_type: Any) -> bool:
@@ -46,12 +54,13 @@ class Settings(ABC):
             for key, value in self.__dict__.items()
         }
 
-    def __post_init__(self) -> None:
-        # options may be given as strings, e.g. MatchingSettings(method="nearest_temporal")
-        for name, field_type in self._field_types().items():
-            value = getattr(self, name)
-            if _is_option(field_type) and not isinstance(value, field_type):
-                setattr(self, name, field_type(value))
+    def __setattr__(self, name: str, value: Any) -> None:
+        # options may be given as strings, e.g. MatchingSettings(method="nearest_temporal") or
+        # settings.method = "nearest_temporal"
+        option = _option_types(type(self)).get(name)
+        if option is not None and not isinstance(value, option):
+            value = option(value)
+        super().__setattr__(name, value)
 
     @staticmethod
     def encoder(name: str, value: Any) -> Any:
