@@ -239,12 +239,12 @@ class ATEResult:
         return list(self.property_dict.values()) == list(other.property_dict.values())
 
     def remove_ate_above(self, threshold: float) -> None:
-        """Clips the ATE at a given value.
+        """Removes the deviations (and their poses) whose position deviation is not below a threshold.
 
         This is useful to remove outliers from the ATE.
 
         Args:
-            threshold (float): Maximum ATE value to keep.
+            threshold (float): Deviations of this size (m) and larger are removed; 0 or less keeps all.
         """
         if threshold <= 0.0:
             return

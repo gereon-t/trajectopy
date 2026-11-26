@@ -8,7 +8,7 @@ name: Release
 #
 # PyInstaller cannot cross-compile, so each package is built on a runner of its platform. The Linux build runs on
 # the oldest supported Ubuntu, since the app only runs on systems with the same or a newer glibc. The macOS app is
-# not signed with a Developer ID: on first start, users have to open it with right-click → Open.
+# not signed with a Developer ID: on first start, users have to allow it under System Settings → Privacy & Security.
 
 on:
   push:

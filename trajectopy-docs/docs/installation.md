@@ -63,8 +63,9 @@ As the installer is not signed, Windows SmartScreen may warn about an unknown pu
 
 ### macOS
 
-Open the `.dmg` and drag Trajectopy onto the *Applications* folder next to it. As the app is not signed, open it
-the first time with right-click → *Open*.
+Open the `.dmg` and drag Trajectopy onto the *Applications* folder next to it. As the app is not signed, macOS
+refuses to open it at first: after the first attempt, allow it under *System Settings → Privacy & Security* with
+*Open Anyway* (on macOS 14 and older, right-click → *Open* works, too).
 
 ### Linux
 

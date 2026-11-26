@@ -29,7 +29,7 @@ Key Components
 **Parameters:**
     - AlignmentParameters: 3D transformation parameters (translation, rotation, scale)
     - SensorRotationParameters: Sensor orientation parameters
-    - Parameter: Base class for stochastic parameters with variance
+    - Parameter: A stochastic parameter (value, variance and whether it is estimated)
 
 **Visualization** (``pip install "trajectopy[plot]"``):
     - trajectopy.visualization: Figures of trajectories, ATE/RPE results and alignment parameters,
