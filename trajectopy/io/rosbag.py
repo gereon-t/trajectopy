@@ -271,8 +271,3 @@ def add_to_dict(data: dict[str, dict[str, list[Any]]], key: str, sub_key: str, v
         value (Any): Value to add
     """
     data.setdefault(key, {}).setdefault(sub_key, []).append(value)
-
-
-def geometry_point_stamped_handler(msg: Any) -> dict[str, Any]:
-    """Deprecated: handler for ``geometry_msgs/PointStamped`` messages of earlier versions."""
-    return point_stamped_handler("", msg)[0][1]

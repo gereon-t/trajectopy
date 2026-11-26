@@ -6,14 +6,10 @@ They are removed in the next major release, see the deprecation policy in the do
 """
 
 import warnings
-from collections.abc import Callable
-from typing import Any, TypeVar
 
 from trajectopy.exceptions import TrajectopyDeprecationWarning
 
 __all__ = ["TrajectopyDeprecationWarning", "warn_deprecated"]
-
-_F = TypeVar("_F", bound=Callable[..., Any])
 
 
 def warn_deprecated(message: str, stacklevel: int = 2) -> None:

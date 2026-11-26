@@ -58,7 +58,7 @@ class TrajectoryFormat(OptionEnum):
 
 
 _KITTI_COLUMNS = 12
-_DISPLAY_NAMES = {TrajectoryFormat.TUM: "TUM", TrajectoryFormat.KITTI: "KITTI", TrajectoryFormat.EUROC: "EuRoC"}
+_DISPLAY_NAMES = {TrajectoryFormat.KITTI: "KITTI", TrajectoryFormat.EUROC: "EuRoC"}  # formats detect_format returns
 _DETECTION_LINES = 50
 
 

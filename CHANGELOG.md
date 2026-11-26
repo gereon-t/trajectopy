@@ -8,8 +8,9 @@ All notable changes to trajectopy are documented here. trajectopy follows
 
 Version 7 settles the public API, so that it can grow without breaking changes. It defines which names are
 public, applies the same conventions to every function and removes deprecated and redundant names without a
-transition period: code written for version 6 fails with a clear error where it needs to be changed. The table
-of removed names and the migration guide below list the replacements.
+transition period: code of version 6 that uses them fails with an error. Changed defaults, above all that
+functions no longer modify their input, do not raise errors; they are listed under *Breaking changes*. The
+table of removed names and the migration guide below list the replacements.
 
 ### Highlights
 
@@ -144,7 +145,7 @@ Besides the API changes above, version 7 adds:
 | `trajectopy.IOError`, `trajectopy.exceptions.IOError` | `trajectopy.TrajectopyIOError` |
 | `trajectopy.ComparisonMethod` | none (an internal detail of the file I/O) |
 | `trajectopy.io.HeaderData` | none (an internal detail of reading files) |
-| `MatchingMethod.UNKNOWN` | none (it was never a matching method) |
+| `MatchingMethod.UNKNOWN` | none (it was never a matching method); settings files with `"method": "unknown"` can no longer be read |
 | `trajectopy.Rotations` | `scipy.spatial.transform.Rotation` |
 
 ### Migrating from version 6
@@ -164,4 +165,4 @@ trajectory = trajectory.crop(10, 20)  # or trajectory.crop(10, 20, inplace=True)
 
 Code that relied on functions modifying their input without using the return value has to use the return
 value (or pass `inplace=True`). Removed arguments raise a `TypeError` and removed names an `AttributeError`
-that names them.
+(an `ImportError` with `from ... import`).
