@@ -1,9 +1,9 @@
 name: Release
 
 # Pushing a version tag (e.g. v5.1.0, matching trajectopy/__version__.py) builds the app for Windows (installer),
-# macOS (.dmg, Apple Silicon) and Linux (.tar.gz, x86-64) and attaches them to the GitHub release of that tag
-# (created with generated notes if it does not exist yet). The update check of installed apps then finds the new
-# version.
+# macOS (.dmg, Apple Silicon) and Linux (.tar.gz, x86-64) and attaches them to the GitHub release of that tag.
+# The text of the release is the section of that version in CHANGELOG.md (e.g. "## 5.1.0"); a tag without such a
+# section fails. The update check of installed apps then finds the new version.
 # Running the workflow manually only builds the packages and keeps them as workflow artifacts.
 #
 # PyInstaller cannot cross-compile, so each package is built on a runner of its platform. The Linux build runs on
@@ -57,6 +57,10 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match the package version $version"
             exit 1
           fi
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]] && ! grep -qx "## $version" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no section '## $version' for the release notes"
+            exit 1
+          fi
 
       - name: Build the app
         run: uv run pyinstaller --noconfirm trajectopy.spec
@@ -106,13 +110,28 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: CHANGELOG.md
+          sparse-checkout-cone-mode: false
+
+      - name: Take the release notes from the changelog
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v heading="## $version" '$0 == heading {found = 1; next} found && /^## / {exit} found' \
+            CHANGELOG.md > release_notes.md
+          if [[ ! -s release_notes.md ]]; then
+            echo "::error::CHANGELOG.md has no section '## $version' for the release notes"
+            exit 1
+          fi
+
       - uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
 
-      - name: Attach the packages to the release
+      - name: Attach the packages and the release notes to the release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
-          generate_release_notes: true
+          body_path: release_notes.md

@@ -64,3 +64,11 @@ cannot run there is marked with `<!-- skip-test: reason -->` in the line before 
 `text` block directly after an example is compared with the actual output.
 
 `mkdocs build --strict` fails on broken links, anchors and references; the CI runs it for every change.
+
+## Releases
+
+1. Set the version in `trajectopy/__version__.py` and describe the changes in a section `## <version>` of
+   `CHANGELOG.md` (it is also the page [Release Notes](release_notes.md)).
+2. Push the tag `v<version>`. The release workflow builds the apps for Windows, macOS and Linux and attaches them
+   to the GitHub release of the tag, whose text is the section of the version in `CHANGELOG.md`. It fails if the
+   tag does not match the version or the changelog has no section for it.
