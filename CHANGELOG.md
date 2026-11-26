@@ -81,6 +81,8 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
 
 ### Fixes
 
+- `trajectopy.match_trajectories` failed with an import error if it was the first processing function used in
+  a session.
 - `AlignmentParameters.to_file` (and `trajectopy.io.write_alignment_parameters`) wrote files that
   `AlignmentParameters.from_file` could not read; the parameters are now written with their enabled flags and
   without loss of precision.

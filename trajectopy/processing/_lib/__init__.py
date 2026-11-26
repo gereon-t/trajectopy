@@ -1,5 +1,4 @@
-"""Supporting algorithm libraries for trajectory processing."""
+"""Algorithms behind the processing functions (private).
 
-from trajectopy.processing._lib import alignment, approximation
-
-__all__ = ["alignment", "approximation"]
+The subpackages are imported where they are used, so that importing one of them does not import the others.
+"""

@@ -170,6 +170,26 @@ class TestPublicApi(unittest.TestCase):
                     if inspect.isclass(value) or inspect.isfunction(value):
                         self.assertTrue(inspect.getdoc(value), f"{module_name}.{name} has no docstring")
 
+    def test_every_name_can_be_imported_first(self):
+        """Each public name resolves in a fresh interpreter, without another module imported before it (an
+        import cycle shows only then)."""
+        import subprocess
+        import sys
+
+        import trajectopy
+
+        names = [name for name in PUBLIC_API["trajectopy"] if name != "__version__"]
+        first_of_module = {trajectopy._LAZY_IMPORTS[name]: name for name in reversed(names)}
+        for module, name in first_of_module.items():
+            with self.subTest(module=module):
+                result = subprocess.run(
+                    [sys.executable, "-c", f"import trajectopy; trajectopy.{name}"],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr[-2000:])
+
     def test_dir_lists_the_public_names(self):
         import trajectopy
 
