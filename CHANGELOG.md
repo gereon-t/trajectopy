@@ -63,46 +63,75 @@ Besides the API changes above, version 7 adds:
 
 ### Breaking changes
 
-- `inplace` defaults to `False` everywhere and is keyword-only. This affects `Trajectory.crop`, `intersect`,
-  `mask` and `transform`, `Positions.to_epsg` and `to_local`, `align`, `apply_alignment`,
-  `adopt_first_pose`, `interpolate`, `match_trajectories`, `sort_spatially` and `approximate`.
-- Only the data (trajectories, results, figures, file names, indices) and the settings are positional
-  arguments; all options are keyword-only. For example: `estimate_alignment(..., initial_parameters=)`,
-  `ate(..., align=)`, `interpolate(..., method=)`, `Trajectory(..., name=)`, `Positions(..., local_transformer=)`,
-  `Trajectory.crop(..., inverse=)`, `Trajectory.intersect(..., max_gap_size=)`, `Trajectory.to_file(..., mode=)`,
-  `Trajectory.to_kml(..., precision=, color=)`, the `mode` of all `to_file` methods and `write_*_result`
-  functions, `ATEResult.confidence_interval(quantity=, statistic=)`, `ATEResult.segment_statistics(
-  segment_length=, by=)`, `ATEResult.to_kml(..., field=)`, `format_table(..., table_format=)`,
-  `summary_table(..., confidence_intervals=)`, `divide_into_laps(..., return_lap_indices=)`, the options of
-  `io.write_kml`, `io.write_ate_kml`, `io.read_tum`, `io.read_kitti` and `io.read_euroc`, and in
-  `trajectopy.visualization` `ate_speed_figure(..., speed_window=)`, `parameter_matrix_figure(..., correlation=)`,
-  `smoothed_speed(..., window=)`, `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=,
-  width=)`, `show(..., title=, block=, use_opengl=)`, `Figure.create_widget(use_opengl=)` and
-  `PlotWindow(..., title=)`. The same holds for `Trajectory.to_dataframe(sort_by=)`,
-  `RPEResult.compute_metric(..., factor=)`, `io.trajectories_from_rosbag(..., topics=)`,
-  `AlignmentEstimationSettings.from_components(...)` and `.all(sensor_rotation=)`, the `enabled_only` and
-  `lower_case` arguments of the parameter sets (`to_dict`, `to_name_list`, `to_string_list`,
-  `get_covariance_matrix`, `AlignmentParameters.params_labels`), the `name` (and `alignment`) of the
-  `ATEResult` and `RPEResult` constructors, all fields of `AlignmentResult` and
-  `trajectopy.visualization.set_theme(dark=)`.
-- `ate(..., align=False)` sets `ate_result.alignment` to None instead of empty alignment parameters.
-- `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
-  functions) overwrite existing files; pass `mode="a"` to append.
-- `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file
-  extension (`.tum`, `.kitti`) and writes the trajectopy format otherwise.
+Compared with version 6.2.1. A script compared the public API of both versions name by name and parameter by
+parameter; every difference that can break existing code is listed here.
+
+**Functions no longer modify their input by default**
+
+- `inplace` is keyword-only everywhere and defaults to `False`, so that the input is left unchanged and the
+  result is returned. It defaulted to `True` for `Trajectory.crop`, `Trajectory.intersect`, `Trajectory.mask`,
+  `Trajectory.transform`, `Positions.to_epsg`, `Positions.to_local`, `align`, `apply_alignment`, `interpolate`,
+  `match_trajectories` and `sort_spatially`; it was positional for these and for `approximate` and
+  `Positions.mean`.
+
+**One settings argument**
+
+- `estimate_alignment`, `align`, `ate`, `rpe`, `match_trajectories`, `sort_spatially` and `approximate` take a
+  single `settings` argument instead of `alignment_settings`, `matching_settings`, `processing_settings`,
+  `sorting_settings` and `approximation_settings` (see the table below).
+
+**Options are keyword-only**
+
+Only the data (trajectories, results, figures, file names, indices) and the settings are positional arguments.
+The following arguments must now be passed by keyword:
+
+- Processing: `estimate_alignment(initial_parameters=)`, `ate(align=)`, `interpolate(method=, max_gap_size=)`,
+  `divide_into_laps(return_lap_indices=)`.
+- `Trajectory(name=, path_lengths=, velocity_xyz=, sorting=)`, `Trajectory.crop(inverse=)`,
+  `Trajectory.intersect(max_gap_size=)`, `Trajectory.to_file(mode=)`, `Trajectory.to_kml(precision=, color=)`,
+  `Trajectory.to_dataframe(sort_by=)`.
+- `Positions(local_transformer=, init_local_transformer=, epsg_local_cart=, epsg_local_geod=)`.
+- Results: `ATEResult(name=)`, `RPEResult(name=)`, all fields of `AlignmentResult`, `ATEResult.to_file(mode=)`,
+  `RPEResult.to_file(mode=)`, `ATEResult.to_kml(field=, max_std=)`, `RPEResult.compute_metric(factor=)`,
+  `DeviationCorrelation.from_ate_result(max_lag=, window=)`.
+- Parameters and settings: `Parameter(default=, enabled=, name=, unit=)`; `enabled_only` (and `lower_case`) of
+  `get_covariance_matrix`, `to_dict`, `to_string_list`, `to_name_list` and `AlignmentParameters.params_labels`;
+  `AlignmentEstimationSettings.from_components(similarity=, time_shift=, leverarm=, sensor_rotation=)` and
+  `AlignmentEstimationSettings.all(sensor_rotation=)`.
+- `trajectopy.io`: `write_trajectory(mode=)`, `write_ate_result(mode=)`, `write_rpe_result(mode=)` and all
+  options of `write_kml` and `write_ate_kml` (`color`, `field`, `colormap`, `max_std`, `value_range`,
+  `color_classes`, `heights`, `height_offset`, `extrude`, `line_width`, `precision`).
+- `trajectopy.visualization`: `Figure.export(variant=, width=)`, `Figure.create_widget(use_opengl=)`,
+  `PlotWindow(title=, export_format=, export_width=, use_opengl=, parent=)`, `export_figures(export_format=,
+  width=)`, `show(title=, block=, use_opengl=)`, `set_theme(dark=)`, `ate_speed_figure(speed_window=)`,
+  `parameter_matrix_figure(correlation=)`, `smoothed_speed(window=)`.
+
+**Changed behavior**
+
+- `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and `trajectopy.io.write_ate_result`,
+  `write_rpe_result` and `write_alignment_result`) overwrite existing files instead of appending to them; pass
+  `mode="a"` to append.
+- `ate(..., align=False)` sets `ate_result.alignment` to None.
+- `trajectopy.io.read_trajectory` and `Trajectory.from_file` recognize TUM, KITTI and EuRoC files; `write_trajectory`
+  and `Trajectory.to_file` choose the format from the file extension (`.tum`, `.kitti`) and write the trajectopy
+  format otherwise.
 - Orientations are `scipy.spatial.transform.Rotation` objects: `trajectory.rotations`,
   `ATEResult.abs_dev.rot_dev`, `AlignmentParameters.helmert.rotation_set` and
-  `SensorRotationParameters.rotation_set`. The `Rotations` class, a
-  subclass of scipy's `Rotation`, is gone.
-  Compose rotations with `*` and `inv()` instead of `+` and `-` (`a - b` is `a * b.inv()`), and use
-  `magnitude()` instead of `rotangle`.
+  `SensorRotationParameters.rotation_set`. The `Rotations` class (a subclass of scipy's `Rotation`) and its
+  module `trajectopy.core.rotations` are gone. Compose rotations with `*` and `inv()` instead of `+` and `-`
+  (`a - b` is `a * b.inv()`), and use `magnitude()` instead of `rotangle`.
+- `repr(trajectory)` is a one-line summary; `str(trajectory)` still prints the summary table.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
-- Removed the modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`),
-  `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`
-  (use `trajectopy.AlignmentParameters`).
+- File contents that do not match their header or format raise `TrajectopyIOError` and alignments that cannot be
+  estimated raise `AlignmentError` (both are also `ValueError`s, see *Fixes*).
+
+**Removed names and modules**
+
+- The names and arguments in the table *Removed and renamed names* below.
+- The modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`), `trajectopy.utils.common`
+  and `trajectopy.processing.lib.alignment.parameters` (use `trajectopy.AlignmentParameters`).
 - The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
   private.
-
 ### Documentation
 
 - The documentation is restructured like that of numpy and pandas: installation, a user guide with one page per
