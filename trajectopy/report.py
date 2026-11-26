@@ -183,12 +183,49 @@ def report_html(
     )
 
 
-def write_report(filename: str | os.PathLike, *args, **kwargs) -> None:
-    """Writes a self-contained HTML report of an evaluation; see :func:`report_html` for the arguments.
+def write_report(
+    filename: str | os.PathLike,
+    ate_results: Sequence[ATEResult] = (),
+    rpe_results: Sequence[RPEResult] = (),
+    *,
+    alignment: AlignmentResult | None = None,
+    settings: ProcessingSettings | None = None,
+    plot_settings: PlotSettings | None = None,
+    title: str = "Trajectory Evaluation Report",
+    figures: bool = True,
+    figure_width: int = 1200,
+) -> None:
+    """Writes a self-contained HTML report of an evaluation.
+
+    The report contains a summary table of all results (see :func:`trajectopy.summary_table`), the statistics of
+    each result, the alignment, all figures and the processing settings. It is a single file without external
+    references, e.g. to archive the evaluation of a paper.
 
     Args:
-        filename (str): Output path, e.g. ``report.html``.
+        filename (str | os.PathLike): Output path, e.g. ``report.html``; an existing file is overwritten.
+        ate_results (Sequence[ATEResult], optional): ATE results.
+        rpe_results (Sequence[RPEResult], optional): RPE results.
+        alignment (AlignmentResult | None, optional): Alignment used before the evaluation.
+        settings (ProcessingSettings | None, optional): Processing settings of the evaluation, listed for
+            reproducibility.
+        plot_settings (PlotSettings | None, optional): Settings of the figures. Defaults to ``PlotSettings()``.
+        title (str, optional): Title of the report. Defaults to "Trajectory Evaluation Report".
+        figures (bool, optional): Include the figures (requires the plotting extras). Defaults to True.
+        figure_width (int, optional): Width of the figures in pixels. Defaults to 1200.
+
+    Raises:
+        ValueError: If neither ATE nor RPE results are given.
     """
     filename = os.fspath(filename)
-    Path(filename).write_text(report_html(*args, **kwargs), encoding="utf-8")
+    html_report = report_html(
+        ate_results,
+        rpe_results,
+        alignment=alignment,
+        settings=settings,
+        plot_settings=plot_settings,
+        title=title,
+        figures=figures,
+        figure_width=figure_width,
+    )
+    Path(filename).write_text(html_report, encoding="utf-8")
     logger.info("Wrote the report %s", filename)
