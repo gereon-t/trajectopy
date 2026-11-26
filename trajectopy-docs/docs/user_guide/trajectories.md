@@ -151,10 +151,20 @@ Spatial sorting orders the poses of a trajectory that drives along the same trac
 position on the track, e.g. to compare laps with each other. It reconstructs the path from the positions alone
 (see the [sorting settings](settings.md#sorting-settings)):
 
-<!-- skip-test: needs a trajectory driving along a closed track -->
 ```python
-sorted_trajectory = tpy.sort_spatially(trajectory)
-laps = tpy.divide_into_laps(sorted_trajectory)  # one trajectory per lap
+lap_time = np.arange(0.0, 300.0, 0.1)  # three laps of 100 s on a circle with a radius of 50 m
+angle = 2 * np.pi * lap_time / 100.0
+loop = tpy.Trajectory(
+    np.column_stack([50 * np.cos(angle), 50 * np.sin(angle), np.zeros_like(angle)]), timestamps=lap_time
+)
+
+sorted_loop = tpy.sort_spatially(loop)
+laps = tpy.divide_into_laps(sorted_loop)  # one trajectory per lap
+print(sorted_loop.sorting, len(laps))
+```
+
+```text
+path_length 3
 ```
 
 `set_sorting` switches between both orders of a trajectory that has been sorted spatially before.

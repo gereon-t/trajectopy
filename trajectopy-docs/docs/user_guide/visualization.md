@@ -65,7 +65,6 @@ smoothed speed it is based on.
 
 `show` opens an interactive window with one tab per figure and blocks until it is closed:
 
-<!-- skip-test: opens a window -->
 ```python
 vis.show(deviation_figures, title="KITTI Evaluation")
 vis.show(vis.ate_map_figure(ate_results, settings))

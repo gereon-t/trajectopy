@@ -188,7 +188,6 @@ Without a `#name` header line, a trajectory is named after its file.
 ROS1 bags (`.bag`) and ROS2 bags (`.mcap` or `.db3` files, or a bag directory with `metadata.yaml`) can be opened
 in the GUI like ASCII files, or read in Python:
 
-<!-- skip-test: needs a ROS bag -->
 ```python
 from trajectopy.io import list_topics, trajectories_from_rosbag
 

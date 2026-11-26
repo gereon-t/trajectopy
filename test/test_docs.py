@@ -1,8 +1,9 @@
 """Keeps the documentation in line with the code.
 
 - Every Python example of the documentation runs (with the example data of the repository), and printed output
-  shown in a ``text`` block right after an example matches the actual output. Examples preceded by a
-  ``<!-- skip-test: reason -->`` comment are not run (e.g. they need a ROS bag or open a window).
+  shown in a ``text`` block right after an example matches the actual output. The examples find the example data
+  of the repository in ``example_data`` and a ROS2 bag in ``recording.mcap``. Examples preceded by a
+  ``<!-- skip-test: reason -->`` comment are not run (e.g. they need an internet connection).
 - Every public name is documented in the API reference.
 - Every public function, class, method and property has a complete docstring (arguments and return value).
 """
@@ -47,6 +48,15 @@ def _examples(page: Path) -> list[tuple[str, str | None, bool]]:
     return examples
 
 
+def _write_recording(directory: Path) -> None:
+    """Writes ``recording.mcap``, the ROS2 bag of the examples, with the topics /odom, /tf, /fix and /path."""
+    from test.test_rosbag import write_bag
+
+    bag = write_bag(directory / "bag")
+    shutil.move(next(bag.glob("*.mcap")), directory / "recording.mcap")
+    shutil.rmtree(bag)
+
+
 @contextlib.contextmanager
 def _without_windows():
     """Replaces ``trajectopy.visualization.show``, which would open a window and block."""
@@ -66,6 +76,7 @@ class TestDocumentationExamples(unittest.TestCase):
                 continue  # pages with plots need the plotting extras
             with self.subTest(page=str(page.relative_to(DOCS))), tempfile.TemporaryDirectory() as directory:
                 shutil.copytree(REPOSITORY / "example_data", Path(directory) / "example_data")
+                _write_recording(Path(directory))
                 namespace: dict = {"__name__": "__docs__"}
                 cwd = os.getcwd()
                 os.chdir(directory)

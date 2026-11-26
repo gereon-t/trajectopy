@@ -31,7 +31,7 @@ Trajectopy is busy.
 **Groups**: trajectories computed from another one (aligned, smoothed, sorted, … copies) are grouped with it
 automatically, so that the results of one measurement run stay together. Groups can be collapsed; selecting a group
 selects all of its entries. *Group → New Group…* (`Ctrl+G`) in the context menu groups any trajectories or results,
-*Rename Group…* names a group, *Ungroup* (`Ctrl+Shift+G`) takes entries out of their groups and *Move to Group* moves
+*Rename Group…* (`Ctrl+Shift+F2`) names a group, *Ungroup* (`Ctrl+Shift+G`) takes entries out of their groups and *Move to Group* moves
 them into another group. Entries can also be dragged onto a group (or an entry) to move them there, or between the
 rows to take them out of their group. Groups are saved in the project.
 
@@ -141,13 +141,14 @@ table has focus and do what the menu entry does for the selected rows.
 | `E` | Export | Export |
 | `Delete` | Remove | Remove |
 | `Ctrl+G` / `Ctrl+Shift+G` | New group / ungroup | New group / ungroup |
+| `Ctrl+Shift+F2` | Rename group | Rename group |
 
 ## Interactive Alignment
 
 Set a reference, then choose *Align with Reference → Interactive Alignment…* in the context menu of a trajectory.
 The window helps in two situations: when the automatic alignment fails (unrelated frames, a different scale, a
 large time offset), and when you want to understand *what* is wrong with an alignment, e.g. to calibrate a
-leverarm or a time offset. It works in three steps; every step can be undone (`Ctrl+Z`, redo with `Ctrl+Y`).
+leverarm or a time offset. It works in three steps; every step can be undone (`Ctrl+Z`, redo with `Ctrl+Y` or `Ctrl+Shift+Z`).
 
 **1 · Place roughly.** Bring the trajectory onto the reference, in space and in time.
 

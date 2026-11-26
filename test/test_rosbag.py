@@ -47,8 +47,12 @@ def _pose(t, i: int):
 
 @pytest.fixture(scope="module")
 def bag_path(tmp_path_factory):
+    return write_bag(tmp_path_factory.mktemp("bags") / "recording")
+
+
+def write_bag(path):
+    """Writes a ROS2 bag (directory ``path`` with an MCAP file) with /odom, /tf, /fix and /path messages."""
     t = _types()
-    path = tmp_path_factory.mktemp("bags") / "recording"
     covariance = np.zeros(36)
     covariance[[0, 7, 14]] = [0.04, 0.09, 0.16]
     with Writer(path, version=9, storage_plugin=StoragePlugin.MCAP) as writer:
