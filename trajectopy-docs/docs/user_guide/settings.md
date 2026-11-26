@@ -21,8 +21,13 @@ settings = tpy.ProcessingSettings.from_file("settings.json")
 plot_settings = tpy.PlotSettings(ate_unit_is_mm=True, line_width=2)
 ```
 
-In a JSON file, the settings are nested like the attributes; options of enumerations are written in lower case
-(e.g. `"method": "nearest_temporal"`). Settings missing in a file keep their default values.
+In a JSON file, the settings are nested like the attributes; options are written as lower-case strings
+(e.g. `"method": "nearest_temporal"`). Settings missing in a file keep their default values, and unknown settings
+are ignored with a warning, so that files of other trajectopy versions can be read. Options can also be given as
+strings in Python, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
+
+Every processing function takes either its own part of the settings (e.g. `MatchingSettings` for
+`match_trajectories`) or the complete `ProcessingSettings`.
 
 ## Processing Settings
 
@@ -90,21 +95,21 @@ Matching finds the corresponding poses of two trajectories, for the alignment an
 
 | Setting | Description | Default |
 | --- | --- | --- |
-| `matching.method` | Matching method (`MatchingMethod`), see below | `INTERPOLATION` |
+| `matching.method` | Matching method (`MatchingMethod`), see below | `interpolation` |
 | `matching.max_time_diff` | Maximum time difference of poses matched by their timestamps (s) | `0.01` |
 | `matching.max_distance` | Maximum distance of poses matched spatially (m; `0` = no limit) | `0.0` |
-| `matching.max_gap_size` | Maximum gap within a trajectory that is bridged by interpolation (s; `INTERPOLATION` method) | `10.0` |
-| `matching.k_nearest` | Number of nearest neighbors for `NEAREST_SPATIAL_INTERPOLATED` | `2` |
+| `matching.max_gap_size` | Maximum gap within a trajectory that is bridged by interpolation (s; `interpolation` method) | `10.0` |
+| `matching.k_nearest` | Number of nearest neighbors for `nearest_spatial_interpolated` | `2` |
 
 #### Matching Methods
 
-- **`INTERPOLATION`**: the poses of one trajectory are interpolated at the timestamps of the other. Positions are
+- **`interpolation`**: the poses of one trajectory are interpolated at the timestamps of the other. Positions are
   interpolated linearly, rotations with SLERP.
-- **`NEAREST_TEMPORAL`**: each pose is matched with the pose of the other trajectory with the nearest timestamp
+- **`nearest_temporal`**: each pose is matched with the pose of the other trajectory with the nearest timestamp
   (within `max_time_diff`).
-- **`NEAREST_SPATIAL`**: each pose is matched with the nearest position of the other trajectory (Euclidean distance,
+- **`nearest_spatial`**: each pose is matched with the nearest position of the other trajectory (Euclidean distance,
   within `max_distance`). This needs no common time reference.
-- **`NEAREST_SPATIAL_INTERPOLATED`**: for each pose of the trajectory to evaluate, the `k_nearest` positions of the
+- **`nearest_spatial_interpolated`**: for each pose of the trajectory to evaluate, the `k_nearest` positions of the
   reference are requested and a 3D line is fitted through them; the pose is matched with its projection onto that
   line. The matched rotations are the chordal L2 mean of the neighbors' rotations. Afterwards, both trajectories
   have the length of the trajectory to evaluate.
@@ -116,34 +121,11 @@ Matching finds the corresponding poses of two trajectories, for the alignment an
 | `relative_comparison.pair_min_distance` | Smallest distance between the poses of a pair | `100.0` |
 | `relative_comparison.pair_max_distance` | Largest distance between the poses of a pair | `800.0` |
 | `relative_comparison.pair_distance_step` | Step between the pair distances | `100.0` |
-| `relative_comparison.pair_distance_unit` | Unit of the pair distances (`PairDistanceUnit`): `METER` or `SECOND` | `METER` |
+| `relative_comparison.pair_distance_unit` | Unit of the pair distances (`PairDistanceUnit`): `meter` or `second` | `meter` |
 | `relative_comparison.use_all_pose_pairs` | Use all (overlapping) pose pairs instead of consecutive (non-overlapping) ones | `True` |
 
-#### RPE Background
-
-For this metric, relative pose-pair differences are compared. The distance between two poses can be specified by the user and can be either time- or distance-based. The comparison involves finding pose pairs separated by a specific distance or time interval, computing the relative translation and rotation between the reference and estimated pose pairs, and calculating the translational and rotational difference normalized by the distance or time that separated the poses.
-
-1. Find pose pair separated by e.g. 100 m in reference trajectory. This pair represents the start and end poses of a sequence of size $N$.
-2. Find the corresponding pose pair in estimated trajectory
-3. Compute relative translation and rotation between the reference pose pair
-
-    $\Delta_{P~ref} = P_{ref, 1}^{-1} \cdot P_{ref, N}$
-
-4. Compute relative translation and rotation between the estimated pose pair
-
-    $\Delta_{P~est} = P_{est, 1}^{-1} \cdot P_{est, N}$
-
-5. Compute transformation between 3) and 4)
-
-6. Compute translation and rotation error from 5)
-
-7. Divide 6) by the distance or the time that separated both poses (e.g. 100 m).
-
-This metric does not require both trajectories to be aligned. Units are m/m (%) and deg/m for distance-based
-comparison, and m/s and deg/s for time-based comparison.
-
-Example: with the default settings (100 m to 800 m in steps of 100 m), pose pairs are formed for the distances
-100 m, 200 m, …, 800 m.
+The RPE is explained in [Evaluation](evaluation.md#relative-pose-error-rpe). With the default settings, pose
+pairs are formed for the distances 100 m, 200 m, …, 800 m.
 
 ### Approximation Settings
 
@@ -154,10 +136,10 @@ meters for spatially sorted trajectories.
 
 | Setting | Description | Default |
 | --- | --- | --- |
-| `approximation.position_approximation_method` | Method for the positions (`PositionApproximationMethod`): `CUBIC` | `CUBIC` |
+| `approximation.position_approximation_method` | Method for the positions (`PositionApproximationMethod`): `cubic` | `cubic` |
 | `approximation.position_interval_size` | Size of the intervals of the piece-wise cubic approximation | `0.15` |
 | `approximation.position_min_observations` | Minimum number of observations per interval | `25` |
-| `approximation.rotation_approximation_method` | Method for the rotations (`RotationApproximationMethod`): `AVERAGE_IN_WINDOW` (moving average, see `rotation_window_size`) or `AVERAGE_PER_PATH_LENGTH` (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see `max_path_length_gap`) | `AVERAGE_IN_WINDOW` |
+| `approximation.rotation_approximation_method` | Method for the rotations (`RotationApproximationMethod`): `average_in_window` (moving average, see `rotation_window_size`) or `average_per_path_length` (for trajectories that pass the same track several times: averages the rotations of all laps at the same path length, see `max_path_length_gap`) | `average_in_window` |
 | `approximation.rotation_window_size` | Size of the moving average window for the rotations | `0.15` |
 | `approximation.max_path_length_gap` | Maximum path length gap (m) that is bridged when the rotations of several laps are averaged | `0.15` |
 
@@ -194,11 +176,10 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | `export_width` | Width of exported raster images (pixels) | `1600` |
 | `use_opengl` | Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets; falls back to software rendering if OpenGL is not available. Exports are not affected | `True` |
 
-Plot settings are saved with a GUI project (as `plot_settings.json` in the `.tpy` archive) and can be loaded at
-startup with
+Plot settings are saved with a GUI project and can be loaded at startup with
 `trajectopy --plot-settings plot_settings.json`.
 
-### ATE Frame Definition (regarding `directed_ate`)
+### ATE Frame Definition
 
 The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. With orientations, the directions are those of the body frame, which is assumed to be x forward, y left and z up (like the ENU navigation frame). The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.
 

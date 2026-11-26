@@ -1,3 +1,0 @@
-# Interpolation
-
-::: trajectopy.processing.interpolation

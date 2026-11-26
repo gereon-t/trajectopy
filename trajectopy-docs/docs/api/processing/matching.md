@@ -1,3 +1,0 @@
-# Matching
-
-::: trajectopy.processing.matching

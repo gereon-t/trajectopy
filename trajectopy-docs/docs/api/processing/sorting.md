@@ -1,3 +1,0 @@
-# Sorting
-
-::: trajectopy.processing.sorting

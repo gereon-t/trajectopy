@@ -3,7 +3,12 @@
 Trajectopy reads trajectories from:
 
 - **ASCII files** (`.traj`, `.txt`, `.csv`, …): one pose per line; a header describes the columns.
-- **ROS1 bag files** (`.bag`): `geometry_msgs/PoseStamped` and `geometry_msgs/PointStamped` messages.
+- **TUM, KITTI and EuRoC files**, the formats of common benchmarks, which are recognized automatically.
+- **ROS bags**: ROS1 (`.bag`) and ROS2 (`.mcap`, `.db3`), with poses, odometry, transforms, paths and GNSS fixes.
+
+In Python, `Trajectory.from_file` and [`trajectopy.io.read_trajectory`](../api/io.md#trajectopy.io.read_trajectory)
+read all file formats; [`trajectopy.io.trajectories_from_rosbag`](../api/io.md#trajectopy.io.trajectories_from_rosbag)
+reads ROS bags.
 
 ## ASCII Files
 
@@ -163,12 +168,17 @@ so they need no header:
 The format can also be given explicitly, and trajectories can be written in these formats:
 
 ```python
+import numpy as np
 import trajectopy as tpy
-from trajectopy.io import read_kitti, write_trajectory
+from trajectopy.io import detect_format, read_kitti, write_trajectory
+
+trajectory = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+write_trajectory(trajectory, "poses.txt", format="kitti")  # or "tum", "euroc", "trajectopy"
+print(detect_format("poses.txt"))
 
 trajectory = tpy.Trajectory.from_file("poses.txt", format="kitti")
+np.savetxt("times.txt", trajectory.timestamps)
 trajectory = read_kitti("poses.txt", timestamps="times.txt")  # KITTI poses are numbered otherwise
-write_trajectory(trajectory, "poses.tum", format="tum")  # or "kitti", "euroc", "trajectopy"
 ```
 
 Without a `#name` header line, a trajectory is named after its file.
@@ -178,8 +188,9 @@ Without a `#name` header line, a trajectory is named after its file.
 ROS1 bags (`.bag`) and ROS2 bags (`.mcap` or `.db3` files, or a bag directory with `metadata.yaml`) can be opened
 in the GUI like ASCII files, or read in Python:
 
+<!-- skip-test: needs a ROS bag -->
 ```python
-from trajectopy.io.rosbag import list_topics, trajectories_from_rosbag
+from trajectopy.io import list_topics, trajectories_from_rosbag
 
 print(list_topics("recording.mcap"))  # topics with a supported message type
 trajectories = trajectories_from_rosbag("recording.mcap", topics=["/odom"])  # all supported topics by default
@@ -219,37 +230,12 @@ horizontal variance is the mean of the x and y variances.
 - **Settings** (`.json`): [processing settings](settings.md#processing-settings) and
   [plot settings](settings.md#plot-settings).
 - **Projects** (`.tpy`, GUI): all trajectories, results and settings of the GUI, see
-  [Using the GUI](user_guide.md#menu-bar). Projects are stored in a binary format (an uncompressed NumPy
+  [GUI](gui.md#projects). Projects are stored in a binary format (an uncompressed NumPy
   archive), so that even large projects are saved and opened within seconds. To exchange data with other
   programs, export the trajectories and results instead. Projects of Trajectopy 5.1 (zip archives of text files)
   can still be opened, and session folders of earlier versions can be imported.
 
-## Creating Trajectories in Python
-
-```python
-import numpy as np
-import trajectopy as tpy
-
-timestamps = np.arange(0, 10, 0.1)
-positions = np.column_stack(
-    [
-        timestamps,  # x increases with time
-        np.sin(timestamps),  # y is sinusoidal
-        np.zeros_like(timestamps),  # z is zero
-    ]
-)
-quaternions = np.tile([0, 0, 0, 1], (len(timestamps), 1))  # identity (x, y, z, w)
-
-trajectory = tpy.Trajectory.from_arrays(
-    xyz=positions,
-    quat=quaternions,  # or rpy=... (roll, pitch, yaw in radians)
-    timestamps=timestamps,
-    name="CustomTrajectory",
-)
-trajectory.to_file("custom.traj")
-```
-
 ## See Also
 
-- [User Guide](user_guide.md): loading files in Python and the GUI
-- [API Reference](api/io/trajectory_io.md): reading and writing trajectories
+- [Trajectories](trajectories.md): creating trajectories from arrays, loading and saving them in Python
+- [`trajectopy.io`](../api/io.md): all functions for reading and writing files

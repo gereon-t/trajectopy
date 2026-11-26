@@ -1,3 +1,0 @@
-# Alignment
-
-::: trajectopy.processing.alignment

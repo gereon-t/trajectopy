@@ -1,3 +1,0 @@
-# Settings
-
-::: trajectopy.core.settings

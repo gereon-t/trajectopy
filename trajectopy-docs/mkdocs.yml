@@ -54,43 +54,39 @@ theme:
     - toc.follow
 
 # Page navigation structure
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
 nav:
   - Home: index.md
-  - User Guide: user_guide.md
-  - File Formats: file_formats.md
-  - Settings: settings.md
-  - API Policy: api_policy.md
+  - Installation: installation.md
+  - User Guide:
+    - user_guide/index.md
+    - Trajectories: user_guide/trajectories.md
+    - Alignment: user_guide/alignment.md
+    - Evaluation: user_guide/evaluation.md
+    - Visualization: user_guide/visualization.md
+    - Google Earth: user_guide/google_earth.md
+    - File Formats: user_guide/file_formats.md
+    - Settings: user_guide/settings.md
+    - GUI: user_guide/gui.md
+    - Command Line: user_guide/command_line.md
   - API Reference:
     - api/index.md
-    - Core:
-      - Trajectory: api/core/trajectory.md
-      - Positions: api/core/positions.md
-      - Settings: api/core/settings.md
-      - Parameters: api/core/parameters.md
-    - Processing:
-      - Alignment: api/processing/alignment.md
-      - Evaluation: api/processing/evaluation.md
-      - Interpolation: api/processing/interpolation.md
-      - Matching: api/processing/matching.md
-      - Merging: api/processing/merging.md
-      - Sorting: api/processing/sorting.md
-      - Approximation: api/processing/approximation.md
-    - I/O:
-      - Trajectory I/O: api/io/trajectory_io.md
-      - TUM, KITTI & EuRoC: api/io/formats.md
-      - Results I/O: api/io/results_io.md
-      - Google Earth (KML): api/io/kml.md
-      - ROS Bags: api/io/rosbag.md
-    - Results:
-      - ATE Result: api/results/ate_result.md
-      - RPE Result: api/results/rpe_result.md
-      - Alignment Result: api/results/alignment_result.md
-      - Deviation Correlation: api/results/correlation.md
-      - Summary Tables: api/results/summary.md
-      - Reports: api/results/report.md
-    - Visualization:
-      - Figures: api/visualization/figures.md
-      - Showing & Exporting: api/visualization/display.md
+    - Trajectories: api/trajectory.md
+    - Processing: api/processing.md
+    - Evaluation: api/evaluation.md
+    - Results: api/results.md
+    - Settings: api/settings.md
+    - Input and Output: api/io.md
+    - Visualization: api/visualization.md
+    - Exceptions: api/exceptions.md
+    - Utilities: api/utilities.md
+  - API Policy: api_policy.md
+  - Release Notes: release_notes.md
 
 # Plugins
 plugins:
@@ -148,6 +144,7 @@ markdown_extensions:
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.snippets:
+      base_path: [".", ".."]
       check_paths: true
   - pymdownx.superfences:
       custom_fences:

@@ -1,3 +1,0 @@
-# Evaluation
-
-::: trajectopy.processing.evaluation

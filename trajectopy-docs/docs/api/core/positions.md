@@ -1,3 +1,0 @@
-# Positions
-
-::: trajectopy.core.positions

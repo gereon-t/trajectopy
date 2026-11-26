@@ -1,3 +1,0 @@
-# Approximation
-
-::: trajectopy.processing.approximation
