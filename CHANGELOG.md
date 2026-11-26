@@ -69,6 +69,12 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
 - The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
   private.
 
+### Fixes
+
+- `AlignmentParameters.to_file` (and `trajectopy.io.write_alignment_parameters`) wrote files that
+  `AlignmentParameters.from_file` could not read; the parameters are now written with their enabled flags and
+  without loss of precision.
+
 ### Deprecations
 
 These keep working in version 7 and will be removed in version 8:

@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 import trajectopy as tpy
 from test.testdata import generated_trajectory, noisy_trajectory
 
@@ -27,6 +29,16 @@ class TestFileApi(unittest.TestCase):
                 read = cls.from_file(path)
                 self.assertIsInstance(read, cls)
                 self.assertEqual(path.read_text(encoding="utf-8").count("#type"), 1)
+
+    def test_alignment_parameters_round_trip(self):
+        parameters = self.ate_result.alignment.position_parameters
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "parameters.csv"
+            parameters.to_file(path)
+            read = tpy.AlignmentParameters.from_file(path)
+        np.testing.assert_allclose(read.values, parameters.values)
+        np.testing.assert_allclose(read.covariance_matrix, parameters.covariance_matrix)
+        self.assertEqual(read.enabled_bool_list, parameters.enabled_bool_list)
 
     def test_settings_accept_paths(self):
         settings = tpy.ProcessingSettings()

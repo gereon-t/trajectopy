@@ -56,13 +56,16 @@ def convert_ate_deviations(
 def write_alignment_parameters(parameters: AlignmentParameters, filename: str | os.PathLike) -> None:
     """Writes alignment parameters together with their covariance matrix to a CSV file.
 
-    All parameters are written no matter if they are enabled or not. The order of the parameters is:
-    translation x/y/z, rotation x/y/z, scale, time shift, leverarm x/y/z. The covariance matrix is
-    written row by row next to the parameters.
+    All parameters are written, whether they are enabled or not, one per line in the order translation x/y/z,
+    rotation x/y/z, scale, time shift and leverarm x/y/z. Each line holds the value, whether the parameter is
+    enabled and the corresponding row of the covariance matrix. :func:`read_alignment_parameters` reads the file.
+
+    Args:
+        parameters (AlignmentParameters): Parameters to write.
+        filename (str | os.PathLike): Path of the file; an existing file is overwritten.
     """
     filename = os.fspath(filename)
-    dataframe = pd.DataFrame(np.c_[parameters.values, parameters.covariance_matrix])
-    dataframe.to_csv(filename, index=False, header=False)
+    parameters.to_dataframe().to_csv(filename, index=False, header=False, float_format="%.17g")
 
 
 def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameters:
@@ -122,7 +125,7 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
         file.write(f"#name {result.name}\n")
 
     result.position_parameters.to_dataframe().to_csv(
-        filename, header=False, index=False, mode="a", float_format="%.15f"
+        filename, header=False, index=False, mode="a", float_format="%.17g"
     )
     write_sensor_rotation_parameters(result.rotation_parameters, filename)
 
