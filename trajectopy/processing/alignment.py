@@ -10,7 +10,6 @@ from trajectopy.core.parameters import (
     AlignmentParameters,
     SensorRotationParameters,
 )
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     AlignmentSettings,
     MatchingSettings,
@@ -303,8 +302,8 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, *, inplac
     trajectory = trajectory if inplace else trajectory.copy()
     if trajectory.rotations is not None and other.rotations is not None:
         # one rotation for all poses, so that the rotations between the poses are kept
-        first = Rotations.from_quat(trajectory.rotations.as_quat()[0])
-        first_other = Rotations.from_quat(other.rotations.as_quat()[0])
+        first = trajectory.rotations[0]
+        first_other = other.rotations[0]
         trajectory.rotations = first_other * first.inv() * trajectory.rotations
 
     return trajectory

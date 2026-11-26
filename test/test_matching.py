@@ -4,9 +4,9 @@ import tempfile
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import MatchingMethod, MatchingSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.evaluation import ate
@@ -31,7 +31,7 @@ class TestMatching(unittest.TestCase):
         self.traj_ref = Trajectory(
             name="Reference",
             positions=Positions(xyz=xyz_ref, epsg=0),
-            rotations=Rotations.from_quat(quat_ref),
+            rotations=Rotation.from_quat(quat_ref),
             timestamps=t_ref,
         )
 
@@ -52,7 +52,7 @@ class TestMatching(unittest.TestCase):
         self.traj_test = Trajectory(
             name="Test",
             positions=Positions(xyz=xyz_test, epsg=0),
-            rotations=Rotations.from_quat(quat_test),
+            rotations=Rotation.from_quat(quat_test),
             timestamps=t_test,
         )
 
@@ -282,7 +282,7 @@ def _loop(noise: float, rng: np.random.Generator, name: str, laps: int = 3) -> T
     t = np.arange(0, laps * 60, 0.1)
     angle = 2 * np.pi * t / 60
     xyz = np.c_[100 * np.cos(angle), 50 * np.sin(angle), 2 * np.sin(2 * angle)] + rng.normal(0, noise, (len(t), 3))
-    rotations = Rotations.from_euler("xyz", np.c_[np.zeros_like(t), np.zeros_like(t), angle + np.pi / 2])
+    rotations = Rotation.from_euler("xyz", np.c_[np.zeros_like(t), np.zeros_like(t), angle + np.pi / 2])
     return Trajectory(name=name, positions=Positions(xyz, epsg=0), rotations=rotations, timestamps=t + 1000.0)
 
 

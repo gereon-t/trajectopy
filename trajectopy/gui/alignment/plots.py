@@ -537,7 +537,7 @@ class GeometryView(DiagnosticView):
         )
         for text, keys, tooltip in (
             ("Correct heading", ["rot_z"], "Rotation about the vertical axis"),
-            ("Correct tilt", ["rot_x", "rot_y"], "Rotations about the x and y axes (roll, pitch)"),
+            ("Correct tilt", ["rot_x", "rot_y"], "Rotation about the x and y axes (roll, pitch)"),
             ("Correct scale", ["scale"], "Scale about the pivot"),
         ):
             self.add_button(

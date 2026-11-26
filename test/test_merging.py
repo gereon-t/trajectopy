@@ -1,9 +1,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.merging import average_trajectories, merge_trajectories
 
@@ -24,7 +24,7 @@ class TestMerging(unittest.TestCase):
         self.traj1 = Trajectory(
             name="Trajectory1",
             positions=Positions(xyz=base_xyz.copy(), epsg=4326),
-            rotations=Rotations.from_quat(base_quat.copy()),
+            rotations=Rotation.from_quat(base_quat.copy()),
             timestamps=t.copy(),
         )
 
@@ -35,7 +35,7 @@ class TestMerging(unittest.TestCase):
         self.traj2 = Trajectory(
             name="Trajectory2",
             positions=Positions(xyz=xyz2, epsg=4326),
-            rotations=Rotations.from_quat(base_quat.copy()),
+            rotations=Rotation.from_quat(base_quat.copy()),
             timestamps=t2,
         )
 
@@ -46,7 +46,7 @@ class TestMerging(unittest.TestCase):
         self.traj3 = Trajectory(
             name="Trajectory3",
             positions=Positions(xyz=xyz3, epsg=4326),
-            rotations=Rotations.from_quat(base_quat.copy()),
+            rotations=Rotation.from_quat(base_quat.copy()),
             timestamps=t3,
         )
 
@@ -214,7 +214,7 @@ class TestMerging(unittest.TestCase):
         # Slightly modify rotations
         angles_a = traj_a.rotations.as_euler(seq="xyz")
         angles_a += np.random.randn(*angles_a.shape) * 0.01
-        traj_a.rotations = Rotations.from_euler(seq="xyz", angles=angles_a, degrees=False)
+        traj_a.rotations = Rotation.from_euler(seq="xyz", angles=angles_a, degrees=False)
 
         averaged = average_trajectories([traj_a, traj_b])
 

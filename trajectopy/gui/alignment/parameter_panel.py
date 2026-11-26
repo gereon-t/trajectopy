@@ -5,10 +5,10 @@ from dataclasses import dataclass
 import numpy as np
 from PySide6 import QtCore, QtWidgets
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentEstimationSettings
 from trajectopy.gui.alignment.session import AlignmentSession
 from trajectopy.processing._lib.alignment.interactive import AlignmentState
+from trajectopy.utils.rotations import rotation_from_euler
 
 DEG = float(np.rad2deg(1.0))
 
@@ -186,7 +186,7 @@ class ParameterPanel(QtWidgets.QWidget):
         elif key in ANGLE_KEYS:
             angles = state.euler.copy()
             angles[ANGLE_KEYS.index(key)] = value
-            new_state = state.with_rotation(Rotations.from_euler("xyz", angles).as_matrix(), session.pivot)
+            new_state = state.with_rotation(rotation_from_euler("xyz", angles).as_matrix(), session.pivot)
         elif key == "scale":
             new_state = state.with_scale(value, session.pivot)
         elif key == "time_shift":

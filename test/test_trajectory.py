@@ -2,11 +2,11 @@ import unittest
 from typing import Any
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from test.testdata import open_loop_trajectory
 from test.util import random_number
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.matching import match_stamps
@@ -161,7 +161,7 @@ class TestTrajectory(unittest.TestCase):
         self.check_trajectory_attribute(trajectory.positions, target_length=target_length, target_type=Positions)
 
         if trajectory.rotations is not None:
-            self.check_trajectory_attribute(trajectory.rotations, target_length=target_length, target_type=Rotations)
+            self.check_trajectory_attribute(trajectory.rotations, target_length=target_length, target_type=Rotation)
 
         self.check_trajectory_attribute(
             trajectory.absolute_velocity, target_length=target_length, target_type=np.ndarray

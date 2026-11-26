@@ -2,9 +2,9 @@ import logging
 from collections.abc import Iterable
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def merge_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
     if not with_orientation and any(t.rotations is not None for t in trajectories):
         logger.warning("Not all merged trajectories have orientations. The merged trajectory has none.")
     merged_rotations = (
-        Rotations.from_quat(np.concatenate([t.quat for t in trajectories], axis=0)) if with_orientation else None
+        Rotation.from_quat(np.concatenate([t.quat for t in trajectories], axis=0)) if with_orientation else None
     )
     merged_timestamps = np.concatenate([t.timestamps for t in trajectories], axis=0)
     merged_velocities = np.concatenate([t.velocity_xyz for t in trajectories], axis=0)
@@ -101,7 +101,7 @@ def average_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
         if not rotations:
             continue
 
-        mean_rots.append(Rotations.from_quat(np.array(rotations)).mean().as_quat())
+        mean_rots.append(Rotation.from_quat(np.array(rotations)).mean().as_quat())
 
     avg_xyz = np.mean(xyz_stack, axis=0)
 
@@ -109,5 +109,5 @@ def average_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
         name="Averaged",
         timestamps=trajectories[0].timestamps,
         positions=Positions(xyz=avg_xyz, epsg=trajectories[0].positions.epsg),
-        rotations=Rotations.from_quat(np.array(mean_rots)) if mean_rots else None,
+        rotations=Rotation.from_quat(np.array(mean_rots)) if mean_rots else None,
     )

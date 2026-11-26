@@ -3,9 +3,9 @@ import logging
 
 import numpy as np
 from scipy.spatial import KDTree
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import MatchingMethod, MatchingSettings, ProcessingSettings, resolve_settings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing._lib.approximation.line_approximation import Line3D
@@ -359,7 +359,7 @@ def _match_trajectories_spatial_interpolation(
         line_point = fit_line.evaluate_at(test_pos)
 
         if ref_quat is not None:
-            ref_rots = Rotations.from_quat(ref_quat[idxs])
+            ref_rots = Rotation.from_quat(ref_quat[idxs])
             matched_ref_rot.append(ref_rots.mean().as_quat())
 
         if test_quat is not None:
@@ -384,7 +384,7 @@ def _match_trajectories_spatial_interpolation(
             epsg=trajectory.positions.epsg,
             local_transformer=trajectory.positions.local_transformer,
         ),
-        rotations=Rotations.from_quat(np.array(matched_test_rot)) if trajectory.has_orientation else None,
+        rotations=Rotation.from_quat(np.array(matched_test_rot)) if trajectory.has_orientation else None,
         sorting=trajectory.sorting,
         path_lengths=np.array(matched_arc_lengths),
         timestamps=timestamps,
@@ -396,7 +396,7 @@ def _match_trajectories_spatial_interpolation(
         positions=Positions(
             np.array(matched_ref_pos), epsg=other.positions.epsg, local_transformer=other.positions.local_transformer
         ),
-        rotations=Rotations.from_quat(np.array(matched_ref_rot)) if other.has_orientation else None,
+        rotations=Rotation.from_quat(np.array(matched_ref_rot)) if other.has_orientation else None,
         sorting=other.sorting,
         path_lengths=np.array(matched_arc_lengths),
         timestamps=timestamps,

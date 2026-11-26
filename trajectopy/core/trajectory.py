@@ -9,13 +9,14 @@ from typing import Any, overload
 import numpy as np
 import pandas as pd
 from numpy.typing import ArrayLike
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.exceptions import TrajectoryError
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
 from trajectopy.utils.deprecation import warn_deprecated
 from trajectopy.utils.geometry import common_span, gradient_3d, lengths_from_xyz
+from trajectopy.utils.rotations import rotation_from_euler
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class Trajectory:
 
     Attributes:
         positions (Positions): Container for spatial coordinates and coordinate reference system (EPSG) data.
-        rotations (Rotations): Container for orientation data (quaternions), or None if not provided.
+        rotations (Rotation): Container for orientation data (quaternions), or None if not provided.
         timestamps (np.ndarray): A 1D array of timestamps corresponding to each pose.
         name (str): An identifier string for the trajectory.
         path_lengths (np.ndarray): A 1D array of cumulative path lengths starting from zero.
@@ -61,7 +62,7 @@ class Trajectory:
     def __init__(
         self,
         positions: Positions | ArrayLike,
-        rotations: Rotations | ArrayLike | None = None,
+        rotations: Rotation | ArrayLike | None = None,
         timestamps: ArrayLike | None = None,
         *,
         name: str = "",
@@ -76,7 +77,7 @@ class Trajectory:
         Args:
             positions (Positions | ArrayLike): Positions, either as a Positions container (which holds the EPSG
                 code) or as an array of shape (N, 3) in a local frame (EPSG 0).
-            rotations (Rotations | ArrayLike | None, optional): Orientations, either as Rotations or as an array of
+            rotations (Rotation | ArrayLike | None, optional): Orientations, either as Rotation or as an array of
                 quaternions (x, y, z, w) of shape (N, 4). Defaults to None (no orientations).
             timestamps (ArrayLike | None, optional): Timestamps in seconds. If None, a range index is used.
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
@@ -91,20 +92,27 @@ class Trajectory:
         """
         if not isinstance(positions, Positions):
             positions = Positions(xyz=np.asarray(positions, dtype=float), epsg=0)
-        if rotations is not None and not isinstance(rotations, Rotations):
-            rotations = Rotations.from_quat(np.asarray(rotations, dtype=float))
+        orientations: Rotation | None = (
+            None
+            if rotations is None
+            else rotations
+            if isinstance(rotations, Rotation)
+            else Rotation.from_quat(np.asarray(rotations, dtype=float))
+        )
+        if orientations is not None and orientations.single:
+            orientations = Rotation.concatenate([orientations])  # one orientation per pose
 
         # check dimensions
-        if rotations is not None and len(positions) != len(rotations):
+        if orientations is not None and len(positions) != len(orientations):
             raise TrajectoryError(
-                f"Number of positions ({len(positions)}) and rotations ({len(rotations)}) do not match!"
+                f"Number of positions ({len(positions)}) and rotations ({len(orientations)}) do not match!"
             )
 
         self._sorting = sorting
 
         # pose
         self.positions = positions
-        self.rotations = rotations
+        self.rotations = orientations
 
         # float, since timestamps are shifted and interpolated
         self.timestamps = (
@@ -138,7 +146,7 @@ class Trajectory:
             self.positions.xyz = self.positions.xyz[first_of_epoch, :]
 
             if self.rotations is not None:
-                self.rotations = Rotations.from_quat(self.rotations.as_quat()[first_of_epoch, :])
+                self.rotations = self.rotations[first_of_epoch]
             if velocity_xyz is not None:
                 velocity_xyz = velocity_xyz[first_of_epoch]
             if path_lengths is not None:
@@ -242,9 +250,9 @@ class Trajectory:
             raise TrajectoryError("Provide quat OR rpy, not both.")
 
         if quat is not None:
-            rot_obj = Rotations.from_quat(quat)
+            rot_obj = Rotation.from_quat(quat)
         elif rpy is not None:
-            rot_obj = Rotations.from_euler(seq="xyz", angles=rpy)
+            rot_obj = rotation_from_euler(seq="xyz", angles=rpy)
 
         return cls(positions=pos_obj, rotations=rot_obj, **kwargs)
 
@@ -453,7 +461,7 @@ class Trajectory:
         self.positions.xyz = self.positions.xyz[sort_index, :]
 
         if self.rotations is not None:
-            self.rotations = Rotations.from_quat(self.rotations.as_quat()[sort_index, :])
+            self.rotations = self.rotations[sort_index]
 
         if self._velocity_xyz is not None:
             self._velocity_xyz = self._velocity_xyz[sort_index, :]
@@ -540,7 +548,7 @@ class Trajectory:
         """
         Returns the Roll-Pitch-Yaw angles (in radians).
         """
-        return Rotations.from_quat(self.quat).as_euler(seq="xyz")
+        return Rotation.from_quat(self.quat).as_euler(seq="xyz")
 
     @property
     def se3(self) -> list[np.ndarray]:
@@ -574,7 +582,7 @@ class Trajectory:
             matrices[i, :, :] = pose[:3, :3]
 
         self.positions.xyz = xyz
-        self.rotations = Rotations.from_matrix(matrices)
+        self.rotations = Rotation.from_matrix(matrices)
 
     @property
     def time_start(self) -> float:
@@ -693,9 +701,9 @@ class Trajectory:
         traj_self.timestamps = traj_self.timestamps[mask]
         traj_self.positions.xyz = traj_self.positions.xyz[mask, :]
 
-        if traj_self.rotations:
-            quat_filtered = traj_self.rotations.as_quat()[mask, :]
-            traj_self.rotations = Rotations.from_quat(quat_filtered) if len(quat_filtered) > 0 else None
+        if traj_self.rotations is not None:
+            rotations = traj_self.rotations[np.asarray(mask)]
+            traj_self.rotations = rotations if len(rotations) > 0 else None
 
         traj_self.path_lengths = traj_self.path_lengths[mask]
 
@@ -754,7 +762,7 @@ class Trajectory:
             pd.DataFrame: A dataframe containing the trajectory data.
         """
         sort_by = sort_by or self.sorting
-        if self.rotations:
+        if self.rotations is not None:
             dataframe = pd.DataFrame(
                 np.c_[
                     self.timestamps, self.path_lengths, self.positions.xyz, self.rotations.as_quat(), self.velocity_xyz

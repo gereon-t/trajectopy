@@ -1,11 +1,11 @@
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.parameters import (
     AlignmentParameters,
     Parameter,
 )
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing._lib.alignment.equations import leverarm_time_component
 from trajectopy.results.alignment_result import AlignmentResult
@@ -33,7 +33,7 @@ def generate_noisy_trajectory(num: int) -> Trajectory:
     rpy = rpy[indices]
 
     pointset = Positions(xyz=xyz, epsg=0)
-    rotationset = Rotations.from_euler(seq="xyz", angles=rpy, degrees=False)
+    rotationset = Rotation.from_euler(seq="xyz", angles=rpy, degrees=False)
 
     return Trajectory(positions=pointset, rotations=rotationset, timestamps=tstamps)
 
@@ -59,7 +59,7 @@ def generate_trajectory(num: int) -> Trajectory:
     rpy = rpy[indices]
 
     pointset = Positions(xyz=xyz, epsg=0)
-    rotationset = Rotations.from_euler(seq="xyz", angles=rpy, degrees=False)
+    rotationset = Rotation.from_euler(seq="xyz", angles=rpy, degrees=False)
 
     return Trajectory(positions=pointset, rotations=rotationset, timestamps=tstamps)
 
@@ -74,7 +74,7 @@ def generate_transformation(
     lever_enabled: bool = True,
 ):
     if similarity_enabled:
-        rand_rot = Rotations.random().as_euler("xyz", degrees=False) * 0.2
+        rand_rot = Rotation.random().as_euler("xyz", degrees=False) * 0.2
         sim_trans_x = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)
         sim_trans_y = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)
         sim_trans_z = Parameter(value=random_number(-100, upper_bound=100), unit=Unit.METER)

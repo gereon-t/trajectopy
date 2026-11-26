@@ -8,7 +8,7 @@ Key Components
 
 **Core Classes:**
     - Trajectory: Main class for representing and manipulating trajectories
-    - Positions, Rotations: Position and rotation data containers
+    - Positions: Position container with EPSG code; orientations are scipy Rotation objects
     - Settings: Configuration for trajectory processing
 
 **Processing Functions:**
@@ -82,7 +82,6 @@ if TYPE_CHECKING:
         SensorRotationParameters,
     )
     from trajectopy.core.positions import Positions
-    from trajectopy.core.rotations import Rotations
     from trajectopy.core.settings import (
         AlignmentEstimationSettings,
         AlignmentPreprocessing,
@@ -135,7 +134,6 @@ _LAZY_IMPORTS = {
     "Parameter": "trajectopy.core.parameters",
     "SensorRotationParameters": "trajectopy.core.parameters",
     "Positions": "trajectopy.core.positions",
-    "Rotations": "trajectopy.core.rotations",
     "AlignmentEstimationSettings": "trajectopy.core.settings",
     "AlignmentPreprocessing": "trajectopy.core.settings",
     "AlignmentSettings": "trajectopy.core.settings",
@@ -190,6 +188,11 @@ _LAZY_IMPORTS = {
 _DEPRECATED = {
     "IOError": ("trajectopy.exceptions", "TrajectopyIOError", "use trajectopy.TrajectopyIOError instead"),
     "ComparisonMethod": ("trajectopy.core.settings", "ComparisonMethod", "it is an internal detail of the file I/O"),
+    "Rotations": (
+        "scipy.spatial.transform",
+        "Rotation",
+        "use scipy.spatial.transform.Rotation, which trajectopy uses for orientations",
+    ),
 }
 
 
@@ -220,7 +223,6 @@ __all__ = [
     "Trajectory",
     "Pose",
     "Positions",
-    "Rotations",
     "Settings",
     "ProcessingSettings",
     "AlignmentSettings",

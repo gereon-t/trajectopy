@@ -40,7 +40,6 @@ PUBLIC_API = {
         "RPEResult",
         "RelativeComparisonSettings",
         "RotationApproximationMethod",
-        "Rotations",
         "SensorRotationParameters",
         "Settings",
         "Sorting",
@@ -133,7 +132,7 @@ PUBLIC_API = {
     ],
 }
 
-DEPRECATED = {"trajectopy": ["ComparisonMethod", "IOError"], "trajectopy.exceptions": ["IOError"]}
+DEPRECATED = {"trajectopy": ["ComparisonMethod", "IOError", "Rotations"], "trajectopy.exceptions": ["IOError"]}
 
 
 class TestPublicApi(unittest.TestCase):

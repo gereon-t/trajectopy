@@ -9,9 +9,9 @@ from unittest import mock
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations, _euler_to_quat
 from trajectopy.io import ascii, header
 from trajectopy.io.trajectory_io import _trajectory_from_data, read_trajectory
+from trajectopy.utils.rotations import _euler_to_quat
 
 
 def _old_scan(filename: str) -> list[str]:
@@ -68,7 +68,7 @@ class TestEulerAngles(unittest.TestCase):
                             rng.uniform(-400, 400, (500, length)) if degrees else rng.uniform(-7, 7, (500, length))
                         )
                         np.testing.assert_allclose(
-                            Rotations.from_euler(seq, angles, degrees=degrees).as_quat(),
+                            Rotation.from_euler(seq, angles, degrees=degrees).as_quat(),
                             Rotation.from_euler(seq, angles, degrees=degrees).as_quat(),
                             atol=1e-14,
                         )
@@ -77,7 +77,7 @@ class TestEulerAngles(unittest.TestCase):
         self.assertIsNone(_euler_to_quat("xyz", np.zeros(3), False))  # single rotation
         self.assertIsNone(_euler_to_quat("xYz", np.zeros((2, 3)), False))  # mixed intrinsic/extrinsic
         self.assertIsNone(_euler_to_quat("xxy", np.zeros((2, 3)), False))  # invalid for scipy
-        self.assertEqual(len(Rotations.from_euler("xyz", [0.1, 0.2, 0.3]).as_quat()), 4)
+        self.assertEqual(len(Rotation.from_euler("xyz", [0.1, 0.2, 0.3]).as_quat()), 4)
 
 
 class TestReadTrajectory(unittest.TestCase):

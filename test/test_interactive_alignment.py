@@ -3,10 +3,10 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from test.testdata import generated_trajectory
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing import alignment
 from trajectopy.processing._lib.alignment import interactive
@@ -18,7 +18,7 @@ Z_AXIS = np.array([0.0, 0.0, 1.0])
 
 def transformed(trajectory: Trajectory, yaw_deg: float, translation, scale: float = 1.0) -> Trajectory:
     """``trajectory`` moved by a known similarity transformation (about the coordinate origin)."""
-    rotation = Rotations.from_euler("z", np.deg2rad(yaw_deg))
+    rotation = Rotation.from_euler("z", np.deg2rad(yaw_deg))
     moved = trajectory.copy()
     moved.positions = Positions(xyz=scale * rotation.apply(trajectory.xyz) + np.asarray(translation), epsg=0)
     moved.rotations = rotation * trajectory.rotations
@@ -47,7 +47,7 @@ class TestAlignmentState(unittest.TestCase):
     def test_apply_equals_apply_alignment(self):
         """The fast preview and the alignment that is finally applied place the trajectory identically."""
         state = AlignmentState(
-            rotation=Rotations.from_euler("xyz", np.array([0.1, -0.2, 1.3])).as_matrix(),
+            rotation=Rotation.from_euler("xyz", np.array([0.1, -0.2, 1.3])).as_matrix(),
             translation=[10.0, -20.0, 3.0],
             scale=1.1,
             time_shift=2.5,
@@ -62,7 +62,7 @@ class TestAlignmentState(unittest.TestCase):
 
     def test_parameter_round_trip(self):
         state = AlignmentState(
-            rotation=Rotations.from_euler("xyz", np.array([0.3, 0.2, -2.0])).as_matrix(),
+            rotation=Rotation.from_euler("xyz", np.array([0.3, 0.2, -2.0])).as_matrix(),
             translation=[1.0, 2.0, 3.0],
             scale=0.9,
             time_shift=-1.0,
@@ -130,7 +130,7 @@ class TestProposals(unittest.TestCase):
     def test_point_pairs(self):
         rng = np.random.default_rng(1)
         source = rng.normal(size=(5, 3)) * 20
-        rotation = Rotations.from_euler("xyz", np.array([0.2, -0.1, 2.0])).as_matrix()
+        rotation = Rotation.from_euler("xyz", np.array([0.2, -0.1, 2.0])).as_matrix()
         target = np.array([7.0, -3.0, 2.0]) + 1.3 * source @ rotation.T
 
         # one pair: translation only

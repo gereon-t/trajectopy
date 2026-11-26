@@ -3,8 +3,10 @@ import unittest
 from pathlib import Path
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 import trajectopy as tpy
+from trajectopy.utils.rotations import rotation_from_euler
 
 
 def _trajectory(num: int = 10, name: str = "line") -> tpy.Trajectory:
@@ -52,6 +54,21 @@ class TestTrajectoryApi(unittest.TestCase):
             trajectory.to_file(path)
             self.assertTrue(tpy.Trajectory.from_file(path).equals(trajectory))
         self.assertTrue(tpy.Trajectory.from_string(trajectory.to_string()).equals(trajectory))
+
+    def test_orientations_are_scipy_rotations(self):
+        trajectory = tpy.Trajectory(np.zeros((1, 3)), Rotation.identity())
+        self.assertIsInstance(trajectory.rotations, Rotation)
+        self.assertEqual(len(trajectory.rotations), 1)  # a single rotation becomes one per pose
+        self.assertTrue(trajectory.has_orientation)
+
+
+class TestRotationFromEuler(unittest.TestCase):
+    def test_matches_scipy(self):
+        angles = np.random.default_rng(4).uniform(-3, 3, size=(100, 3))
+        for seq in ("xyz", "ZYX", "zx"):
+            expected = Rotation.from_euler(seq, angles[:, : len(seq)]).as_matrix()
+            actual = rotation_from_euler(seq, angles[:, : len(seq)]).as_matrix()
+            np.testing.assert_allclose(actual, expected, atol=1e-12)
 
 
 if __name__ == "__main__":

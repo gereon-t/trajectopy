@@ -1,11 +1,11 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from test.testdata import open_loop_trajectory
 from test.util import transform_randomly
 from trajectopy.core.parameters import AlignmentParameters
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     AlignmentEstimationSettings,
     AlignmentPreprocessing,
@@ -134,7 +134,7 @@ class TestAlignment(unittest.TestCase):
         """Test that sensor rotation alignment can be applied and reversed correctly."""
         trajectory = open_loop_trajectory.copy()
         trajectory_rotated = trajectory.copy()
-        random_rot = Rotations.from_euler(
+        random_rot = Rotation.from_euler(
             seq="xyz",
             angles=[np.random.randint(-360, 360), np.random.randint(-360, 360), np.random.randint(-360, 360)],
             degrees=True,
@@ -150,7 +150,7 @@ class TestAlignment(unittest.TestCase):
         alignment_between_back_and_original = align_rotations(trajectory_rotated_back.rotations, trajectory.rotations)
 
         np.testing.assert_allclose(
-            alignment_between_back_and_original.rotation_set.rotangle,
+            alignment_between_back_and_original.rotation_set.magnitude(),
             0,
             atol=1e-8,
             rtol=1e-8,
@@ -158,22 +158,22 @@ class TestAlignment(unittest.TestCase):
 
     def test_rotation_alignment(self):
         """The sensor rotation is a constant rotation in the body frame, also with changing orientations."""
-        rotations_1 = Rotations.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
-        sensor_rotation = Rotations.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
+        rotations_1 = Rotation.from_euler(seq="xyz", angles=np.random.rand(100, 3) * 360, degrees=True)
+        sensor_rotation = Rotation.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
         rotations_2 = rotations_1 * sensor_rotation
 
         sensor_rot_params = align_rotations(rot_from=rotations_1, rot_to=rotations_2)
 
         np.testing.assert_allclose(np.rad2deg(sensor_rot_params.rotation), [2.0, -3.0, 5.0], atol=1e-8)
         rotations_1_to_2 = rotations_1 * sensor_rot_params.rotation_set
-        np.testing.assert_allclose((rotations_2 - rotations_1_to_2).rotangle, 0, atol=1e-8)
+        np.testing.assert_allclose((rotations_2 * rotations_1_to_2.inv()).magnitude(), 0, atol=1e-8)
 
     def test_sensor_rotation_with_similarity_transformation(self):
         """A mounting rotation is recovered after the similarity transformation and removed when applied."""
         transformed, _ = transform_randomly(
             open_loop_trajectory, similarity_enabled=True, time_shift_enabled=False, lever_enabled=False
         )
-        sensor_rotation = Rotations.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
+        sensor_rotation = Rotation.from_euler(seq="xyz", angles=[2.0, -3.0, 5.0], degrees=True)
         transformed.rotations = transformed.rotations * sensor_rotation
 
         settings = AlignmentSettings(
@@ -183,7 +183,7 @@ class TestAlignment(unittest.TestCase):
         np.testing.assert_allclose(np.rad2deg(result.rotation_parameters.rotation), [2.0, -3.0, 5.0], atol=1e-3)
 
         aligned = apply_alignment(open_loop_trajectory, result, inplace=False)
-        np.testing.assert_allclose((transformed.rotations - aligned.rotations).rotangle, 0, atol=1e-5)
+        np.testing.assert_allclose((transformed.rotations * aligned.rotations.inv()).magnitude(), 0, atol=1e-5)
 
     def test_robust_estimation_against_outliers(self):
         """Outliers are down-weighted, so that they hardly affect the estimated parameters."""
@@ -235,7 +235,9 @@ class TestAlignment(unittest.TestCase):
     ) -> None:
         tolerance = 1e-1 if lazy else 1e-3
         np.testing.assert_allclose(estimation.helmert.translation, target.helmert.translation, atol=tolerance)
-        np.testing.assert_allclose(target.helmert.rotation_set.rotangle, estimation.helmert.rotation_set.rotangle)
+        np.testing.assert_allclose(
+            target.helmert.rotation_set.magnitude(), estimation.helmert.rotation_set.magnitude()
+        )
         np.testing.assert_allclose(estimation.helmert.scale.value, target.helmert.scale.value, atol=tolerance)
         np.testing.assert_allclose(estimation.time_shift.value, target.time_shift.value, atol=tolerance)
         np.testing.assert_allclose(estimation.leverarm.values, target.leverarm.values, atol=tolerance)

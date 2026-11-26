@@ -27,9 +27,9 @@ class TestIO(unittest.TestCase):
     def test_trajectory_write_read_with_rotations(self):
         """Test writing and reading trajectory with rotation data."""
         import numpy as np
+        from scipy.spatial.transform import Rotation
 
         from trajectopy.core.positions import Positions
-        from trajectopy.core.rotations import Rotations
 
         # Create trajectory with rotations
         # valid geographic coordinates (latitude, longitude, height)
@@ -40,7 +40,7 @@ class TestIO(unittest.TestCase):
         traj = Trajectory(
             name="TestTraj",
             positions=Positions(xyz=xyz, epsg=4326),
-            rotations=Rotations.from_quat(quat),
+            rotations=Rotation.from_quat(quat),
             timestamps=timestamps,
         )
 

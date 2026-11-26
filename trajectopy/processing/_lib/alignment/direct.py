@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 from scipy.sparse import spdiags
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.parameters import (
     HelmertTransformation,
@@ -9,7 +10,6 @@ from trajectopy.core.parameters import (
     Parameter,
     SensorRotationParameters,
 )
-from trajectopy.core.rotations import Rotations
 from trajectopy.utils.definitions import Unit
 from trajectopy.utils.linalg import least_squares
 
@@ -272,7 +272,7 @@ def direct_timeshift(
     )
 
 
-def align_rotations(rot_from: Rotations, rot_to: Rotations) -> SensorRotationParameters:
+def align_rotations(rot_from: Rotation, rot_to: Rotation) -> SensorRotationParameters:
     """Estimates the constant sensor (mounting) rotation between two sets of orientations.
 
     The sensor rotation is defined in the body frame, i.e. ``rot_to = rot_from * sensor_rotation``.

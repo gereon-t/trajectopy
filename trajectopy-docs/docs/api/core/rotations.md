@@ -1,3 +1,0 @@
-# Rotations
-
-::: trajectopy.core.rotations

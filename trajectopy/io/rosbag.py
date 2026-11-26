@@ -20,9 +20,9 @@ from typing import Any
 import numpy as np
 from rosbags.highlevel import AnyReader
 from rosbags.typesys import Stores, get_typestore
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.io.rosmsg import geometry_pose_stamped_handler, stamp_to_seconds
 
@@ -185,7 +185,7 @@ def trajectories_from_rosbag(filename: str | os.PathLike, topics: Iterable[str] 
             rot = None
             logger.info("No rotation data found for trajectory %s", traj_key)
         else:
-            rot = Rotations.from_quat(quat=np.c_[traj_data["qx"], traj_data["qy"], traj_data["qz"], traj_data["qw"]])
+            rot = Rotation.from_quat(quat=np.c_[traj_data["qx"], traj_data["qy"], traj_data["qz"], traj_data["qw"]])
 
         position_std = None
         if all(len(traj_data.get(key, [])) == len(pos) for key in ["sx", "sy", "sz"]):

@@ -3,9 +3,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from test.testdata import generated_trajectory
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import MatchingMethod, MatchingSettings, PairDistanceUnit, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.alignment import adopt_first_orientation
@@ -47,11 +47,12 @@ class TestRegressions(unittest.TestCase):
         self.assertEqual(len(result.abs_dev.rot_dev), len(result.trajectory))
 
     def test_direct_helmert_on_planar_points_is_a_rotation(self):
-        from trajectopy.core.rotations import Rotations
+        from scipy.spatial.transform import Rotation
+
         from trajectopy.processing._lib.alignment.direct import direct_helmert_transformation
 
         xyz_from = generated_trajectory.xyz  # lies exactly in a plane
-        rotation = Rotations.from_euler("z", 0.3).as_matrix()
+        rotation = Rotation.from_euler("z", 0.3).as_matrix()
         xyz_to = 1.4 * (rotation @ xyz_from.T).T + [5.0, -3.0, 1.0]
 
         helmert = direct_helmert_transformation(xyz_from, xyz_to)
@@ -99,7 +100,7 @@ class TestTrajectoryOperationRegressions(unittest.TestCase):
     def test_transform_rotates_velocities_and_keeps_missing_orientations(self):
         trajectory = _line(np.arange(10.0))
         transformation = np.eye(4)
-        transformation[:3, :3] = 2.0 * Rotations.from_euler("z", np.pi / 2).as_matrix()
+        transformation[:3, :3] = 2.0 * Rotation.from_euler("z", np.pi / 2).as_matrix()
 
         trajectory.transform(transformation, inplace=True)
 
@@ -109,13 +110,13 @@ class TestTrajectoryOperationRegressions(unittest.TestCase):
 
     def test_adopt_first_orientation_keeps_relative_rotations(self):
         num = 5
-        trajectory = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, rng=1).as_quat())
-        other = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotations.random(num, rng=2).as_quat())
+        trajectory = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotation.random(num, rng=1).as_quat())
+        other = Trajectory.from_arrays(np.zeros((num, 3)), quat=Rotation.random(num, rng=2).as_quat())
 
         adopted = adopt_first_orientation(trajectory, other, inplace=False)
 
-        def relative_angles(rotations: Rotations) -> np.ndarray:
-            return (Rotations.from_quat(rotations.as_quat()[0]).inv() * rotations).magnitude()
+        def relative_angles(rotations: Rotation) -> np.ndarray:
+            return (Rotation.from_quat(rotations.as_quat()[0]).inv() * rotations).magnitude()
 
         np.testing.assert_allclose(adopted.quat[0], other.quat[0] * np.sign(adopted.quat[0] @ other.quat[0]))
         np.testing.assert_allclose(relative_angles(adopted.rotations), relative_angles(trajectory.rotations))
@@ -198,9 +199,9 @@ class TestRobustnessRegressions(unittest.TestCase):
 
         index = np.arange(20.0)
         yaw = np.deg2rad(index)
-        quat = Rotations.from_euler("xyz", np.c_[0 * yaw, 0 * yaw, yaw]).as_quat()
+        quat = Rotation.from_euler("xyz", np.c_[0 * yaw, 0 * yaw, yaw]).as_quat()
 
-        averaged = Rotations.from_quat(_average_rotations_in_window(index, quat, win_size=4.0))
+        averaged = Rotation.from_quat(_average_rotations_in_window(index, quat, win_size=4.0))
 
         # the mean of a symmetric window of linearly increasing angles is the center angle
         np.testing.assert_allclose(averaged.as_euler("xyz")[2:-2, 2], yaw[2:-2], atol=1e-6)
@@ -216,7 +217,7 @@ class TestRobustnessRegressions(unittest.TestCase):
         )
         trajectory.path_lengths = lap_position.copy()
 
-        yaw = Rotations.from_quat(_average_rotations_per_path_length(trajectory)).as_euler("xyz")[:, 2]
+        yaw = Rotation.from_quat(_average_rotations_per_path_length(trajectory)).as_euler("xyz")[:, 2]
 
         np.testing.assert_allclose(yaw, np.deg2rad(lap_position), atol=1e-9)
 
@@ -513,7 +514,7 @@ class TestRobustnessRegressions(unittest.TestCase):
         from trajectopy.io.results_io import DEVIATIONS_CONVENTION, convert_ate_deviations
 
         pos_dev, directed = np.array([[1.0, 2.0, 3.0]]), np.array([[4.0, 5.0, 6.0]])
-        rot_dev = Rotations.from_euler("xyz", np.array([[0.0, 0.0, 0.1]]))
+        rot_dev = Rotation.from_euler("xyz", np.array([[0.0, 0.0, 0.1]]))
 
         current = convert_ate_deviations(DEVIATIONS_CONVENTION, pos_dev, directed, rot_dev)
         cross_left = convert_ate_deviations("test-reference", pos_dev, directed, rot_dev)

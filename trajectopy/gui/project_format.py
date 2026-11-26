@@ -12,10 +12,10 @@ from typing import Any
 
 import numpy as np
 from pyproj import Transformer
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.parameters import ParameterSet
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentEstimationSettings, PairDistanceUnit, PlotSettings, ProcessingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.models.entries import (
@@ -78,7 +78,7 @@ def encode_trajectory(trajectory: Trajectory, encoder: Encoder) -> dict:
 def decode_trajectory(data: dict, decoder: Decoder) -> Trajectory:
     timestamps, path_lengths = decoder.get(data["timestamps"]), decoder.get(data["path_lengths"])
     xyz, velocity = decoder.get(data["xyz"]), decoder.get(data["velocity"])
-    rotations = None if data["quat"] is None else Rotations.from_quat(decoder.get(data["quat"]))
+    rotations = None if data["quat"] is None else Rotation.from_quat(decoder.get(data["quat"]))
     local_transformer = Transformer.from_pipeline(data["local_transformer"]) if data["local_transformer"] else None
     trajectory = Trajectory(
         positions=Positions(xyz, epsg=data["epsg"], local_transformer=local_transformer, init_local_transformer=False),
@@ -173,7 +173,7 @@ def _decode_ate(data: dict, decoder: Decoder) -> ATEResult:
         data.get("deviations", ""),
         decoder.get(data["pos_dev"]),
         decoder.get(data["directed_pos_dev"]),
-        None if data["rot_dev"] is None else Rotations.from_quat(decoder.get(data["rot_dev"])),
+        None if data["rot_dev"] is None else Rotation.from_quat(decoder.get(data["rot_dev"])),
     )
     deviations = AbsoluteTrajectoryDeviations(
         pos_dev=pos_dev, directed_pos_dev=directed_pos_dev, rot_dev=rot_dev, rotations_used=data["rotations_used"]

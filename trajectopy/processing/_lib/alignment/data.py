@@ -5,8 +5,8 @@ from functools import cached_property
 
 import numpy as np
 from scipy.sparse import spdiags
+from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentSettings, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.matching import match_trajectories
@@ -235,7 +235,7 @@ class AlignmentData:
         self,
         xyz_from: np.ndarray,
         xyz_to: np.ndarray,
-        rot_from: Rotations | None,
+        rot_from: Rotation | None,
         speed: np.ndarray | None,
     ) -> np.ndarray:
         """

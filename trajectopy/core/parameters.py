@@ -5,12 +5,13 @@ from dataclasses import dataclass, field, fields
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentEstimationSettings
 from trajectopy.exceptions import AlignmentParametersError
 from trajectopy.utils.definitions import UNIT_FORMAT_RULES, Unit
 from trajectopy.utils.formatting import list2box
+from trajectopy.utils.rotations import rotation_from_euler
 
 
 class Parameter:
@@ -589,13 +590,13 @@ class HelmertTransformation(ParameterSet):
         self.rot_z.value = v[2]
 
     @property
-    def rotation_set(self) -> Rotations:
-        """Gets the rotation as a Rotations object.
+    def rotation_set(self) -> Rotation:
+        """Gets the rotation as a Rotation object.
 
         Returns:
-            Rotations: Rotation object from Euler angles
+            Rotation: Rotation object from Euler angles
         """
-        return Rotations.from_euler(seq="xyz", angles=self.rotation)
+        return rotation_from_euler(seq="xyz", angles=self.rotation)
 
     @property
     def rotation_matrix(self) -> np.ndarray:
@@ -604,7 +605,7 @@ class HelmertTransformation(ParameterSet):
         Returns:
             np.ndarray: Rotation matrix (3x3)
         """
-        return Rotations.from_euler(seq="xyz", angles=self.rotation).as_matrix()
+        return rotation_from_euler(seq="xyz", angles=self.rotation).as_matrix()
 
     def apply_to(self, xyz: np.ndarray) -> np.ndarray:
         """Applies the Helmert transformation to 3D points.
@@ -654,7 +655,7 @@ class Leverarm(ParameterSet):
             raise ValueError("Dimension mismatch between positions and orientations.")
 
         xyz_red = np.zeros(xyz.shape)
-        rot_matrices = Rotations.from_quat(quat_body).as_matrix()
+        rot_matrices = Rotation.from_quat(quat_body).as_matrix()
 
         for i in range(len(xyz_red)):
             d_rot = rot_matrices[i] @ self.values
@@ -912,13 +913,13 @@ class SensorRotationParameters(ParameterSet):
         return np.array([self.sensor_rot_x.value, self.sensor_rot_y.value, self.sensor_rot_z.value])
 
     @property
-    def rotation_set(self) -> Rotations:
-        """Gets the sensor rotation as a Rotations object.
+    def rotation_set(self) -> Rotation:
+        """Gets the sensor rotation as a Rotation object.
 
         Returns:
-            Rotations: Rotation object from Euler angles
+            Rotation: Rotation object from Euler angles
         """
-        return Rotations.from_euler(seq="xyz", angles=self.rotation)
+        return rotation_from_euler(seq="xyz", angles=self.rotation)
 
     @property
     def rotation_matrix(self) -> np.ndarray:
@@ -927,7 +928,7 @@ class SensorRotationParameters(ParameterSet):
         Returns:
             np.ndarray: Rotation matrix (3x3)
         """
-        return Rotations.from_euler(seq="xyz", angles=self.rotation).as_matrix()
+        return rotation_from_euler(seq="xyz", angles=self.rotation).as_matrix()
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "SensorRotationParameters":

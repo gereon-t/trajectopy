@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import numpy as np
 from PySide6.QtCore import QObject, Signal, Slot
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.gui.managers.requests import (
     ResultModelRequest,
@@ -39,6 +38,7 @@ from trajectopy.processing import (
 )
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.utils.definitions import Sorting
+from trajectopy.utils.rotations import rotation_from_euler
 
 logger = logging.getLogger(__name__)
 
@@ -562,7 +562,7 @@ class TrajectoryManager(QObject):
         entry_pair.entry.trajectory = Trajectory(
             positions=positions,
             rotations=(
-                Rotations.from_euler(seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True)
+                rotation_from_euler(seq="xyz", angles=new_xyz_rpy_t[:, 3:6], degrees=True)
                 if trajectory.has_orientation
                 else None
             ),

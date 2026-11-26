@@ -16,9 +16,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.utils.definitions import OptionEnum
 
@@ -116,7 +116,7 @@ def read_tum(filename: str | os.PathLike, name: str = "") -> Trajectory:
         )
     return Trajectory(
         positions=Positions(xyz=data[:, 1:4]),
-        rotations=Rotations.from_quat(data[:, 4:8]),
+        rotations=Rotation.from_quat(data[:, 4:8]),
         timestamps=data[:, 0],
         name=name or _name(filename),
     )
@@ -147,7 +147,7 @@ def read_kitti(filename: str | os.PathLike, timestamps: np.ndarray | str | None 
 
     return Trajectory(
         positions=Positions(xyz=matrices[:, :, 3].copy()),
-        rotations=Rotations.from_matrix(matrices[:, :, :3]),
+        rotations=Rotation.from_matrix(matrices[:, :, :3]),
         timestamps=None if timestamps is None else np.asarray(timestamps, dtype=float),
         name=name or _name(filename),
     )
@@ -174,7 +174,7 @@ def read_euroc(filename: str | os.PathLike, name: str = "") -> Trajectory:
         )
     return Trajectory(
         positions=Positions(xyz=data[:, 1:4]),
-        rotations=Rotations.from_quat(data[:, [5, 6, 7, 4]]),
+        rotations=Rotation.from_quat(data[:, [5, 6, 7, 4]]),
         timestamps=data[:, 0] * 1e-9,
         velocity_xyz=data[:, 8:11] if data.shape[1] >= 11 else None,
         name=name or _name(filename),
@@ -229,7 +229,7 @@ def to_tum_string(trajectory: Trajectory) -> str:
 def to_kitti_string(trajectory: Trajectory) -> str:
     """The trajectory in the KITTI format (row-major 3x4 pose matrices); missing orientations are written as
     identity. Timestamps are not part of the format."""
-    matrices = Rotations.from_quat(_quat(trajectory)).as_matrix()
+    matrices = Rotation.from_quat(_quat(trajectory)).as_matrix()
     poses = np.concatenate([matrices, trajectory.xyz[:, :, None]], axis=2).reshape(-1, 12)
     return "".join(" ".join(f"{value:.9e}" for value in row) + "\n" for row in poses)
 

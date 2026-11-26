@@ -10,7 +10,6 @@ they are defined in. See the [API policy](../api_policy.md) for the conventions 
 
 - **[Trajectory](core/trajectory.md)** - Main trajectory class for representing and manipulating trajectory data
 - **[Positions](core/positions.md)** - Position data container
-- **[Rotations](core/rotations.md)** - Rotation data container  
 - **[Settings](core/settings.md)** - Configuration classes for trajectory processing
 - **[Parameters](core/parameters.md)** - Alignment parameters and stochastic models
 

@@ -3,9 +3,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing._lib.alignment import diagnostics, interactive
 from trajectopy.processing._lib.alignment.interactive import AlignmentPreview, AlignmentState
@@ -23,7 +23,7 @@ def drive(duration: float = 400.0, rate: float = 10.0, noise: float = 0.0, seed:
     xyz += np.array([364800.0, 5621500.0, 60.0])
     if noise:
         xyz += np.random.default_rng(seed).normal(scale=noise, size=xyz.shape)
-    rotations = Rotations.from_euler("xyz", np.column_stack((np.zeros_like(t), np.zeros_like(t), heading)))
+    rotations = Rotation.from_euler("xyz", np.column_stack((np.zeros_like(t), np.zeros_like(t), heading)))
     return Trajectory(positions=Positions(xyz=xyz, epsg=0), timestamps=t, rotations=rotations, name="drive")
 
 

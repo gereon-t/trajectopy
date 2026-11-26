@@ -4,7 +4,6 @@ import numpy as np
 from numpy.typing import ArrayLike
 from scipy.spatial.transform import Slerp
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import InterpolationMethod
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.utils.definitions import Sorting
@@ -156,20 +155,18 @@ def _interpolate_rotations_linear(
     """
     trajectory = trajectory if inplace else trajectory.copy()
 
-    if not trajectory.rotations or len(index) == 0:
+    rotations = trajectory.rotations
+    if rotations is None or len(rotations) == 0 or len(index) == 0:
         return trajectory
 
     # the observations, not len(trajectory): the positions may already be interpolated
     if len(trajectory.index) == 1:
         # slerp needs two rotations, and a single pose is only interpolated at its own index
-        trajectory.rotations = Rotations.from_quat(np.repeat(trajectory.rotations.as_quat(), len(index), axis=0))
+        trajectory.rotations = rotations[np.zeros(len(index), dtype=int)]
         return trajectory
 
-    # spherical linear orientation interpolation
-    # Slerp interpolation, as geodetic curve on unit sphere
-    slerp = Slerp(trajectory.index, trajectory.rotations.to_scipy())
-    r_i = slerp(index)
-    trajectory.rotations = Rotations.from_quat(r_i.as_quat())
+    # spherical linear interpolation, along the shortest arc on the unit sphere
+    trajectory.rotations = Slerp(trajectory.index, rotations)(index)
     return trajectory
 
 

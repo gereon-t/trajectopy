@@ -1,8 +1,8 @@
 import logging
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     MatchingSettings,
     PairDistanceUnit,
@@ -121,14 +121,16 @@ def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory)
     logger.info("Performing absolute comparison")
     # all deviations describe how far the evaluated trajectory deviates from the reference: test - reference
     pos_dev = trajectory.positions.xyz - other.positions.xyz
+    # the along-track direction follows the orientations of the reference, or else of the evaluated trajectory
+    direction_rotations = other.rotations if other.has_orientation else trajectory.rotations
     directed_pos_dev = _get_directed_deviations(
         xyz_ref=other.positions.xyz,
         xyz_test=trajectory.positions.xyz,
-        rot=other.rotations or trajectory.rotations,
+        rot=direction_rotations,
     )
 
     if other.rotations is not None and trajectory.rotations is not None:
-        rot_dev = trajectory.rotations - other.rotations
+        rot_dev = trajectory.rotations * other.rotations.inv()
     else:
         rot_dev = None
 
@@ -136,7 +138,7 @@ def _compare_trajectories_absolute(*, trajectory: Trajectory, other: Trajectory)
         pos_dev=pos_dev,
         directed_pos_dev=directed_pos_dev,
         rot_dev=rot_dev,
-        rotations_used=(other.rotations or trajectory.rotations) is not None,
+        rotations_used=direction_rotations is not None,
     )
 
     return ATEResult(
@@ -305,7 +307,7 @@ def _translation_error(pose_errors: np.ndarray) -> np.ndarray:
     return np.sqrt(dx * dx + dy * dy + dz * dz)
 
 
-def _get_directed_deviations(*, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Rotations | None = None) -> np.ndarray:
+def _get_directed_deviations(*, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Rotation | None = None) -> np.ndarray:
     if rot is None:
         return _derive_dev_directions_no_rot(xyz_ref=xyz_ref, xyz_test=xyz_test)
 
@@ -345,7 +347,7 @@ def _derive_dev_directions_no_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray) 
     return np.c_[d_along, d_cross_h, d_cross_v]
 
 
-def _derive_dev_directions_with_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Rotations) -> np.ndarray:
+def _derive_dev_directions_with_rot(*, xyz_ref: np.ndarray, xyz_test: np.ndarray, rot: Rotation) -> np.ndarray:
     """
     Function that computes the deviation between ref and single with
     respect to coordinate axes defined by rpy

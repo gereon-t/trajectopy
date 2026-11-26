@@ -7,12 +7,13 @@ from io import StringIO
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.io.header import HeaderData, HeaderScan, scan_header
 from trajectopy.io.utils import get_rot_matrix
 from trajectopy.utils.definitions import GPS_LEAP_SECONDS, GPS_WEEK_ZERO, TimeFormat
+from trajectopy.utils.rotations import rotation_from_euler
 
 __all__ = [
     "HeaderData",
@@ -170,8 +171,8 @@ def read_string(input_str: str, dtype=float) -> tuple[HeaderData, np.ndarray]:
     return header_data, data
 
 
-def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> None | Rotations:
-    """Extracts rotations from trajectory data and returns them as Rotations
+def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.ndarray) -> None | Rotation:
+    """Extracts rotations from trajectory data and returns them as Rotation
 
     Loaded rotations are converted to refer to the ENU navigation frame. For this,
     the actual navigation frame must be specified in the header of the trajectory file using
@@ -182,7 +183,7 @@ def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.nd
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        Rotations | None: Rotations read from the trajectory file or None if no rotations are found
+        Rotation | None: Rotation read from the trajectory file or None if no rotations are found
     """
     rot = None
     if all(field in header_data.fields for field in ["qx", "qy", "qz", "qw"]):
@@ -198,20 +199,20 @@ def extract_trajectory_rotations(header_data: HeaderData, trajectory_data: np.nd
     if np.array_equal(rot_matrix, np.eye(3)):
         return rot  # already ENU (multiplying millions of rotations by the identity takes seconds)
 
-    return Rotations.from_matrix(rot_matrix) * rot
+    return Rotation.from_matrix(rot_matrix) * rot
 
 
-def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
-    """Extracts quaternions from trajectory data and returns them as Rotations
+def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotation:
+    """Extracts quaternions from trajectory data and returns them as Rotation
 
     Args:
         header_data (HeaderData): Holds information about the header of the trajectory file
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        Rotations: Rotations read from the trajectory file
+        Rotation: Rotation read from the trajectory file
     """
-    return Rotations.from_quat(
+    return Rotation.from_quat(
         trajectory_data[
             :,
             [
@@ -224,22 +225,22 @@ def _extract_rotations_from_quaternions(header_data: HeaderData, trajectory_data
     )
 
 
-def _extract_rotations_from_euler_angles(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotations:
-    """Extracts euler angles from trajectory data and returns them as Rotations
+def _extract_rotations_from_euler_angles(header_data: HeaderData, trajectory_data: np.ndarray) -> Rotation:
+    """Extracts euler angles from trajectory data and returns them as Rotation
 
     Args:
         header_data (HeaderData): Holds information about the header of the trajectory file
         trajectory_data (np.ndarray): Holds the trajectory data
 
     Returns:
-        Rotations: Rotations read from the trajectory file
+        Rotation: Rotation read from the trajectory file
     """
     logger.info(
         "Extracting rotations from euler angles with sequence '%s' and unit '%s'.",
         header_data.euler_rot_seq,
         header_data.rot_unit,
     )
-    return Rotations.from_euler(
+    return rotation_from_euler(
         seq=header_data.euler_rot_seq,
         angles=trajectory_data[
             :,

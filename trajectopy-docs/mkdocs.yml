@@ -65,7 +65,6 @@ nav:
     - Core:
       - Trajectory: api/core/trajectory.md
       - Positions: api/core/positions.md
-      - Rotations: api/core/rotations.md
       - Settings: api/core/settings.md
       - Parameters: api/core/parameters.md
     - Processing:

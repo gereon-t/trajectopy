@@ -1,9 +1,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import SortingSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.sorting import _mst_sort, divide_into_laps, sort_spatially
@@ -105,7 +105,7 @@ class TestSorting(unittest.TestCase):
         # Add rotations to trajectory
         traj_with_rot = self.unsorted_trajectory.copy()
         num_points = len(traj_with_rot)
-        traj_with_rot.rotations = Rotations.from_quat(np.tile([0, 0, 0, 1], (num_points, 1)))
+        traj_with_rot.rotations = Rotation.from_quat(np.tile([0, 0, 0, 1], (num_points, 1)))
 
         result = sort_spatially(trajectory=traj_with_rot, settings=SortingSettings(), inplace=False)
 

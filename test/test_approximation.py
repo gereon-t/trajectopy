@@ -1,9 +1,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import ApproximationSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing.approximation import approximate
@@ -30,7 +30,7 @@ class TestApproximation(unittest.TestCase):
 
         self.trajectory = Trajectory(
             positions=Positions(xyz=noisy_xyz, epsg=0),
-            rotations=Rotations.from_euler(seq="xyz", angles=noisy_angles, degrees=False),
+            rotations=Rotation.from_euler(seq="xyz", angles=noisy_angles, degrees=False),
             timestamps=t,
         )
 

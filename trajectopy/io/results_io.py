@@ -5,10 +5,10 @@ import os
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.parameters import AlignmentParameters, SensorRotationParameters
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import AlignmentEstimationSettings
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.io.header import HeaderData
@@ -24,15 +24,15 @@ _TEST_MINUS_REFERENCE_CROSS_LEFT = "test-reference"
 
 
 def convert_ate_deviations(
-    convention: str, pos_dev: np.ndarray, directed_pos_dev: np.ndarray, rot_dev: Rotations | None
-) -> tuple[np.ndarray, np.ndarray, Rotations | None]:
+    convention: str, pos_dev: np.ndarray, directed_pos_dev: np.ndarray, rot_dev: Rotation | None
+) -> tuple[np.ndarray, np.ndarray, Rotation | None]:
     """Expresses ATE deviations stored with an earlier sign convention in the current one.
 
     Args:
         convention (str): Convention of the stored deviations; empty for the earliest one.
         pos_dev (np.ndarray): Position deviations.
         directed_pos_dev (np.ndarray): Along-track, horizontal and vertical cross-track deviations.
-        rot_dev (Rotations | None): Rotation deviations.
+        rot_dev (Rotation | None): Rotation deviations.
 
     Returns:
         tuple: The deviations as test minus reference, with horizontal cross-track positive to the right.
@@ -184,7 +184,7 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 
     rot_columns = ["rot_x", "rot_y", "rot_z", "rot_w"]
     if all(column in deviation_data.columns for column in rot_columns):
-        rotations = Rotations.from_quat(deviation_data[rot_columns].to_numpy(dtype=float))
+        rotations = Rotation.from_quat(deviation_data[rot_columns].to_numpy(dtype=float))
     else:
         rotations = None
 
@@ -193,7 +193,7 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 
     rot_dev_columns = ["rot_dev_x", "rot_dev_y", "rot_dev_z", "rot_dev_w"]
     if all(column in deviation_data.columns for column in rot_dev_columns):
-        rot_dev = Rotations.from_quat(deviation_data[rot_dev_columns].to_numpy(dtype=float))
+        rot_dev = Rotation.from_quat(deviation_data[rot_dev_columns].to_numpy(dtype=float))
     else:
         rot_dev = None
 

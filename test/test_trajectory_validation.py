@@ -1,9 +1,9 @@
 import unittest
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.exceptions import TrajectoryError
 
@@ -36,7 +36,7 @@ class TestTrajectoryValidation(unittest.TestCase):
 
     def test_trajectory_mismatched_positions_rotations_raises(self):
         positions = Positions(xyz=np.random.rand(10, 3), epsg=0)
-        rotations = Rotations.from_quat(np.tile([0, 0, 0, 1], (5, 1)))
+        rotations = Rotation.from_quat(np.tile([0, 0, 0, 1], (5, 1)))
         with self.assertRaises(TrajectoryError):
             Trajectory(positions=positions, rotations=rotations)
 

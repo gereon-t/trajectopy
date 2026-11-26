@@ -2,8 +2,8 @@ import logging
 from typing import Literal, overload
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.settings import (
     ApproximationSettings,
     PositionApproximationMethod,
@@ -76,7 +76,7 @@ def approximate(
         raise ValueError(
             f"Unknown rotation approximation method: {approximation_settings.rotation_approximation_method}"
         )
-    traj_approx.rotations = Rotations.from_quat(quat_approx)
+    traj_approx.rotations = Rotation.from_quat(quat_approx)
 
     return traj_approx
 
@@ -124,7 +124,7 @@ def _average_rotations_per_sorted_path_length(trajectory: Trajectory, max_gap_si
     for i, path_length in enumerate(trajectory.path_lengths):
         quats = np.array(path_length_dict[path_length])
         number_of_rotations.append(len(quats))
-        mean_quat = Rotations.from_quat(quats).mean().as_quat()
+        mean_quat = Rotation.from_quat(quats).mean().as_quat()
         quat_mean[i, :] = mean_quat
 
     logger.info(
@@ -179,7 +179,7 @@ def _average_rotations_in_window(index: np.ndarray, quat: np.ndarray, win_size: 
         window_end_index = min(num_rotations, i + ext + 1)
         quat_i = quat[window_start_index:window_end_index, :]
         # compute mean
-        quat_mean[i, :] = Rotations.from_quat(quat_i).mean().as_quat()
+        quat_mean[i, :] = Rotation.from_quat(quat_i).mean().as_quat()
     return quat_mean
 
 

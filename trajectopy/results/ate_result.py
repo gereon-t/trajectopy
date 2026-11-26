@@ -5,8 +5,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from scipy.spatial.transform import Rotation
 
-from trajectopy.core.rotations import Rotations
 from trajectopy.core.trajectory import Trajectory
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.correlation import DeviationCorrelation
@@ -43,8 +43,8 @@ class AbsoluteTrajectoryDeviations:
             Shape is (N, 3). These deviations are independent of the global
             coordinate frame, as they are derived based on the along-track
             direction of the trajectory.
-        rot_dev (Rotations | None): Optional orientation deviations represented
-            as a `Rotations` instance (radians), the rotation from the reference to the test orientation
+        rot_dev (Rotation | None): Optional orientation deviations represented
+            as a scipy `Rotation` (radians), the rotation from the reference to the test orientation
             (``test * reference^-1``). `None` if rotational evaluation
             was not performed.
         rotations_used (bool): Indicates whether trajectory rotation information
@@ -55,7 +55,7 @@ class AbsoluteTrajectoryDeviations:
 
     pos_dev: np.ndarray
     directed_pos_dev: np.ndarray
-    rot_dev: Rotations | None = None
+    rot_dev: Rotation | None = None
     rotations_used: bool = False
 
 
@@ -221,7 +221,7 @@ class ATEResult:
 
         if self.abs_dev.rot_dev is not None:
             # selected as quaternions, a round trip through Euler angles is inexact near gimbal lock
-            self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[ate_below_idx])
+            self.abs_dev.rot_dev = self.abs_dev.rot_dev[ate_below_idx]
 
         # the combined deviations and rotation statistics are cached and depend on the removed deviations
         for cached in _CACHED:
@@ -388,7 +388,7 @@ class ATEResult:
         self.abs_dev.pos_dev = self.abs_dev.pos_dev[order]
         self.abs_dev.directed_pos_dev = self.abs_dev.directed_pos_dev[order]
         if self.abs_dev.rot_dev is not None:
-            self.abs_dev.rot_dev = Rotations.from_quat(self.abs_dev.rot_dev.as_quat()[order])
+            self.abs_dev.rot_dev = self.abs_dev.rot_dev[order]
 
         # cached per-epoch deviations follow the old order
         for cached in _CACHED:
@@ -539,7 +539,9 @@ class ATEResult:
         Returns rotation deviations as single rotation angles (cached: the statistics use them several times)
         """
         return (
-            self.abs_dev.rot_dev.rotangle if self.abs_dev.rot_dev is not None else np.zeros_like(self.abs_dev.pos_dev)
+            self.abs_dev.rot_dev.magnitude()
+            if self.abs_dev.rot_dev is not None
+            else np.zeros_like(self.abs_dev.pos_dev)
         )
 
     @property
