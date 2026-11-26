@@ -55,7 +55,8 @@ The whole public API follows the same conventions, so that it can grow without b
   data that do not fit together or cannot be transformed (e.g. a different number of positions and timestamps,
   an unknown EPSG code), `TrajectopyIOError` for files whose structure does not match their header or format
   (e.g. a wrong number of columns; values that cannot be parsed raise the `ValueError` of the parser),
-  `AlignmentError` for alignments that cannot be estimated, `AlignmentParametersError` for invalid covariance matrices of alignment parameters and
+  `AlignmentError` for alignments that cannot be estimated, `AlignmentParametersError` for invalid covariance
+  matrices of alignment parameters and
   `ApproximationError` for failed approximations. `TrajectopyIOError` and `AlignmentError` are also
   `ValueError`s. Errors of the file system (e.g. `FileNotFoundError`) are passed on unchanged, and
   `trajectopy.visualization` raises `ImportError` without the plotting extra.
