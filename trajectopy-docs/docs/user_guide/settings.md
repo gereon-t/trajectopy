@@ -23,9 +23,9 @@ plot_settings = tpy.PlotSettings(ate_unit_is_mm=True, line_width=2)
 
 In a JSON file, the settings are nested like the attributes; options are written as lower-case strings
 (e.g. `"method": "nearest_temporal"`). Settings missing in a file keep their default values, and unknown settings
-are ignored with a warning, so that files of other trajectopy versions can be read. A value of the wrong type
-or an unknown option raises a `TypeError`. Options can also be given as
-strings in Python, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
+are ignored with a warning, so that files of other trajectopy versions can be read. In a file, a value of the
+wrong type or an unknown option raises a `TypeError`. Options can also be given as strings in Python, e.g.
+`tpy.MatchingSettings(method="nearest_temporal")`; an unknown option raises a `ValueError` there.
 
 Every processing function takes either its own part of the settings (e.g. `MatchingSettings` for
 `match_trajectories`) or the complete `ProcessingSettings`. Functions that need several parts use the defaults
@@ -175,7 +175,7 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | --- | --- | --- |
 | `ate_unit_is_mm` | Show position deviations in millimeters instead of meters | `False` |
 | `directed_ate` | Split position deviations into along-track, horizontal cross-track and vertical cross-track instead of x, y and z (see below) | `False` |
-| `ate_remove_above` | Exclude position deviations above this value (m) from the plots (`0` = keep all) | `0.0` |
+| `ate_remove_above` | Exclude position deviations above this value (m) from the plots (`0` = keep all). Applied by `visualization.deviation_figures`, i.e. in the plots of the GUI, reports and `--figures`; the functions for single figures ignore it | `0.0` |
 | `hist_percentile` | Show histogram data up to this quantile (between 0 and 1) of the absolute values, e.g. `0.99` to leave out the largest 1 %; useful for data with outliers | `1.0` |
 | `colorbar_max_std` | Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (`0` = no clipping) | `3.0` |
 | `smoothing_window` | Moving-average window applied to color-coded values (`1` = no smoothing) | `1` |

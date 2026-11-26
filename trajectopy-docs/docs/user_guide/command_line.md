@@ -41,8 +41,12 @@ commands.
 
 All commands read trajectopy, TUM, KITTI and EuRoC files and ROS bags (`.bag`, `.mcap`, `.db3` or a bag
 directory). A reference bag with several supported topics needs `--ref-topic`. Errors are printed as one line
-and reported with exit code 1 (2 for invalid arguments or input), so the commands can be used in pipelines; with
-`--verbose`, the full traceback is shown instead.
+and reported with exit code 1 (2 for invalid arguments or input, e.g. a missing file), so the commands can be used
+in pipelines; with `--verbose`, errors with exit code 1 show their full traceback instead.
+
+Output files named after a trajectory or result (`<name>` below) replace every character other than letters,
+digits, `-`, `_` and `.` with `_`, e.g. `KITTI ORB vs. KITTI Ground Truth` becomes
+`KITTI_ORB_vs._KITTI_Ground_Truth`.
 
 ```console
 # ATE of two estimates; prints a summary table
@@ -74,7 +78,7 @@ trajectopy info recording.bag
 | `--topic TOPIC` | Topic to read from ROS bags (repeatable); all supported topics by default |
 | `--format FORMAT` | Format of the trajectory files: `auto` (default), `trajectopy`, `tum`, `kitti` or `euroc` |
 | `--quiet`, `-q` | Print only warnings and errors |
-| `--verbose` | Print debug messages and the traceback of errors |
+| `--verbose` | Print debug messages and the traceback of errors (except invalid input) |
 
 ### `ate`, `rpe` and `evaluate`
 
@@ -96,7 +100,7 @@ trajectopy info recording.bag
 
 `--output-dir` and `--figures` are created if they do not exist. `--output-dir` receives
 `<name>_ate.result` and `<name>_rpe.result` for each trajectory, where `<name>` is the name of the result
-(`<trajectory> vs. <reference>`, with characters that are not allowed in file names replaced by `_`), and for each
+(`<trajectory> vs. <reference>`), and for each
 ATE result (unless `--no-align` is given) its alignment as `<name>_alignment.result`. Existing files are
 overwritten.
 

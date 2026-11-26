@@ -50,9 +50,10 @@ The whole public API follows the same conventions, so that it can grow without b
 - **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`).
   Writers overwrite existing files; those with a `mode` argument append with `mode="a"`. Only
   `write_sensor_rotation_parameters` always appends (to an alignment result file).
-- **Errors.** Invalid arguments raise `TypeError` or `ValueError`, data that do not fit together (e.g. a
-  different number of positions and timestamps) `TrajectoryError` or `PointSetError`; failures of the processing
-  raise the other subclasses of `trajectopy.TrajectopyError`. Errors of the file system (e.g.
+- **Errors.** Invalid arguments raise `TypeError` or `ValueError`. Only the constructors of `Trajectory` and
+  `Positions` raise `TrajectoryError` or `PointSetError` for data that do not fit together (e.g. a different
+  number of positions and timestamps). Failures of the processing raise the other subclasses of
+  `trajectopy.TrajectopyError`. Errors of the file system (e.g.
   `FileNotFoundError`) are passed on unchanged.
 
 ## Versioning

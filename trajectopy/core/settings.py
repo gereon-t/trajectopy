@@ -285,11 +285,11 @@ class AlignmentPreprocessing(Settings):
     """Configuration for alignment preprocessing filters.
 
     Attributes:
-        min_speed: Only poses with speed above this threshold are considered for
-            alignment (meters/second). Defaults to 0.0.
-        time_start: Only poses with timestamp above this threshold are considered.
+        min_speed: Only poses with at least this speed are considered for alignment (meters/second); 0
+            keeps standstills. Defaults to 0.0.
+        time_start: Only poses from this time on are considered.
             Timestamp is in seconds relative to first common timestamp. Defaults to 0.0.
-        time_end: Only poses with timestamp below this threshold are considered.
+        time_end: Only poses up to this time are considered (0 = until the end).
             Timestamp is in seconds relative to first common timestamp. Defaults to 0.0.
         max_samples: Maximum number of matched poses used for the alignment. If more poses are
             available, a new random subset of this size is drawn on each run. Set to 0

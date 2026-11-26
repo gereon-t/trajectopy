@@ -83,7 +83,7 @@ with bug reports.
 
 The update check only contacts GitHub (it sends no data except the installed version in the request
 header); it can be turned off in the Help menu. Only final releases count: pre-releases are not offered, and
-development versions (e.g. installed from a Git checkout) are never reported as outdated. Python installations are updated with
+versions with a suffix (e.g. `7.1.0.dev1`) are never reported as outdated. Python installations are updated with
 `pip install --upgrade "trajectopy[gui]"`, the Windows app with the installer of the new version.
 
 ## File Dialogs
