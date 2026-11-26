@@ -45,6 +45,7 @@ class Parameter:
         self,
         value: float,
         variance: float = 0.0,
+        *,
         default: float = 0.0,
         enabled: bool = True,
         name: str = "",
@@ -244,7 +245,7 @@ class ParameterSet(ABC):
         """
         return len(self.values_enabled)
 
-    def get_covariance_matrix(self, enabled_only: bool = True) -> np.ndarray:
+    def get_covariance_matrix(self, *, enabled_only: bool = True) -> np.ndarray:
         """Returns the covariance matrix of the parameter set
 
         Args:
@@ -341,7 +342,7 @@ class ParameterSet(ABC):
         """
         return [i for i, value in enumerate(self.enabled_bool_list) if value]
 
-    def to_string_list(self, enabled_only: bool = True) -> list[str]:
+    def to_string_list(self, *, enabled_only: bool = True) -> list[str]:
         """Returns a list of all parameter strings of the class
 
         Args:
@@ -352,7 +353,7 @@ class ParameterSet(ABC):
         """
         return [str(param) for param in self.__parameter_fields if param.enabled or not enabled_only]
 
-    def to_name_list(self, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
+    def to_name_list(self, *, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
         """Returns a list of all parameter names of the class
 
         Args:
@@ -368,7 +369,7 @@ class ParameterSet(ABC):
             if param.enabled or not enabled_only
         ]
 
-    def to_dict(self, enabled_only: bool = True) -> dict[str, list[float]]:
+    def to_dict(self, *, enabled_only: bool = True) -> dict[str, list[float]]:
         """Returns a dictionary of all parameters of the class
 
         Args:
@@ -539,13 +540,23 @@ class HelmertTransformation(ParameterSet):
     Represents a 3D similarity transformation with translation, rotation, and scale.
 
     Attributes:
-        trans_x: Translation parameter in x-direction
-        trans_y: Translation parameter in y-direction
-        trans_z: Translation parameter in z-direction
-        rot_x: Rotation parameter around x-axis
-        rot_y: Rotation parameter around y-axis
-        rot_z: Rotation parameter around z-axis
-        scale: Scale parameter
+        enabled: Whether the parameter set is used at all.
+        covariance_matrix: Covariance matrix of the 7 parameters in the order of the attributes below.
+        trans_x: Translation along x [m].
+        trans_y: Translation along y [m].
+        trans_z: Translation along z [m].
+        rot_x: Rotation about x [rad].
+        rot_y: Rotation about y [rad].
+        rot_z: Rotation about z [rad].
+        scale: Scale factor (1 = no scaling).
+
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> helmert = tpy.estimate_alignment(estimate, reference).position_parameters.helmert
+    >>> helmert.translation.shape, helmert.scale.value
+    ((3,), 1.0)
     """
 
     trans_x: Parameter = field(default_factory=lambda: Parameter(value=0.0, default=0.0))
@@ -633,9 +644,19 @@ class Leverarm(ParameterSet):
     Represents the 3D offset between a sensor frame and the vehicle body frame.
 
     Attributes:
-        x: Leverarm parameter in x-direction
-        y: Leverarm parameter in y-direction
-        z: Leverarm parameter in z-direction
+        enabled: Whether the parameter set is used at all.
+        covariance_matrix: Covariance matrix of the 3 parameters in the order of the attributes below.
+        x: Leverarm along x of the body frame [m].
+        y: Leverarm along y of the body frame [m].
+        z: Leverarm along z of the body frame [m].
+
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> leverarm = tpy.estimate_alignment(estimate, reference).position_parameters.leverarm
+    >>> leverarm.values  # not estimated by default
+    array([0., 0., 0.])
     """
 
     x: Parameter = field(
@@ -763,7 +784,7 @@ class AlignmentParameters(ParameterSet):
         """
         return self.values - other.values
 
-    def params_labels(self, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
+    def params_labels(self, *, enabled_only: bool = True, lower_case: bool = True) -> list[str]:
         """Gets parameter labels/names.
 
         Args:

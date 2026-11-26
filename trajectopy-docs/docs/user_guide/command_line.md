@@ -94,8 +94,16 @@ trajectopy info recording.bag
 | `--report FILE` | Write a self-contained HTML report to this file |
 | `--no-report-figures` | Leave the figures out of the report |
 
-Output directories must exist. `--output-dir` receives `<name>_ate.result`, `<name>_rpe.result` and (unless
-`--no-align` is given) `<name>_alignment.result` for each trajectory; existing files are overwritten. `--quiet` also suppresses the summary table, which is not printed
+`--output-dir` and `--figures` are created if they do not exist. `--output-dir` receives
+`<name>_ate.result` and `<name>_rpe.result` for each trajectory, where `<name>` is the name of the result
+(`<trajectory> vs. <reference>`, with characters that are not allowed in file names replaced by `_`), and for each
+ATE result (unless `--no-align` is given) its alignment as `<name>_alignment.result`. Existing files are
+overwritten.
+
+Unless `--no-align` is given, `rpe` and `evaluate` compute the RPE of the aligned trajectory, with the alignment
+of the [settings](settings.md#processing-settings). The RPE of `trajectopy.rpe` in Python and of the GUI uses the
+trajectory as it is. Both agree for the default rigid body alignment, which does not change relative poses; with
+scale, time shift, lever arm or sensor rotation, they differ. `--quiet` also suppresses the summary table, which is not printed
 either when it is written with `--table`.
 
 ### `align`
@@ -110,7 +118,8 @@ either when it is written with `--table`.
 | `--parameters FILE` | Write the alignment parameters to this `.result` file |
 
 With a directory as `--output`, the aligned trajectories are written as `<name>_aligned.traj` (`.tum`, `.kitti`
-or `.csv` with `--to tum`, `kitti` or `euroc`). Several trajectories need a directory as `--output`.
+or `.csv` with `--to tum`, `kitti` or `euroc`), where `<name>` is the name of the trajectory. Several
+trajectories need an existing directory as `--output`; `--parameters` then holds the alignment of the last one.
 
 ### `convert`
 
@@ -121,7 +130,8 @@ or `.csv` with `--to tum`, `kitti` or `euroc`). Several trajectories need a dire
 | `--epsg EPSG` | Transform the positions to this EPSG code |
 
 With a directory as `--output`, each trajectory is written as `<name>.traj` (`.tum`, `.kitti` or `.csv` with
-`--to tum`, `kitti` or `euroc`). Several trajectories need a directory as `--output`.
+`--to tum`, `kitti` or `euroc`), where `<name>` is the name of the trajectory. Several trajectories need an
+existing directory as `--output`.
 
 ### `info`
 

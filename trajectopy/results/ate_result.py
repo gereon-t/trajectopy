@@ -51,6 +51,14 @@ class AbsoluteTrajectoryDeviations:
             was employed to derive the direction frame for `directed_pos_dev`.
             If False, directional decomposition has relied on positional
             differences only.
+
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> abs_dev = tpy.ate(estimate, reference).abs_dev
+    >>> abs_dev.pos_dev.shape, abs_dev.directed_pos_dev.shape
+    ((4541, 3), (4541, 3))
     """
 
     pos_dev: np.ndarray
@@ -91,6 +99,7 @@ class ATEResult:
         self,
         trajectory: Trajectory,
         abs_dev: AbsoluteTrajectoryDeviations,
+        *,
         name: str = "",
         alignment: AlignmentResult | None = None,
     ) -> None:
@@ -417,12 +426,13 @@ class ATEResult:
             return True
         return bool(np.any(np.diff(self.trajectory.path_lengths) < 0))
 
-    def set_sorting(self, sorting: Sorting) -> None:
+    def set_sorting(self, sorting: Sorting | str) -> None:
         """Orders the trajectory and its deviations by time or path length.
 
         Args:
-            sorting (Sorting): New sorting.
+            sorting (Sorting | str): New sorting.
         """
+        sorting = Sorting(sorting)
         if sorting == self.trajectory.sorting:
             return
 
@@ -619,7 +629,7 @@ class ATEResult:
     @property
     def pos_dev_median(self) -> float:
         """
-        Returns min of 3d position deviations
+        Returns median of 3d position deviations
         """
         return np.median(self.pos_dev_comb)
 

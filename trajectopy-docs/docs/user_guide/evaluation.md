@@ -29,7 +29,7 @@ print(ate_result)
 `ate` matches the poses of both trajectories, [aligns](alignment.md) the estimate to the reference and computes
 the deviations of each pose. The alignment is kept in the result (`ate_result.alignment`); pass `align=False` to
 evaluate the trajectory as it is, e.g. if it is already given in the frame of the reference (then
-`ate_result.alignment` holds identity parameters).
+`ate_result.alignment` is None).
 
 The settings of matching and alignment are part of the [processing settings](settings.md#processing-settings);
 `ate` takes the complete `ProcessingSettings`:

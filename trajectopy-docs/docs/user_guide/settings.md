@@ -23,7 +23,8 @@ plot_settings = tpy.PlotSettings(ate_unit_is_mm=True, line_width=2)
 
 In a JSON file, the settings are nested like the attributes; options are written as lower-case strings
 (e.g. `"method": "nearest_temporal"`). Settings missing in a file keep their default values, and unknown settings
-are ignored with a warning, so that files of other trajectopy versions can be read. Options can also be given as
+are ignored with a warning, so that files of other trajectopy versions can be read. A value of the wrong type
+or an unknown option raises a `TypeError`. Options can also be given as
 strings in Python, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
 
 Every processing function takes either its own part of the settings (e.g. `MatchingSettings` for
@@ -51,9 +52,9 @@ adjustment of matched poses. Its settings have four parts.
 
 | Setting | Description | Default |
 | --- | --- | --- |
-| `min_speed` | Only poses faster than this (m/s) are used. | `0.0` |
-| `time_start` | Only poses after this time are used, in seconds relative to the first common timestamp of both trajectories. | `0.0` |
-| `time_end` | Only poses before this time are used, in seconds relative to the first common timestamp (`0` = until the end). | `0.0` |
+| `min_speed` | Only poses with at least this speed (m/s) are used; `0` keeps standstills. | `0.0` |
+| `time_start` | Only poses from this time on are used, in seconds relative to the first common timestamp of both trajectories. | `0.0` |
+| `time_end` | Only poses up to this time are used, in seconds relative to the first common timestamp (`0` = until the end). | `0.0` |
 | `max_samples` | Maximum number of matched poses used for the alignment. For larger trajectories, a new random subset of this size is drawn on each run, which keeps the least squares adjustment fast and memory-friendly (`0` = all poses). | `5000` |
 
 #### Estimated Parameters (`alignment.estimation_settings`)
@@ -184,7 +185,7 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | `font_size` | Font size of axis labels and titles (points) | `10` |
 | `export_format` | File format of exported plots: `png`, `jpg` or `svg` | `png` |
 | `export_width` | Width of exported raster images (pixels) | `1600` |
-| `use_opengl` | Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets; falls back to software rendering if OpenGL is not available. Exports are not affected | `True` |
+| `use_opengl` | Draw the plot windows of the GUI with OpenGL (`visualization.show` has its own argument), which keeps panning and zooming fluid for large data sets; falls back to software rendering if OpenGL is not available. Exports are not affected | `True` |
 
 Plot settings are saved with a GUI project and can be loaded at startup with
 `trajectopy --plot-settings plot_settings.json`.

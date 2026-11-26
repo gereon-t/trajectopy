@@ -53,7 +53,7 @@ rows to take them out of their group. Groups are saved in the project.
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
 | | About | Version, author and a link to the repository. |
-| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes; a theme chosen here applies until Trajectopy is closed. |
+| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes; a theme chosen here applies until Trajectopy is closed or the system setting changes again. |
 
 ## Projects
 
@@ -185,8 +185,8 @@ using the keyboard there.
 
 **2 · Diagnose and correct.** Once the trajectories overlap, the *deviation at equal time* remains: the position of
 the trajectory minus that of the reference at the same timestamp. It is split into *along-track* (direction of
-travel of the reference), *cross-track* (to its left) and *vertical*. Every alignment parameter leaves its own
-signature in it:
+travel of the reference), *cross-track* (to its left) and *vertical*. Note that the cross-track deviation of
+ATE results is positive to the right instead. Every alignment parameter leaves its own signature in it:
 
 | Error | Signature | View |
 | --- | --- | --- |

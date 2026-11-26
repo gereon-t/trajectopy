@@ -168,7 +168,7 @@ def list_topics(filename: str | os.PathLike) -> dict[str, str]:
         }
 
 
-def trajectories_from_rosbag(filename: str | os.PathLike, topics: Iterable[str] | None = None) -> list[Trajectory]:
+def trajectories_from_rosbag(filename: str | os.PathLike, *, topics: Iterable[str] | None = None) -> list[Trajectory]:
     """Creates trajectories from a ROS1 or ROS2 bag.
 
     Args:

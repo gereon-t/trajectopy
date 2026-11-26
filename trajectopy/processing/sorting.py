@@ -73,15 +73,22 @@ def divide_into_laps(
 def divide_into_laps(
     trajectory: Trajectory, *, return_lap_indices: bool = False
 ) -> list[Trajectory] | tuple[list[Trajectory], np.ndarray]:
-    """Divides the trajectory into laps. This is only useful for trajectories
-    that describe a closed loop without intersections.
+    """Divides a spatially sorted trajectory into laps.
+
+    This is only useful for trajectories that describe a closed loop without intersections. A new lap starts
+    where the path length of the spatially sorted trajectory jumps back to the start of the loop.
 
     Args:
-        trajectory (Trajectory): Trajectory to divide.
+        trajectory (Trajectory): Trajectory sorted by path length (see :func:`sort_spatially`).
         return_lap_indices (bool, optional): Whether to return lap indices. Defaults to False.
 
     Returns:
-        List[Trajectory]: List of trajectories, each representing a lap.
+        list[Trajectory] | tuple[list[Trajectory], np.ndarray]: The laps, each sorted by path length. With
+        ``return_lap_indices=True``, a tuple of the laps and the indices of the chronologically ordered
+        trajectory at which the laps start (followed by the number of poses).
+
+    Raises:
+        ValueError: If the trajectory is not sorted by path length.
 
     See Also:
         [`trajectopy.sort_spatially`][trajectopy.sort_spatially]: sorts a trajectory spatially first.

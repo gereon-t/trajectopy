@@ -39,6 +39,7 @@ _EXPORTS = {
     "rpe_figures": "plots",
     "rpy_figure": "plots",
     "smoothed_speed": "plots",
+    "SpeedFit": "plots",
     "speed_fit": "plots",
     "trajectory_figures": "plots",
     "trajectory_map_figure": "plots",
@@ -65,6 +66,7 @@ def __dir__() -> list[str]:
 if TYPE_CHECKING:  # pragma: no cover - for static type checkers and IDEs
     from trajectopy.visualization.figure import Figure, PlotWindow, export_figures, show
     from trajectopy.visualization.plots import (
+        SpeedFit,
         alignment_figures,
         ate_boxplot_figure,
         ate_components_figure,

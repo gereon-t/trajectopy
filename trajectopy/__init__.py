@@ -78,6 +78,8 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 if TYPE_CHECKING:
     from trajectopy.core.parameters import (
         AlignmentParameters,
+        HelmertTransformation,
+        Leverarm,
         Parameter,
         SensorRotationParameters,
     )
@@ -119,9 +121,9 @@ if TYPE_CHECKING:
     from trajectopy.processing.sorting import divide_into_laps, sort_spatially
     from trajectopy.report import write_report
     from trajectopy.results.alignment_result import AlignmentResult
-    from trajectopy.results.ate_result import ATEResult
-    from trajectopy.results.correlation import DeviationCorrelation
-    from trajectopy.results.rpe_result import RPEResult
+    from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
+    from trajectopy.results.correlation import ComponentCorrelation, DeviationCorrelation
+    from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
     from trajectopy.results.summary import format_table, summary_table
     from trajectopy.utils.definitions import Sorting
     from trajectopy.utils.versions import show_versions
@@ -131,6 +133,8 @@ if TYPE_CHECKING:
 # need at all.
 _LAZY_IMPORTS = {
     "AlignmentParameters": "trajectopy.core.parameters",
+    "HelmertTransformation": "trajectopy.core.parameters",
+    "Leverarm": "trajectopy.core.parameters",
     "Parameter": "trajectopy.core.parameters",
     "SensorRotationParameters": "trajectopy.core.parameters",
     "Positions": "trajectopy.core.positions",
@@ -174,8 +178,11 @@ _LAZY_IMPORTS = {
     "sort_spatially": "trajectopy.processing.sorting",
     "AlignmentResult": "trajectopy.results.alignment_result",
     "ATEResult": "trajectopy.results.ate_result",
+    "AbsoluteTrajectoryDeviations": "trajectopy.results.ate_result",
+    "ComponentCorrelation": "trajectopy.results.correlation",
     "DeviationCorrelation": "trajectopy.results.correlation",
     "RPEResult": "trajectopy.results.rpe_result",
+    "RelativeTrajectoryDeviations": "trajectopy.results.rpe_result",
     "summary_table": "trajectopy.results.summary",
     "format_table": "trajectopy.results.summary",
     "write_report": "trajectopy.report",
@@ -241,11 +248,16 @@ __all__ = [
     "InterpolationMethod",
     # Results
     "ATEResult",
+    "AbsoluteTrajectoryDeviations",
     "DeviationCorrelation",
+    "ComponentCorrelation",
     "RPEResult",
+    "RelativeTrajectoryDeviations",
     "AlignmentResult",
     # Parameters
     "AlignmentParameters",
+    "HelmertTransformation",
+    "Leverarm",
     "SensorRotationParameters",
     "Parameter",
     # Processing

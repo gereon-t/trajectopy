@@ -46,10 +46,15 @@ from trajectopy import io, visualization as vis
 | Name | Description |
 | --- | --- |
 | [`ATEResult`](results.md#trajectopy.ATEResult) | This class represents a set of absolute trajectory deviations |
+| [`AbsoluteTrajectoryDeviations`](results.md#trajectopy.AbsoluteTrajectoryDeviations) | Deviations of every pose of an ATE result (`ATEResult.abs_dev`). |
 | [`RPEResult`](results.md#trajectopy.RPEResult) | This class represents a set of relative trajectory deviations |
+| [`RelativeTrajectoryDeviations`](results.md#trajectopy.RelativeTrajectoryDeviations) | Deviations of the pose pairs of an RPE result (`RPEResult.rpe_dev`). |
 | [`DeviationCorrelation`](results.md#trajectopy.DeviationCorrelation) | Temporal correlation of the deviations of an ATE result. |
+| [`ComponentCorrelation`](results.md#trajectopy.ComponentCorrelation) | Temporal correlation of one deviation component. |
 | [`AlignmentResult`](results.md#trajectopy.AlignmentResult) | Class to store the result of an alignment. |
 | [`AlignmentParameters`](results.md#trajectopy.AlignmentParameters) | Parameters of the spatio-temporal alignment of two trajectories. |
+| [`HelmertTransformation`](results.md#trajectopy.HelmertTransformation) | Parameters of a 7-parameter similarity transformation (`AlignmentParameters.helmert`). |
+| [`Leverarm`](results.md#trajectopy.Leverarm) | Lever arm between two trajectories (`AlignmentParameters.leverarm`). |
 | [`SensorRotationParameters`](results.md#trajectopy.SensorRotationParameters) | Constant rotation between the body frames of two trajectories (mounting rotation). |
 | [`Parameter`](results.md#trajectopy.Parameter) | Class representing a stochastic parameter with variance. |
 
@@ -127,11 +132,12 @@ from trajectopy import io, visualization as vis
 | [`visualization.parameter_matrix_figure`](visualization.md#trajectopy.visualization.parameter_matrix_figure) | Covariance or correlation matrix of estimated alignment parameters. |
 | [`visualization.smoothed_speed`](visualization.md#trajectopy.visualization.smoothed_speed) | Speed of ``trajectory`` in m/s from its velocity vectors averaged over ``window`` seconds. |
 | [`visualization.speed_fit`](visualization.md#trajectopy.visualization.speed_fit) | Fits a straight line to deviations (in meters) over speed (in m/s) by least squares. |
+| [`visualization.SpeedFit`](visualization.md#trajectopy.visualization.SpeedFit) | Straight line fitted by `speed_fit`. |
 | [`visualization.Figure`](visualization.md#trajectopy.visualization.Figure) | A titled page of plots. |
 | [`visualization.show`](visualization.md#trajectopy.visualization.show) | Shows figures in a plot window. |
 | [`visualization.PlotWindow`](visualization.md#trajectopy.visualization.PlotWindow) | Window showing figures as tabs. Tabs are rendered when they are first opened. |
 | [`visualization.export_figures`](visualization.md#trajectopy.visualization.export_figures) | Exports all figures (and all their variants) to image files in ``directory``. |
-| [`visualization.set_theme`](visualization.md#trajectopy.visualization.set_theme) | Selects the theme for plots created from now on. |
+| [`visualization.set_theme`](visualization.md#trajectopy.visualization.set_theme) | Selects the theme of all figures rendered from now on (also of figures created before). |
 
 ## [Exceptions and Warnings](exceptions.md)
 

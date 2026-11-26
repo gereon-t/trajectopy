@@ -363,6 +363,7 @@ class AlignmentEstimationSettings(Settings):
     @classmethod
     def from_components(
         cls,
+        *,
         similarity: bool = False,
         time_shift: bool = False,
         leverarm: bool = False,
@@ -395,7 +396,7 @@ class AlignmentEstimationSettings(Settings):
         )
 
     @classmethod
-    def all(cls, sensor_rotation: bool = True) -> "AlignmentEstimationSettings":
+    def all(cls, *, sensor_rotation: bool = True) -> "AlignmentEstimationSettings":
         """Creates settings with all parameters enabled.
 
         Args:
@@ -978,9 +979,9 @@ class MatchingSettings(Settings):
 
     Attributes:
         method: Matching method to use. Defaults to INTERPOLATION.
-        max_time_diff: Maximum allowed time difference in seconds for temporal matching.
-            Defaults to 0.01.
-        max_distance: Maximum allowed distance in meters for spatial matching.
+        max_time_diff: Maximum allowed time difference in seconds for temporal matching; 0 means no
+            limit. Defaults to 0.01.
+        max_distance: Maximum allowed distance in meters for spatial matching; 0 means no limit.
             Defaults to 0.0.
         max_gap_size: Maximum allowed gap size in seconds within trajectories.
             Defaults to 10.0.

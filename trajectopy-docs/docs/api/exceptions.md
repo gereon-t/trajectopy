@@ -1,6 +1,6 @@
 # Exceptions and Warnings
 
-All exceptions raised by trajectopy derive from `TrajectopyError`; the exception classes are also available in the `trajectopy` namespace (except the warning). Invalid arguments raise `TypeError` or `ValueError`.
+All exceptions defined by trajectopy derive from `TrajectopyError`; the exception classes are also available in the `trajectopy` namespace (except the warning). Besides them, invalid arguments raise the built-in `TypeError` or `ValueError`, and errors of the file system (e.g. `FileNotFoundError`) are passed on unchanged.
 
 ::: trajectopy.exceptions.TrajectopyError
     options:

@@ -35,6 +35,7 @@ HEADER_KEYS = [
     "time_offset",
     "deviations",
     "directed_by",
+    "converged",
 ]
 
 

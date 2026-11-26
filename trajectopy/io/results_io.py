@@ -189,9 +189,6 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
         filename (str | os.PathLike): Path of the file.
         mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
 
-    Raises:
-        ValueError: If the result has no estimated parameters.
-
     See Also:
         [`trajectopy.AlignmentResult.to_file`][trajectopy.AlignmentResult.to_file]: the same as a method.
 
@@ -206,12 +203,11 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
         True
     """
     filename = os.fspath(filename)
-    if result.position_parameters is None:
-        raise ValueError("No estimated parameters available!")
-
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write("#type Alignment\n")  # so that the GUI recognizes the file
         file.write(f"#name {result.name}\n")
+        if not result.converged:  # files without this line hold converged results
+            file.write("#converged false\n")
 
     result.position_parameters.to_dataframe().to_csv(
         filename, header=False, index=False, mode="a", float_format="%.17g"
@@ -226,7 +222,8 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
         filename (str | os.PathLike): Path of the file.
 
     Returns:
-        AlignmentResult: The alignment parameters, the sensor rotation and which of them were estimated.
+        AlignmentResult: The alignment parameters, the sensor rotation, which of them were estimated and whether
+        the estimation converged.
 
     Examples:
         >>> import trajectopy as tpy
@@ -249,6 +246,7 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
             estimated_parameters.enabled_bool_list + sensor_rot_parameters.enabled_bool_list
         ),
         rotation_parameters=sensor_rot_parameters,
+        converged=str(header_data.data.get("converged", "true")).lower() != "false",
     )
 
 

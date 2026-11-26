@@ -55,6 +55,15 @@ class ComponentCorrelation:
         std (float): Standard deviation of the component (around its mean).
         window_centers (np.ndarray): Centers of the windows of window_std [s].
         window_std (np.ndarray): Standard deviation in consecutive windows.
+
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> correlation = tpy.DeviationCorrelation.from_ate_result(tpy.ate(estimate, reference))
+    >>> along = correlation.components["along"]
+    >>> f"{along.correlation_time:.0f} s"
+    '228 s'
     """
 
     lags: np.ndarray

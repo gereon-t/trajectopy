@@ -114,7 +114,7 @@ class Figure:
         """Whether the figure has several variants to choose from (see ``variants``)."""
         return len(self.variants) > 1 or "" not in self.variants
 
-    def create_widget(self, use_opengl: bool = False) -> QtWidgets.QWidget:
+    def create_widget(self, *, use_opengl: bool = False) -> QtWidgets.QWidget:
         """Creates an interactive widget showing the figure (with a variant selector if needed).
 
         Args:
@@ -353,7 +353,7 @@ class PlotWindow(QtWidgets.QMainWindow):
         if index < 0 or index >= len(self.figures) or self.figure_widget(index) is not None:
             return
         container = self.tabs.widget(index)
-        container.layout().addWidget(self.figures[index].create_widget(self.use_opengl))  # type: ignore[union-attr]
+        container.layout().addWidget(self.figures[index].create_widget(use_opengl=self.use_opengl))  # type: ignore[union-attr]
 
     def export_current(self) -> None:
         """Asks for a file and exports the figure (and variant) of the current tab."""

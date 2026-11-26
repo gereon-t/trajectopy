@@ -31,6 +31,7 @@ def importable_namespaces() -> list[str]:
 PUBLIC_API = {
     "trajectopy": [
         "ATEResult",
+        "AbsoluteTrajectoryDeviations",
         "AlignmentError",
         "AlignmentEstimationSettings",
         "AlignmentParameters",
@@ -41,8 +42,11 @@ PUBLIC_API = {
         "AlignmentStochastics",
         "ApproximationError",
         "ApproximationSettings",
+        "ComponentCorrelation",
         "DeviationCorrelation",
+        "HelmertTransformation",
         "InterpolationMethod",
+        "Leverarm",
         "MatchingMethod",
         "MatchingSettings",
         "PairDistanceUnit",
@@ -55,6 +59,7 @@ PUBLIC_API = {
         "ProcessingSettings",
         "RPEResult",
         "RelativeComparisonSettings",
+        "RelativeTrajectoryDeviations",
         "RotationApproximationMethod",
         "SensorRotationParameters",
         "Settings",
@@ -121,6 +126,7 @@ PUBLIC_API = {
     "trajectopy.visualization": [
         "Figure",
         "PlotWindow",
+        "SpeedFit",
         "alignment_figures",
         "ate_boxplot_figure",
         "ate_components_figure",

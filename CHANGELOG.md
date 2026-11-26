@@ -35,7 +35,11 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `detect_format`, `read_tum`, `read_kitti`, `read_euroc`, `list_topics` and `trajectories_from_rosbag`.
 - **Public API**: the names exported by `trajectopy`, `trajectopy.io`, `trajectopy.visualization` and
   `trajectopy.exceptions` form the public API, guarded by a test. New: `tpy.Pose`, `tpy.adopt_first_pose`,
-  `tpy.show_versions` and `trajectopy.exceptions.TrajectopyDeprecationWarning`.
+  `tpy.show_versions` and `trajectopy.exceptions.TrajectopyDeprecationWarning`. The types that results consist
+  of are public and documented, too: `tpy.AbsoluteTrajectoryDeviations` (`ATEResult.abs_dev`),
+  `tpy.RelativeTrajectoryDeviations` (`RPEResult.rpe_dev`), `tpy.ComponentCorrelation`
+  (`DeviationCorrelation.components`), `tpy.HelmertTransformation` and `tpy.Leverarm`
+  (`AlignmentParameters.helmert`, `.leverarm`) and `trajectopy.visualization.SpeedFit`.
 - trajectopy attaches a `NullHandler` to its logger and leaves the logging configuration to applications.
 
 ### New Features
@@ -73,7 +77,14 @@ Besides the API changes above, version 7 adds:
   `io.write_kml`, `io.write_ate_kml`, `io.read_tum`, `io.read_kitti` and `io.read_euroc`, and in
   `trajectopy.visualization` `ate_speed_figure(..., speed_window=)`, `parameter_matrix_figure(..., correlation=)`,
   `smoothed_speed(..., window=)`, `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=,
-  width=)`, `show(..., title=, block=, use_opengl=)` and `PlotWindow(..., title=)`.
+  width=)`, `show(..., title=, block=, use_opengl=)`, `Figure.create_widget(use_opengl=)` and
+  `PlotWindow(..., title=)`. The same holds for `Trajectory.to_dataframe(sort_by=)`,
+  `RPEResult.compute_metric(..., factor=)`, `io.trajectories_from_rosbag(..., topics=)`,
+  `AlignmentEstimationSettings.from_components(...)` and `.all(sensor_rotation=)`, the `enabled_only` and
+  `lower_case` arguments of the parameter sets (`to_dict`, `to_name_list`, `to_string_list`,
+  `get_covariance_matrix`, `AlignmentParameters.params_labels`) and the `name` (and `alignment`) of the
+  `ATEResult` and `RPEResult` constructors.
+- `ate(..., align=False)` sets `ate_result.alignment` to None instead of empty alignment parameters.
 - `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
   functions) overwrite existing files; pass `mode="a"` to append.
 - `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file
@@ -110,6 +121,14 @@ Besides the API changes above, version 7 adds:
   17 significant digits.
 - An unknown `#time_format` in a file header raises a `ValueError` that lists the valid formats instead of a
   `KeyError`.
+- `Trajectory(..., sorting=)`, `Trajectory.set_sorting` and `ATEResult.set_sorting` accept the sorting as a
+  string (`"time"`, `"path_length"`, case-insensitive), like all other options; before, a string broke the
+  `repr` and the file export of the trajectory.
+- `Positions.mean(inplace=True)` returns the modified object, like all other functions with `inplace`.
+- The poses returned when iterating over a trajectory hold their velocity as a tuple, like those returned by
+  indexing; before, it was a NumPy array, so that comparing poses failed.
+- Alignment result files keep whether the estimation converged (`#converged false`); before, every alignment
+  read from a file counted as converged.
 
 ### Deprecations
 

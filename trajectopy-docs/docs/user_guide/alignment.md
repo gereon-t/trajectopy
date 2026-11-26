@@ -26,7 +26,8 @@ selects the poses to use. The leverarm needs the orientations of the trajectory 
 without them raises `ValueError`.
 
 The time shift is the offset of the clock of the aligned trajectory: `apply_alignment` subtracts it from its
-timestamps.
+timestamps. A positive time shift means that the timestamps of the trajectory are too large, e.g. a time shift
+of 0.1 s means that the pose stamped 10.1 s was taken when the reference shows 10.0 s.
 
 ## Estimating and Applying an Alignment
 

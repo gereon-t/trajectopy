@@ -21,6 +21,10 @@ def interpolate(
 ) -> "Trajectory":
     """Interpolates a trajectory to specified timestamps using the given method.
 
+    The index is sorted first. Values outside the index range of the trajectory (which would need an
+    extrapolation) and inside gaps larger than ``max_gap_size`` are left out, so the result can have fewer poses
+    than ``index``.
+
     Args:
         trajectory (Trajectory): Trajectory to interpolate
         index (ArrayLike): Interpolation index (timestamps or path lengths, depending on the sorting).
@@ -30,6 +34,10 @@ def interpolate(
 
     Returns:
         Trajectory: Interpolated trajectory
+
+    Raises:
+        ValueError: If the trajectory is empty, no value of ``index`` lies within its range or the method is
+            not supported.
 
     See Also:
         [`trajectopy.match_trajectories`][trajectopy.match_trajectories]: interpolation at the timestamps of a reference.

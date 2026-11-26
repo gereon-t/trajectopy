@@ -91,11 +91,14 @@ class Trajectory:
         name: str = "",
         path_lengths: np.ndarray | None = None,
         velocity_xyz: np.ndarray | None = None,
-        sorting: Sorting = Sorting.TIME,
+        sorting: Sorting | str = Sorting.TIME,
         position_std: np.ndarray | None = None,
     ) -> None:
         """
         Initialize a Trajectory object.
+
+        The poses are put into chronological order first; of poses with the same timestamp, only the first is
+        kept (with a warning in the log). Then they are ordered according to ``sorting``.
 
         Args:
             positions (Positions | ArrayLike): Positions, either as a Positions container (which holds the EPSG
@@ -104,9 +107,12 @@ class Trajectory:
                 quaternions (x, y, z, w) of shape (N, 4). Defaults to None (no orientations).
             timestamps (ArrayLike | None, optional): Timestamps in seconds. If None, a range index is used.
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
-            path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
-            velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
-            sorting (Sorting, optional): Definition of the sorting logic (TIME or PATH_LENGTH). Defaults to Sorting.TIME.
+            path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None or of the wrong
+                length, they are computed from xyz.
+            velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None or of the wrong
+                length, they are computed from the positions and timestamps.
+            sorting (Sorting | str, optional): Order of the poses, by time or by path length. Defaults to
+                Sorting.TIME.
             position_std (np.ndarray | None, optional): Standard deviations of the positions along x, y and z in
                 meters, shape (N, 3). Defaults to None (unknown).
 
@@ -131,7 +137,7 @@ class Trajectory:
                 f"Number of positions ({len(positions)}) and rotations ({len(orientations)}) do not match!"
             )
 
-        self._sorting = sorting
+        self._sorting = Sorting(sorting)
 
         # pose
         self.positions = positions
@@ -376,7 +382,7 @@ class Trajectory:
                 path_length=l,
                 position=(pos[0], pos[1], pos[2]),
                 rpy=(rot[0], rot[1], rot[2]),
-                velocity=velocity,
+                velocity=(velocity[0], velocity[1], velocity[2]),
                 epsg=self.positions.epsg,
             )
 
@@ -486,14 +492,14 @@ class Trajectory:
         """
         return self._sorting
 
-    def set_sorting(self, sorting: Sorting) -> None:
+    def set_sorting(self, sorting: Sorting | str) -> None:
         """Changes the sorting strategy and physically reorders all trajectory data.
 
         After calling this method, all data arrays (positions, rotations, timestamps,
         path_lengths, velocities) will be reordered according to the new sorting.
 
         Args:
-            sorting (Sorting): The new sorting strategy (TIME or PATH_LENGTH).
+            sorting (Sorting | str): The new sorting strategy (TIME or PATH_LENGTH).
 
         Examples:
             >>> import numpy as np
@@ -506,13 +512,14 @@ class Trajectory:
             >>> loop.sorting
             <Sorting.TIME: 'time'>
         """
+        sorting = Sorting(sorting)
         if sorting == self._sorting:
             return
 
         self._sorting = sorting
         self._apply_sorting()
 
-    def sort_index(self, sorting: Sorting) -> np.ndarray:
+    def sort_index(self, sorting: Sorting | str) -> np.ndarray:
         """Returns the index that orders the current data by time or path length.
 
         The sort is stable, so that data that is already in order (e.g. with equal path lengths of several laps)
@@ -530,7 +537,7 @@ class Trajectory:
             >>> reference.sort_index(tpy.Sorting.TIME)[:3]
             array([0, 1, 2])
         """
-        key = self.timestamps if sorting == Sorting.TIME else self.path_lengths
+        key = self.timestamps if Sorting(sorting) == Sorting.TIME else self.path_lengths
         return np.argsort(key, kind="stable")
 
     def _apply_sorting(self) -> None:
@@ -708,11 +715,14 @@ class Trajectory:
     def crop(
         self, index_start: float, index_end: float, *, inverse: bool = False, inplace: bool = False
     ) -> "Trajectory":
-        """Crops (or cuts) the trajectory based on a time window.
+        """Crops (or cuts) the trajectory to a window of its index.
+
+        The index is the time for trajectories sorted by time and the path length for spatially sorted
+        trajectories (see :attr:`index`).
 
         Args:
-            index_start (float): Start index of the window.
-            index_end (float): End index of the window.
+            index_start (float): Start of the window (seconds or meters).
+            index_end (float): End of the window (seconds or meters).
             inverse (bool, optional): If True, removes data *inside* the window (cutting).
                                       If False, keeps data *inside* the window (cropping). Defaults to False.
             inplace (bool, optional): If True, modifies self. If False, returns a new instance. Defaults to False.
@@ -876,7 +886,7 @@ class Trajectory:
             traj_self.rotations = None
         return traj_self
 
-    def to_dataframe(self, sort_by: str = "") -> pd.DataFrame:
+    def to_dataframe(self, *, sort_by: str = "") -> pd.DataFrame:
         """Exports the trajectory to a Pandas DataFrame.
 
         Columns usually include: time, path_length, pos_x, pos_y, pos_z, speed_x, speed_y, speed_z,

@@ -48,7 +48,8 @@ def ate(
         return_alignment (bool, optional): Deprecated. The alignment is available as ``result.alignment``.
 
     Returns:
-        ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment.
+        ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment
+        (None with ``align=False``).
 
     See Also:
         [`trajectopy.rpe`][trajectopy.rpe]: drift instead of absolute deviations.
@@ -73,11 +74,10 @@ def ate(
 
     trajectory, other = match_trajectories(trajectory, other, processing.matching)
 
+    alignment: AlignmentResult | None = None
     if align:
         alignment = estimate_alignment(trajectory, other, processing)
         trajectory = apply_alignment(trajectory, alignment)
-    else:
-        alignment = AlignmentResult()
 
     result = _compare_trajectories_absolute(other=other, trajectory=trajectory)
     result.alignment = alignment
@@ -86,8 +86,8 @@ def ate(
         warn_deprecated(
             "The argument 'return_alignment' of ate() is deprecated, use the attribute 'alignment' of the result."
         )
-        if return_alignment:
-            return result, alignment  # type: ignore[return-value]
+        if return_alignment:  # version 6 returned empty alignment parameters without alignment
+            return result, alignment or AlignmentResult()  # type: ignore[return-value]
     return result
 
 

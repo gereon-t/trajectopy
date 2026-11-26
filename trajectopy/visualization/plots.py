@@ -1043,6 +1043,16 @@ class SpeedFit:
         slope: Change of the deviation per speed in seconds. For along-track deviations, this is the time offset
             of the evaluated trajectory: a positive slope means that it is ahead of the reference by that time,
             i.e. adding the slope to its timestamps compensates the offset.
+
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> from trajectopy import visualization as vis
+    >>> ate_result = tpy.ate(estimate, reference)
+    >>> fit = vis.speed_fit(vis.smoothed_speed(ate_result.trajectory), ate_result.pos_dev_along)
+    >>> f"{fit.offset:.2f} m, {fit.slope:.2f} s"
+    '0.18 m, -0.70 s'
     """
 
     offset: float

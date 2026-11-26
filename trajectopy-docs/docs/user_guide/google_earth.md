@@ -41,8 +41,8 @@ time slider.
 
 - Trajectories are drawn in one color (`color`), or colored by a field (`field`): `speed`, `height` or `time`.
 - ATE results are colored by one of their deviations (`field`): `position`, `x`, `y`, `z`, `along_track`,
-  `horizontal_cross_track`, `vertical_cross_track` and, for trajectories with orientations, `rotation`, `roll`,
-  `pitch` and `yaw`.
+  `horizontal_cross_track`, `vertical_cross_track` (in meters) and, for trajectories with orientations,
+  `rotation`, `roll`, `pitch` and `yaw` (in degrees, also for `value_range`).
 - `colormap`: `"rdylbu"` (blue = low, red = high, like the plots) or `"viridis"` (colorblind-safe).
 - Like in the plots, the color scale is clipped to the mean ± 3 standard deviations (`max_std`; 0 = minimum to
   maximum). With `value_range=(lower, upper)`, it has fixed limits instead, so that the colors of several exports

@@ -33,8 +33,16 @@ class RelativeTrajectoryDeviations:
             separation (`SECOND`). Affects drift normalization and reporting
             units in `RPEResult`.
 
-    Properties:
-        num_pairs (int): Total number of evaluated pose pairs across all buckets.
+    Examples:
+    >>> import trajectopy as tpy
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> rpe_dev = tpy.rpe(estimate, reference).rpe_dev
+    >>> distances = sorted(rpe_dev.pos_dev)  # pair distances in meters
+    >>> tuple(float(distance) for distance in distances[:3])
+    (100.0, 200.0, 300.0)
+    >>> rpe_dev.num_pairs
+    32789
     """
 
     pos_dev: dict[float, np.ndarray]
@@ -80,6 +88,7 @@ class RPEResult:
     def __init__(
         self,
         rpe_dev: RelativeTrajectoryDeviations,
+        *,
         name: str,
     ) -> None:
         self.name = name
@@ -175,7 +184,7 @@ class RPEResult:
         """
         return 100.0 if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else 1.0
 
-    def compute_metric(self, key: str, func: Callable[[Any], float], factor: float = 1.0) -> list[float]:
+    def compute_metric(self, key: str, func: Callable[[Any], float], *, factor: float = 1.0) -> list[float]:
         """Applies a statistic to the deviations of each pair distance.
 
         Args:
@@ -206,7 +215,8 @@ class RPEResult:
 
     @property
     def rot_rpe(self) -> float:
-        """Returns the average rotation drift in radians per 100 meters.
+        """Average rotation drift over all pair distances, in radians per 100 m (pairs by distance) or radians
+        per second (pairs by time); see :attr:`rot_drift_unit`.
 
         Returns:
             float: Average rotation drift.

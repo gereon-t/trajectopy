@@ -97,7 +97,9 @@ The variant names of a figure are listed in `figure.variants`.
 ## Appearance
 
 The [plot settings](settings.md#plot-settings) control units, line widths, fonts and the color scale of the
-figures. Their `export_format` and `export_width` are used by the GUI and the command line; in Python, the
-format follows from the file name and the width is an argument of `export` and `export_figures`.
+figures. Their `export_format` and `export_width` are used by the GUI and the command line, `use_opengl` only
+by the GUI. In Python, `Figure.export` takes the format from the file name and `export_figures` from its
+`export_format` argument (default `"png"`); the width is an argument of both, and `show` has its own
+`use_opengl` argument (default `True`).
 `set_theme(dark=True)` switches to a dark background; the theme applies to all figures shown or exported
 afterwards.

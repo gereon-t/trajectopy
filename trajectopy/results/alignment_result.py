@@ -56,6 +56,7 @@ class AlignmentResult:
             and _allclose(self.position_parameters.covariance_matrix, other.position_parameters.covariance_matrix)
             and _allclose(self.rotation_parameters.values, other.rotation_parameters.values)
             and self.estimation_of == other.estimation_of
+            and self.converged == other.converged
         )
 
     def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:

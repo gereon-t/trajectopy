@@ -1,4 +1,4 @@
-"""Exceptions raised by trajectopy. All of them derive from :class:`TrajectopyError`."""
+"""Exceptions defined by trajectopy. All of them derive from :class:`TrajectopyError`."""
 
 
 class TrajectopyError(Exception):

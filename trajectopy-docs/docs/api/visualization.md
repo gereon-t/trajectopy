@@ -90,6 +90,10 @@
     options:
       heading_level: 3
 
+::: trajectopy.visualization.SpeedFit
+    options:
+      heading_level: 3
+
 ## Showing and Exporting
 
 ::: trajectopy.visualization.Figure

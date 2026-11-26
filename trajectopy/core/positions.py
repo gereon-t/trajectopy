@@ -453,6 +453,7 @@ class Positions:
 
         if inplace:
             self.xyz = mean_xyz
+            return self
         return Positions(xyz=mean_xyz, epsg=self.epsg, local_transformer=self.local_transformer)
 
     def round_to(self, prec: float) -> "Positions":
