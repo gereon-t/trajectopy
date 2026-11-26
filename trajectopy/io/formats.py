@@ -91,7 +91,7 @@ def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
             if stripped and not stripped.startswith("#"):
                 first_data_line = stripped
                 break
-            if number > _DETECTION_LINES:
+            if number + 1 >= _DETECTION_LINES:
                 break
 
     values = first_data_line.replace(",", " ").split()

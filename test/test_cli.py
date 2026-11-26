@@ -92,3 +92,18 @@ def test_report_with_figures(tmp_path):
     html = path.read_text(encoding="utf-8")
     assert html.count("data:image/png;base64,") >= 5
     assert "ATE Box Plot" in html and "ATE Segments" not in html
+
+
+def test_no_alignment_file_without_alignment(tmp_path):
+    assert run(["ate", ESTIMATE, "--ref", REFERENCE, "--no-align", "--no-ci", "-o", str(tmp_path), "-q"]) == 0
+    assert list(tmp_path.glob("*_ate.result"))
+    assert not list(tmp_path.glob("*_alignment.result"))
+
+
+def test_unknown_time_format_is_reported(tmp_path):
+    path = tmp_path / "trajectory.traj"
+    path.write_text("#time_format seconds\n#fields t,px,py,pz\n0,0,0,0\n1,1,0,0\n", encoding="utf-8")
+    from trajectopy import Trajectory
+
+    with pytest.raises(ValueError, match="Unknown #time_format"):
+        Trajectory.from_file(path)

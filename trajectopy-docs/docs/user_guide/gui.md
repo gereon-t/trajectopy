@@ -82,7 +82,8 @@ with bug reports.
 ## Updates
 
 The update check only contacts GitHub (it sends no data except the installed version in the request
-header); it can be turned off in the Help menu. Python installations are updated with
+header); it can be turned off in the Help menu. Only final releases count: pre-releases are not offered, and
+development versions (e.g. installed from a Git checkout) are never reported as outdated. Python installations are updated with
 `pip install --upgrade "trajectopy[gui]"`, the Windows app with the installer of the new version.
 
 ## File Dialogs
@@ -121,13 +122,15 @@ The trajectory context menu is grouped by task:
 
 Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy), comparisons add results (except
 *Extract Matching Poses*, which adds the matched trajectories), and *Estimate Alignment* adds an aligned copy and
-the alignment. Only the coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path*
+the alignment. *Match First Pose* adds the matched poses of the trajectory, moved and turned onto the first pose
+of the reference, and the matched poses of the reference. Only the coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path*
 change the trajectory itself. Comparisons and alignments use the processing settings of the trajectory that is
 evaluated, not those of the reference.
 
 The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Group*, *Remove* and, for ATE results,
 *Export to Google Earth (KML)…*. *Export Report or Summary Table…* saves the selected ATE and RPE results as an
-HTML report or as a summary table (Markdown, CSV or LaTeX) with one row per result. ATE results of spatially sorted trajectories can also be switched between
+HTML report or as a summary table (Markdown, CSV or LaTeX) with one row per result; the window does not respond
+while a report with many figures is written. ATE results of spatially sorted trajectories can also be switched between
 chronological and spatial order with *Switch Order: Time ↔ Path*, e.g. to plot the deviations over time. For alignments, *Choose Parameters to Apply…* selects which of the estimated
 parameters are used when the alignment is applied to a trajectory (*Apply Existing Alignment…*).
 

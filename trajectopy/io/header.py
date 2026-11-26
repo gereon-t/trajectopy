@@ -197,7 +197,10 @@ class HeaderData:
 
     @property
     def time_format(self) -> TimeFormat:
-        return TIME_FORMAT_DICT[str(self.data.get("time_format", "unix")).lower()]
+        time_format = str(self.data.get("time_format", "unix")).lower()
+        if time_format not in TIME_FORMAT_DICT:
+            raise ValueError(f"Unknown #time_format '{time_format}'. Options: {', '.join(TIME_FORMAT_DICT)}.")
+        return TIME_FORMAT_DICT[time_format]
 
     @property
     def deviations(self) -> str:

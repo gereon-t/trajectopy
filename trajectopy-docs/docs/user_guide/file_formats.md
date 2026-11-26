@@ -44,7 +44,7 @@ With a header:
 | `#nframe` | Navigation frame of the data | `enu` | Order of east, north and up/down of a right-handed frame, e.g. `enu` or `ned` (left-handed orders such as `neu` fail for files with orientations) |
 | `#rot_unit` | Unit of Euler angles | `rad` | `rad`, `deg` |
 | `#euler_rot_seq` | Axis sequence of the three Euler angles | `xyz` | Three of `x`, `y`, `z` for extrinsic or `X`, `Y`, `Z` for intrinsic rotations (not mixed) |
-| `#time_format` | Format of the time column(s) | `unix` | `unix`, `datetime`, `gps_sow` |
+| `#time_format` | Format of the time column(s) | `unix` | `unix`, `datetime`, `gps_sow`; other values raise a `ValueError` |
 | `#time_offset` | Offset in seconds added to all timestamps | `0.0` | Any number |
 | `#datetime_format` | Format of date/time strings | `%Y-%m-%d %H:%M:%S.%f` | [strftime format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) |
 | `#datetime_timezone` | Time system of date/time strings | `UTC` | `UTC` or `GPS` |
@@ -167,6 +167,10 @@ so they need no header:
 | KITTI | one row-major 3×4 pose matrix (12 values) per line, no timestamps | 12 values per line |
 | EuRoC | `timestamp [ns], px, py, pz, qw, qx, qy, qz[, vx, vy, vz, ...]` | a first line starting with `#timestamp` and commas |
 
+Only the header lines at the beginning of the file and the first data line are inspected; a file whose first 50
+lines contain no data is read as a trajectopy file. The positions of TUM, KITTI and EuRoC files are read as local
+coordinates (EPSG 0), since these formats store no coordinate system.
+
 The format can also be given explicitly, and trajectories can be written in these formats:
 
 ```python
@@ -206,7 +210,7 @@ Each topic becomes one trajectory, named after the topic; the timestamps are tak
 | `geometry_msgs/PointStamped` | positions |
 | `geometry_msgs/TransformStamped`, `tf2_msgs/TFMessage` (`/tf`) | one trajectory per frame pair, named `topic: parent -> child` |
 | `nav_msgs/Path` | the poses of the last message (paths are usually republished as a whole) |
-| `sensor_msgs/NavSatFix` | latitude, longitude and ellipsoidal height (EPSG 4326) with standard deviations; fixes without a position are skipped |
+| `sensor_msgs/NavSatFix` | latitude, longitude and ellipsoidal height (EPSG 4326), with standard deviations if the covariance is known (`position_covariance_type` > 0); fixes without a position are skipped |
 
 Messages of other types are skipped.
 

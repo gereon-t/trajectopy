@@ -41,7 +41,7 @@ show one result at a time (the components, histograms, correlation and maps) off
 | Function | Content |
 | --- | --- |
 | `positions_figure` | Top view of trajectories |
-| `xyz_figure` / `rpy_figure` | Coordinates / orientations over time or path length |
+| `xyz_figure` / `rpy_figure` | Coordinates / orientations over time or path length (`rpy_figure` returns `None` if no trajectory has orientations) |
 | `trajectory_map_figure` | Top view colored by speed or height |
 | `trajectory_figures` | All of the above |
 | `ate_figure` | Position (and rotation) deviations over time or path length |
@@ -54,7 +54,7 @@ show one result at a time (the components, histograms, correlation and maps) off
 | `ate_map_figure` | Top view colored by any deviation component |
 | `ate_speed_figure` | Deviations over speed, with the time offset estimated from their slope |
 | `rpe_figures` | Relative pose error over the pair distance |
-| `deviation_figures` | All ATE and RPE figures |
+| `deviation_figures` | All ATE and RPE figures; applies `ate_remove_above` of the plot settings and leaves out ATE results without deviations left |
 | `parameter_matrix_figure` | Covariance or correlation matrix of estimated alignment parameters |
 | `alignment_figures` | Covariance and correlation matrix |
 
@@ -73,7 +73,8 @@ vis.show(vis.ate_map_figure(ate_results, settings))
 
 In the plot window, the mouse wheel zooms, dragging with the left button pans, dragging with the right button
 zooms the x and y axes separately, and the *A* button in the lower left corner fits the plot to the data again.
-Stacked plots (e.g. x, y and z over time) share their x-axis. *Export Plot…* and *Export All…* in the toolbar
+Stacked plots (e.g. x, y and z over time) share their x-axis; clicking an entry of the legend hides or shows the
+curve in all of them. Figures with variants have a drop-down above the plot to choose the variant. *Export Plot…* and *Export All…* in the toolbar
 save the figures.
 
 Inside a running Qt application, pass `block=False`; the window is returned and stays open.

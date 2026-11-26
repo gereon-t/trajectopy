@@ -53,8 +53,9 @@ The apps are not signed. On macOS, open the app the first time with right-click 
 
 Download `Trajectopy-<version>-setup.exe` from the
 [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or
-administrator rights are needed. The installer adds Trajectopy to the Start menu and, optionally, opens `.traj`
-and `.tpy` files with it on double-click. The app reports new versions (*Help → Check for Updates…*); installing
+administrator rights are needed: the installer installs for the current user, or for all users if you choose so
+and confirm the administrator prompt. It adds Trajectopy to the Start menu and offers a desktop icon (off by
+default) and to open `.traj` and `.tpy` files with Trajectopy on double-click (on by default). The app reports new versions (*Help → Check for Updates…*); installing
 a newer version over an existing one updates it.
 
 As the installer is not signed, Windows SmartScreen may warn about an unknown publisher: choose

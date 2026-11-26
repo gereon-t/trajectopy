@@ -108,6 +108,8 @@ Besides the API changes above, version 7 adds:
 - `AlignmentParameters.to_file` (and `trajectopy.io.write_alignment_parameters`) wrote files that
   `AlignmentParameters.from_file` could not read; the parameters are now written with their enabled flags and
   17 significant digits.
+- An unknown `#time_format` in a file header raises a `ValueError` that lists the valid formats instead of a
+  `KeyError`.
 
 ### Deprecations
 

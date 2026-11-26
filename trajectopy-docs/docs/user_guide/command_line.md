@@ -13,8 +13,8 @@ trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS] [f
 | --- | --- |
 | `files` | Project (`.tpy`), trajectory (`.traj`, `.bag`, `.mcap`, …) or result (`.result`) files to open at start. Trajectories and results are added to the project; of several projects, only the first is opened. Bag directories cannot be opened this way. |
 | `--version`, `-v` | Show the version and exit. |
-| `--single-thread` | Process in the GUI thread instead of a background thread, e.g. for debugging. The GUI does not respond while processing. |
-| `--plot-settings PLOT_SETTINGS` | JSON file with [plot settings](settings.md#plot-settings); settings missing in the file keep their default values. |
+| `--single-thread` | Process in the GUI thread instead of a background thread, e.g. for debugging. The GUI does not respond while processing. On by default when trajectopy runs under a debugger. |
+| `--plot-settings PLOT_SETTINGS` | JSON file with [plot settings](settings.md#plot-settings); settings missing in the file keep their default values. If the file cannot be read, the GUI logs the error and starts with the default plot settings. |
 | `-h`, `--help` | Show the help and exit. |
 
 ```console
@@ -40,8 +40,9 @@ commands.
 | `info` | Show a summary of trajectory files and the topics of ROS bags |
 
 All commands read trajectopy, TUM, KITTI and EuRoC files and ROS bags (`.bag`, `.mcap`, `.db3` or a bag
-directory). A reference bag with several supported topics needs `--ref-topic`. Errors are reported with exit code 1 (2 for invalid arguments or input), so the commands can be used in
-pipelines.
+directory). A reference bag with several supported topics needs `--ref-topic`. Errors are printed as one line
+and reported with exit code 1 (2 for invalid arguments or input), so the commands can be used in pipelines; with
+`--verbose`, the full traceback is shown instead.
 
 ```console
 # ATE of two estimates; prints a summary table
@@ -73,7 +74,7 @@ trajectopy info recording.bag
 | `--topic TOPIC` | Topic to read from ROS bags (repeatable); all supported topics by default |
 | `--format FORMAT` | Format of the trajectory files: `auto` (default), `trajectopy`, `tum`, `kitti` or `euroc` |
 | `--quiet`, `-q` | Print only warnings and errors |
-| `--verbose` | Print debug messages |
+| `--verbose` | Print debug messages and the traceback of errors |
 
 ### `ate`, `rpe` and `evaluate`
 
@@ -93,8 +94,8 @@ trajectopy info recording.bag
 | `--report FILE` | Write a self-contained HTML report to this file |
 | `--no-report-figures` | Leave the figures out of the report |
 
-Output directories must exist. `--output-dir` receives `<name>_ate.result`, `<name>_rpe.result` and
-`<name>_alignment.result` for each trajectory. `--quiet` also suppresses the summary table, which is not printed
+Output directories must exist. `--output-dir` receives `<name>_ate.result`, `<name>_rpe.result` and (unless
+`--no-align` is given) `<name>_alignment.result` for each trajectory; existing files are overwritten. `--quiet` also suppresses the summary table, which is not printed
 either when it is written with `--table`.
 
 ### `align`
@@ -108,7 +109,8 @@ either when it is written with `--table`.
 | `--to FORMAT` | Format of the aligned trajectory: `trajectopy` (default), `tum`, `kitti` or `euroc` |
 | `--parameters FILE` | Write the alignment parameters to this `.result` file |
 
-With a directory as `--output`, the aligned trajectories are written as `<name>_aligned.traj`.
+With a directory as `--output`, the aligned trajectories are written as `<name>_aligned.traj` (`.tum`, `.kitti`
+or `.csv` with `--to tum`, `kitti` or `euroc`). Several trajectories need a directory as `--output`.
 
 ### `convert`
 
@@ -117,6 +119,9 @@ With a directory as `--output`, the aligned trajectories are written as `<name>_
 | `--output`, `-o PATH` | Output file, or directory for several trajectories (required) |
 | `--to FORMAT` | Output format: `trajectopy` (default), `tum`, `kitti` or `euroc` |
 | `--epsg EPSG` | Transform the positions to this EPSG code |
+
+With a directory as `--output`, each trajectory is written as `<name>.traj` (`.tum`, `.kitti` or `.csv` with
+`--to tum`, `kitti` or `euroc`). Several trajectories need a directory as `--output`.
 
 ### `info`
 

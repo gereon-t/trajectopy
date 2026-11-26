@@ -107,7 +107,7 @@ def run_evaluation(args: argparse.Namespace, with_ate: bool, with_rpe: bool) -> 
         print(_console_table(table))
 
     if args.output_dir:
-        _write_results(Path(args.output_dir), ate_results, rpe_results, alignments)
+        _write_results(Path(args.output_dir), ate_results, rpe_results, [] if args.no_align else alignments)
     if args.figures:
         _export_figures(Path(args.figures), ate_results, rpe_results, load_plot_settings(args.plot_settings))
     if args.report:
@@ -139,17 +139,11 @@ def _safe_name(name: str) -> str:
 def _write_results(directory: Path, ate_results, rpe_results, alignments) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     for result in ate_results:
-        path = directory / f"{_safe_name(result.name)}_ate.result"
-        path.unlink(missing_ok=True)  # results are appended to their files
-        result.to_file(str(path))
+        result.to_file(directory / f"{_safe_name(result.name)}_ate.result")
     for result in rpe_results:
-        path = directory / f"{_safe_name(result.name)}_rpe.result"
-        path.unlink(missing_ok=True)
-        result.to_file(str(path))
+        result.to_file(directory / f"{_safe_name(result.name)}_rpe.result")
     for result, alignment in zip(ate_results, alignments):
-        path = directory / f"{_safe_name(result.name)}_alignment.result"
-        path.unlink(missing_ok=True)
-        alignment.to_file(str(path))
+        alignment.to_file(directory / f"{_safe_name(result.name)}_alignment.result")
     logger.info("Wrote the results to %s", directory)
 
 
@@ -165,6 +159,11 @@ def _export_figures(directory: Path, ate_results, rpe_results, plot_settings) ->
         width=plot_settings.export_width,
     )
     logger.info("Exported %d figures to %s", len(paths), directory)
+
+
+def _suffix(trajectory_format: str) -> str:
+    """Returns the file extension of a trajectory format."""
+    return {"tum": ".tum", "kitti": ".kitti", "euroc": ".csv"}.get(trajectory_format, ".traj")
 
 
 def run_align(args: argparse.Namespace) -> int:
@@ -188,11 +187,10 @@ def run_align(args: argparse.Namespace) -> int:
                 print(f"  {line}")
         if args.output:
             output = Path(args.output)
-            path = output / f"{_safe_name(estimate.name)}_aligned.traj" if output.is_dir() else output
+            path = output / f"{_safe_name(estimate.name)}_aligned{_suffix(args.to)}" if output.is_dir() else output
             write_trajectory(aligned, str(path), format=args.to)
             logger.info("Wrote %s", path)
         if args.parameters:
-            Path(args.parameters).unlink(missing_ok=True)
             alignment.to_file(args.parameters)
     return 0
 
@@ -204,7 +202,7 @@ def run_convert(args: argparse.Namespace) -> int:
     output = Path(args.output)
     if len(trajectories) > 1 and not output.is_dir():
         raise CommandError("Several trajectories are converted: give an existing directory as output.")
-    suffix = {"tum": ".tum", "kitti": ".kitti", "euroc": ".csv"}.get(args.to, ".traj")
+    suffix = _suffix(args.to)
     for trajectory in trajectories:
         if args.epsg is not None:
             trajectory.positions.to_epsg(args.epsg, inplace=True)

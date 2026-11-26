@@ -189,7 +189,8 @@ print(tpy.format_table(table, table_format="markdown"))  # or "csv", "latex"
 ```
 
 `write_report` creates a self-contained HTML file with the summary, the statistics of each result, all figures
-and the processing settings, e.g. to archive the evaluation of a paper:
+and the processing settings, e.g. to archive the evaluation of a paper. The figures need the plotting extra
+(`trajectopy[plot]`); without it, the report says how to install it instead:
 
 ```python
 tpy.write_report("report.html", ate_results, rpe_results, settings=tpy.ProcessingSettings())
