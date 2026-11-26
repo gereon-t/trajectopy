@@ -161,7 +161,7 @@ class TestDocstringExamples(unittest.TestCase):
         self.assertEqual(results.failed, 0, output.getvalue())
 
     def test_every_public_name_has_examples(self):
-        """Like in numpy and pandas, every public function and class shows its use (exceptions excepted)."""
+        """Every public function and class shows its use (exceptions excepted)."""
         missing = []
         for namespace in importable_namespaces():
             module = importlib.import_module(namespace)
