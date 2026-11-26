@@ -53,7 +53,7 @@ rows to take them out of their group. Groups are saved in the project.
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
 | | About | Version, author and a link to the repository. |
-| Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes; a theme chosen here applies until Trajectopy is closed or the system setting changes again. |
+| Theme | System / Dark / Light | Color theme. *System* (the default) follows the color scheme of the operating system, also when it changes; *Dark* and *Light* keep their theme. The choice is kept for the next start. |
 
 ## Projects
 

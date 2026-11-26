@@ -30,7 +30,7 @@ from trajectopy.gui.models.entries import AbsoluteDeviationEntry
 from trajectopy.gui.models.result_model import ResultTableModel
 from trajectopy.gui.models.trajectory_model import TrajectoryTableModel
 from trajectopy.gui.project import PROJECT_FILE_FILTER, PROJECT_SUFFIX, Project
-from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
+from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET, is_dark_theme, save_theme, saved_theme
 from trajectopy.gui.update_check import Release, UpdateChecker
 from trajectopy.gui.utils import (
     SingleWindows,
@@ -110,8 +110,9 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._after_save: Callable[[], None] | None = None
         self._closing = False
 
-        self._dark_theme = _application().styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark
         self._settings = app_settings()
+        self._theme = saved_theme(self._settings)  # "system", "dark" or "light"
+        self._dark_theme = is_dark_theme(self._theme)
         self._preview_enabled = bool(self._settings.value(PREVIEW_SETTINGS_KEY, True, type=bool))
         self._preview_3d_enabled = bool(self._settings.value(PREVIEW_3D_SETTINGS_KEY, False, type=bool))
         self._preview_3d: PreviewPlot3D | None = None  # created on first use
@@ -228,18 +229,15 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._timeline_dialog = TimelineDialog(parent=self)
 
         theme_menu = QtWidgets.QMenu("Theme", parent=self)
-        self._dark_theme_action = QAction("Dark", parent=self, checkable=True)
-        self._light_theme_action = QAction("Light", parent=self, checkable=True)
-        self._dark_theme_action.setChecked(self._dark_theme)
-        self._light_theme_action.setChecked(not self._dark_theme)
-
         theme_group = QActionGroup(self)
-        theme_group.addAction(self._dark_theme_action)
-        theme_group.addAction(self._light_theme_action)
-        self._dark_theme_action.triggered.connect(lambda: self._apply_theme(dark=True))
-        self._light_theme_action.triggered.connect(lambda: self._apply_theme(dark=False))
-        theme_menu.addAction(self._dark_theme_action)
-        theme_menu.addAction(self._light_theme_action)
+        self._theme_actions: dict[str, QAction] = {}
+        for theme, label in (("system", "System"), ("dark", "Dark"), ("light", "Light")):
+            action = QAction(label, parent=self, checkable=True)
+            action.setChecked(theme == self._theme)
+            action.triggered.connect(lambda _checked=False, theme=theme: self._choose_theme(theme))
+            theme_group.addAction(action)
+            theme_menu.addAction(action)
+            self._theme_actions[theme] = action
         menubar.addMenu(theme_menu)
 
         # Wire up system theme changes
@@ -313,13 +311,19 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
 
     @Slot(QtCore.Qt.ColorScheme)
     def _on_system_theme_changed(self, scheme: QtCore.Qt.ColorScheme) -> None:
-        """Automatically switch theme when system color scheme changes."""
-        self._apply_theme(dark=scheme == QtCore.Qt.ColorScheme.Dark)
+        """Follows the color scheme of the operating system, unless a theme was chosen in the Theme menu."""
+        if self._theme == "system":
+            self._apply_theme(dark=scheme == QtCore.Qt.ColorScheme.Dark)
+
+    def _choose_theme(self, theme: str) -> None:
+        """Applies a theme of the Theme menu and stores it for the next start."""
+        self._theme = theme
+        save_theme(self._settings, theme)
+        self._theme_actions[theme].setChecked(True)
+        self._apply_theme(dark=is_dark_theme(theme))
 
     def _apply_theme(self, dark: bool) -> None:
         self._dark_theme = dark
-        self._dark_theme_action.setChecked(dark)
-        self._light_theme_action.setChecked(not dark)
         _application().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
         set_dark_titlebar(self, dark)
         plot_style.set_theme(dark=dark)

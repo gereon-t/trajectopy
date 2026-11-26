@@ -1,5 +1,10 @@
 """VS Code-inspired stylesheets for the Trajectopy GUI."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PySide6.QtCore import QSettings
+
 _BASE = """
         QToolBar {
             background-color: %(chrome)s;
@@ -510,3 +515,29 @@ LIGHT_STYLESHEET = (
         scrollbar_hover="#a8a8a8",
     )
 )
+
+# The theme chosen in the Theme menu: "system" follows the color scheme of the operating system, also when it
+# changes; "dark" and "light" keep that theme. The choice is stored in the user settings of the GUI.
+THEME_SETTINGS_KEY = "view/theme"
+THEME_CHOICES = ("system", "dark", "light")
+
+
+def saved_theme(settings: "QSettings") -> str:
+    """The theme choice stored in the user settings ("system" if none or an unknown one is stored)."""
+    value = str(settings.value(THEME_SETTINGS_KEY, "system"))
+    return value if value in THEME_CHOICES else "system"
+
+
+def save_theme(settings: "QSettings", theme: str) -> None:
+    """Stores the theme choice, so that the next start uses it."""
+    settings.setValue(THEME_SETTINGS_KEY, theme)
+
+
+def is_dark_theme(theme: str) -> bool:
+    """Whether a theme choice means the dark theme; "system" asks the operating system."""
+    if theme != "system":
+        return theme == "dark"
+    from PySide6 import QtCore, QtGui
+
+    app = QtGui.QGuiApplication.instance()
+    return isinstance(app, QtGui.QGuiApplication) and app.styleHints().colorScheme() == QtCore.Qt.ColorScheme.Dark

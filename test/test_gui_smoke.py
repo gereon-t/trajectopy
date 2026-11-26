@@ -246,6 +246,35 @@ class TestGuiSmoke(unittest.TestCase):
         finally:
             window.close()
 
+    def test_theme_choice_survives_a_restart(self):
+        from trajectopy.gui.views.main_window import TrajectopyGUI
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            self.assertTrue(window._theme_actions["system"].isChecked())  # follows the system by default
+            window._theme_actions["light"].trigger()
+            self.assertFalse(window._dark_theme)
+            window._theme_actions["dark"].trigger()
+            self.assertTrue(window._dark_theme)
+        finally:
+            window.close()
+
+        window = TrajectopyGUI(single_thread=True)
+        try:
+            self.assertTrue(window._theme_actions["dark"].isChecked())
+            self.assertTrue(window._dark_theme)
+            # a chosen theme is kept when the system switches its color scheme
+            window._on_system_theme_changed(QtCore.Qt.ColorScheme.Light)
+            self.assertTrue(window._dark_theme)
+            # "System" follows it again
+            window._theme_actions["system"].trigger()
+            window._on_system_theme_changed(QtCore.Qt.ColorScheme.Light)
+            self.assertFalse(window._dark_theme)
+            window._on_system_theme_changed(QtCore.Qt.ColorScheme.Dark)
+            self.assertTrue(window._dark_theme)
+        finally:
+            window.close()
+
     def test_splash_screen(self):
         from trajectopy.gui.views.splash_screen import SplashScreen
 

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QApplication
 
 from trajectopy.__version__ import __version__ as VERSION
 from trajectopy.gui.log import setup_logging
-from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
+from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET, is_dark_theme, saved_theme
 from trajectopy.gui.views.splash_screen import SplashScreen
 from trajectopy.utils.resources import ICON_BG_FILE_PATH
 
@@ -81,7 +81,9 @@ def main(
         font.setPointSize(10)
     app.setFont(font)
 
-    is_dark = app.styleHints().colorScheme() == Qt.ColorScheme.Dark
+    from trajectopy.gui.utils import app_settings
+
+    is_dark = is_dark_theme(saved_theme(app_settings()))
     app.setStyleSheet(DARK_STYLESHEET if is_dark else LIGHT_STYLESHEET)
 
     splash = SplashScreen(dark=is_dark)
