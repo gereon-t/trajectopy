@@ -20,6 +20,13 @@ class Positions:
 
     All transformations, including the local transformation, are carried out using pyproj,
     a python toolbox for projections and transformations.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> positions = tpy.Positions(np.array([[364000.0, 5621000.0, 60.0]]), epsg=25832)
+        >>> positions.to_epsg(4326).xyz.round(5)  # latitude, longitude, height
+        array([[50.72486,  7.07314, 60.     ]])
     """
 
     def __init__(
@@ -172,6 +179,13 @@ class Positions:
 
         Returns:
             Positions: The copy.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> positions = tpy.Positions(np.zeros((2, 3)))
+            >>> positions.copy().xyz.shape
+            (2, 3)
         """
         return copy.deepcopy(self)
 
@@ -331,6 +345,15 @@ class Positions:
 
         Returns:
             Positions: Transformed positions.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> positions = tpy.Positions(np.array([[364000.0, 5621000.0, 60.0]]), epsg=25832)
+            >>> positions.to_epsg(4326).epsg
+            4326
+            >>> positions.epsg  # unchanged without inplace=True
+            25832
         """
         pointset = self if inplace else self.copy()
 
@@ -399,6 +422,14 @@ class Positions:
 
         Returns:
             Positions: 2-dimensional object containing xyz of the transformed points.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> positions = tpy.Positions(np.array([[364000.0, 5621000.0, 60.0], [364010.0, 5621000.0, 60.0]]), epsg=25832)
+            >>> local = positions.to_local()
+            >>> local.epsg, round(float(np.linalg.norm(local.xyz[1] - local.xyz[0])), 2)
+            (0, 10.0)
         """
         return self.to_epsg(target_epsg=0, inplace=inplace)
 
@@ -411,6 +442,12 @@ class Positions:
 
         Returns:
             Positions: Contains the mean position.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> tpy.Positions(np.array([[0.0, 0.0, 0.0], [2.0, 4.0, 6.0]])).mean().xyz
+            array([[1., 2., 3.]])
         """
         mean_xyz = np.mean(self.xyz, axis=0)
 
@@ -426,6 +463,12 @@ class Positions:
 
         Returns:
             Positions: Contains the rounded positions.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> tpy.Positions(np.array([[0.123, 0.456, 0.789]])).round_to(0.1).xyz
+            array([[0.1, 0.5, 0.8]])
         """
         rounded = self.copy()
         rounded.xyz = np.round(rounded.xyz / prec) * prec

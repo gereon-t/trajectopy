@@ -60,8 +60,7 @@ class AbsoluteTrajectoryDeviations:
 
 
 class ATEResult:
-    """
-    This class represents a set of absolute trajectory deviations
+    """This class represents a set of absolute trajectory deviations
 
     Absolute trajectory deviations describe absolute pose deviations between
     two trajectories. The deviations are calculated by comparing pairs of
@@ -73,6 +72,19 @@ class ATEResult:
         name (str): The name of the result
         alignment (AlignmentResult | None): The alignment that was applied to the trajectory before the
             deviations were computed, or None if unknown (e.g. for results read from a file).
+
+    See Also:
+        [`trajectopy.ate`][trajectopy.ate]: computes the result.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> ate_result
+        <ATEResult 'KITTI ORB vs. KITTI Ground Truth': 4541 poses, position ATE 1.1533 m, rotation ATE 0.6204 deg>
+        >>> len(ate_result.pos_dev_along) == len(ate_result)
+        True
     """
 
     def __init__(

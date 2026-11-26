@@ -16,8 +16,7 @@ def _allclose(a: np.ndarray, b: np.ndarray) -> bool:
 
 @dataclass
 class AlignmentResult:
-    """
-    Class to store the result of an alignment.
+    """Class to store the result of an alignment.
 
     Attributes:
         name (str): Name of the result.
@@ -25,6 +24,17 @@ class AlignmentResult:
         rotation_parameters (SensorRotationParameters): Estimated rotation alignment parameters.
         estimation_of (AlignmentEstimationSettings): Settings defining which parameters were estimated.
         converged (bool): Whether the estimation converged.
+
+    See Also:
+        [`trajectopy.estimate_alignment`][trajectopy.estimate_alignment]: computes the result.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> alignment
+        <AlignmentResult 'KITTI ORB to KITTI Ground Truth': Helmert estimated, converged>
     """
 
     name: str = "Alignment Result"
@@ -54,6 +64,15 @@ class AlignmentResult:
         Args:
             filename (str | os.PathLike): Path of the file.
             mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> alignment = tpy.estimate_alignment(estimate, reference)
+            >>> alignment.to_file("alignment.result")
+            >>> tpy.AlignmentResult.from_file("alignment.result") == alignment
+            True
         """
         from trajectopy.io import results_io
 
@@ -69,6 +88,15 @@ class AlignmentResult:
 
         Returns:
             AlignmentResult: The result.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> alignment = tpy.estimate_alignment(estimate, reference)
+            >>> alignment.to_file("alignment.result")
+            >>> tpy.AlignmentResult.from_file("alignment.result").name
+            'KITTI ORB to KITTI Ground Truth'
         """
         from trajectopy.io import results_io
 

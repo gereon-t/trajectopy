@@ -215,6 +215,16 @@ def write_report(
 
     Raises:
         ValueError: If neither ATE nor RPE results are given.
+
+    See Also:
+        [`trajectopy.summary_table`][trajectopy.summary_table]: the summary of the report as a table.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> tpy.write_report("report.html", [ate_result], figures=False)
     """
     filename = os.fspath(filename)
     html_report = report_html(

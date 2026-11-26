@@ -41,6 +41,16 @@ def approximate(
 
     Returns:
         Trajectory: The approximated trajectory.
+
+    See Also:
+        [`trajectopy.ApproximationSettings`][trajectopy.ApproximationSettings]: the options.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> smoothed = tpy.approximate(reference, tpy.ApproximationSettings(position_interval_size=50.0))
+        >>> len(smoothed) == len(reference)
+        True
     """
     approximation_settings = resolve_settings(settings, ApproximationSettings)
 

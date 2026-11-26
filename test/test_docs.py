@@ -144,10 +144,11 @@ class TestDocstringExamples(unittest.TestCase):
                     for test in finder.find(obj, f"{namespace}.{name}", globs={}):
                         if test.examples:
                             tests.setdefault(test.name, test)
-        self.assertGreater(len(tests), 10)
+        self.assertGreater(len(tests), 100)
 
         with tempfile.TemporaryDirectory() as directory:
             shutil.copytree(REPOSITORY / "example_data", Path(directory) / "example_data")
+            _write_recording(Path(directory))
             cwd = os.getcwd()
             os.chdir(directory)
             try:
@@ -158,6 +159,19 @@ class TestDocstringExamples(unittest.TestCase):
                 os.chdir(cwd)
         results = runner.summarize(verbose=False)
         self.assertEqual(results.failed, 0, output.getvalue())
+
+    def test_every_public_name_has_examples(self):
+        """Like in numpy and pandas, every public function and class shows its use (exceptions excepted)."""
+        missing = []
+        for namespace in importable_namespaces():
+            module = importlib.import_module(namespace)
+            for name in PUBLIC_API[namespace]:
+                obj = getattr(module, name)
+                if name.startswith("__") or (inspect.isclass(obj) and issubclass(obj, BaseException)):
+                    continue
+                if "Examples:" not in (inspect.getdoc(obj) or ""):
+                    missing.append(f"{namespace}.{name}")
+        self.assertEqual(missing, [], "Public names without an Examples section")
 
 
 class TestApiReference(unittest.TestCase):

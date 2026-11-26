@@ -30,6 +30,13 @@ class Parameter:
         enabled: Whether the parameter is active
         name: Parameter name for identification
         unit: Unit of measurement for the parameter
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> scale = tpy.Parameter(value=1.0001, variance=1e-8, default=1.0, name="Scale")
+        >>> scale.disable()
+        >>> scale.value  # a disabled parameter has its default value
+        1.0
     """
 
     _cnt = 0
@@ -686,6 +693,18 @@ class AlignmentParameters(ParameterSet):
         lever_x: Leverarm along x of the body frame [m].
         lever_y: Leverarm along y of the body frame [m].
         lever_z: Leverarm along z of the body frame [m].
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> parameters = alignment.position_parameters
+        >>> parameters.sim3_matrix.shape
+        (4, 4)
+        >>> parameters.to_file("parameters.csv")
+        >>> tpy.AlignmentParameters.from_file("parameters.csv").enabled_bool_list == parameters.enabled_bool_list
+        True
     """
 
     sim_trans_x: Parameter = field(
@@ -885,6 +904,12 @@ class SensorRotationParameters(ParameterSet):
         sensor_rot_x: Rotation about x [rad].
         sensor_rot_y: Rotation about y [rad].
         sensor_rot_z: Rotation about z [rad].
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> parameters = tpy.SensorRotationParameters()
+        >>> parameters.rotation_matrix.shape
+        (3, 3)
     """
 
     sensor_rot_x: Parameter = field(

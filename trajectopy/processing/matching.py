@@ -88,6 +88,10 @@ def match_trajectories(
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
 
+    See Also:
+        [`trajectopy.MatchingSettings`][trajectopy.MatchingSettings]: the methods.
+        [`trajectopy.interpolate`][trajectopy.interpolate]: interpolation at given timestamps.
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")

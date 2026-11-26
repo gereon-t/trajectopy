@@ -150,6 +150,14 @@ def list_topics(filename: str | os.PathLike) -> dict[str, str]:
 
     Returns:
         dict[str, str]: Topic name to message type.
+
+    See Also:
+        [`trajectopy.io.trajectories_from_rosbag`][trajectopy.io.trajectories_from_rosbag]: reads the trajectories.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> io.list_topics("recording.mcap")["/odom"]
+        'nav_msgs/msg/Odometry'
     """
     filename = os.fspath(filename)
     with AnyReader([Path(filename)], default_typestore=typestore) as reader:
@@ -170,6 +178,15 @@ def trajectories_from_rosbag(filename: str | os.PathLike, topics: Iterable[str] 
 
     Returns:
         list[Trajectory]: One trajectory per topic (and per frame pair of transform topics).
+
+    See Also:
+        [`trajectopy.io.list_topics`][trajectopy.io.list_topics]: lists the topics of a bag.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectories = io.trajectories_from_rosbag("recording.mcap", topics=["/odom"])
+        >>> [trajectory.name for trajectory in trajectories]
+        ['/odom']
     """
     filename = os.fspath(filename)
     data = read_ros_bag(filename, topics=topics)

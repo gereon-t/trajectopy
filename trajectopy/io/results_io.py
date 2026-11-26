@@ -63,6 +63,17 @@ def write_alignment_parameters(parameters: AlignmentParameters, filename: str | 
     Args:
         parameters (AlignmentParameters): Parameters to write.
         filename (str | os.PathLike): Path of the file; an existing file is overwritten.
+
+    See Also:
+        [`trajectopy.io.read_alignment_parameters`][trajectopy.io.read_alignment_parameters]: reads the file.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_parameters(alignment.position_parameters, "parameters.csv")
     """
     filename = os.fspath(filename)
     parameters.to_dataframe().to_csv(filename, index=False, header=False, float_format="%.17g")
@@ -77,6 +88,17 @@ def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameter
     Returns:
         AlignmentParameters: The parameter values, which of them are enabled and, if the file contains it,
         their covariance matrix.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_parameters(alignment.position_parameters, "parameters.csv")
+        >>> parameters = io.read_alignment_parameters("parameters.csv")
+        >>> parameters.num_enabled
+        6
     """
     filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
@@ -99,6 +121,17 @@ def write_sensor_rotation_parameters(parameters: SensorRotationParameters, filen
     Args:
         parameters (SensorRotationParameters): Parameters to write.
         filename (str | os.PathLike): Path of the file.
+
+    See Also:
+        [`trajectopy.io.write_alignment_result`][trajectopy.io.write_alignment_result]: writes the complete alignment.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_result(alignment, "alignment.result")  # also writes the sensor rotation
     """
     filename = os.fspath(filename)
     with open(filename, mode="a", encoding="utf-8") as file:
@@ -120,6 +153,16 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
 
     Raises:
         ValueError: If the file does not contain exactly 14 data lines.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_result(alignment, "alignment.result")
+        >>> io.read_sensor_rotation_parameters("alignment.result").num_enabled
+        0
     """
     filename = os.fspath(filename)
     alignment_data = pd.read_csv(filename, comment="#", header=None)
@@ -148,6 +191,19 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
 
     Raises:
         ValueError: If the result has no estimated parameters.
+
+    See Also:
+        [`trajectopy.AlignmentResult.to_file`][trajectopy.AlignmentResult.to_file]: the same as a method.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_result(alignment, "alignment.result")
+        >>> io.read_alignment_result("alignment.result") == alignment
+        True
     """
     filename = os.fspath(filename)
     if result.position_parameters is None:
@@ -171,6 +227,16 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
 
     Returns:
         AlignmentResult: The alignment parameters, the sensor rotation and which of them were estimated.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_alignment_result(alignment, "alignment.result")
+        >>> io.read_alignment_result("alignment.result").converged
+        True
     """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
@@ -202,6 +268,19 @@ def write_ate_result(result: ATEResult, filename: str | os.PathLike, mode: str =
         result (ATEResult): Result to write.
         filename (str | os.PathLike): Path of the file.
         mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+    See Also:
+        [`trajectopy.ATEResult.to_file`][trajectopy.ATEResult.to_file]: the same as a method.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_ate_result(ate_result, "ate.result")
+        >>> len(io.read_ate_result("ate.result")) == len(ate_result)
+        True
     """
     filename = os.fspath(filename)
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
@@ -225,6 +304,16 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 
     Returns:
         ATEResult: The result. Its ``alignment`` is None, since result files do not store it.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_ate_result(ate_result, "ate.result")
+        >>> io.read_ate_result("ate.result").alignment is None
+        True
     """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
@@ -295,6 +384,19 @@ def write_rpe_result(result: RPEResult, filename: str | os.PathLike, mode: str =
         result (RPEResult): Result to write.
         filename (str | os.PathLike): Path of the file.
         mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+    See Also:
+        [`trajectopy.RPEResult.to_file`][trajectopy.RPEResult.to_file]: the same as a method.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_rpe_result(rpe_result, "rpe.result")
+        >>> len(io.read_rpe_result("rpe.result")) == len(rpe_result)
+        True
     """
     filename = os.fspath(filename)
     with open(filename, mode, encoding="utf-8", newline="") as file:
@@ -316,6 +418,16 @@ def read_rpe_result(filename: str | os.PathLike) -> RPEResult:
 
     Returns:
         RPEResult: The result.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> from trajectopy import io
+        >>> io.write_rpe_result(rpe_result, "rpe.result")
+        >>> io.read_rpe_result("rpe.result").pos_drift_unit
+        '%'
     """
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)

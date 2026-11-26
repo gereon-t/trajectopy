@@ -50,6 +50,11 @@ def ate(
     Returns:
         ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment.
 
+    See Also:
+        [`trajectopy.rpe`][trajectopy.rpe]: drift instead of absolute deviations.
+        [`trajectopy.ATEResult`][trajectopy.ATEResult]: the result.
+        [`trajectopy.visualization.deviation_figures`][trajectopy.visualization.deviation_figures]: plots of the result.
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
@@ -103,6 +108,11 @@ def rpe(
 
     Returns:
         RPEResult: Result of the RPE computation.
+
+    See Also:
+        [`trajectopy.ate`][trajectopy.ate]: absolute deviations.
+        [`trajectopy.RPEResult`][trajectopy.RPEResult]: the result.
+        [`trajectopy.RelativeComparisonSettings`][trajectopy.RelativeComparisonSettings]: the pair distances.
 
     Examples:
         >>> import trajectopy as tpy

@@ -27,8 +27,7 @@ def sort_spatially(
     *,
     inplace: bool = False,
 ) -> Trajectory:
-    """
-    Sorts the trajectory spatially. This is only useful for trajectories
+    """Sorts the trajectory spatially. This is only useful for trajectories
     that describe a closed loop without intersections.
 
     Args:
@@ -40,6 +39,17 @@ def sort_spatially(
     Returns:
         Trajectory: Sorted trajectory.
 
+    See Also:
+        [`trajectopy.divide_into_laps`][trajectopy.divide_into_laps]: splits a sorted trajectory into laps.
+        [`trajectopy.SortingSettings`][trajectopy.SortingSettings]: the options.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> angle = np.linspace(0.0, 4 * np.pi, 400)  # two laps
+        >>> loop = tpy.Trajectory(np.column_stack([np.cos(angle), np.sin(angle), 0 * angle]))
+        >>> tpy.sort_spatially(loop).sorting
+        <Sorting.PATH_LENGTH: 'path_length'>
     """
     sort_idx, arc_lengths = _sort_xyz(
         xyz=trajectory.positions.xyz, settings=resolve_settings(settings, SortingSettings)
@@ -63,8 +73,7 @@ def divide_into_laps(
 def divide_into_laps(
     trajectory: Trajectory, *, return_lap_indices: bool = False
 ) -> list[Trajectory] | tuple[list[Trajectory], np.ndarray]:
-    """
-    Divides the trajectory into laps. This is only useful for trajectories
+    """Divides the trajectory into laps. This is only useful for trajectories
     that describe a closed loop without intersections.
 
     Args:
@@ -74,6 +83,16 @@ def divide_into_laps(
     Returns:
         List[Trajectory]: List of trajectories, each representing a lap.
 
+    See Also:
+        [`trajectopy.sort_spatially`][trajectopy.sort_spatially]: sorts a trajectory spatially first.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> angle = np.linspace(0.0, 4 * np.pi, 400, endpoint=False)  # two laps
+        >>> loop = tpy.sort_spatially(tpy.Trajectory(np.column_stack([np.cos(angle), np.sin(angle), 0 * angle])))
+        >>> len(tpy.divide_into_laps(loop))
+        2
     """
     if trajectory.sorting != Sorting.PATH_LENGTH:
         logger.error("Provide a trajectory sorted by path length to divide into laps.")

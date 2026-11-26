@@ -83,6 +83,17 @@ class Figure:
         title: Title of the page (tab title in the plot window and file name stem on export).
         render: Draws the plots into the given layout.
         variants: Alternatively, several named render functions; the user picks one in a drop-down.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> figure = vis.ate_figure([ate_result])
+        >>> figure.title
+        'ATE'
+        >>> figure.export("ate.png", width=800)
     """
 
     def __init__(
@@ -122,6 +133,15 @@ class Figure:
             path: Output file; the format is derived from the extension.
             variant: Name of the variant to export. Defaults to the first one.
             width: Width in pixels of raster images.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> ate_result = tpy.ate(estimate, reference)
+            >>> from trajectopy import visualization as vis
+            >>> figure = vis.ate_map_figure([ate_result])
+            >>> figure.export("ate_map.svg", variant=list(figure.variants)[0])
         """
         path = os.fspath(path)
         app = ensure_app()
@@ -265,6 +285,16 @@ class PlotWindow(QtWidgets.QMainWindow):
         export_width (int, optional): Width of exported raster images in pixels. Defaults to 1600.
         use_opengl (bool, optional): Draw with OpenGL, if available. Defaults to True.
         parent (QtWidgets.QWidget, optional): Parent widget. Defaults to None.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> window = vis.show(vis.deviation_figures([ate_result]), block=False)  # in a running Qt application
+        >>> window.close()
+        True
     """
 
     def __init__(
@@ -383,6 +413,20 @@ def export_figures(
 
     Returns:
         list[str]: Paths of the written files.
+
+    See Also:
+        [`trajectopy.visualization.show`][trajectopy.visualization.show]: shows figures in a window instead.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> paths = vis.export_figures([vis.ate_figure([ate_result])], "plots", width=800)
+        >>> import os
+        >>> [os.path.basename(path) for path in paths]
+        ['01_ATE.png']
     """
     os.makedirs(directory, exist_ok=True)
     paths = []
@@ -409,6 +453,17 @@ def show(
 
     Returns:
         PlotWindow: The window.
+
+    See Also:
+        [`trajectopy.visualization.export_figures`][trajectopy.visualization.export_figures]: saves figures as images instead.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.show(vis.deviation_figures([ate_result]), title="ORB-SLAM")  # doctest: +SKIP
     """
     app = ensure_app()
     window = PlotWindow([figures] if isinstance(figures, Figure) else figures, title=title, use_opengl=use_opengl)

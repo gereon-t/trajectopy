@@ -51,6 +51,11 @@ def set_theme(dark: bool) -> None:
 
     Args:
         dark (bool): Dark background (True) or light background (False).
+
+    Examples:
+        >>> from trajectopy import visualization as vis
+        >>> vis.set_theme(dark=True)
+        >>> vis.set_theme(dark=False)
     """
     global _current_theme
     _current_theme = DARK if dark else LIGHT

@@ -87,6 +87,10 @@ def summary_table(
     Returns:
         pd.DataFrame: One row per name.
 
+    See Also:
+        [`trajectopy.format_table`][trajectopy.format_table]: writes the table as text.
+        [`trajectopy.write_report`][trajectopy.write_report]: an HTML report.
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
@@ -122,6 +126,20 @@ def format_table(table: pd.DataFrame, table_format: str = "csv", precision: int 
 
     Returns:
         str: The formatted table.
+
+    See Also:
+        [`trajectopy.summary_table`][trajectopy.summary_table]: creates the table.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> table = tpy.summary_table([ate_result])
+        >>> print(tpy.format_table(table[["poses"]], "csv"))
+        name,poses
+        KITTI ORB vs. KITTI Ground Truth,4541
+        <BLANKLINE>
     """
     if table_format not in TABLE_FORMATS:
         raise ValueError(f"Unknown table format '{table_format}'. Options: {', '.join(TABLE_FORMATS)}.")

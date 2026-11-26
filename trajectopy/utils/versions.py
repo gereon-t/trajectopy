@@ -43,6 +43,11 @@ def show_versions() -> None:
     """Prints the versions of trajectopy, Python, the operating system and the dependencies.
 
     Please add the output to bug reports.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.show_versions()  # doctest: +ELLIPSIS
+        trajectopy         : ...
     """
     entries = versions()
     width = max(map(len, entries))

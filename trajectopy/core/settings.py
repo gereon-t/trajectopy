@@ -41,6 +41,14 @@ class Settings(ABC):
 
     Provides serialization/deserialization functionality to and from dictionaries,
     JSON strings, and files.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.MatchingSettings(method="nearest_temporal")
+        >>> settings.to_dict()["method"]
+        'nearest_temporal'
+        >>> tpy.MatchingSettings.from_dict({"max_gap_size": 5.0}).max_gap_size
+        5.0
     """
 
     def to_dict(self) -> dict:
@@ -48,6 +56,11 @@ class Settings(ABC):
 
         Returns:
             dict: Dictionary representation of the settings
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> tpy.SortingSettings().to_dict()
+            {'voxel_size': 0.05, 'movement_threshold': 0.005, 'k_nearest': 4}
         """
         return {
             key: (value.to_dict() if isinstance(value, Settings) else _encode_enum(self.encoder(key, value)))
@@ -93,6 +106,15 @@ class Settings(ABC):
 
         Returns:
             str: JSON string representation of the settings
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> print(tpy.SortingSettings().to_json())
+            {
+                "voxel_size": 0.05,
+                "movement_threshold": 0.005,
+                "k_nearest": 4
+            }
         """
         return json.dumps(self.to_dict(), indent=4)
 
@@ -101,6 +123,12 @@ class Settings(ABC):
 
         Args:
             path: Path to the output file
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> tpy.PlotSettings(ate_unit_is_mm=True).to_file("plot_settings.json")
+            >>> tpy.PlotSettings.from_file("plot_settings.json").ate_unit_is_mm
+            True
         """
         path = os.fspath(path)
         with open(path, "w", encoding="utf-8") as f:
@@ -154,6 +182,11 @@ class Settings(ABC):
 
         Raises:
             TypeError: If a value does not match the declared attribute type
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> tpy.ProcessingSettings.from_dict({"matching": {"method": "nearest_spatial"}}).matching.method
+            <MatchingMethod.NEAREST_SPATIAL: 'nearest_spatial'>
         """
         settings = cls()
         settings.update_from_dict(dct)
@@ -168,6 +201,12 @@ class Settings(ABC):
 
         Returns:
             Settings: Settings instance loaded from file
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> tpy.SortingSettings(k_nearest=8).to_file("sorting.json")
+            >>> tpy.SortingSettings.from_file("sorting.json").k_nearest
+            8
         """
         path = os.fspath(path)
         with open(path, encoding="utf-8") as f:
@@ -187,6 +226,13 @@ class Settings(ABC):
 
         Raises:
             TypeError: If a value does not match the declared attribute type
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> settings = tpy.MatchingSettings()
+            >>> settings.update_from_dict({"max_time_diff": 0.05})
+            >>> settings.max_time_diff
+            0.05
         """
         updates = self._decoded_updates(dct)  # validates everything before anything is changed
         for attribute_name, value in updates.items():
@@ -240,6 +286,10 @@ class AlignmentPreprocessing(Settings):
         max_samples: Maximum number of matched poses used for the alignment. If more poses are
             available, a new random subset of this size is drawn on each run. Set to 0
             to use all poses. Defaults to 5000.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> preprocessing = tpy.AlignmentPreprocessing(min_speed=1.0, max_samples=0)  # moving poses, all of them
     """
 
     min_speed: float = 0.0
@@ -266,6 +316,16 @@ class AlignmentEstimationSettings(Settings):
         leverarm_z: Enable estimation of lever arm in Z-direction
         sensor_rotation: Enable computation of sensor rotation offsets (independent
             of least squares, computes constant offsets between roll, pitch, yaw)
+
+    See Also:
+        [`trajectopy.AlignmentSettings`][trajectopy.AlignmentSettings]: contains these settings as ``estimation_settings``.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> estimation = tpy.AlignmentEstimationSettings.from_components(similarity=True, time_shift=True)
+        >>> estimation.scale, estimation.time_shift, estimation.leverarm_x
+        (True, True, False)
+        >>> settings = tpy.AlignmentSettings(estimation_settings=estimation)
     """
 
     translation_x: bool = True
@@ -561,6 +621,10 @@ class AlignmentStochastics(Settings):
         use_position_std: Weight the positions by the standard deviations stored with the trajectories (e.g. from
             the covariances of a ROS bag or the sx, sy, sz columns of a file) instead of the std_* values above,
             for each trajectory that has them. Defaults to True.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> stochastics = tpy.AlignmentStochastics(std_xy_from=0.5, std_xy_to=0.02, std_z_to=0.05)
     """
 
     std_xy_from: float = 1.0
@@ -653,6 +717,15 @@ class AlignmentSettings(Settings):
             Defaults to 1e-4.
         time_threshold: Iteration threshold for time shift parameter in least squares (seconds).
             Defaults to 1e-4.
+
+    See Also:
+        [`trajectopy.estimate_alignment`][trajectopy.estimate_alignment]: uses these settings.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.AlignmentSettings()
+        >>> settings.estimation_settings.time_shift = True
+        >>> settings.stochastics.std_xy_to = 0.02
     """
 
     preprocessing: AlignmentPreprocessing = field(default_factory=AlignmentPreprocessing)
@@ -681,6 +754,11 @@ class RotationApproximationMethod(OptionEnum):
             default.
         AVERAGE_PER_PATH_LENGTH: ``"average_per_path_length"``: for trajectories that pass the same track
             several times, the mean of all laps at the same path length.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.RotationApproximationMethod("average_in_window")
+        <RotationApproximationMethod.AVERAGE_IN_WINDOW: 'average_in_window'>
     """
 
     AVERAGE_PER_PATH_LENGTH = "average_per_path_length"
@@ -694,6 +772,11 @@ class PositionApproximationMethod(OptionEnum):
 
     Attributes:
         CUBIC: ``"cubic"``: piecewise cubic polynomials, fitted in intervals of ``position_interval_size``.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.PositionApproximationMethod("cubic")
+        <PositionApproximationMethod.CUBIC: 'cubic'>
     """
 
     CUBIC = "cubic"
@@ -718,6 +801,13 @@ class ApproximationSettings(Settings):
         rotation_approximation_method: ``AVERAGE_IN_WINDOW`` (moving average) or
             ``AVERAGE_PER_PATH_LENGTH`` (mean of all laps at the same path length). Defaults to
             ``AVERAGE_IN_WINDOW``.
+
+    See Also:
+        [`trajectopy.approximate`][trajectopy.approximate]: uses these settings.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.ApproximationSettings(position_interval_size=1.0, rotation_window_size=1.0)
     """
 
     position_interval_size: float = 0.15
@@ -738,6 +828,11 @@ class PairDistanceUnit(OptionEnum):
             and rad/100 m.
         SECOND: ``"second"``: pairs of poses that are a given time apart. The drift is given in m/s and
             rad/s.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.PairDistanceUnit("m")
+        <PairDistanceUnit.METER: 'meter'>
     """
 
     METER = "meter"
@@ -799,6 +894,16 @@ class RelativeComparisonSettings(Settings):
         pair_distance_unit: Unit of pose pair distance (METER or SECOND). Defaults to METER.
         use_all_pose_pairs: If True, use overlapping pose pairs; if False, use only
             consecutive (non-overlapping) pairs. Defaults to True.
+
+    See Also:
+        [`trajectopy.rpe`][trajectopy.rpe]: uses these settings.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.RelativeComparisonSettings(pair_min_distance=1.0, pair_max_distance=10.0, pair_distance_step=1.0)
+        >>> settings.pair_distance_unit = "second"
+        >>> settings.pair_distance_unit
+        <PairDistanceUnit.SECOND: 'second'>
     """
 
     pair_min_distance: float = 100.0
@@ -824,6 +929,11 @@ class MatchingMethod(OptionEnum):
             fitted through the ``k_nearest`` nearest positions of the reference.
         UNKNOWN: ``"unknown"``: placeholder of earlier versions, not a matching method; matching with it
             raises ValueError. Deprecated, it will be removed in version 8.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.MatchingMethod("Nearest_Temporal")
+        <MatchingMethod.NEAREST_TEMPORAL: 'nearest_temporal'>
     """
 
     NEAREST_SPATIAL = "nearest_spatial"
@@ -840,6 +950,11 @@ class InterpolationMethod(OptionEnum):
 
     Attributes:
         LINEAR: ``"linear"``: linear interpolation of the positions, SLERP of the orientations.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.InterpolationMethod("linear")
+        <InterpolationMethod.LINEAR: 'linear'>
     """
 
     LINEAR = "linear"
@@ -859,6 +974,14 @@ class MatchingSettings(Settings):
             Defaults to 10.0.
         k_nearest: Number of nearest neighbors for spatial interpolation matching.
             Defaults to 2.
+
+    See Also:
+        [`trajectopy.match_trajectories`][trajectopy.match_trajectories]: uses these settings.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.MatchingSettings(method="nearest_temporal", max_time_diff=0.005).method
+        <MatchingMethod.NEAREST_TEMPORAL: 'nearest_temporal'>
     """
 
     method: MatchingMethod = MatchingMethod.INTERPOLATION
@@ -894,6 +1017,12 @@ class PlotSettings(Settings):
         use_opengl: Draw plot windows with OpenGL, which keeps panning and zooming fluid for large data sets.
             Falls back to software rendering if OpenGL is not available. Exports are not affected.
             Defaults to True.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.PlotSettings(ate_unit_is_mm=True, directed_ate=True)
+        >>> settings.unit
+        'mm'
     """
 
     ate_unit_is_mm: bool = False
@@ -931,6 +1060,13 @@ class SortingSettings(Settings):
         movement_threshold: Maximum allowed point movement between MLS iterations (meters).
             Algorithm terminates when all points move less than this. Defaults to 0.005.
         k_nearest: Number of nearest voxels to consider during MLS smoothing. Defaults to 4.
+
+    See Also:
+        [`trajectopy.sort_spatially`][trajectopy.sort_spatially]: uses these settings.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.SortingSettings(voxel_size=0.1)
     """
 
     voxel_size: float = 0.05

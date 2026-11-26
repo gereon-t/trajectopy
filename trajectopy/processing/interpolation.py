@@ -31,6 +31,9 @@ def interpolate(
     Returns:
         Trajectory: Interpolated trajectory
 
+    See Also:
+        [`trajectopy.match_trajectories`][trajectopy.match_trajectories]: interpolation at the timestamps of a reference.
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")

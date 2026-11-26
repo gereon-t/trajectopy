@@ -24,6 +24,16 @@ def merge_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
 
     Raises:
         ValueError: If no trajectories are provided.
+
+    See Also:
+        [`trajectopy.average_trajectories`][trajectopy.average_trajectories]: pose-wise mean instead.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> merged = tpy.merge_trajectories([reference.crop(0.0, 9.0), reference.crop(10.0, 19.0)])
+        >>> len(merged)
+        20
     """
     trajectories = list(trajectories)
     if not trajectories:
@@ -80,6 +90,17 @@ def average_trajectories(trajectories: Iterable[Trajectory]) -> Trajectory:
 
     Raises:
         ValueError: If trajectories have different lengths or no trajectories provided.
+
+    See Also:
+        [`trajectopy.merge_trajectories`][trajectopy.merge_trajectories]: concatenates trajectories instead.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> averaged = tpy.average_trajectories([reference, reference.copy()])
+        >>> import numpy as np
+        >>> np.allclose(averaged.xyz, reference.xyz)
+        True
     """
     trajectories = list(trajectories)
     if not trajectories:

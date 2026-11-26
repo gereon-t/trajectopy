@@ -48,6 +48,11 @@ class Sorting(OptionEnum):
         TIME: ``"time"``: chronological order; the index is the timestamps.
         PATH_LENGTH: ``"path_length"``: order along the path after spatial sorting (see
             :func:`trajectopy.sort_spatially`); the index is the path length.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> tpy.Sorting("arc_length")
+        <Sorting.PATH_LENGTH: 'path_length'>
     """
 
     TIME = "time"

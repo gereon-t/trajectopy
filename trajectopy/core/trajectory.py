@@ -33,6 +33,13 @@ class Pose:
             trajectory has no orientations).
         velocity (tuple[float, float, float]): Velocity along x, y and z in meters per second.
         epsg (int): EPSG code of the position; 0 for a local frame.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> pose = reference[1]
+        >>> pose.timestamp, pose.epsg
+        (1.0, 0)
     """
 
     timestamp: float
@@ -55,6 +62,9 @@ class Trajectory:
         sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH).
         position_std (np.ndarray | None): Standard deviations of the positions along x, y and z in meters,
             shape (N, 3), or None if unknown. The alignment weights the positions by them.
+
+    See Also:
+        [`trajectopy.Trajectory.from_file`][trajectopy.Trajectory.from_file]: loads a trajectory from a file.
 
     Examples:
         >>> import numpy as np
@@ -233,6 +243,13 @@ class Trajectory:
 
         Returns:
             Trajectory: The parsed trajectory.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> text = reference.to_string()
+            >>> tpy.Trajectory.from_string(text).equals(reference)
+            True
         """
         from trajectopy.io.trajectory_io import read_trajectory_string
 
@@ -259,6 +276,15 @@ class Trajectory:
 
         Returns:
             Trajectory: The new trajectory.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> xyz = np.zeros((3, 3))
+            >>> rpy = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.1], [0.0, 0.0, 0.2]])  # roll, pitch, yaw in radians
+            >>> trajectory = tpy.Trajectory.from_arrays(xyz, rpy=rpy, timestamps=[0.0, 1.0, 2.0])
+            >>> trajectory.has_orientation
+            True
         """
 
         pos_obj = Positions(xyz=xyz, epsg=epsg)
@@ -374,6 +400,14 @@ class Trajectory:
 
         Returns:
             bool: True if the trajectories are equal.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> copy = reference.copy()
+            >>> copy.name = "Copy"
+            >>> reference.equals(copy), reference == copy
+            (True, False)
         """
         if len(self) != len(other) or self.has_orientation != other.has_orientation:
             return False
@@ -394,11 +428,26 @@ class Trajectory:
 
         Returns:
             Trajectory: The copy, which shares no data with this trajectory.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> copy = reference.copy()
+            >>> copy.timestamps += 10.0
+            >>> reference.timestamps[0], copy.timestamps[0]
+            (np.float64(0.0), np.float64(10.0))
         """
         return copy.deepcopy(self)
 
     def init_path_lengths(self):
-        """Computes cumulative path lengths based on Euclidean distances between consecutive local coordinates."""
+        """Computes cumulative path lengths based on Euclidean distances between consecutive local coordinates.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> round(float(reference.init_path_lengths()[-1]), 3)
+            3724.187
+        """
         if len(self.positions) == 0:
             return np.array([])  # without positions, there is no local frame either
         return lengths_from_xyz(self.positions.to_local(inplace=False).xyz)
@@ -445,6 +494,17 @@ class Trajectory:
 
         Args:
             sorting (Sorting): The new sorting strategy (TIME or ARC_LENGTH).
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> angle = np.linspace(0.0, 4 * np.pi, 400)  # two laps
+            >>> loop = tpy.sort_spatially(tpy.Trajectory(np.column_stack([np.cos(angle), np.sin(angle), 0 * angle])))
+            >>> loop.sorting
+            <Sorting.PATH_LENGTH: 'path_length'>
+            >>> loop.set_sorting(tpy.Sorting.TIME)
+            >>> loop.sorting
+            <Sorting.TIME: 'time'>
         """
         if sorting == self._sorting:
             return
@@ -463,6 +523,12 @@ class Trajectory:
 
         Returns:
             np.ndarray: Index into the current data.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> reference.sort_index(tpy.Sorting.TIME)[:3]
+            array([0, 1, 2])
         """
         key = self.timestamps if sorting == Sorting.TIME else self.path_lengths
         return np.argsort(key, kind="stable")
@@ -617,14 +683,22 @@ class Trajectory:
         return float(np.max(self.timestamps)) if len(self.timestamps) > 0 else 0.0
 
     def overlaps_with(self, other: "Trajectory") -> bool:
-        """
-        Checks if the time span of this trajectory overlaps with another.
+        """Checks if the time span of this trajectory overlaps with another.
 
         Args:
             other (Trajectory): The trajectory to compare against.
 
         Returns:
             bool: True if the time ranges overlap, False otherwise.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> estimate.overlaps_with(reference)
+            True
+            >>> estimate.overlaps_with(reference.crop(5000.0, 6000.0))
+            False
         """
         if len(self) == 0 or len(other) == 0:
             return False
@@ -663,8 +737,7 @@ class Trajectory:
         return self.mask(mask=filt, inplace=inplace)
 
     def intersect(self, index: np.ndarray, *, max_gap_size: float = 10.0, inplace: bool = False) -> "Trajectory":
-        """
-        Filters the trajectory to overlap with a reference timestamp vector.
+        """Filters the trajectory to overlap with a reference timestamp vector.
 
         This method finds the common time span between self and the reference `timestamps`,
         crops self to that span, and then filters points that are either exact matches
@@ -681,6 +754,13 @@ class Trajectory:
 
         Returns:
             Trajectory: The intersected trajectory.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> import numpy as np
+            >>> len(reference.intersect(np.arange(0.0, 100.0, 1.0)))
+            100
         """
         traj_self = self if inplace else self.copy()
         index_span = common_span(index1=index, index2=traj_self.index)
@@ -713,8 +793,7 @@ class Trajectory:
         return traj_self
 
     def mask(self, mask: list | np.ndarray, *, inplace: bool = False) -> "Trajectory":
-        """
-        Applies a boolean mask or index array to filter all trajectory components.
+        """Applies a boolean mask or index array to filter all trajectory components.
 
         Filtered components include: timestamps, positions, rotations, path lengths, and velocities.
 
@@ -724,6 +803,14 @@ class Trajectory:
 
         Returns:
             Trajectory: The masked trajectory.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> len(reference.mask(reference.timestamps < 10.0))
+            10
+            >>> len(reference.mask([0, 1, 2]))
+            3
         """
         traj_self = self if inplace else self.copy()
 
@@ -746,8 +833,7 @@ class Trajectory:
         return traj_self
 
     def transform(self, transformation: np.ndarray, *, inplace: bool = False) -> "Trajectory":
-        """
-        Applies a rigid body or similarity transformation to the trajectory poses.
+        """Applies a rigid body or similarity transformation to the trajectory poses.
 
         Velocities and position standard deviations are rotated and scaled alike, path lengths are scaled.
         A trajectory without
@@ -759,6 +845,19 @@ class Trajectory:
 
         Returns:
             Trajectory: The transformed trajectory.
+
+        See Also:
+            [`trajectopy.apply_alignment`][trajectopy.apply_alignment]: applies an estimated alignment.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> import numpy as np
+            >>> shift = np.eye(4)
+            >>> shift[:3, 3] = [10.0, 0.0, 0.0]
+            >>> shifted = reference.transform(shift)
+            >>> float(shifted.xyz[0, 0] - reference.xyz[0, 0])
+            10.0
         """
         traj_self = self if inplace else self.copy()
         linear = transformation[:3, :3]
@@ -778,8 +877,7 @@ class Trajectory:
         return traj_self
 
     def to_dataframe(self, sort_by: str = "") -> pd.DataFrame:
-        """
-        Exports the trajectory to a Pandas DataFrame.
+        """Exports the trajectory to a Pandas DataFrame.
 
         Columns usually include: time, path_length, pos_x, pos_y, pos_z, speed_x, speed_y, speed_z,
         and rotation columns (rot_x/y/z/w) if available.
@@ -789,6 +887,12 @@ class Trajectory:
 
         Returns:
             pd.DataFrame: A dataframe containing the trajectory data.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> reference.to_dataframe().columns.tolist()[:5]
+            ['time', 'path_length', 'pos_x', 'pos_y', 'pos_z']
         """
         sort_by = sort_by or self.sorting
         if self.rotations is not None:
@@ -827,6 +931,17 @@ class Trajectory:
 
         Returns:
             str: Content of a trajectory file, which :meth:`from_string` reads.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> for line in reference.to_string().splitlines()[:5]:
+            ...     print(line)
+            #epsg 0
+            #name KITTI Ground Truth
+            #nframe enu
+            #sorting time
+            #fields t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz
         """
         from trajectopy.io.trajectory_io import trajectory_to_string
 
@@ -839,8 +954,7 @@ class Trajectory:
         *,
         format: str = "auto",  # noqa: A002
     ) -> None:
-        """
-        Writes the trajectory to a file.
+        """Writes the trajectory to a file.
 
         Args:
             filename (str | os.PathLike): The output file path.
@@ -848,6 +962,17 @@ class Trajectory:
             format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
                 ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``) and writes
                 the trajectopy format (see :meth:`to_string`) otherwise.
+
+        See Also:
+            [`trajectopy.io.write_trajectory`][trajectopy.io.write_trajectory]: the function behind this method.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> reference.to_file("reference.traj")
+            >>> reference.to_file("reference.tum")  # TUM format
+            >>> tpy.Trajectory.from_file("reference.traj").equals(reference)
+            True
         """
         from trajectopy.io.formats import write_trajectory
 
@@ -856,8 +981,7 @@ class Trajectory:
     def to_kml(
         self, filename: str | os.PathLike, precision: float = 1e-6, color: str = "#ff0000", **options: Any
     ) -> None:
-        """
-        Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
+        """Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
         Google Earth plays back.
 
         Requires the trajectory to have a valid EPSG code so it can be converted to WGS84 (EPSG:4326).
@@ -873,6 +997,16 @@ class Trajectory:
 
         Raises:
             ValueError: If the trajectory does not have a known EPSG code or an option is invalid.
+
+        See Also:
+            [`trajectopy.io.write_kml`][trajectopy.io.write_kml]: all options.
+
+        Examples:
+            >>> import numpy as np
+            >>> import trajectopy as tpy
+            >>> xyz = np.column_stack([364000.0 + np.arange(10.0), np.full(10, 5621000.0), np.full(10, 60.0)])
+            >>> track = tpy.Trajectory(tpy.Positions(xyz, epsg=25832), timestamps=np.arange(10.0))
+            >>> track.to_kml("track.kml", field="speed")
         """
         from trajectopy.io.kml import write_kml
 

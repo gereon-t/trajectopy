@@ -36,6 +36,11 @@ class TrajectoryFormat(OptionEnum):
         TUM: ``"tum"``: ``timestamp tx ty tz qx qy qz qw`` per line.
         KITTI: ``"kitti"``: one row-major 3×4 pose matrix per line, without timestamps.
         EUROC: ``"euroc"``: CSV with timestamps in nanoseconds and quaternions in the order w, x, y, z.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> io.TrajectoryFormat("TUM")
+        <TrajectoryFormat.TUM: 'tum'>
     """
 
     AUTO = "auto"
@@ -68,6 +73,11 @@ def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
 
     Returns:
         TrajectoryFormat: The recognized format.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> io.detect_format("./example_data/KITTI_gt.traj")
+        <TrajectoryFormat.TRAJECTOPY: 'trajectopy'>
     """
     filename = os.fspath(filename)
     first_data_line = ""
@@ -117,6 +127,15 @@ def read_tum(filename: str | os.PathLike, name: str = "") -> Trajectory:
 
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0).
+
+    See Also:
+        [`trajectopy.io.read_trajectory`][trajectopy.io.read_trajectory]: recognizes the format.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> io.write_trajectory(io.read_trajectory("./example_data/KITTI_gt.traj"), "poses.tum")
+        >>> len(io.read_tum("poses.tum", name="KITTI"))
+        4541
     """
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
@@ -143,6 +162,16 @@ def read_kitti(filename: str | os.PathLike, timestamps: np.ndarray | str | None 
 
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0).
+
+    See Also:
+        [`trajectopy.io.read_trajectory`][trajectopy.io.read_trajectory]: recognizes the format.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectory = io.read_trajectory("./example_data/KITTI_gt.traj")
+        >>> io.write_trajectory(trajectory, "poses.txt", format="kitti")
+        >>> io.read_kitti("poses.txt").timestamps[:3]  # numbered without timestamps
+        array([0., 1., 2.])
     """
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
@@ -175,6 +204,15 @@ def read_euroc(filename: str | os.PathLike, name: str = "") -> Trajectory:
 
     Returns:
         Trajectory: The trajectory, in a local coordinate system (EPSG 0), with timestamps in seconds.
+
+    See Also:
+        [`trajectopy.io.read_trajectory`][trajectopy.io.read_trajectory]: recognizes the format.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> io.write_trajectory(io.read_trajectory("./example_data/KITTI_gt.traj"), "poses.csv", format="euroc")
+        >>> len(io.read_euroc("poses.csv"))
+        4541
     """
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=",")
@@ -205,6 +243,10 @@ def read_trajectory(
 
     Returns:
         Trajectory: The loaded trajectory.
+
+    See Also:
+        [`trajectopy.Trajectory.from_file`][trajectopy.Trajectory.from_file]: the same as a class method.
+        [`trajectopy.io.write_trajectory`][trajectopy.io.write_trajectory]: writes trajectories.
 
     Examples:
         >>> from trajectopy import io
@@ -286,6 +328,15 @@ def write_trajectory(
             ``kitti`` and ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``)
             and writes trajectopy files otherwise.
         mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+    See Also:
+        [`trajectopy.io.read_trajectory`][trajectopy.io.read_trajectory]: reads all formats.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectory = io.read_trajectory("./example_data/KITTI_gt.traj")
+        >>> io.write_trajectory(trajectory, "poses.tum")  # format from the extension
+        >>> io.write_trajectory(trajectory, "poses.csv", format="euroc")
     """
     from trajectopy.io import trajectory_io
 

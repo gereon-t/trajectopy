@@ -78,6 +78,12 @@ def read_trajectory_string(content: str) -> Trajectory:
 
     Returns:
         Trajectory: The loaded trajectory.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectory = io.read_trajectory("./example_data/KITTI_gt.traj")
+        >>> io.read_trajectory_string(io.trajectory_to_string(trajectory)).name
+        'KITTI Ground Truth'
     """
     return _trajectory_from_data(*ascii.read_string(content, dtype=object))
 
@@ -94,6 +100,12 @@ def trajectory_to_string(trajectory: Trajectory) -> str:
 
     Returns:
         str: Content of a trajectory file.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectory = io.read_trajectory("./example_data/KITTI_gt.traj")
+        >>> io.trajectory_to_string(trajectory).splitlines()[4]
+        '#fields t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz'
     """
     fields = "t,l,px,py,pz,vx,vy,vz" if trajectory.rotations is None else "t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz"
     if trajectory.position_std is not None:

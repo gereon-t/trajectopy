@@ -85,6 +85,15 @@ class DeviationCorrelation:
         cross_correlation_directed (np.ndarray): Correlation coefficients of along-track, horizontal and vertical
             cross-track at the same epochs (3x3).
         cross_correlation_xyz (np.ndarray): Correlation coefficients of x, y and z at the same epochs (3x3).
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> correlation = ate_result.correlation
+        >>> sorted(correlation.components)[:3]
+        ['along', 'cross_h', 'cross_v']
     """
 
     sampling_interval: float

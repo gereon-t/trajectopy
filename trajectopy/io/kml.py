@@ -192,6 +192,17 @@ def write_kml(
     Raises:
         ValueError: If the trajectory does not have a known EPSG code, an option is invalid, or the geoid model
             is not available.
+
+    See Also:
+        [`trajectopy.Trajectory.to_kml`][trajectopy.Trajectory.to_kml]: the same as a method.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> from trajectopy import io
+        >>> xyz = np.column_stack([364000.0 + np.arange(10.0), np.full(10, 5621000.0), np.full(10, 60.0)])
+        >>> track = tpy.Trajectory(tpy.Positions(xyz, epsg=25832), timestamps=np.arange(10.0))
+        >>> io.write_kml(track, "track.kml", color="#1f77b4")
     """
     filename = os.fspath(filename)
     scale = _ColorScale(colormap, max_std, value_range, color_classes)
@@ -248,6 +259,20 @@ def write_ate_kml(
     Raises:
         ValueError: If the trajectory has no known EPSG code, the field is not available, an option is invalid,
             or the geoid model is not available.
+
+    See Also:
+        [`trajectopy.ATEResult.to_kml`][trajectopy.ATEResult.to_kml]: the same as a method.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> from trajectopy import io
+        >>> t = np.arange(0.0, 100.0)
+        >>> xyz = np.column_stack([364000.0 + t, 5621000.0 + np.sin(t / 10), np.full_like(t, 60.0)])
+        >>> reference = tpy.Trajectory(tpy.Positions(xyz, epsg=25832), timestamps=t)
+        >>> estimate = tpy.Trajectory(tpy.Positions(xyz + 0.1, epsg=25832), timestamps=t)
+        >>> ate_result = tpy.ate(estimate, reference, align=False)
+        >>> io.write_ate_kml(ate_result, "ate.kml", field="along_track")
     """
     filename = os.fspath(filename)
     selected = _field(ate_kml_fields(ate_result), field)

@@ -55,8 +55,7 @@ class RelativeTrajectoryDeviations:
 
 
 class RPEResult:
-    """
-    This class represents a set of relative trajectory deviations
+    """This class represents a set of relative trajectory deviations
 
     Relative trajectory deviations describe relative pose deviations between
     two trajectories. The deviations are calculated by comparing pairs of
@@ -65,6 +64,17 @@ class RPEResult:
     Attributes:
         rpe_dev (RelativeTrajectoryDeviations): The relative trajectory deviations.
         name (str): Name of the deviation set.
+
+    See Also:
+        [`trajectopy.rpe`][trajectopy.rpe]: computes the result.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> rpe_result.pair_distance_unit, rpe_result.pos_drift_unit
+        ('m', '%')
     """
 
     def __init__(
@@ -100,6 +110,15 @@ class RPEResult:
 
         Returns:
             pd.DataFrame: One row per pair distance, indexed by the mean distance of the pairs.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> rpe_result = tpy.rpe(estimate, reference)
+            >>> table = rpe_result.describe()
+            >>> table.index.name, len(table)
+            ('pair_distance [m]', 8)
         """
         columns: dict[str, list] = {
             "pairs": self.num_pairs,
@@ -362,6 +381,14 @@ class RPEResult:
         Returns:
             pd.DataFrame: Columns ``pair_distance`` (m or s), ``pos_dev`` (m/m or m/s) and, with orientations,
             ``rot_dev`` (rad/m or rad/s); one row per pose pair.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> rpe_result = tpy.rpe(estimate, reference)
+            >>> rpe_result.to_dataframe().columns.tolist()
+            ['pair_distance', 'pos_dev', 'rot_dev']
         """
         if self.has_rot_dev:
             return pd.DataFrame(
@@ -376,6 +403,15 @@ class RPEResult:
         Args:
             filename (str | os.PathLike): Path of the file.
             mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> rpe_result = tpy.rpe(estimate, reference)
+            >>> rpe_result.to_file("rpe.result")
+            >>> len(tpy.RPEResult.from_file("rpe.result")) == len(rpe_result)
+            True
         """
         from trajectopy.io import results_io
 
@@ -391,6 +427,15 @@ class RPEResult:
 
         Returns:
             RPEResult: The result.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> rpe_result = tpy.rpe(estimate, reference)
+            >>> rpe_result.to_file("rpe.result")
+            >>> tpy.RPEResult.from_file("rpe.result").name
+            'KITTI ORB vs. KITTI Ground Truth'
         """
         from trajectopy.io import results_io
 

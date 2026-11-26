@@ -375,6 +375,13 @@ def positions_figure(trajectories: Sequence[Trajectory], settings: PlotSettings 
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> from trajectopy import visualization as vis
+        >>> vis.positions_figure([reference, estimate]).export("positions.png")
     """
     settings = _settings(settings)
 
@@ -397,6 +404,12 @@ def xyz_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> from trajectopy import visualization as vis
+        >>> vis.xyz_figure([reference]).export("xyz.png")
     """
     settings = _settings(settings)
     axis = index_axis(trajectories, settings.use_relative_timestamps)
@@ -432,6 +445,12 @@ def rpy_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
 
     Returns:
         Figure | None: The figure, or None if no trajectory has orientations.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> from trajectopy import visualization as vis
+        >>> vis.rpy_figure([reference]).export("rpy.png")
     """
     settings = _settings(settings)
     oriented = [trajectory for trajectory in trajectories if trajectory.has_orientation]
@@ -471,6 +490,14 @@ def trajectory_map_figure(trajectories: Sequence[Trajectory], settings: PlotSett
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> from trajectopy import visualization as vis
+        >>> figure = vis.trajectory_map_figure([reference])
+        >>> list(figure.variants)
+        ['Velocity', 'Height']
     """
     settings = _settings(settings)
     z_label = get_axis_label(trajectories)[2]
@@ -497,6 +524,13 @@ def trajectory_figures(trajectories: Sequence[Trajectory], settings: PlotSetting
 
     Returns:
         list[Figure]: Positions, coordinates, orientations (if available) and the colored map.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> from trajectopy import visualization as vis
+        >>> [figure.title for figure in vis.trajectory_figures([reference])]
+        ['Positions', 'XYZ', 'RPY', 'Map']
     """
     if not trajectories:
         return []
@@ -521,6 +555,14 @@ def ate_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None =
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_figure([ate_result]).export("ate.png")
     """
     settings = _settings(settings)
     axis = index_axis([result.trajectory for result in ate_results], settings.use_relative_timestamps)
@@ -568,6 +610,14 @@ def ate_components_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_components_figure([ate_result]).export("components.png")
     """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
@@ -614,6 +664,14 @@ def ate_histogram_figure(ate_results: Sequence[ATEResult], settings: PlotSetting
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_histogram_figure([ate_result]).export("histogram.png")
     """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
@@ -644,6 +702,14 @@ def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_statistics_figure([ate_result]).export("statistics.png")
     """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
@@ -703,6 +769,14 @@ def ate_boxplot_figure(ate_results: Sequence[ATEResult], settings: PlotSettings 
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_boxplot_figure([ate_result]).export("boxplot.png")
     """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
@@ -781,6 +855,17 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    See Also:
+        [`trajectopy.DeviationCorrelation`][trajectopy.DeviationCorrelation]: the values behind the figure.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_correlation_figure([ate_result]).export("correlation.png")
     """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
@@ -850,6 +935,14 @@ def ate_distribution_figure(ate_results: Sequence[ATEResult], settings: PlotSett
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_distribution_figure([ate_result]).export("distribution.png")
     """
     settings = _settings(settings)
     with_rotation = any(result.has_orientation for result in ate_results)
@@ -890,6 +983,16 @@ def ate_map_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | No
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> figure = vis.ate_map_figure([ate_result])
+        >>> list(figure.variants)[:2]
+        ['Position', 'Rotation']
     """
     settings = _settings(settings)
     multiple = len(ate_results) > 1
@@ -955,6 +1058,20 @@ def speed_fit(speed: np.ndarray, deviations: np.ndarray) -> SpeedFit | None:
     Args:
         speed (np.ndarray): Speeds in m/s, e.g. from :func:`smoothed_speed`.
         deviations (np.ndarray): Deviations in meters, one per speed, e.g. ``ate_result.pos_dev_along``.
+
+    See Also:
+        [`trajectopy.visualization.ate_speed_figure`][trajectopy.visualization.ate_speed_figure]: shows the fit.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> speed = vis.smoothed_speed(ate_result.trajectory)
+        >>> fit = vis.speed_fit(speed, ate_result.pos_dev_along)
+        >>> print(f"time offset {fit.slope:.3f} s")  # doctest: +ELLIPSIS
+        time offset ... s
     """
     speed, deviations = np.asarray(speed, dtype=float), np.asarray(deviations, dtype=float)
     valid = np.isfinite(speed) & np.isfinite(deviations)
@@ -978,6 +1095,16 @@ def smoothed_speed(trajectory: Trajectory, *, window: float = SPEED_WINDOW) -> n
 
     Returns:
         np.ndarray: Speed of each pose in m/s.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> speed = vis.smoothed_speed(ate_result.trajectory, window=2.0)
+        >>> speed.shape == (len(ate_result),)
+        True
     """
     velocities = np.asarray(trajectory.velocity_xyz, dtype=float)
     if window <= 0 or len(velocities) < 3:
@@ -1032,6 +1159,17 @@ def ate_speed_figure(
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    See Also:
+        [`trajectopy.visualization.speed_fit`][trajectopy.visualization.speed_fit]: the fitted time offset.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> vis.ate_speed_figure([ate_result], speed_window=2.0).export("speed.png")
     """
     settings = _settings(settings)
     variants: dict[str, RenderFunction] = {}
@@ -1116,6 +1254,15 @@ def rpe_figures(rpe_results: Sequence[RPEResult], settings: PlotSettings | None 
 
     Returns:
         list[Figure]: One figure per pair distance unit (meters, seconds) in use.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> [figure.title for figure in vis.rpe_figures([rpe_result])]
+        ['RPE (per meter)']
     """
     settings = _settings(settings)
     figures = []
@@ -1194,6 +1341,20 @@ def deviation_figures(
 
     Returns:
         list[Figure]: The ATE figures followed by the RPE figures.
+
+    See Also:
+        [`trajectopy.visualization.show`][trajectopy.visualization.show], [`trajectopy.visualization.export_figures`][trajectopy.visualization.export_figures]: show or save them.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> figures = vis.deviation_figures([ate_result], [rpe_result])
+        >>> figures[0].title
+        'ATE'
     """
     settings = _settings(settings)
     ate_results = _plottable_ate_results(ate_results, settings.ate_remove_above)
@@ -1230,6 +1391,15 @@ def parameter_matrix_figure(
 
     Returns:
         Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> figure = vis.parameter_matrix_figure(alignment.position_parameters, correlation=True)
+        >>> figure.export("correlation_matrix.png")
     """
     settings = _settings(settings)
     labels = parameters.params_labels(enabled_only=True, lower_case=True)
@@ -1289,6 +1459,15 @@ def alignment_figures(parameters: AlignmentParameters, settings: PlotSettings | 
 
     Returns:
         list[Figure]: The covariance and the correlation matrix of the estimated parameters.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> from trajectopy import visualization as vis
+        >>> len(vis.alignment_figures(alignment.position_parameters))
+        2
     """
     return [
         parameter_matrix_figure(parameters, correlation=False, settings=settings),

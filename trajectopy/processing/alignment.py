@@ -88,6 +88,11 @@ def estimate_alignment(
     Returns:
         AlignmentResult: Result of the alignment process.
 
+    See Also:
+        [`trajectopy.apply_alignment`][trajectopy.apply_alignment]: applies the result.
+        [`trajectopy.align`][trajectopy.align]: both steps at once.
+        [`trajectopy.AlignmentSettings`][trajectopy.AlignmentSettings]: which parameters are estimated.
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
@@ -187,6 +192,19 @@ def apply_alignment(
 
     Returns:
         Trajectory: Aligned trajectory.
+
+    See Also:
+        [`trajectopy.estimate_alignment`][trajectopy.estimate_alignment]: estimates the alignment.
+        [`trajectopy.align`][trajectopy.align]: both steps at once.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> aligned = tpy.apply_alignment(estimate, alignment)
+        >>> len(aligned) == len(estimate)
+        True
     """
 
     def _prepare_alignment_application(
@@ -275,6 +293,18 @@ def adopt_first_pose(trajectory: Trajectory, other: Trajectory, *, inplace: bool
 
     Returns:
         Trajectory: Transformed trajectory.
+
+    See Also:
+        [`trajectopy.align`][trajectopy.align]: least squares alignment of all poses.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> matched, matched_reference = tpy.match_trajectories(estimate, reference)
+        >>> adopted = tpy.adopt_first_pose(matched, matched_reference)
+        >>> bool(abs(adopted.xyz[0] - matched_reference.xyz[0]).max() < 1e-6)
+        True
     """
     trajectory = trajectory if inplace else trajectory.copy()
     adopt_first_position(trajectory=trajectory, other=other, inplace=True)
@@ -339,6 +369,9 @@ def align(
 
     Returns:
         Trajectory: Aligned trajectory.
+
+    See Also:
+        [`trajectopy.estimate_alignment`][trajectopy.estimate_alignment], [`trajectopy.apply_alignment`][trajectopy.apply_alignment]: the single steps.
 
     Examples:
         >>> import trajectopy as tpy
