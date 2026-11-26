@@ -11,6 +11,8 @@ import sys
 import threading
 import time
 import traceback
+from collections.abc import Iterator
+from contextlib import contextmanager
 from types import FrameType
 
 from PySide6 import QtCore
@@ -21,6 +23,23 @@ STALL_THRESHOLD_S = 0.5
 HEARTBEAT_INTERVAL_MS = 50
 CHECK_INTERVAL_S = 0.1
 MAX_STACK_FRAMES = 25
+
+_pauses = 0  # number of active paused() blocks
+
+
+@contextmanager
+def paused() -> Iterator[None]:
+    """Does not report stalls inside the block.
+
+    For native dialogs (e.g. the Windows file dialog): they run an event loop of the operating system, in which
+    Qt timers do not fire, so the heartbeat stops although the dialog responds.
+    """
+    global _pauses  # pylint: disable=global-statement
+    _pauses += 1
+    try:
+        yield
+    finally:
+        _pauses -= 1
 
 
 class StallLogger(QtCore.QObject):
@@ -54,6 +73,10 @@ class StallLogger(QtCore.QObject):
         stall_start: float | None = None  # last heartbeat before the current stall
         last_stack = ""
         while not self._stop.wait(CHECK_INTERVAL_S):
+            if _pauses:
+                self._heartbeat = time.monotonic()
+                stall_start = None
+                continue
             heartbeat = self._heartbeat
             if stall_start is None:
                 if (blocked := time.monotonic() - heartbeat) > self.threshold:

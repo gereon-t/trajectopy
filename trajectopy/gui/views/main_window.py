@@ -11,6 +11,7 @@ from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from trajectopy import __version__ as VERSION
 from trajectopy.core.settings import PlotSettings
+from trajectopy.gui import stall_logger
 from trajectopy.gui.log import log_handler
 from trajectopy.gui.managers.file_manager import FileManager
 from trajectopy.gui.managers.plot_manager import PlotManager
@@ -712,14 +713,16 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         return buttons(box.exec())
 
     def _ask_open_path(self) -> str:
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Project", self._dialog_directory(), PROJECT_FILE_FILTER
-        )
+        with stall_logger.paused():
+            path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Open Project", self._dialog_directory(), PROJECT_FILE_FILTER
+            )
         return path
 
     def _ask_save_path(self) -> str:
         suggestion = self._project_path or os.path.join(self._dialog_directory(), f"Untitled{PROJECT_SUFFIX}")
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Project As", suggestion, PROJECT_FILE_FILTER)
+        with stall_logger.paused():
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Project As", suggestion, PROJECT_FILE_FILTER)
         if path and not path.lower().endswith(PROJECT_SUFFIX):
             path += PROJECT_SUFFIX
         return path

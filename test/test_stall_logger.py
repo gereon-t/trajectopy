@@ -3,7 +3,7 @@ import unittest
 
 from PySide6 import QtCore
 
-from trajectopy.gui.stall_logger import StallLogger
+from trajectopy.gui.stall_logger import StallLogger, paused
 from trajectopy.visualization.figure import ensure_app
 
 
@@ -35,6 +35,13 @@ class TestStallLogger(unittest.TestCase):
         self.assertIn("has not responded", output)
         self.assertIn("did not respond", output)
         self.assertIn("_blocking_function_for_the_test", output)
+
+    def test_paused_blocks_are_not_logged(self):
+        self._process_events(0.2)
+        with self.assertNoLogs("trajectopy.gui.stall_logger", level="WARNING"):
+            with paused():
+                _blocking_function_for_the_test()
+            self._process_events(0.4)
 
     def test_responsive_main_thread_is_not_logged(self):
         with self.assertNoLogs("trajectopy.gui.stall_logger", level="WARNING"):

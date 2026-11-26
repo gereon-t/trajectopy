@@ -4,6 +4,8 @@ from functools import wraps
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from trajectopy.gui import stall_logger
+
 
 class SingleWindows:
     """Windows that are opened at most once per key (e.g. the settings of a trajectory): opening one again
@@ -138,14 +140,17 @@ def show_msg_box(message: str, parent: QtWidgets.QWidget | None = None, error: b
 
 
 def read_file_dialog(parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)") -> list[str]:
-    file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(parent, "Open File", "", file_filter)
+    with stall_logger.paused():
+        file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(parent, "Open File", "", file_filter)
     return file_names
 
 
 def save_file_dialog(parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)") -> str:
-    file_name, _ = QtWidgets.QFileDialog.getSaveFileName(parent, "Select Output File", "", file_filter)
+    with stall_logger.paused():
+        file_name, _ = QtWidgets.QFileDialog.getSaveFileName(parent, "Select Output File", "", file_filter)
     return file_name
 
 
 def browse_dir_dialog(parent: QtWidgets.QWidget | None) -> str:
-    return QtWidgets.QFileDialog.getExistingDirectory(parent, "Select Directory", "")
+    with stall_logger.paused():
+        return QtWidgets.QFileDialog.getExistingDirectory(parent, "Select Directory", "")
