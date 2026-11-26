@@ -118,8 +118,12 @@ class Trajectory:
         Raises:
             TrajectoryError: If the number of positions and rotations or timestamps do not match.
         """
-        if not isinstance(positions, Positions):
-            positions = Positions(xyz=np.asarray(positions, dtype=float), epsg=0)
+        # the arrays are copied, so that reordering the poses or later changes never modify the caller's data
+        if isinstance(positions, Positions):
+            positions = copy.copy(positions)
+            positions.xyz = np.array(positions.xyz, dtype=float)
+        else:
+            positions = Positions(xyz=np.array(positions, dtype=float), epsg=0)
         orientations: Rotation | None = (
             None
             if rotations is None
@@ -144,17 +148,21 @@ class Trajectory:
 
         # float, since timestamps are shifted and interpolated
         self.timestamps = (
-            np.arange(0, len(positions), dtype=float) if timestamps is None else np.asarray(timestamps, dtype=float)
+            np.arange(0, len(positions), dtype=float) if timestamps is None else np.array(timestamps, dtype=float)
         )
 
         num_poses = len(self.timestamps)
         if num_poses != len(positions):
             raise TrajectoryError(f"Number of positions ({len(positions)}) and timestamps ({num_poses}) do not match!")
         velocity_xyz = (
-            np.asarray(velocity_xyz) if velocity_xyz is not None and len(velocity_xyz) == num_poses else None
+            np.array(velocity_xyz, dtype=float)
+            if velocity_xyz is not None and len(velocity_xyz) == num_poses
+            else None
         )
         path_lengths = (
-            np.asarray(path_lengths) if path_lengths is not None and len(path_lengths) == num_poses else None
+            np.array(path_lengths, dtype=float)
+            if path_lengths is not None and len(path_lengths) == num_poses
+            else None
         )
         self.position_std = _valid_position_std(position_std, num_poses)
 
@@ -1024,7 +1032,7 @@ def _valid_position_std(position_std: np.ndarray | None, num_poses: int) -> np.n
     """Position standard deviations of shape (N, 3) with finite, positive values, or None."""
     if position_std is None:
         return None
-    position_std = np.asarray(position_std, dtype=float)
+    position_std = np.array(position_std, dtype=float)
     if position_std.shape != (num_poses, 3):
         logger.warning(
             "Ignoring position standard deviations of shape %s (expected (%i, 3)).", position_std.shape, num_poses

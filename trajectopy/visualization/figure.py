@@ -132,7 +132,7 @@ class Figure:
         Args:
             path: Output file; the format is derived from the extension.
             variant: Name of the variant to export. Defaults to the first one.
-            width: Width in pixels of raster images.
+            width: Width in pixels of raster images. Defaults to 1600.
 
         Examples:
             >>> import trajectopy as tpy
@@ -447,10 +447,10 @@ def show(
 
     Args:
         figures: Figure(s) to show, one tab each.
-        title: Window title.
+        title: Window title. Defaults to "Trajectopy".
         block: Run the Qt event loop until the window is closed (for scripts). Use ``False`` if an
-            event loop is already running, e.g. inside a Qt application.
-        use_opengl: Draw with OpenGL, if available. Much faster for large data sets.
+            event loop is already running, e.g. inside a Qt application. Defaults to True.
+        use_opengl: Draw with OpenGL, if available. Much faster for large data sets. Defaults to True.
 
     Returns:
         PlotWindow: The window.

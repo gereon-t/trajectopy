@@ -49,7 +49,7 @@ def estimate_alignment(
         other (Trajectory): Reference trajectory to align to.
         settings (AlignmentSettings | ProcessingSettings, optional): Alignment settings, or processing
             settings whose alignment and matching settings are used. Defaults to the default settings.
-        initial_parameters (AlignmentParameters, optional): Prior (e.g. from a manual alignment) used as
+        initial_parameters (AlignmentParameters, optional): Prior (e.g. from the interactive alignment) used as
             start values of the least squares adjustment instead of the direct initialization. Parameters
             that are not estimated stay fixed at their prior value. A time shift of the prior may be large
             (e.g. trajectories recorded with unrelated clocks): the timestamps are shifted by it before the

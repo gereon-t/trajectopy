@@ -72,8 +72,8 @@ operation is running.
 
 Trajectopy writes what it does, warnings and errors to a log. *View → Log* (`Ctrl+L`) opens it at the
 bottom of the main window; warnings are shown in orange, errors in red, and the context menu copies or clears the
-messages. The log shows the last 5000 messages (information, warnings and errors) since Trajectopy was
-started, also if it is opened later, and it reopens at the
+messages. The log shows the last 5000 lines of messages (information, warnings and errors) since Trajectopy
+was started, also if it is opened later, and it reopens at the
 next start if it was open. The Windows app has no console window, so the log is the place to look when something
 does not work as expected (Python installations also print the messages to the terminal they were started from).
 
@@ -87,7 +87,8 @@ versions with a suffix (e.g. `7.1.0.dev1`) are never reported as outdated. Pytho
 ## File Dialogs
 
 The file dialogs open in the folder that was used last for the same kind of file (trajectories, results,
-projects, settings, …). On Windows, Trajectopy uses its own file dialog instead of the one of the operating
+settings, …); the dialogs to open and save projects open in the folder of the current or the most recent
+project. On Windows, Trajectopy uses its own file dialog instead of the one of the operating
 system, because on some systems the Windows dialog takes several seconds to close after a file was chosen.
 This dialog also remembers its size and lists the usual and the recently used folders in its sidebar.
 

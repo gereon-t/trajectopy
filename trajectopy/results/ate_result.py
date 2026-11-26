@@ -77,9 +77,10 @@ class ATEResult:
     Attributes:
         trajectory (Trajectory): The trajectory the deviations are belonging to
         abs_dev (AbsoluteTrajectoryDeviations): The absolute trajectory deviations
-        name (str): The name of the result
+        name (str): The name of the result. Defaults to the name of the trajectory.
         alignment (AlignmentResult | None): The alignment that was applied to the trajectory before the
-            deviations were computed, or None if unknown (e.g. for results read from a file).
+            deviations were computed, or None if unknown (e.g. for results read from a file) or if none was
+            applied. Defaults to None.
 
     See Also:
         [`trajectopy.ate`][trajectopy.ate]: computes the result.

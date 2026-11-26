@@ -1101,7 +1101,7 @@ def smoothed_speed(trajectory: Trajectory, *, window: float = SPEED_WINDOW) -> n
 
     Args:
         trajectory: Trajectory, sorted by time or path length (the result follows that order).
-        window: Length of the moving average in seconds (0 = no averaging).
+        window: Length of the moving average in seconds (0 = no averaging). Defaults to 1.0.
 
     Returns:
         np.ndarray: Speed of each pose in m/s.
@@ -1163,9 +1163,10 @@ def ate_speed_figure(
 
     Args:
         ate_results: Results to show, overlaid.
-        settings: Plot settings.
-        speed_window: The speed is averaged over this many seconds (see [`smoothed_speed`][trajectopy.visualization.smoothed_speed]), since noise in the
-            speed would make the fitted time offsets too small.
+        settings: Plot settings. Defaults to ``PlotSettings()``.
+        speed_window: The speed is averaged over this many seconds (see
+            [`smoothed_speed`][trajectopy.visualization.smoothed_speed]), since noise in the speed would make the
+            fitted time offsets too small. Defaults to 1.0.
 
     Returns:
         Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].

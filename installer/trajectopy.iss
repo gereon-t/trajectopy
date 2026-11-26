@@ -2,7 +2,7 @@
 ;
 ; Packages the one-folder PyInstaller build. Build it first, then compile this script:
 ;   uv run pyinstaller --noconfirm trajectopy.spec
-;   iscc /DAppVersion=5.0.1 installer\trajectopy.iss
+;   iscc /DAppVersion=7.0.0 installer\trajectopy.iss
 ; The installer is written to dist\Trajectopy-<version>-setup.exe.
 ;
 ; It installs for the current user without administrator rights (or for all users, if chosen in the

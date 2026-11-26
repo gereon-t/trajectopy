@@ -28,17 +28,20 @@ from trajectopy import io, visualization as vis
 
 The whole public API follows the same conventions, so that it can grow without breaking changes:
 
-- **Inputs are never modified.** Functions and methods that transform a trajectory return a new object. The
-  keyword-only argument `inplace=True` modifies the input instead (and returns it, too). Always use the
-  return value: `trajectory = tpy.align(trajectory, reference)`. Exceptions are the methods `Trajectory.set_sorting`, `ATEResult.set_sorting` and `ATEResult.remove_ate_above`,
-  which change the object itself.
+- **Inputs are never modified.** Functions and methods that transform a trajectory return a new object, and
+  `Trajectory` copies the arrays it is created from. The keyword-only argument `inplace=True` modifies the
+  input instead (and returns it, too). Always use the return value:
+  `trajectory = tpy.align(trajectory, reference)`. Exceptions are the methods `Trajectory.set_sorting`,
+  `ATEResult.set_sorting` and `ATEResult.remove_ate_above`, which change the object itself.
 - **One settings argument.** Every processing function with settings takes a single `settings` argument,
   either of its own settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, from which it
   uses the part it needs. So the same `ProcessingSettings` can be passed to all of them. `ate`, which needs
   the matching and the alignment settings, takes only `ProcessingSettings`. `None` means the defaults.
-- **Options with a fixed set of values are enumerations that accept strings.** `MatchingSettings(method="nearest_temporal")` and
-  `tpy.interpolate(trajectory, index, method="linear")` work as well as the enumeration members; the lookup
-  ignores the case.
+- **Options accept strings.** Options that are enumerations (e.g. `MatchingMethod`, `Sorting`) also accept
+  their values as strings, e.g. `MatchingSettings(method="nearest_temporal")` or
+  `tpy.interpolate(trajectory, index, method="linear")`; the lookup ignores the case. Options whose values are
+  strings (e.g. the `colormap` of `write_kml` or the `table_format` of `format_table`) are written in lower
+  case.
 - **Keyword-only options.** Only the data (trajectories, results, figures, file names, indices) and the
   settings are positional arguments; all options are keyword-only, so that new options can be added and
   options can be reordered without breaking calls.

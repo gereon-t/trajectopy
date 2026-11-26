@@ -22,7 +22,7 @@ table of removed names and the migration guide below list the replacements.
 - **`ate_result.alignment`** holds the alignment that was applied before the deviations were computed.
 - **Options accept strings**, e.g. `tpy.MatchingSettings(method="nearest_temporal")` or
   `tpy.interpolate(trajectory, index, method="linear")`, also when assigned to a setting
-  (`settings.matching.method = "nearest_temporal"`). The lookup ignores the case.
+  (`settings.matching.method = "nearest_temporal"`). The lookup of these enumerations ignores the case.
 - **`Trajectory`**
   - accepts arrays in the constructor: `tpy.Trajectory(xyz, quat, timestamps, name="...")`;
   - supports numpy-like indexing: `trajectory[10]` returns a `tpy.Pose`, `trajectory[10:20]`,
@@ -159,6 +159,8 @@ The following arguments must now be passed by keyword:
   string (`"time"`, `"path_length"`, case-insensitive), like all other options; before, a string broke the
   `repr` and the file export of the trajectory.
 - `Positions.mean(inplace=True)` returns the modified object, like all other functions with `inplace`.
+- `Trajectory(...)` copies the arrays and the `Positions` object it is created from; before, it reordered the
+  caller's positions in place when the timestamps were not in chronological order.
 - The poses returned when iterating over a trajectory hold their velocity as a tuple, like those returned by
   indexing; before, it was a NumPy array, so that comparing poses failed.
 - Alignment result files keep whether the estimation converged (`#converged false`); before, every alignment

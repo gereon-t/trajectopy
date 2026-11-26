@@ -4,7 +4,7 @@ Georeferenced trajectories (trajectories with an EPSG code other than 0) and ATE
 trajectories can be exported as KML files and opened in Google Earth. It shows them in their real-world context:
 on imagery and terrain and, where available, between photorealistic 3D buildings. In the GUI, choose
 *Export to Google Earth (KML)…* in the context menu of a trajectory or an ATE result; the dialog offers all
-options below and remembers them.
+options below except `precision` and remembers them.
 
 The KITTI example data is not georeferenced. For the examples, it is placed in UTM zone 32N (EPSG 25832):
 

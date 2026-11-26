@@ -101,7 +101,7 @@ Alignments are saved and loaded with `to_file` and `AlignmentResult.from_file`.
 ### Initial Values
 
 `initial_parameters` starts the adjustment at given values instead of an approximate solution of its own, e.g.
-from a manual alignment in the GUI. Parameters that are not estimated keep these values. A large time offset
+from the interactive alignment in the GUI. Parameters that are not estimated keep these values. A large time offset
 (e.g. between unrelated clocks) can be given this way; then only the remaining offset is estimated:
 
 ```python

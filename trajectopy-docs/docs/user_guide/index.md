@@ -50,7 +50,7 @@ All functions follow the same conventions:
   settings are positional arguments; all options are passed by name, e.g. `tpy.interpolate(trajectory, index,
   method="linear")`.
 - **Options as strings**: options such as the matching method are enumerations, but strings are accepted as
-  well, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
+  well (in any case), e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
 - **Units**: positions, path lengths and position deviations are in meters, timestamps in seconds, angles in
   radians, unless stated otherwise.
 - **Deviations**: deviations are always *evaluated trajectory minus reference*.
