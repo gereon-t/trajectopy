@@ -281,7 +281,11 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument("--no-report-figures", action="store_true", help="Leave the figures out of the report")
         _add_common_arguments(sub)
 
-    sub = subparsers.add_parser("align", help="Align trajectories to a reference and print the parameters")
+    sub = subparsers.add_parser(
+        "align",
+        help="Align trajectories to a reference and print the parameters",
+        description="Align trajectories to a reference and print the parameters",
+    )
     _add_input_arguments(sub)
     _add_reference_arguments(sub)
     sub.add_argument("--output", "-o", help="Write the aligned trajectory to this file (or directory)")
@@ -289,14 +293,22 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--parameters", help="Write the alignment parameters to this .result file")
     _add_common_arguments(sub)
 
-    sub = subparsers.add_parser("convert", help="Convert trajectories between formats (and coordinate systems)")
+    sub = subparsers.add_parser(
+        "convert",
+        help="Convert trajectories between formats (and coordinate systems)",
+        description="Convert trajectories between formats (and coordinate systems)",
+    )
     _add_input_arguments(sub)
     sub.add_argument("--to", choices=FORMATS[1:], default="trajectopy", help="Output format")
     sub.add_argument("--output", "-o", required=True, help="Output file (or directory for several trajectories)")
     sub.add_argument("--epsg", type=int, help="Transform the positions to this EPSG code")
     _add_common_arguments(sub)
 
-    sub = subparsers.add_parser("info", help="Show a summary of trajectory files and the topics of ROS bags")
+    sub = subparsers.add_parser(
+        "info",
+        help="Show a summary of trajectory files and the topics of ROS bags",
+        description="Show a summary of trajectory files and the topics of ROS bags",
+    )
     _add_input_arguments(sub)
     _add_common_arguments(sub)
     return parser
