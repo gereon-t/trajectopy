@@ -38,7 +38,8 @@ extras, and builds the documentation.
 
 - Formatting and linting with ruff (line length 119), type checking with mypy.
 - Docstrings in the [Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings),
-  with `Args`, `Returns` and `Raises` sections and, for the main functions, `Examples` that run as doctests.
+  with `Args`, `Returns` and `Raises` sections, `Examples` that run as doctests (required for every public
+  function and class) and, where helpful, `See Also` links written as ``[`trajectopy.ate`][trajectopy.ate]``.
 - Changes of the public API follow the [API policy](api_policy.md): new options are keyword-only, functions do
   not modify their inputs, and nothing is removed without a deprecation (`trajectopy.utils.deprecation`).
 - Every user-facing change is listed in `CHANGELOG.md`.

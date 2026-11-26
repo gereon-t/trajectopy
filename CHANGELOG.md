@@ -77,8 +77,9 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
 - The documentation is restructured like that of numpy and pandas: installation, a user guide with one page per
   topic (trajectories, alignment, evaluation, visualization, Google Earth, file formats, settings, GUI, command
   line), an API reference organized by the public namespaces, the API policy and the release notes.
-- Every public function, class, method and property is documented with its arguments and return value, and the
-  examples of the documentation are run by the tests.
+- Every public function, class, method and property is documented with its arguments and return value. Every
+  public function and class has examples, which run as doctests, and links to related functions (See Also).
+- The examples of the user guide and the scripts in `example_scripts` are run by the tests.
 
 ### Fixes
 
