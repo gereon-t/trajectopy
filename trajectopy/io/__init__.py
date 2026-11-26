@@ -67,10 +67,4 @@ def __getattr__(name: str):
         from trajectopy.io import rosbag
 
         return getattr(rosbag, name)
-    if name == "HeaderData":  # an implementation detail of reading files
-        from trajectopy.io.header import HeaderData
-        from trajectopy.utils.deprecation import warn_deprecated
-
-        warn_deprecated("trajectopy.io.HeaderData is deprecated; it is an internal detail of reading files.")
-        return HeaderData
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

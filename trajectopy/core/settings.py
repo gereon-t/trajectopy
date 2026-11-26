@@ -74,13 +74,6 @@ class Settings(ABC):
         if option is not None:
             if not isinstance(value, option):
                 value = option(value)
-            deprecated: frozenset[str] = getattr(
-                option, "deprecated", frozenset
-            )()  # options of other enumerations have none
-            if value.value in deprecated:
-                from trajectopy.utils.deprecation import warn_deprecated
-
-                warn_deprecated(f"{option.__name__}.{value.name} is deprecated and will be removed in version 8.")
         super().__setattr__(name, value)
 
     @staticmethod
@@ -936,8 +929,6 @@ class MatchingMethod(OptionEnum):
             common time reference.
         NEAREST_SPATIAL_INTERPOLATED: ``"nearest_spatial_interpolated"``: the projection onto a line
             fitted through the ``k_nearest`` nearest positions of the reference.
-        UNKNOWN: ``"unknown"``: placeholder of earlier versions, not a matching method; matching with it
-            raises ValueError. Deprecated, it will be removed in version 8.
 
     Examples:
         >>> import trajectopy as tpy
@@ -945,15 +936,10 @@ class MatchingMethod(OptionEnum):
         <MatchingMethod.NEAREST_TEMPORAL: 'nearest_temporal'>
     """
 
-    @classmethod
-    def deprecated(cls) -> frozenset[str]:
-        return frozenset({"unknown"})
-
     NEAREST_SPATIAL = "nearest_spatial"
     NEAREST_TEMPORAL = "nearest_temporal"
     INTERPOLATION = "interpolation"
     NEAREST_SPATIAL_INTERPOLATED = "nearest_spatial_interpolated"
-    UNKNOWN = "unknown"
 
 
 class InterpolationMethod(OptionEnum):

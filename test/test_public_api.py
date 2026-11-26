@@ -10,8 +10,6 @@ import importlib
 import inspect
 import unittest
 
-from trajectopy.utils.deprecation import TrajectopyDeprecationWarning
-
 
 def plotting_available() -> bool:
     """Whether the plotting extras, which trajectopy.visualization needs, are installed."""
@@ -153,7 +151,8 @@ PUBLIC_API = {
     ],
 }
 
-DEPRECATED = {
+# names of version 6 that were removed in version 7 (see the migration guide in the changelog)
+REMOVED = {
     "trajectopy": ["ComparisonMethod", "IOError", "Rotations"],
     "trajectopy.exceptions": ["IOError"],
     "trajectopy.io": ["HeaderData"],
@@ -201,11 +200,11 @@ class TestPublicApi(unittest.TestCase):
 
         self.assertTrue(set(PUBLIC_API["trajectopy"]) <= set(dir(trajectopy)))
 
-    def test_deprecated_names_warn(self):
-        for module_name, names in DEPRECATED.items():
+    def test_removed_names_are_gone(self):
+        for module_name, names in REMOVED.items():
             module = importlib.import_module(module_name)
             for name in names:
-                with self.subTest(name=f"{module_name}.{name}"), self.assertWarns(TrajectopyDeprecationWarning):
+                with self.subTest(name=f"{module_name}.{name}"), self.assertRaises(AttributeError):
                     getattr(module, name)
 
     def test_star_import_does_not_shadow_builtins(self):

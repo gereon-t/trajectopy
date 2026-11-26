@@ -14,7 +14,6 @@ from scipy.spatial.transform import Rotation
 from trajectopy.core.positions import Positions
 from trajectopy.exceptions import TrajectoryError
 from trajectopy.utils.definitions import UNIX_TIME_THRESHOLD, Sorting
-from trajectopy.utils.deprecation import warn_deprecated
 from trajectopy.utils.geometry import common_span, gradient_3d, lengths_from_xyz
 from trajectopy.utils.rotations import rotation_from_euler
 
@@ -206,7 +205,6 @@ class Trajectory:
     def from_file(
         cls,
         filename: str | os.PathLike,
-        io_stream: bool | None = None,
         *,
         format: str = "auto",  # noqa: A002
     ) -> "Trajectory":
@@ -219,7 +217,6 @@ class Trajectory:
 
         Args:
             filename (str | os.PathLike): Path to the file.
-            io_stream (bool, optional): Deprecated, use :meth:`from_string` to parse the content of a file.
             format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
                 ``euroc``.
 
@@ -234,10 +231,6 @@ class Trajectory:
         """
         from trajectopy.io.formats import read_trajectory
 
-        if io_stream is not None:
-            warn_deprecated("The argument 'io_stream' of Trajectory.from_file() is deprecated, use from_string().")
-            if io_stream:
-                return cls.from_string(str(filename))
         return read_trajectory(filename, format=format)
 
     @classmethod

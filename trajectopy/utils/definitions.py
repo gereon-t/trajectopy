@@ -31,11 +31,6 @@ class OptionEnum(str, Enum):
         return {}
 
     @classmethod
-    def deprecated(cls) -> frozenset[str]:
-        """Values of options that are deprecated; setting them in settings emits a deprecation warning."""
-        return frozenset()
-
-    @classmethod
     def from_str(cls, value: str):  # noqa: ANN206 - returns the subclass
         """Returns the option for a string (case-insensitive, aliases allowed). Same as ``cls(value)``."""
         return cls(value)

@@ -11,7 +11,6 @@ from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing._lib.approximation.line_approximation import Line3D
 from trajectopy.processing.interpolation import inside_gaps, interpolate
 from trajectopy.utils.definitions import Sorting
-from trajectopy.utils.deprecation import renamed_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,6 @@ def match_stamps(trajectory: Trajectory, index: np.ndarray, *, inplace: bool = F
     return traj_self
 
 
-@renamed_parameters(matching_settings="settings")
 def match_trajectories(
     trajectory: Trajectory,
     other: Trajectory,

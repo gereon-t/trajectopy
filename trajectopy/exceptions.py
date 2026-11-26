@@ -57,12 +57,3 @@ __all__ = [
     "ApproximationError",
     "PointSetError",
 ]
-
-
-def __getattr__(name: str) -> type:
-    if name == "IOError":  # deprecated since it shadowed the builtin exception
-        from trajectopy.utils.deprecation import warn_deprecated
-
-        warn_deprecated("trajectopy.exceptions.IOError is deprecated, use TrajectopyIOError instead.")
-        return TrajectopyIOError
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -7,8 +7,9 @@ All notable changes to trajectopy are documented here. trajectopy follows
 ## 7.0.0
 
 Version 7 settles the public API, so that it can grow without breaking changes. It defines which names are
-public, applies the same conventions to every function and removes long deprecated aliases. Most code that
-uses keyword arguments keeps working and shows deprecation warnings that name the replacement.
+public, applies the same conventions to every function and removes deprecated and redundant names without a
+transition period: code written for version 6 fails with a clear error where it needs to be changed. The table
+of removed names and the migration guide below list the replacements.
 
 ### Highlights
 
@@ -91,7 +92,7 @@ Besides the API changes above, version 7 adds:
 - Orientations are `scipy.spatial.transform.Rotation` objects: `trajectory.rotations`,
   `ATEResult.abs_dev.rot_dev`, `AlignmentParameters.helmert.rotation_set` and
   `SensorRotationParameters.rotation_set`. The `Rotations` class, a
-  subclass of scipy's `Rotation`, is gone; `trajectopy.Rotations` is a deprecated alias of scipy's `Rotation`.
+  subclass of scipy's `Rotation`, is gone.
   Compose rotations with `*` and `inv()` instead of `+` and `-` (`a - b` is `a * b.inv()`), and use
   `magnitude()` instead of `rotangle`.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
@@ -129,11 +130,9 @@ Besides the API changes above, version 7 adds:
 - Alignment result files keep whether the estimation converged (`#converged false`); before, every alignment
   read from a file counted as converged.
 
-### Deprecations
+### Removed and renamed names
 
-These keep working in version 7 and will be removed in version 8:
-
-| Deprecated | Replacement |
+| Version 6 | Version 7 |
 | --- | --- |
 | `estimate_alignment(..., alignment_settings=, matching_settings=)`, same for `align` | `settings=` (`AlignmentSettings` or `ProcessingSettings`) |
 | `ate(..., processing_settings=)`, `rpe(..., processing_settings=)` | `settings=` |
@@ -145,7 +144,7 @@ These keep working in version 7 and will be removed in version 8:
 | `trajectopy.IOError`, `trajectopy.exceptions.IOError` | `trajectopy.TrajectopyIOError` |
 | `trajectopy.ComparisonMethod` | none (an internal detail of the file I/O) |
 | `trajectopy.io.HeaderData` | none (an internal detail of reading files) |
-| `MatchingMethod.UNKNOWN` (warns when set in `MatchingSettings`) | none (it was never a matching method; matching with it raises `ValueError`) |
+| `MatchingMethod.UNKNOWN` | none (it was never a matching method) |
 | `trajectopy.Rotations` | `scipy.spatial.transform.Rotation` |
 
 ### Migrating from version 6
@@ -164,5 +163,5 @@ trajectory = trajectory.crop(10, 20)  # or trajectory.crop(10, 20, inplace=True)
 ```
 
 Code that relied on functions modifying their input without using the return value has to use the return
-value (or pass `inplace=True`). Run your tests with `-W error::trajectopy.exceptions.TrajectopyDeprecationWarning`
-to find the remaining uses of deprecated arguments.
+value (or pass `inplace=True`). Removed arguments raise a `TypeError` and removed names an `AttributeError`
+that names them.

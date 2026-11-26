@@ -191,25 +191,7 @@ _LAZY_IMPORTS = {
 }
 
 
-# Deprecated top-level names: name -> (module, attribute, message)
-_DEPRECATED = {
-    "IOError": ("trajectopy.exceptions", "TrajectopyIOError", "use trajectopy.TrajectopyIOError instead"),
-    "ComparisonMethod": ("trajectopy.core.settings", "ComparisonMethod", "it is an internal detail of the file I/O"),
-    "Rotations": (
-        "scipy.spatial.transform",
-        "Rotation",
-        "use scipy.spatial.transform.Rotation, which trajectopy uses for orientations",
-    ),
-}
-
-
 def __getattr__(name: str):
-    if name in _DEPRECATED:
-        from trajectopy.utils.deprecation import warn_deprecated
-
-        deprecated_module, attribute, message = _DEPRECATED[name]
-        warn_deprecated(f"trajectopy.{name} is deprecated, {message}.")
-        return getattr(importlib.import_module(deprecated_module), attribute)
     module = _LAZY_IMPORTS.get(name)
     if module is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

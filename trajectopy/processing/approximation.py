@@ -18,13 +18,11 @@ from trajectopy.processing._lib.approximation.cubic_approximation import (
 from trajectopy.processing.interpolation import interpolate
 from trajectopy.processing.sorting import divide_into_laps
 from trajectopy.utils.definitions import Sorting
-from trajectopy.utils.deprecation import renamed_parameters
 from trajectopy.utils.numeric import rndodd
 
 logger = logging.getLogger(__name__)
 
 
-@renamed_parameters(approximation_settings="settings")
 def approximate(
     trajectory: Trajectory,
     settings: ApproximationSettings | ProcessingSettings | None = None,

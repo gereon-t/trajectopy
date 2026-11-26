@@ -11,7 +11,6 @@ from trajectopy.core.trajectory import Trajectory
 from trajectopy.processing._lib.approximation.line_approximation import Line3D
 from trajectopy.processing._lib.approximation.voxelizer import Voxelizer
 from trajectopy.utils.definitions import Sorting
-from trajectopy.utils.deprecation import renamed_parameters
 from trajectopy.utils.geometry import lengths_from_xyz
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,6 @@ logger = logging.getLogger(__name__)
 _MIN_EDGE_WEIGHT = 1e-12
 
 
-@renamed_parameters(sorting_settings="settings")
 def sort_spatially(
     trajectory: Trajectory,
     settings: SortingSettings | ProcessingSettings | None = None,

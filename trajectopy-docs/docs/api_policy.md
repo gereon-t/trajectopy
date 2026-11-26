@@ -74,6 +74,9 @@ names the replacement.
 Deprecated parts are removed in the next major release, at the earliest one minor release after the
 deprecation.
 
+This policy applies from version 7 on. Version 7 itself removed the deprecated and redundant names of version 6
+without a transition period; the [release notes](release_notes.md) list their replacements.
+
 To make sure that your code is ready for the next major release, turn the warnings into errors in your
 tests, e.g. with pytest:
 

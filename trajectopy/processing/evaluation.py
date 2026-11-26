@@ -16,20 +16,17 @@ from trajectopy.processing.matching import match_trajectories
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
 from trajectopy.results.rpe_result import RelativeTrajectoryDeviations, RPEResult
-from trajectopy.utils.deprecation import renamed_parameters, warn_deprecated
 from trajectopy.utils.geometry import nearest_point
 
 logger = logging.getLogger(__name__)
 
 
-@renamed_parameters(processing_settings="settings")
 def ate(
     trajectory: Trajectory,
     other: Trajectory,
     settings: ProcessingSettings | None = None,
     *,
     align: bool = True,
-    return_alignment: bool | None = None,
 ) -> ATEResult:
     """Computes the absolute trajectory error (ATE) between two trajectories.
 
@@ -45,7 +42,6 @@ def ate(
             settings are used. Defaults to the default settings.
         align (bool, optional): Whether to align the trajectory before computing the deviations.
             Defaults to True.
-        return_alignment (bool, optional): Deprecated. The alignment is available as ``result.alignment``.
 
     Returns:
         ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment
@@ -81,17 +77,9 @@ def ate(
 
     result = _compare_trajectories_absolute(other=other, trajectory=trajectory)
     result.alignment = alignment
-
-    if return_alignment is not None:
-        warn_deprecated(
-            "The argument 'return_alignment' of ate() is deprecated, use the attribute 'alignment' of the result."
-        )
-        if return_alignment:  # version 6 returned empty alignment parameters without alignment
-            return result, alignment or AlignmentResult()  # type: ignore[return-value]
     return result
 
 
-@renamed_parameters(processing_settings="settings")
 def rpe(
     trajectory: Trajectory,
     other: Trajectory,

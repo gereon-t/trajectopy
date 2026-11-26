@@ -5,7 +5,6 @@ import unittest
 import trajectopy as tpy
 from test.testdata import generated_trajectory, noisy_trajectory
 from trajectopy.core.settings import resolve_settings
-from trajectopy.utils.deprecation import TrajectopyDeprecationWarning
 
 
 class TestResolveSettings(unittest.TestCase):
@@ -39,21 +38,12 @@ class TestSettingsArguments(unittest.TestCase):
         result = tpy.ate(noisy_trajectory.copy(), generated_trajectory.copy())
         self.assertIsInstance(result.alignment, tpy.AlignmentResult)
 
-    def test_legacy_arguments_warn(self):
+    def test_arguments_of_version_6_are_rejected(self):
         test, reference = noisy_trajectory.copy(), generated_trajectory.copy()
-        with self.assertWarns(TrajectopyDeprecationWarning):
-            tpy.match_trajectories(test, reference, matching_settings=tpy.MatchingSettings())
-        with self.assertWarns(TrajectopyDeprecationWarning):
-            tpy.estimate_alignment(test, reference, alignment_settings=tpy.AlignmentSettings())
-        with self.assertWarns(TrajectopyDeprecationWarning):
-            result, alignment = tpy.ate(test, reference, processing_settings=None, return_alignment=True)
-        self.assertIs(result.alignment, alignment)
-
-    def test_legacy_and_new_argument_raise(self):
         with self.assertRaises(TypeError):
-            tpy.estimate_alignment(
-                noisy_trajectory, generated_trajectory, settings=tpy.AlignmentSettings(), alignment_settings=None
-            )
+            tpy.match_trajectories(test, reference, matching_settings=tpy.MatchingSettings())  # type: ignore[call-arg]
+        with self.assertRaises(TypeError):
+            tpy.ate(test, reference, return_alignment=True)  # type: ignore[call-arg]
 
 
 if __name__ == "__main__":

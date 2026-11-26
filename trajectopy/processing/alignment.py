@@ -1,8 +1,5 @@
 import copy
-import functools
 import logging
-from collections.abc import Callable
-from typing import Any, TypeVar
 
 import numpy as np
 
@@ -23,34 +20,8 @@ from trajectopy.processing._lib.alignment.direct import align_rotations
 from trajectopy.processing._lib.alignment.equations import leverarm_time_component
 from trajectopy.processing._lib.alignment.estimation import AlignmentEstimator
 from trajectopy.results.alignment_result import AlignmentResult
-from trajectopy.utils.deprecation import warn_deprecated
 
 logger = logging.getLogger(__name__)
-
-_F = TypeVar("_F", bound=Callable[..., Any])
-
-
-def _accept_legacy_settings(func: _F) -> _F:
-    """Maps the deprecated arguments ``alignment_settings`` and ``matching_settings`` to ``settings``."""
-
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        legacy = {name: kwargs.pop(name) for name in ("alignment_settings", "matching_settings") if name in kwargs}
-        if legacy:
-            if kwargs.get("settings") is not None:
-                raise TypeError(f"{func.__name__}() got values for both 'settings' and {', '.join(map(repr, legacy))}")
-            warn_deprecated(
-                f"The arguments {', '.join(map(repr, legacy))} of {func.__name__}() are deprecated, pass "
-                "'settings' (AlignmentSettings or ProcessingSettings) instead.",
-                stacklevel=2,
-            )
-            kwargs["settings"] = ProcessingSettings(
-                alignment=legacy.get("alignment_settings") or AlignmentSettings(),
-                matching=legacy.get("matching_settings") or MatchingSettings(),
-            )
-        return func(*args, **kwargs)
-
-    return wrapper  # type: ignore[return-value]
 
 
 def _alignment_and_matching_settings(
@@ -61,7 +32,6 @@ def _alignment_and_matching_settings(
     return resolve_settings(processing, AlignmentSettings), MatchingSettings()
 
 
-@_accept_legacy_settings
 def estimate_alignment(
     trajectory: Trajectory,
     other: Trajectory,
@@ -353,7 +323,6 @@ def adopt_first_orientation(trajectory: Trajectory, other: Trajectory, *, inplac
     return trajectory
 
 
-@_accept_legacy_settings
 def align(
     trajectory: Trajectory,
     other: Trajectory,
