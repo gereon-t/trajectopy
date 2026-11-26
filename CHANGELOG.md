@@ -132,6 +132,7 @@ The following arguments must now be passed by keyword:
   and `trajectopy.processing.lib.alignment.parameters` (use `trajectopy.AlignmentParameters`).
 - The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
   private.
+
 ### Documentation
 
 - The documentation is restructured like that of numpy and pandas: installation, a user guide with one page per
@@ -152,9 +153,8 @@ The following arguments must now be passed by keyword:
   of a `KeyError`.
 - `TrajectopyIOError` and `AlignmentError` are raised now: for files whose structure does not match their
   header or format (e.g. a wrong number of columns) and for alignments that cannot be estimated (e.g. no poses
-  left after the preprocessing),
-  where a plain `ValueError` was raised before. Both are also `ValueError`s, so existing error handling keeps
-  working.
+  left after the preprocessing), where a plain `ValueError` was raised before. Both are also `ValueError`s, so
+  existing error handling keeps working.
 - `Trajectory(..., sorting=)`, `Trajectory.set_sorting` and `ATEResult.set_sorting` accept the sorting as a
   string (`"time"`, `"path_length"`, case-insensitive), like all other options; before, a string broke the
   `repr` and the file export of the trajectory.
