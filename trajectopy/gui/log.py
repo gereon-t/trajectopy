@@ -50,7 +50,7 @@ class QtLogHandler(logging.Handler):
             self.record_emitted.emit(message, record.levelno)
         except RuntimeError:  # the emitter was deleted while the application exits
             pass
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             self.handleError(record)
 
 
@@ -59,7 +59,7 @@ _handler: QtLogHandler | None = None
 
 def log_handler() -> QtLogHandler:
     """The handler that feeds the log panel; installed on the root logger on first use."""
-    global _handler  # pylint: disable=global-statement
+    global _handler
     if _handler is None:
         _handler = QtLogHandler()
         logging.getLogger().addHandler(_handler)

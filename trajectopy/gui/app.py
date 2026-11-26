@@ -107,7 +107,7 @@ def _preload(modules: tuple[str, ...]) -> None:
     for name in modules:
         try:
             importlib.import_module(name)
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             # imported again in the main thread, which reports the error
             logger.debug("Could not preload %s", name, exc_info=True)
 
