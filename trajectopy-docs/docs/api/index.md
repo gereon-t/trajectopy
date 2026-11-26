@@ -145,11 +145,11 @@ from trajectopy import io, visualization as vis
 | --- | --- |
 | [`exceptions.TrajectopyError`](exceptions.md#trajectopy.exceptions.TrajectopyError) | Base exception for trajectopy. |
 | [`exceptions.TrajectoryError`](exceptions.md#trajectopy.exceptions.TrajectoryError) | Trajectory-specific errors. |
-| [`exceptions.AlignmentError`](exceptions.md#trajectopy.exceptions.AlignmentError) | Alignment-specific errors. |
+| [`exceptions.AlignmentError`](exceptions.md#trajectopy.exceptions.AlignmentError) | The alignment cannot be estimated with the given data and settings. |
 | [`exceptions.AlignmentParametersError`](exceptions.md#trajectopy.exceptions.AlignmentParametersError) | Alignment parameters errors. |
 | [`exceptions.ApproximationError`](exceptions.md#trajectopy.exceptions.ApproximationError) | Approximation-specific errors. |
 | [`exceptions.PointSetError`](exceptions.md#trajectopy.exceptions.PointSetError) | Point set errors. |
-| [`exceptions.TrajectopyIOError`](exceptions.md#trajectopy.exceptions.TrajectopyIOError) | I/O errors. |
+| [`exceptions.TrajectopyIOError`](exceptions.md#trajectopy.exceptions.TrajectopyIOError) | The structure of a file does not match its header or format. |
 | [`exceptions.TrajectopyDeprecationWarning`](exceptions.md#trajectopy.exceptions.TrajectopyDeprecationWarning) | Warning for parts of the API that will be removed in the next major release. |
 
 ## [Utilities](utilities.md)

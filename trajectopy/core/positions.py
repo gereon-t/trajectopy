@@ -66,7 +66,7 @@ class Positions:
                 Defaults to 4937.
 
         Raises:
-            PointSetError: Gets raised if input xyz is not a numpy array.
+            PointSetError: If xyz does not have three columns (shape n x 3).
         """
 
         if not isinstance(xyz, np.ndarray):

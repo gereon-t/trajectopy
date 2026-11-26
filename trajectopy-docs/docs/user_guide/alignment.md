@@ -23,7 +23,7 @@ orientations after the least squares adjustment.
 Which parameters are estimated is set in the [alignment settings](settings.md#alignment-settings); the
 settings also contain the standard deviations that weight the observations and a preprocessing step that
 selects the poses to use. The leverarm needs the orientations of the trajectory to align; estimating it
-without them raises `ValueError`.
+without them raises `AlignmentError`.
 
 The time shift is the offset of the clock of the aligned trajectory: `apply_alignment` subtracts it from its
 timestamps. A positive time shift means that the timestamps of the trajectory are too large, e.g. a time shift

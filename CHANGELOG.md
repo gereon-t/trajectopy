@@ -121,8 +121,9 @@ Besides the API changes above, version 7 adds:
   17 significant digits.
 - An unknown `#time_format` in a file header raises a `TrajectopyIOError` that lists the valid formats instead
   of a `KeyError`.
-- `TrajectopyIOError` and `AlignmentError` are raised now: for file contents that cannot be read (e.g. a wrong
-  number of columns) and for alignments that cannot be estimated (e.g. no poses left after the preprocessing),
+- `TrajectopyIOError` and `AlignmentError` are raised now: for files whose structure does not match their
+  header or format (e.g. a wrong number of columns) and for alignments that cannot be estimated (e.g. no poses
+  left after the preprocessing),
   where a plain `ValueError` was raised before. Both are also `ValueError`s, so existing error handling keeps
   working.
 - `Trajectory(..., sorting=)`, `Trajectory.set_sorting` and `ATEResult.set_sorting` accept the sorting as a

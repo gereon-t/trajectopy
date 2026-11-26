@@ -417,7 +417,7 @@ def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.nd
         Positions: Positions read from the trajectory file
 
     Raises:
-        ValueError: If required position fields (px, py, pz) are not found in header
+        TrajectopyIOError: If required position fields (px, py, pz) are not found in header
     """
     required_fields = ["px", "py", "pz"]
     missing_fields = [f for f in required_fields if f not in header_data.fields]

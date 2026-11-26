@@ -153,7 +153,7 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
         SensorRotationParameters: The rotation angles (radians) and which of them are enabled.
 
     Raises:
-        ValueError: If the file does not contain exactly 14 data lines.
+        TrajectopyIOError: If the file does not contain exactly 14 data lines.
 
     Examples:
         >>> import trajectopy as tpy

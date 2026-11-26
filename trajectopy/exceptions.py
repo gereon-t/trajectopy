@@ -1,4 +1,4 @@
-"""Exceptions defined by trajectopy. All of them derive from [`TrajectopyError`][trajectopy.TrajectopyError]."""
+"""Exceptions defined by trajectopy. All of them derive from [`TrajectopyError`][trajectopy.exceptions.TrajectopyError]."""
 
 
 class TrajectopyError(Exception):
@@ -30,11 +30,13 @@ class AlignmentParametersError(TrajectopyError):
 
 
 class TrajectopyIOError(TrajectopyError, ValueError):
-    """The content of a file cannot be read.
+    """The structure of a file does not match its header or format.
 
-    For example, the number of columns does not match the header or the format, required fields are missing,
-    or values are invalid. Errors of the file system (e.g. ``FileNotFoundError``) are passed on unchanged. It is
-    also a ``ValueError``.
+    For example, the number of columns does not match the ``#fields`` header or the TUM, KITTI or EuRoC format,
+    the position fields are missing, timestamps or positions are missing or not finite, or the ``#time_format``
+    is unknown. Values that cannot be parsed (e.g. text in a numeric column) raise the ``ValueError`` of the
+    parser, and errors of the file system (e.g. ``FileNotFoundError``) are passed on unchanged. It is also a
+    ``ValueError``.
     """
 
     pass
