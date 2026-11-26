@@ -5,6 +5,18 @@ from trajectopy.gui.utils import center_window
 from trajectopy.utils.resources import FULL_ICON_FILE_PATH
 
 
+class _Logo(QtWidgets.QLabel):
+    """The logo, which reports left clicks. (A label of its own instead of an event filter of the window: a
+    Python event filter can still be called while Qt destroys the window, after its Python object is gone.)"""
+
+    clicked = QtCore.Signal()
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:  # noqa: N802 - Qt API
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
 class AboutGUI(QtWidgets.QMainWindow):
     def __init__(self, parent, version_str: str, year_str: str) -> None:
         super().__init__(parent=parent)
@@ -19,18 +31,11 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.link_label.setText('<a href="https://github.com/gereon-t/trajectopy">GitHub</a>')
 
         self._logo_clicks = ClickCounter()
-        self.icon.installEventFilter(self)
+        self.icon.clicked.connect(self._on_logo_clicked)
 
-    def eventFilter(self, watched: QtCore.QObject, event: QtCore.QEvent) -> bool:  # noqa: N802 - Qt API
-        if (
-            watched is self.icon
-            and event.type() == QtCore.QEvent.Type.MouseButtonPress
-            and isinstance(event, QtGui.QMouseEvent)
-            and event.button() == QtCore.Qt.MouseButton.LeftButton
-            and self._logo_clicks.click()
-        ):
+    def _on_logo_clicked(self) -> None:
+        if self._logo_clicks.click():
             play_jingle()
-        return super().eventFilter(watched, event)
 
     def link(self, linkStr):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
@@ -55,7 +60,7 @@ class AboutGUI(QtWidgets.QMainWindow):
         self.verticalLayout.setContentsMargins(10, 10, 10, 10)
         self.verticalLayout.setObjectName("verticalLayout")
         self.icon_image = QtGui.QPixmap(FULL_ICON_FILE_PATH)
-        self.icon = QtWidgets.QLabel(self.verticalLayoutWidget)
+        self.icon = _Logo(self.verticalLayoutWidget)
         self.icon.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.icon.setObjectName("icon")
         self.icon.setPixmap(self.icon_image)

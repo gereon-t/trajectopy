@@ -60,8 +60,11 @@ class TestFileDialogs(unittest.TestCase):
     def test_opens_in_the_folder_used_last_for_the_kind_of_file(self):
         self._run(Mode.OPEN_MANY, [self.file])
         _, dialog = self._run(Mode.OPEN, [])
-        self.assertEqual(os.path.normcase(dialog.directory().absolutePath()), os.path.normcase(self.folder.name))
-        self.assertIn(QtCore.QUrl.fromLocalFile(self.folder.name), dialog.sidebarUrls())
+        # samefile: the temporary folder may be given in the short 8.3 form on Windows (e.g. RUNNER~1)
+        self.assertTrue(os.path.samefile(dialog.directory().absolutePath(), self.folder.name))
+        if dialog.testOption(QT_DIALOG):  # only Qt's own dialog (Windows) lists the recent folders in its sidebar
+            sidebar = [url.toLocalFile() for url in dialog.sidebarUrls()]
+            self.assertTrue(any(os.path.isdir(path) and os.path.samefile(path, self.folder.name) for path in sidebar))
 
     @unittest.skipUnless(sys.platform == "win32", "Qt's own dialog is used on Windows only")
     def test_qt_dialog_is_adapted(self):
