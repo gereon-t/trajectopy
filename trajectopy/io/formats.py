@@ -287,8 +287,3 @@ def write_trajectory(
     }
     with open(filename, mode, newline="\n", encoding="utf-8") as file:
         file.write(writers[file_format](trajectory))
-
-
-# names used before trajectopy 7
-read_trajectory_file = read_trajectory
-write_trajectory_file = write_trajectory

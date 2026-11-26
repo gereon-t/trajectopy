@@ -166,7 +166,7 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
     filename = os.fspath(filename)
     header_data = HeaderData.from_file(filename)
     deviation_data = pd.read_csv(filename, comment="#")
-    sorting = Sorting.from_str(header_data.sorting)
+    sorting = Sorting(header_data.sorting)
 
     # the rows in the order the trajectory will have, so that the deviations stay with their poses: one pose
     # per timestamp and, if sorted by path length, ties in chronological order

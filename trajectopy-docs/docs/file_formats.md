@@ -164,11 +164,11 @@ The format can also be given explicitly, and trajectories can be written in thes
 
 ```python
 import trajectopy as tpy
-from trajectopy.io.formats import read_kitti, write_trajectory_file
+from trajectopy.io import read_kitti, write_trajectory
 
 trajectory = tpy.Trajectory.from_file("poses.txt", format="kitti")
 trajectory = read_kitti("poses.txt", timestamps="times.txt")  # KITTI poses are numbered otherwise
-write_trajectory_file(trajectory, "poses.tum", format="tum")  # or "kitti", "euroc", "trajectopy"
+write_trajectory(trajectory, "poses.tum", format="tum")  # or "kitti", "euroc", "trajectopy"
 ```
 
 Without a `#name` header line, a trajectory is named after its file.

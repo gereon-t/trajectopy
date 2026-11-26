@@ -11,6 +11,7 @@ class TestOptions(unittest.TestCase):
         self.assertIs(tpy.PairDistanceUnit("m"), tpy.PairDistanceUnit.METER)
         self.assertIs(tpy.Sorting("arc_length"), tpy.Sorting.PATH_LENGTH)
         self.assertEqual(str(tpy.Sorting.TIME), "time")
+        self.assertIs(tpy.Sorting.from_str("Time"), tpy.Sorting.TIME)  # kept for compatibility
 
     def test_unknown_option_raises(self):
         with self.assertRaises(ValueError):

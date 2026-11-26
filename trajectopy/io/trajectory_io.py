@@ -35,7 +35,7 @@ def _trajectory_from_data(header_data: HeaderData, trajectory_data: np.ndarray) 
         velocity_xyz=_finite_or_none(
             ascii.extract_trajectory_velocity_xyz(header_data=header_data, trajectory_data=trajectory_data)
         ),
-        sorting=Sorting.from_str(header_data.sorting),
+        sorting=Sorting(header_data.sorting),
         position_std=ascii.extract_trajectory_position_std(header_data=header_data, trajectory_data=trajectory_data),
     )
 

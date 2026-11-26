@@ -87,7 +87,7 @@ def decode_trajectory(data: dict, decoder: Decoder) -> Trajectory:
         name=data["name"],
         path_lengths=path_lengths,
         velocity_xyz=velocity,
-        sorting=Sorting.from_str(data["sorting"]),
+        sorting=Sorting(data["sorting"]),
     )
     # exactly as saved: the constructor orders the poses itself, which could change the order of equal values
     trajectory.timestamps, trajectory.path_lengths, trajectory.positions.xyz = timestamps, path_lengths, xyz

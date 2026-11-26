@@ -189,7 +189,7 @@ class HeaderData:
 
     @property
     def relative_dist_unit(self) -> PairDistanceUnit:
-        return PairDistanceUnit.from_str(str(self.data.get("relative_dist_unit", "meter")))
+        return PairDistanceUnit(str(self.data.get("relative_dist_unit", "meter")))
 
     @property
     def num_pairs(self) -> list[int]:
