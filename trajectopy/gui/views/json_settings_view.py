@@ -6,8 +6,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 
 from trajectopy.core.settings import Settings
-from trajectopy.gui import stall_logger
-from trajectopy.gui.utils import center_window, save_file_dialog, show_msg_box
+from trajectopy.gui.utils import center_window, open_file_dialog, save_file_dialog, show_msg_box
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +100,7 @@ class JSONViewer(QtWidgets.QMainWindow):
         self.vlayout.addLayout(self.hlayout)
 
     def open_file_dialog(self):
-        with stall_logger.paused():
-            filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Settings", "", "JSON Files (*.json)")
+        filename = open_file_dialog(self, "JSON Files (*.json)", caption="Open Settings")
         if filename:
             self.load_json_file(filename)
             logger.info("Loaded processing settings file %s", filename)

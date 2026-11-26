@@ -11,6 +11,7 @@ The same :class:`PlotWindow` is used by the GUI and by :func:`show` in scripts.
 import logging
 import os
 import re
+import sys
 from collections.abc import Callable, Sequence
 
 import pyqtgraph as pg
@@ -235,6 +236,13 @@ class _FigureWidget(QtWidgets.QWidget):
             view.updateAutoRange()
 
 
+def _dialog_options() -> QtWidgets.QFileDialog.Option:
+    """Qt's own file dialog on Windows: the native one takes seconds to return after a file was chosen."""
+    if sys.platform == "win32":
+        return QtWidgets.QFileDialog.Option.DontUseNativeDialog
+    return QtWidgets.QFileDialog.Option(0)
+
+
 def _safe_filename(name: str) -> str:
     return re.sub(r"[^\w\-.]+", "_", name).strip("_") or "plot"
 
@@ -300,7 +308,11 @@ class PlotWindow(QtWidgets.QMainWindow):
         variant = widget.current_variant if widget is not None else None
         stem = _safe_filename(f"{figure.title} {variant}" if variant else figure.title)
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Export Plot", f"{stem}.{self.export_format}", "Images (*.png *.jpg *.svg)"
+            self,
+            "Export Plot",
+            f"{stem}.{self.export_format}",
+            "Images (*.png *.jpg *.svg)",
+            options=_dialog_options(),
         )
         if not path:
             return
@@ -309,7 +321,9 @@ class PlotWindow(QtWidgets.QMainWindow):
         self._report_failure(lambda: figure.export(path, variant=variant, width=self.export_width))
 
     def export_all(self) -> None:
-        directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Export All Plots")
+        directory = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Export All Plots", "", QtWidgets.QFileDialog.Option.ShowDirsOnly | _dialog_options()
+        )
         if directory:
             self._report_failure(
                 lambda: export_figures(
