@@ -65,6 +65,10 @@ choose *Set as Reference*, then right-click the estimate and choose *Compare wit
 
     Python package, extras and the Windows app.
 
+- **[Getting Started](getting_started.md)**
+
+    A ten-minute tutorial: load, align, evaluate, plot and save.
+
 - **[User Guide](user_guide/index.md)**
 
     Trajectories, alignment, evaluation, plots, file formats, settings, the GUI and the command line.

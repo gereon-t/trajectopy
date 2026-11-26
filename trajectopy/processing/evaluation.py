@@ -55,6 +55,10 @@ def ate(
         [`trajectopy.ATEResult`][trajectopy.ATEResult]: the result.
         [`trajectopy.visualization.deviation_figures`][trajectopy.visualization.deviation_figures]: plots of the result.
 
+    References:
+        1. J. Sturm, N. Engelhard, F. Endres, W. Burgard, D. Cremers (2012): A benchmark for the evaluation of RGB-D SLAM systems. IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS).
+        2. G. Tombrink, A. Dreier, L. Klingbeil, H. Kuhlmann (2024): Spatio-temporal trajectory alignment for trajectory evaluation. Journal of Applied Geodesy. https://doi.org/10.1515/jag-2024-0040
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
@@ -113,6 +117,10 @@ def rpe(
         [`trajectopy.ate`][trajectopy.ate]: absolute deviations.
         [`trajectopy.RPEResult`][trajectopy.RPEResult]: the result.
         [`trajectopy.RelativeComparisonSettings`][trajectopy.RelativeComparisonSettings]: the pair distances.
+
+    References:
+        1. J. Sturm, N. Engelhard, F. Endres, W. Burgard, D. Cremers (2012): A benchmark for the evaluation of RGB-D SLAM systems. IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS).
+        2. A. Geiger, P. Lenz, R. Urtasun (2012): Are we ready for autonomous driving? The KITTI vision benchmark suite. IEEE Conference on Computer Vision and Pattern Recognition (CVPR).
 
     Examples:
         >>> import trajectopy as tpy

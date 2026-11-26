@@ -291,6 +291,9 @@ class ATEResult:
 
         Returns:
             tuple[float, float]: Lower and upper bound.
+
+        References:
+            1. H. R. Künsch (1989): The jackknife and the bootstrap for general stationary observations. The Annals of Statistics 17(3), 1217-1241.
         """
         if quantity not in ("position", "rotation"):
             raise ValueError(f"Unknown quantity '{quantity}', use 'position' or 'rotation'.")

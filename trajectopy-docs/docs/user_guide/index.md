@@ -1,7 +1,8 @@
 # User Guide
 
 The user guide explains the concepts of trajectopy and shows how to use them, from loading trajectories to
-reports of several evaluated estimates. The [API reference](../api/index.md) describes every class and function
+reports of several evaluated estimates. New to trajectopy? Start with the [Getting Started](../getting_started.md)
+tutorial. The [API reference](../api/index.md) describes every class and function
 in detail.
 
 | Topic | Contents |
@@ -15,6 +16,7 @@ in detail.
 | [Settings](settings.md) | All processing and plot settings |
 | [GUI](gui.md) | The graphical user interface |
 | [Command Line](command_line.md) | Evaluation, alignment and conversion from the shell |
+| [Glossary](glossary.md) | The terms used in trajectopy |
 
 The examples use the files in the [`example_data`](https://github.com/gereon-t/trajectopy/tree/main/example_data)
 folder of the repository: the ground truth of a KITTI sequence and the estimates of two visual SLAM systems,

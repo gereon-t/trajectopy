@@ -63,6 +63,7 @@ validation:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - Getting Started: getting_started.md
   - User Guide:
     - user_guide/index.md
     - Trajectories: user_guide/trajectories.md
@@ -74,6 +75,7 @@ nav:
     - Settings: user_guide/settings.md
     - GUI: user_guide/gui.md
     - Command Line: user_guide/command_line.md
+    - Glossary: user_guide/glossary.md
   - API Reference:
     - api/index.md
     - Trajectories: api/trajectory.md

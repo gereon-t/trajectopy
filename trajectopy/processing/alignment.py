@@ -93,6 +93,9 @@ def estimate_alignment(
         [`trajectopy.align`][trajectopy.align]: both steps at once.
         [`trajectopy.AlignmentSettings`][trajectopy.AlignmentSettings]: which parameters are estimated.
 
+    References:
+        1. G. Tombrink, A. Dreier, L. Klingbeil, H. Kuhlmann (2024): Spatio-temporal trajectory alignment for trajectory evaluation. Journal of Applied Geodesy. https://doi.org/10.1515/jag-2024-0040
+
     Examples:
         >>> import trajectopy as tpy
         >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
@@ -372,6 +375,9 @@ def align(
 
     See Also:
         [`trajectopy.estimate_alignment`][trajectopy.estimate_alignment], [`trajectopy.apply_alignment`][trajectopy.apply_alignment]: the single steps.
+
+    References:
+        1. G. Tombrink, A. Dreier, L. Klingbeil, H. Kuhlmann (2024): Spatio-temporal trajectory alignment for trajectory evaluation. Journal of Applied Geodesy. https://doi.org/10.1515/jag-2024-0040
 
     Examples:
         >>> import trajectopy as tpy
