@@ -115,7 +115,6 @@ PUBLIC_API = {
         "ate_figure",
         "ate_histogram_figure",
         "ate_map_figure",
-        "ate_segments_figure",
         "ate_speed_figure",
         "ate_statistics_figure",
         "deviation_figures",

@@ -46,7 +46,7 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `ate(..., align=)`, `Trajectory(..., name=)`, `Positions(..., local_transformer=)`,
   `divide_into_laps(..., return_lap_indices=)`, `Trajectory.crop(..., inverse=)` and
   `Trajectory.intersect(..., max_gap_size=)`. In `trajectopy.visualization`, the same holds for
-  `ate_segments_figure(..., segment_length=)`, `ate_speed_figure(..., speed_window=)`,
+  `ate_speed_figure(..., speed_window=)`,
   `parameter_matrix_figure(..., correlation=)`, `smoothed_speed(..., window=)`,
   `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=, width=)` and
   `show(..., title=, block=, use_opengl=)`.
@@ -59,6 +59,8 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `rotations.to_scipy()` where a scipy `Rotation` is needed (e.g. for `Slerp`) and `Rotations.from_scipy()`
   for the opposite direction. `Rotations.random` takes `rng` instead of `random_state`.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
+- Removed `trajectopy.visualization.ate_segments_figure`; the ATE plot shows the same information.
+  `ATEResult.segment_statistics` still computes the statistics per segment as a table.
 - Removed the modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`),
   `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`
   (use `trajectopy.AlignmentParameters`).

@@ -91,4 +91,4 @@ def test_report_with_figures(tmp_path):
     write_report(str(path), ate_results=[result])
     html = path.read_text(encoding="utf-8")
     assert html.count("data:image/png;base64,") >= 5
-    assert "ATE Box Plot" in html and "ATE Segments" in html
+    assert "ATE Box Plot" in html and "ATE Segments" not in html

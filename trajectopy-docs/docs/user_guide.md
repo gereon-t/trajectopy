@@ -148,8 +148,7 @@ low, high = ate_result.confidence_interval("position", "mean")  # or "rms"; "rot
 ```
 
 `segment_statistics` evaluates parts of the trajectory separately: consecutive windows of time or path length,
-or segments given by a label of each deviation (e.g. tunnel / open sky). The figure *ATE Segments* shows the
-windows.
+or segments given by a label of each deviation (e.g. tunnel / open sky).
 
 ```python
 table = ate_result.segment_statistics(segment_length=100.0, by="path_length")  # pandas DataFrame
