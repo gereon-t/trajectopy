@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation
 
 
 def rotation_from_euler(seq: str, angles: ArrayLike, degrees: bool = False) -> Rotation:
-    """Same as :meth:`scipy.spatial.transform.Rotation.from_euler`, but several times faster for many angles.
+    """Same as `scipy.spatial.transform.Rotation.from_euler`, but several times faster for many angles.
 
     Trajectory files can hold millions of orientations as roll, pitch and yaw angles; the quaternions of such
     sequences are composed with vectorized numpy operations. Other input is passed on to scipy.

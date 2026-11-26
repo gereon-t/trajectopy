@@ -47,7 +47,7 @@ class Sorting(OptionEnum):
     Attributes:
         TIME: ``"time"``: chronological order; the index is the timestamps.
         PATH_LENGTH: ``"path_length"``: order along the path after spatial sorting (see
-            :func:`trajectopy.sort_spatially`); the index is the path length.
+            [`trajectopy.sort_spatially`][trajectopy.sort_spatially]); the index is the path length.
 
     Examples:
         >>> import trajectopy as tpy
@@ -60,6 +60,7 @@ class Sorting(OptionEnum):
 
     @classmethod
     def aliases(cls) -> dict[str, str]:
+        """Alternative names of the options: ``"arc_length"`` for path length (used in files of earlier versions)."""
         return {"arc_length": "path_length"}
 
 

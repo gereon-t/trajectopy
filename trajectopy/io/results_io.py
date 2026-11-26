@@ -11,6 +11,7 @@ from trajectopy.core.parameters import AlignmentParameters, SensorRotationParame
 from trajectopy.core.positions import Positions
 from trajectopy.core.settings import AlignmentEstimationSettings
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.exceptions import TrajectopyIOError
 from trajectopy.io.header import HeaderData
 from trajectopy.results.alignment_result import AlignmentResult
 from trajectopy.results.ate_result import AbsoluteTrajectoryDeviations, ATEResult
@@ -58,7 +59,7 @@ def write_alignment_parameters(parameters: AlignmentParameters, filename: str | 
 
     All parameters are written, whether they are enabled or not, one per line in the order translation x/y/z,
     rotation x/y/z, scale, time shift and leverarm x/y/z. Each line holds the value, whether the parameter is
-    enabled and the corresponding row of the covariance matrix. :func:`read_alignment_parameters` reads the file.
+    enabled and the corresponding row of the covariance matrix. [`read_alignment_parameters`][trajectopy.io.read_alignment_parameters] reads the file.
 
     Args:
         parameters (AlignmentParameters): Parameters to write.
@@ -80,7 +81,7 @@ def write_alignment_parameters(parameters: AlignmentParameters, filename: str | 
 
 
 def read_alignment_parameters(filename: str | os.PathLike) -> AlignmentParameters:
-    """Reads alignment parameters written by :func:`write_alignment_parameters`.
+    """Reads alignment parameters written by [`write_alignment_parameters`][trajectopy.io.write_alignment_parameters].
 
     Args:
         filename (str | os.PathLike): Path of the file.
@@ -168,7 +169,7 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
     alignment_data = pd.read_csv(filename, comment="#", header=None)
 
     if len(alignment_data) != 14:
-        raise ValueError("Alignment file with sensor rotation information must contain 14 lines!")
+        raise TrajectopyIOError("Alignment file with sensor rotation information must contain 14 lines!")
 
     params = SensorRotationParameters()
     params.values = alignment_data.iloc[11:, 0].to_numpy()
@@ -182,7 +183,7 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
 
 
 def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
-    """Writes an alignment result to a file that :func:`read_alignment_result` and the GUI can read.
+    """Writes an alignment result to a file that [`read_alignment_result`][trajectopy.io.read_alignment_result] and the GUI can read.
 
     Args:
         result (AlignmentResult): Result to write.
@@ -216,7 +217,7 @@ def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike,
 
 
 def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
-    """Reads an alignment result written by :func:`write_alignment_result`.
+    """Reads an alignment result written by [`write_alignment_result`][trajectopy.io.write_alignment_result].
 
     Args:
         filename (str | os.PathLike): Path of the file.
@@ -256,11 +257,11 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
 
 
 def write_ate_result(result: ATEResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
-    """Writes an ATE result as CSV file with a metadata header, which :func:`read_ate_result` and the GUI
+    """Writes an ATE result as CSV file with a metadata header, which [`read_ate_result`][trajectopy.io.read_ate_result] and the GUI
     can read.
 
     The file contains the deviations of each pose together with the timestamps, path lengths and
-    positions of the evaluated trajectory (see :meth:`ATEResult.to_dataframe`).
+    positions of the evaluated trajectory (see [`ATEResult.to_dataframe`][trajectopy.ATEResult.to_dataframe]).
 
     Args:
         result (ATEResult): Result to write.
@@ -292,7 +293,7 @@ def write_ate_result(result: ATEResult, filename: str | os.PathLike, *, mode: st
 
 
 def read_ate_result(filename: str | os.PathLike) -> ATEResult:
-    """Reads an ATE result written by :func:`write_ate_result`.
+    """Reads an ATE result written by [`write_ate_result`][trajectopy.io.write_ate_result].
 
     Files written by trajectopy versions with an earlier sign convention of the deviations are
     converted to the current one (test minus reference).
@@ -375,7 +376,7 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 
 
 def write_rpe_result(result: RPEResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
-    """Writes an RPE result as CSV file with a metadata header, which :func:`read_rpe_result` and the GUI
+    """Writes an RPE result as CSV file with a metadata header, which [`read_rpe_result`][trajectopy.io.read_rpe_result] and the GUI
     can read.
 
     Args:
@@ -409,7 +410,7 @@ def write_rpe_result(result: RPEResult, filename: str | os.PathLike, *, mode: st
 
 
 def read_rpe_result(filename: str | os.PathLike) -> RPEResult:
-    """Reads an RPE result written by :func:`write_rpe_result`.
+    """Reads an RPE result written by [`write_rpe_result`][trajectopy.io.write_rpe_result].
 
     Args:
         filename (str | os.PathLike): Path of the file.

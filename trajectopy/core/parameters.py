@@ -697,7 +697,7 @@ class AlignmentParameters(ParameterSet):
     """Parameters of the spatio-temporal alignment of two trajectories.
 
     The parameters of a similarity transformation (translation, rotation, scale), a time shift and a
-    leverarm. Each is a :class:`Parameter` with value, variance and whether it is estimated (enabled);
+    leverarm. Each is a [`Parameter`][trajectopy.Parameter] with value, variance and whether it is estimated (enabled);
     disabled parameters keep their default value, which has no effect.
 
     Attributes:
@@ -859,7 +859,7 @@ class AlignmentParameters(ParameterSet):
         return Leverarm(x=self.lever_x, y=self.lever_y, z=self.lever_z)
 
     def to_file(self, filename: str | os.PathLike) -> None:
-        """Writes the parameters with their covariance matrix to a CSV file that :meth:`from_file` can read.
+        """Writes the parameters with their covariance matrix to a CSV file that [`from_file`][trajectopy.AlignmentParameters.from_file] can read.
 
         Args:
             filename (str | os.PathLike): Path of the file; an existing file is overwritten.
@@ -881,7 +881,7 @@ class AlignmentParameters(ParameterSet):
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "AlignmentParameters":
-        """Reads parameters written by :meth:`to_file`.
+        """Reads parameters written by [`to_file`][trajectopy.AlignmentParameters.to_file].
 
         Args:
             filename (str | os.PathLike): Path of the file.

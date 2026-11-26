@@ -77,7 +77,7 @@ def divide_into_laps(
     where the path length of the spatially sorted trajectory jumps back to the start of the loop.
 
     Args:
-        trajectory (Trajectory): Trajectory sorted by path length (see :func:`sort_spatially`).
+        trajectory (Trajectory): Trajectory sorted by path length (see [`sort_spatially`][trajectopy.sort_spatially]).
         return_lap_indices (bool, optional): Whether to return lap indices. Defaults to False.
 
     Returns:

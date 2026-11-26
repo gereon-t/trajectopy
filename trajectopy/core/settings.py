@@ -747,7 +747,7 @@ class AlignmentSettings(Settings):
 
 class RotationApproximationMethod(OptionEnum):
     """Method for approximating (smoothing) the orientations of a trajectory (see
-    :func:`trajectopy.approximate`).
+    [`trajectopy.approximate`][trajectopy.approximate]).
 
     Each option can also be given as its value, e.g. ``rotation_approximation_method="average_in_window"`` (case-insensitive).
 
@@ -768,7 +768,7 @@ class RotationApproximationMethod(OptionEnum):
 
 
 class PositionApproximationMethod(OptionEnum):
-    """Method for approximating (smoothing) the positions of a trajectory (see :func:`trajectopy.approximate`).
+    """Method for approximating (smoothing) the positions of a trajectory (see [`trajectopy.approximate`][trajectopy.approximate]).
 
     Each option can also be given as its value, e.g. ``position_approximation_method="cubic"`` (case-insensitive).
 
@@ -842,6 +842,7 @@ class PairDistanceUnit(OptionEnum):
 
     @classmethod
     def aliases(cls) -> dict[str, str]:
+        """Alternative names of the options: ``"m"`` for meter, ``"s"`` and ``"sec"`` for second."""
         return {"m": "meter", "s": "second", "sec": "second"}
 
 
@@ -916,7 +917,7 @@ class RelativeComparisonSettings(Settings):
 
 
 class MatchingMethod(OptionEnum):
-    """Method for matching corresponding poses of two trajectories (see :func:`trajectopy.match_trajectories`).
+    """Method for matching corresponding poses of two trajectories (see [`trajectopy.match_trajectories`][trajectopy.match_trajectories]).
 
     Each option can also be given as its value, e.g. ``method="nearest_temporal"`` (case-insensitive).
 
@@ -943,7 +944,7 @@ class MatchingMethod(OptionEnum):
 
 
 class InterpolationMethod(OptionEnum):
-    """Method for interpolating trajectories (see :func:`trajectopy.interpolate`).
+    """Method for interpolating trajectories (see [`trajectopy.interpolate`][trajectopy.interpolate]).
 
     Each option can also be given as its value, e.g. ``method="linear"`` (case-insensitive).
 
@@ -992,7 +993,7 @@ class MatchingSettings(Settings):
 
 @dataclass
 class PlotSettings(Settings):
-    """Configuration of all plots (GUI and :mod:`trajectopy.visualization`).
+    """Configuration of all plots (GUI and `trajectopy.visualization`).
 
     The along-track direction is positive in travel direction, horizontal cross-track is
     positive to the right, and vertical cross-track is positive upwards.
@@ -1057,8 +1058,8 @@ class SortingSettings(Settings):
     Attributes:
         voxel_size: Size of voxel grid for downsampling (meters). Voxel centroids are
             used for nearest neighbor searches instead of raw points. Defaults to 0.05.
-        movement_threshold: Maximum allowed point movement between MLS iterations (meters).
-            Algorithm terminates when all points move less than this. Defaults to 0.005.
+        movement_threshold: Average point movement between MLS iterations (meters) below which the
+            iteration stops (after at most 10 iterations). Defaults to 0.005.
         k_nearest: Number of nearest voxels to consider during MLS smoothing. Defaults to 4.
 
     See Also:
@@ -1120,7 +1121,7 @@ def resolve_settings(settings: Settings | None, settings_type: type[_SettingsT])
     """Returns the settings of the given type that a processing function should use.
 
     Every processing function accepts either its own settings type or the complete
-    :class:`ProcessingSettings`, from which the matching part is taken. ``None`` means the default settings.
+    [`ProcessingSettings`][trajectopy.ProcessingSettings], from which the matching part is taken. ``None`` means the default settings.
 
     Args:
         settings (Settings | None): Settings passed by the user.

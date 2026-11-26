@@ -197,7 +197,7 @@ def write_report(
 ) -> None:
     """Writes a self-contained HTML report of an evaluation.
 
-    The report contains a summary table of all results (see :func:`trajectopy.summary_table`), the statistics of
+    The report contains a summary table of all results (see [`trajectopy.summary_table`][trajectopy.summary_table]), the statistics of
     each result, the alignment, all figures and the processing settings. It is a single file without external
     references, e.g. to archive the evaluation of a paper.
 

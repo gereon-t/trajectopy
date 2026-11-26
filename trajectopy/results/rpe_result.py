@@ -112,7 +112,7 @@ class RPEResult:
         )
 
     def describe(self) -> pd.DataFrame:
-        """Statistics of the drift per pair distance, like :meth:`pandas.DataFrame.describe`.
+        """Statistics of the drift per pair distance, like `pandas.DataFrame.describe`.
 
         Position drifts are in % (pairs by distance) or m/s (pairs by time), rotation drifts in rad/100m or
         rad/s; rotation statistics are NaN without orientations.
@@ -173,7 +173,7 @@ class RPEResult:
     def rot_drift_unit(self) -> str:
         """Display unit of the rotation drift: ``"deg/100m"`` or ``"deg/s"``.
 
-        The rotation values of the result are in radians; convert them with :func:`numpy.rad2deg` for display.
+        The rotation values of the result are in radians; convert them with `numpy.rad2deg` for display.
         """
         return "deg/100m" if self.rpe_dev.pair_distance_unit == PairDistanceUnit.METER else "deg/s"
 
@@ -189,8 +189,8 @@ class RPEResult:
 
         Args:
             key (str): ``"pos_dev"``, ``"rot_dev"`` or ``"pair_distance"``.
-            func (Callable): Statistic of an array, e.g. :func:`numpy.mean`.
-            factor (float, optional): Factor applied to the statistic, e.g. :attr:`drift_factor`.
+            func (Callable): Statistic of an array, e.g. `numpy.mean`.
+            factor (float, optional): Factor applied to the statistic, e.g. [`drift_factor`][trajectopy.RPEResult.drift_factor].
                 Defaults to 1.
 
         Returns:
@@ -210,13 +210,13 @@ class RPEResult:
 
     @property
     def pos_rpe(self) -> float:
-        """Average position drift over all pair distances (see :attr:`pos_drift_unit`)."""
+        """Average position drift over all pair distances (see [`pos_drift_unit`][trajectopy.RPEResult.pos_drift_unit])."""
         return float(np.mean(self.pos_dev_mean))
 
     @property
     def rot_rpe(self) -> float:
         """Average rotation drift over all pair distances, in radians per 100 m (pairs by distance) or radians
-        per second (pairs by time); see :attr:`rot_drift_unit`.
+        per second (pairs by time); see [`rot_drift_unit`][trajectopy.RPEResult.rot_drift_unit].
 
         Returns:
             float: Average rotation drift.
@@ -243,17 +243,17 @@ class RPEResult:
 
     @property
     def pos_dev_min(self) -> list[float]:
-        """Minimum position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
+        """Minimum position drift per pair distance (see [`pos_dev_mean`][trajectopy.RPEResult.pos_dev_mean] for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.min, factor=self.drift_factor)
 
     @property
     def pos_dev_max(self) -> list[float]:
-        """Maximum position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
+        """Maximum position drift per pair distance (see [`pos_dev_mean`][trajectopy.RPEResult.pos_dev_mean] for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.max, factor=self.drift_factor)
 
     @property
     def pos_dev_median(self) -> list[float]:
-        """Median position drift per pair distance (see :attr:`pos_dev_mean` for the unit)."""
+        """Median position drift per pair distance (see [`pos_dev_mean`][trajectopy.RPEResult.pos_dev_mean] for the unit)."""
         return self.compute_metric(key="pos_dev", func=np.median, factor=self.drift_factor)
 
     @property
@@ -266,7 +266,7 @@ class RPEResult:
 
     @property
     def rot_dev_min(self) -> list[float]:
-        """Minimum rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
+        """Minimum rotation drift per pair distance (see [`rot_dev_mean`][trajectopy.RPEResult.rot_dev_mean] for the unit)."""
         if not self.has_rot_dev:
             return []
 
@@ -274,7 +274,7 @@ class RPEResult:
 
     @property
     def rot_dev_max(self) -> list[float]:
-        """Maximum rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
+        """Maximum rotation drift per pair distance (see [`rot_dev_mean`][trajectopy.RPEResult.rot_dev_mean] for the unit)."""
         if not self.has_rot_dev:
             return []
 
@@ -282,7 +282,7 @@ class RPEResult:
 
     @property
     def rot_dev_median(self) -> list[float]:
-        """Median rotation drift per pair distance (see :attr:`rot_dev_mean` for the unit)."""
+        """Median rotation drift per pair distance (see [`rot_dev_mean`][trajectopy.RPEResult.rot_dev_mean] for the unit)."""
         if not self.has_rot_dev:
             return []
 
@@ -295,7 +295,7 @@ class RPEResult:
             key (str): ``"pos_dev"``, ``"rot_dev"`` or ``"pair_distance"``.
 
         Returns:
-            np.ndarray: The values as stored (relative deviations, not multiplied by :attr:`drift_factor`);
+            np.ndarray: The values as stored (relative deviations, not multiplied by [`drift_factor`][trajectopy.RPEResult.drift_factor]);
             empty if there are none.
         """
         model_dict = self.rpe_dev.__dict__
@@ -379,7 +379,7 @@ class RPEResult:
 
     @property
     def columns(self) -> list[str]:
-        """Column names of :meth:`to_dataframe`."""
+        """Column names of [`to_dataframe`][trajectopy.RPEResult.to_dataframe]."""
         if self.has_rot_dev:
             return ["pair_distance", "pos_dev", "rot_dev"]
 
@@ -408,7 +408,7 @@ class RPEResult:
             return pd.DataFrame(np.c_[self.all_pair_distances, self.pos_dev_all], columns=self.columns)
 
     def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
-        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+        """Writes the result to a file that [`from_file`][trajectopy.RPEResult.from_file] and the GUI can read.
 
         Args:
             filename (str | os.PathLike): Path of the file.
@@ -430,7 +430,7 @@ class RPEResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "RPEResult":
-        """Reads a result written by :meth:`to_file`.
+        """Reads a result written by [`to_file`][trajectopy.RPEResult.to_file].
 
         Args:
             filename (str | os.PathLike): Path of the file.

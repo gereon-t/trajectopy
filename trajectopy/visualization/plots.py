@@ -1,8 +1,8 @@
 """The figures trajectopy offers for trajectories, evaluation results and alignment parameters.
 
-The functions in this module only describe figures (see :class:`~trajectopy.visualization.figure.Figure`);
-nothing is drawn until a figure is shown or exported. The collections :func:`trajectory_figures`,
-:func:`deviation_figures` and :func:`alignment_figures` are what the GUI displays.
+The functions in this module only describe figures (see [`Figure`][trajectopy.visualization.Figure]);
+nothing is drawn until a figure is shown or exported. The collections [`trajectory_figures`][trajectopy.visualization.trajectory_figures],
+[`deviation_figures`][trajectopy.visualization.deviation_figures] and [`alignment_figures`][trajectopy.visualization.alignment_figures] are what the GUI displays.
 """
 
 import copy
@@ -374,7 +374,7 @@ def positions_figure(trajectories: Sequence[Trajectory], settings: PlotSettings 
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -403,7 +403,7 @@ def xyz_figure(trajectories: Sequence[Trajectory], settings: PlotSettings | None
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -489,7 +489,7 @@ def trajectory_map_figure(trajectories: Sequence[Trajectory], settings: PlotSett
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -554,7 +554,7 @@ def ate_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | None =
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -609,7 +609,7 @@ def ate_components_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -663,7 +663,7 @@ def ate_histogram_figure(ate_results: Sequence[ATEResult], settings: PlotSetting
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -701,7 +701,7 @@ def ate_statistics_figure(ate_results: Sequence[ATEResult], settings: PlotSettin
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -768,7 +768,7 @@ def ate_boxplot_figure(ate_results: Sequence[ATEResult], settings: PlotSettings 
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -854,7 +854,7 @@ def ate_correlation_figure(ate_results: Sequence[ATEResult], settings: PlotSetti
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     See Also:
         [`trajectopy.DeviationCorrelation`][trajectopy.DeviationCorrelation]: the values behind the figure.
@@ -934,7 +934,7 @@ def ate_distribution_figure(ate_results: Sequence[ATEResult], settings: PlotSett
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -982,7 +982,7 @@ def ate_map_figure(ate_results: Sequence[ATEResult], settings: PlotSettings | No
         settings (PlotSettings, optional): Plot settings. Defaults to ``PlotSettings()``.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy
@@ -1066,7 +1066,7 @@ def speed_fit(speed: np.ndarray, deviations: np.ndarray) -> SpeedFit | None:
         SpeedFit | None: The line, or None if there are fewer than two distinct finite speeds.
 
     Args:
-        speed (np.ndarray): Speeds in m/s, e.g. from :func:`smoothed_speed`.
+        speed (np.ndarray): Speeds in m/s, e.g. from [`smoothed_speed`][trajectopy.visualization.smoothed_speed].
         deviations (np.ndarray): Deviations in meters, one per speed, e.g. ``ate_result.pos_dev_along``.
 
     See Also:
@@ -1157,18 +1157,18 @@ def ate_speed_figure(
 
     A time offset Δt between the trajectories shifts the evaluated positions along the track by speed times Δt.
     Along-track deviations that grow linearly with the speed therefore indicate a synchronization error, and the
-    slope of a straight line fitted to them (see :func:`speed_fit`) estimates Δt; the legend shows it for each
+    slope of a straight line fitted to them (see [`speed_fit`][trajectopy.visualization.speed_fit]) estimates Δt; the legend shows it for each
     result. Each result is drawn as a point cloud, with mean and standard deviation in speed bins and the fitted
     line. The components are offered as variants, along-track first.
 
     Args:
         ate_results: Results to show, overlaid.
         settings: Plot settings.
-        speed_window: The speed is averaged over this many seconds (see :func:`smoothed_speed`), since noise in the
+        speed_window: The speed is averaged over this many seconds (see [`smoothed_speed`][trajectopy.visualization.smoothed_speed]), since noise in the
             speed would make the fitted time offsets too small.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     See Also:
         [`trajectopy.visualization.speed_fit`][trajectopy.visualization.speed_fit]: the fitted time offset.
@@ -1400,7 +1400,7 @@ def parameter_matrix_figure(
         correlation (bool, optional): Show the correlation instead of the covariance matrix. Defaults to False.
 
     Returns:
-        Figure: The figure; show it with :func:`show` or save it with :meth:`Figure.export`.
+        Figure: The figure; show it with [`show`][trajectopy.visualization.show] or save it with [`Figure.export`][trajectopy.visualization.Figure.export].
 
     Examples:
         >>> import trajectopy as tpy

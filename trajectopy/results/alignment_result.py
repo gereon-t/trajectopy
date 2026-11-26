@@ -14,7 +14,7 @@ def _allclose(a: np.ndarray, b: np.ndarray) -> bool:
     return np.shape(a) == np.shape(b) and bool(np.allclose(a, b))
 
 
-@dataclass
+@dataclass(kw_only=True)
 class AlignmentResult:
     """Class to store the result of an alignment.
 
@@ -60,7 +60,7 @@ class AlignmentResult:
         )
 
     def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
-        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+        """Writes the result to a file that [`from_file`][trajectopy.AlignmentResult.from_file] and the GUI can read.
 
         Args:
             filename (str | os.PathLike): Path of the file.
@@ -82,7 +82,7 @@ class AlignmentResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "AlignmentResult":
-        """Reads a result written by :meth:`to_file`.
+        """Reads a result written by [`to_file`][trajectopy.AlignmentResult.to_file].
 
         Args:
             filename (str | os.PathLike): Path of the file.

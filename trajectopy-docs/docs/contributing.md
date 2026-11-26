@@ -31,7 +31,7 @@ and the documentation. Among others, they check that
   reference, every public function and class (except the exceptions) has examples, the examples of the
   documentation and of the docstrings run and show the actual output, and the scripts in `example_scripts`
   run (`test/test_docs.py`),
-- trajectopy itself does not use its deprecated API (deprecation warnings are errors in the tests).
+- trajectopy itself does not use deprecated parts of its API (deprecation warnings are errors in the tests).
 
 The CI checks formatting, linting and types, runs the tests on Linux and Windows with all supported Python
 versions (with a minimum test coverage of 85 %) and once without the plotting and GUI extras, and builds the

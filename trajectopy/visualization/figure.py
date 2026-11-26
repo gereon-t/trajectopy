@@ -1,11 +1,11 @@
 """Figures, the plot window and export.
 
-A :class:`Figure` is a titled page of plots. It only stores how to draw itself, so lists of figures are
+A [`Figure`][trajectopy.visualization.Figure] is a titled page of plots. It only stores how to draw itself, so lists of figures are
 cheap to create; the plots are rendered when a page is first shown or exported. A figure may offer
 several *variants* (for example the quantity used to color a trajectory), which the plot window offers
-in a drop-down and :func:`export_figures` writes to separate files.
+in a drop-down and [`export_figures`][trajectopy.visualization.export_figures] writes to separate files.
 
-The same :class:`PlotWindow` is used by the GUI and by :func:`show` in scripts.
+The same [`PlotWindow`][trajectopy.visualization.PlotWindow] is used by the GUI and by [`show`][trajectopy.visualization.show] in scripts.
 """
 
 import logging
@@ -275,7 +275,7 @@ def _safe_filename(name: str) -> str:
 class PlotWindow(QtWidgets.QMainWindow):
     """Window showing figures as tabs. Tabs are rendered when they are first opened.
 
-    Usually created by :func:`show`.
+    Usually created by [`show`][trajectopy.visualization.show].
 
     Args:
         figures (Sequence[Figure]): Figures to show, one tab each.

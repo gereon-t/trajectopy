@@ -9,6 +9,7 @@ from scipy.spatial.transform import Rotation
 
 from trajectopy.core.settings import AlignmentSettings, MatchingSettings
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.exceptions import AlignmentError
 from trajectopy.processing.matching import match_trajectories
 from trajectopy.utils.geometry import gradient_3d
 
@@ -67,7 +68,7 @@ class AlignmentData:
         self.traj_from.mask(self.traj_from.absolute_velocity >= preprocessing.min_speed, inplace=True)
 
         if len(self.traj_from) == 0 or len(self.traj_to) == 0:
-            raise ValueError("At least one trajectory is empty after preprocessing!")
+            raise AlignmentError("At least one trajectory is empty after preprocessing!")
 
         match_trajectories(self.traj_from, self.traj_to, self.matching_settings, inplace=True)
         self._subsample()
@@ -257,7 +258,7 @@ class AlignmentData:
         if self.alignment_settings.estimation_settings.leverarm_enabled and rot_from is not None:
             obs_init = np.c_[obs_init, rot_from.as_euler(seq="xyz")]
         elif self.alignment_settings.estimation_settings.leverarm_enabled:
-            raise ValueError(
+            raise AlignmentError(
                 "Failed to create observation vector: Please provide platform orientations for leverarm alignment!"
             )
 
@@ -266,7 +267,7 @@ class AlignmentData:
                 speed = speed or gradient_3d(xyz_from, tstamps=self.tstamps)
 
             if speed is None:
-                raise ValueError(
+                raise AlignmentError(
                     "Failed to create observation vector: Please provide platform speed for time shift alignment!"
                 )
 

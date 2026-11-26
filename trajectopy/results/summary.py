@@ -17,7 +17,7 @@ def ate_summary(ate_results: Sequence[ATEResult], confidence_intervals: bool = T
     Args:
         ate_results (Sequence[ATEResult]): Results to compare.
         confidence_intervals (bool, optional): Add the 95% confidence intervals of the mean and RMS of the
-            position deviations (see :meth:`ATEResult.confidence_interval`). Defaults to True.
+            position deviations (see [`ATEResult.confidence_interval`][trajectopy.ATEResult.confidence_interval]). Defaults to True.
 
     Returns:
         pd.DataFrame: Indexed by the result names. Position statistics in meters, rotation statistics in
@@ -88,7 +88,7 @@ def summary_table(
     ``pos_median [m]``, ``pos_rms [m]``, ``pos_std [m]``, ``pos_p95 [m]`` (95th percentile) and ``pos_max [m]`` of
     the position deviations; with ``confidence_intervals``, the 95% confidence intervals of the mean and the RMS
     (``pos_mean_ci_low [m]``, ``pos_mean_ci_high [m]``, ``pos_rms_ci_low [m]``, ``pos_rms_ci_high [m]``, see
-    :meth:`ATEResult.confidence_interval`); and ``rot_mean [deg]``, ``rot_rms [deg]``, ``rot_p95 [deg]`` and
+    [`ATEResult.confidence_interval`][trajectopy.ATEResult.confidence_interval]); and ``rot_mean [deg]``, ``rot_rms [deg]``, ``rot_p95 [deg]`` and
     ``rot_max [deg]`` of the rotation deviations (NaN without orientations). The columns of the RPE results are
     ``pose_pairs``, ``pos_drift`` and ``rot_drift`` (averages over all pair distances, the latter in degrees)
     with their units ``pos_drift_unit`` (``%`` or ``m/s``) and ``rot_drift_unit`` (``deg/100m`` or ``deg/s``).
@@ -134,7 +134,7 @@ def format_table(table: pd.DataFrame, *, table_format: str = "csv", precision: i
     """Formats a summary table as CSV, Markdown or LaTeX (without additional dependencies).
 
     Args:
-        table (pd.DataFrame): Table, e.g. from :func:`summary_table`.
+        table (pd.DataFrame): Table, e.g. from [`summary_table`][trajectopy.summary_table].
         table_format (str, optional): ``csv``, ``markdown`` or ``latex``. Defaults to ``csv``.
         precision (int, optional): Number of decimals of floats. Defaults to 4.
 

@@ -118,7 +118,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._check_updates_at_startup = bool(self._settings.value(UPDATE_CHECK_SETTINGS_KEY, True, type=bool))
         # handler of the selection that the properties and the preview currently show
         self._show_selection: Callable[[], None] = self._on_trajectory_selection_changed
-        plot_style.set_theme(self._dark_theme)
+        plot_style.set_theme(dark=self._dark_theme)
         self.trajectory_table_model = TrajectoryTableModel()
         self.result_table_model = ResultTableModel()
         self.setupUi()
@@ -322,7 +322,7 @@ class TrajectopyGUI(QtWidgets.QMainWindow):
         self._light_theme_action.setChecked(not dark)
         _application().setStyleSheet(DARK_STYLESHEET if dark else LIGHT_STYLESHEET)
         set_dark_titlebar(self, dark)
-        plot_style.set_theme(dark)
+        plot_style.set_theme(dark=dark)
         self._preview.apply_theme()
         if self._preview_3d is not None:
             self._preview_3d.apply_theme()

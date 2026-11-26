@@ -4,7 +4,7 @@ Qt's ``QSvgGenerator`` cannot be used directly: pyqtgraph draws some items in de
 relies on item clipping, both of which the generator does not reproduce. pyqtgraph's own
 ``SVGExporter`` handles this, but pyqtgraph <= 0.14.0 fails on the path data written by current Qt
 versions, which closes paths with a separate ``Z`` command. This is fixed upstream (pyqtgraph master),
-but not released yet; until then :func:`_tolerate_close_path_commands` makes the exporter skip and
+but not released yet; until then `_tolerate_close_path_commands` makes the exporter skip and
 restore these commands. The workaround is a no-op for fixed pyqtgraph versions.
 """
 

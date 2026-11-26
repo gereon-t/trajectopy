@@ -1,4 +1,4 @@
-"""Reading and writing of trajectories (trajectopy ASCII format). For KML, see :mod:`trajectopy.io.kml`."""
+"""Reading and writing of trajectories (trajectopy ASCII format). For KML, see `trajectopy.io.kml`."""
 
 import io
 import os
@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.exceptions import TrajectopyIOError
 from trajectopy.io import ascii
 from trajectopy.io.header import HeaderData
 from trajectopy.utils.definitions import Sorting
@@ -15,7 +16,7 @@ from trajectopy.utils.definitions import Sorting
 def _trajectory_from_data(header_data: HeaderData, trajectory_data: np.ndarray) -> Trajectory:
     if trajectory_data.ndim != 2 or trajectory_data.shape[1] < len(header_data.fields):
         columns = trajectory_data.shape[1] if trajectory_data.ndim == 2 else 1
-        raise ValueError(
+        raise TrajectopyIOError(
             f"The data has {columns} columns, but the header lists {len(header_data.fields)} fields "
             f"({','.join(header_data.fields)}). Check the #fields and #delimiter lines."
         )
@@ -43,7 +44,7 @@ def _trajectory_from_data(header_data: HeaderData, trajectory_data: np.ndarray) 
 def _check_finite(values: np.ndarray, name: str) -> None:
     if not np.all(np.isfinite(values)):
         rows = np.flatnonzero(~np.isfinite(values).reshape(len(values), -1).all(axis=1))
-        raise ValueError(
+        raise TrajectopyIOError(
             f"Invalid {name} (missing, NaN or infinite) in data row(s) {', '.join(map(str, rows[:5] + 1))}."
         )
 
@@ -89,7 +90,7 @@ def read_trajectory_string(content: str) -> Trajectory:
 
 
 def trajectory_to_string(trajectory: Trajectory) -> str:
-    """Returns a trajectory in the trajectopy ASCII format, as :func:`write_trajectory` writes it.
+    """Returns a trajectory in the trajectopy ASCII format, as [`write_trajectory`][trajectopy.io.write_trajectory] writes it.
 
     The header contains the EPSG code, the name, the navigation frame (always ENU), the sorting and the
     fields ``t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz`` (without the quaternion for trajectories without

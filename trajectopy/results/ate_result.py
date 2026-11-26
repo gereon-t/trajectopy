@@ -117,7 +117,7 @@ class ATEResult:
         return f"<ATEResult {self.name!r}: {len(self)} poses, position ATE {self.pos_ate:.4f} m{rotation}>"
 
     def describe(self) -> pd.Series:
-        """Statistics of the deviations, like :meth:`pandas.DataFrame.describe`.
+        """Statistics of the deviations, like `pandas.DataFrame.describe`.
 
         Position statistics are in meters, rotation statistics in radians; rotation statistics are NaN
         without orientations. ``pos_mean`` is the position ATE, ``rot_mean`` the rotation ATE.
@@ -288,9 +288,8 @@ class ATEResult:
         """Confidence interval of the mean (ATE) or RMS of the position or rotation deviations.
 
         The deviations are usually correlated in time, so that the interval is derived with a moving block
-        bootstrap whose blocks are twice as long as the correlation time (see
-        :func:`trajectopy.utils.statistics.block_bootstrap_ci`). It describes how precisely the deviations of
-        this evaluation determine the statistic, e.g. whether two estimates differ significantly. It is
+        bootstrap whose blocks are twice as long as the correlation time. It describes how precisely the
+        deviations of this evaluation determine the statistic, e.g. whether two estimates differ significantly. It is
         reproducible (fixed seed) and cached.
 
         Args:
@@ -776,7 +775,7 @@ class ATEResult:
 
     @classmethod
     def from_file(cls, filename: str | os.PathLike) -> "ATEResult":
-        """Reads a result written by :meth:`to_file`.
+        """Reads a result written by [`to_file`][trajectopy.ATEResult.to_file].
 
         Args:
             filename (str | os.PathLike): Path of the file.
@@ -826,11 +825,11 @@ class ATEResult:
         Args:
             filename (str): The output filename (e.g., "ate.kml").
             field (str, optional): Deviation field that colors the trajectory, e.g. "position", "x",
-                "along_track", "rotation" or "yaw" (see :func:`trajectopy.io.kml.ate_kml_fields`).
+                "along_track", "rotation" or "yaw" (see [`trajectopy.io.write_ate_kml`][trajectopy.io.write_ate_kml]).
                 Defaults to "position".
             max_std (float, optional): The color scale is clipped to mean ± ``max_std`` standard deviations
                 (0 = minimum to maximum). Defaults to 3.0.
-            **options: Further options of :func:`trajectopy.io.kml.write_ate_kml`, e.g. ``colormap="viridis"``,
+            **options: Further options of [`trajectopy.io.write_ate_kml`][trajectopy.io.write_ate_kml], e.g. ``colormap="viridis"``,
                 ``value_range=(0.0, 0.5)``, ``heights="ellipsoidal"`` or ``extrude=True``.
         """
         from trajectopy.io.kml import write_ate_kml
@@ -839,7 +838,7 @@ class ATEResult:
         write_ate_kml(self, filename, field=field, max_std=max_std, **options)
 
     def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
-        """Writes the result to a file that :meth:`from_file` and the GUI can read.
+        """Writes the result to a file that [`from_file`][trajectopy.ATEResult.from_file] and the GUI can read.
 
         Args:
             filename (str | os.PathLike): Path of the file.

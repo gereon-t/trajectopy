@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from trajectopy.core.settings import ComparisonMethod, PairDistanceUnit
+from trajectopy.exceptions import TrajectopyIOError
 from trajectopy.utils.definitions import GPS_WEEK_ZERO, TIME_FORMAT_DICT, TimeFormat
 
 logger = logging.getLogger(__name__)
@@ -200,7 +201,7 @@ class HeaderData:
     def time_format(self) -> TimeFormat:
         time_format = str(self.data.get("time_format", "unix")).lower()
         if time_format not in TIME_FORMAT_DICT:
-            raise ValueError(f"Unknown #time_format '{time_format}'. Options: {', '.join(TIME_FORMAT_DICT)}.")
+            raise TrajectopyIOError(f"Unknown #time_format '{time_format}'. Options: {', '.join(TIME_FORMAT_DICT)}.")
         return TIME_FORMAT_DICT[time_format]
 
     @property

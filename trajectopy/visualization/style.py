@@ -46,7 +46,7 @@ _current_theme = LIGHT
 ANTIALIAS_MAX_POINTS = 50_000
 
 
-def set_theme(dark: bool) -> None:
+def set_theme(*, dark: bool) -> None:
     """Selects the theme (dark or light background) of figures rendered from now on.
 
     The theme is applied when a figure is drawn, i.e. shown or exported, so it also applies to figures that were

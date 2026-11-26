@@ -72,7 +72,7 @@ from trajectopy import io, visualization as vis
 | [`RelativeComparisonSettings`](settings.md#trajectopy.RelativeComparisonSettings) | Configuration for relative trajectory comparison (RPE - Relative Pose Error). |
 | [`ApproximationSettings`](settings.md#trajectopy.ApproximationSettings) | Configuration for trajectory approximation (smoothing). |
 | [`SortingSettings`](settings.md#trajectopy.SortingSettings) | Configuration for trajectory sorting and downsampling using Moving Least Squares. |
-| [`PlotSettings`](settings.md#trajectopy.PlotSettings) | Configuration of all plots (GUI and :mod:`trajectopy.visualization`). |
+| [`PlotSettings`](settings.md#trajectopy.PlotSettings) | Configuration of all plots (GUI and `trajectopy.visualization`). |
 | [`MatchingMethod`](settings.md#trajectopy.MatchingMethod) | Method for matching poses between two trajectories. |
 | [`InterpolationMethod`](settings.md#trajectopy.InterpolationMethod) | Method for interpolation. |
 | [`PairDistanceUnit`](settings.md#trajectopy.PairDistanceUnit) | Unit of measurement for pose pair distances in relative comparison. |
@@ -92,16 +92,16 @@ from trajectopy import io, visualization as vis
 | [`io.read_kitti`](io.md#trajectopy.io.read_kitti) | Reads a trajectory in the KITTI odometry format (one row-major 3x4 pose matrix per line). |
 | [`io.read_euroc`](io.md#trajectopy.io.read_euroc) | Reads a trajectory in the EuRoC ground truth format. |
 | [`io.read_trajectory_string`](io.md#trajectopy.io.read_trajectory_string) | Reads a trajectory from the string content of a trajectopy ASCII file. |
-| [`io.trajectory_to_string`](io.md#trajectopy.io.trajectory_to_string) | Returns a trajectory in the trajectopy ASCII format, as :func:`write_trajectory` writes it. |
+| [`io.trajectory_to_string`](io.md#trajectopy.io.trajectory_to_string) | Returns a trajectory in the trajectopy ASCII format, as [`write_trajectory`][trajectopy.io.write_trajectory] writes it. |
 | [`io.list_topics`](io.md#trajectopy.io.list_topics) | The topics of a bag with a supported message type, mapped to their message type. |
 | [`io.trajectories_from_rosbag`](io.md#trajectopy.io.trajectories_from_rosbag) | Creates trajectories from a ROS1 or ROS2 bag. |
-| [`io.read_ate_result`](io.md#trajectopy.io.read_ate_result) | Reads an ATE result written by :func:`write_ate_result`. |
-| [`io.write_ate_result`](io.md#trajectopy.io.write_ate_result) | Writes an ATE result as CSV file with a metadata header, which :func:`read_ate_result` and the GUI can read. |
-| [`io.read_rpe_result`](io.md#trajectopy.io.read_rpe_result) | Reads an RPE result written by :func:`write_rpe_result`. |
-| [`io.write_rpe_result`](io.md#trajectopy.io.write_rpe_result) | Writes an RPE result as CSV file with a metadata header, which :func:`read_rpe_result` and the GUI can read. |
-| [`io.read_alignment_result`](io.md#trajectopy.io.read_alignment_result) | Reads an alignment result written by :func:`write_alignment_result`. |
-| [`io.write_alignment_result`](io.md#trajectopy.io.write_alignment_result) | Writes an alignment result to a file that :func:`read_alignment_result` and the GUI can read. |
-| [`io.read_alignment_parameters`](io.md#trajectopy.io.read_alignment_parameters) | Reads alignment parameters written by :func:`write_alignment_parameters`. |
+| [`io.read_ate_result`](io.md#trajectopy.io.read_ate_result) | Reads an ATE result written by [`write_ate_result`][trajectopy.io.write_ate_result]. |
+| [`io.write_ate_result`](io.md#trajectopy.io.write_ate_result) | Writes an ATE result as CSV file with a metadata header, which [`read_ate_result`][trajectopy.io.read_ate_result] and the GUI can read. |
+| [`io.read_rpe_result`](io.md#trajectopy.io.read_rpe_result) | Reads an RPE result written by [`write_rpe_result`][trajectopy.io.write_rpe_result]. |
+| [`io.write_rpe_result`](io.md#trajectopy.io.write_rpe_result) | Writes an RPE result as CSV file with a metadata header, which [`read_rpe_result`][trajectopy.io.read_rpe_result] and the GUI can read. |
+| [`io.read_alignment_result`](io.md#trajectopy.io.read_alignment_result) | Reads an alignment result written by [`write_alignment_result`][trajectopy.io.write_alignment_result]. |
+| [`io.write_alignment_result`](io.md#trajectopy.io.write_alignment_result) | Writes an alignment result to a file that [`read_alignment_result`][trajectopy.io.read_alignment_result] and the GUI can read. |
+| [`io.read_alignment_parameters`](io.md#trajectopy.io.read_alignment_parameters) | Reads alignment parameters written by [`write_alignment_parameters`][trajectopy.io.write_alignment_parameters]. |
 | [`io.write_alignment_parameters`](io.md#trajectopy.io.write_alignment_parameters) | Writes alignment parameters together with their covariance matrix to a CSV file. |
 | [`io.read_sensor_rotation_parameters`](io.md#trajectopy.io.read_sensor_rotation_parameters) | Reads the sensor rotation parameters of an alignment result file. |
 | [`io.write_sensor_rotation_parameters`](io.md#trajectopy.io.write_sensor_rotation_parameters) | Appends sensor rotation parameters to a file, e.g. to an alignment result written before. |

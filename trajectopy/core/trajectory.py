@@ -213,7 +213,7 @@ class Trajectory:
         The file is expected to be a CSV-like format. It handles extraction of
         timestamps, xyz positions, rotations, path lengths, and velocities via `ascii` trajectory reader.
         Files in the TUM, KITTI and EuRoC formats are recognized automatically, see
-        :func:`trajectopy.io.formats.detect_format`.
+        [`trajectopy.io.detect_format`][trajectopy.io.detect_format].
 
         Args:
             filename (str | os.PathLike): Path to the file.
@@ -235,7 +235,7 @@ class Trajectory:
 
     @classmethod
     def from_string(cls, text: str) -> "Trajectory":
-        """Creates a trajectory from the content of a file in the trajectopy format (see :meth:`to_string`).
+        """Creates a trajectory from the content of a file in the trajectopy format (see [`to_string`][trajectopy.Trajectory.to_string]).
 
         Args:
             text (str): Content of a trajectory file with header lines.
@@ -333,7 +333,7 @@ class Trajectory:
     def __getitem__(self, key: int | np.integer | slice | list | np.ndarray) -> "Pose | Trajectory":
         """Selects poses like a numpy array.
 
-        An integer returns a single :class:`Pose`. A slice, an integer array or a boolean mask returns a new
+        An integer returns a single [`Pose`][trajectopy.Pose]. A slice, an integer array or a boolean mask returns a new
         trajectory with the selected poses (the trajectory itself is not modified).
         """
         if isinstance(key, (int, np.integer)):
@@ -380,7 +380,7 @@ class Trajectory:
             )
 
     def __eq__(self, other: object) -> bool:
-        """Checks whether two trajectories have the same name and data, see :meth:`equals`."""
+        """Checks whether two trajectories have the same name and data, see [`equals`][trajectopy.Trajectory.equals]."""
         if not isinstance(other, Trajectory):
             return NotImplemented
         return self.name == other.name and self.equals(other)
@@ -390,7 +390,7 @@ class Trajectory:
     def equals(self, other: "Trajectory", *, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
         """Checks whether two trajectories hold the same data within a tolerance (the names are not compared).
 
-        Compares positions, orientations, timestamps, path lengths and velocities with :func:`numpy.allclose`.
+        Compares positions, orientations, timestamps, path lengths and velocities with `numpy.allclose`.
 
         Args:
             other (Trajectory): Trajectory to compare with.
@@ -438,8 +438,11 @@ class Trajectory:
         """
         return copy.deepcopy(self)
 
-    def init_path_lengths(self):
+    def init_path_lengths(self) -> np.ndarray:
         """Computes cumulative path lengths based on Euclidean distances between consecutive local coordinates.
+
+        Returns:
+            np.ndarray: Path length of each pose in meters, starting with 0.
 
         Examples:
             >>> import trajectopy as tpy
@@ -711,7 +714,7 @@ class Trajectory:
         """Crops (or cuts) the trajectory to a window of its index.
 
         The index is the time for trajectories sorted by time and the path length for spatially sorted
-        trajectories (see :attr:`index`).
+        trajectories (see [`index`][trajectopy.Trajectory.index]).
 
         Args:
             index_start (float): Start of the window (seconds or meters).
@@ -930,10 +933,10 @@ class Trajectory:
         return dataframe.sort_values(by=sort_by)
 
     def to_string(self) -> str:
-        """Returns the trajectory in the trajectopy ASCII format (see :func:`trajectopy.io.trajectory_to_string`).
+        """Returns the trajectory in the trajectopy ASCII format (see [`trajectopy.io.trajectory_to_string`][trajectopy.io.trajectory_to_string]).
 
         Returns:
-            str: Content of a trajectory file, which :meth:`from_string` reads.
+            str: Content of a trajectory file, which [`from_string`][trajectopy.Trajectory.from_string] reads.
 
         Examples:
             >>> import trajectopy as tpy
@@ -964,7 +967,7 @@ class Trajectory:
             mode (str, optional): ``"w"`` (default) overwrites the file, ``"a"`` appends to it.
             format (str, optional): File format: ``auto`` (default), ``trajectopy``, ``tum``, ``kitti`` or
                 ``euroc``. ``auto`` picks the format from the file extension (``.tum``, ``.kitti``) and writes
-                the trajectopy format (see :meth:`to_string`) otherwise.
+                the trajectopy format (see [`to_string`][trajectopy.Trajectory.to_string]) otherwise.
 
         See Also:
             [`trajectopy.io.write_trajectory`][trajectopy.io.write_trajectory]: the function behind this method.
@@ -994,7 +997,7 @@ class Trajectory:
             precision (float, optional): Coordinate precision in degrees. Defaults to 1e-6 (about 0.1 m).
             color (str, optional): Color of the track and its points as "#RRGGBB" or "#RRGGBBAA".
                 Defaults to red.
-            **options: Further options of :func:`trajectopy.io.kml.write_kml`, e.g. ``field="speed"`` (color
+            **options: Further options of [`trajectopy.io.write_kml`][trajectopy.io.write_kml], e.g. ``field="speed"`` (color
                 by a field), ``heights="ellipsoidal"`` (draw at the trajectory's heights instead of on the
                 ground), ``extrude=True`` or ``line_width``.
 

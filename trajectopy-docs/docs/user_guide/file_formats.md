@@ -44,7 +44,7 @@ With a header:
 | `#nframe` | Navigation frame of the data | `enu` | Order of east, north and up/down of a right-handed frame, e.g. `enu` or `ned` (left-handed orders such as `neu` fail for files with orientations) |
 | `#rot_unit` | Unit of Euler angles | `rad` | `rad`, `deg` |
 | `#euler_rot_seq` | Axis sequence of the three Euler angles | `xyz` | Three of `x`, `y`, `z` for extrinsic or `X`, `Y`, `Z` for intrinsic rotations (not mixed) |
-| `#time_format` | Format of the time column(s) | `unix` | `unix`, `datetime`, `gps_sow`; other values raise a `ValueError` |
+| `#time_format` | Format of the time column(s) | `unix` | `unix`, `datetime`, `gps_sow`; other values raise a `TrajectopyIOError` |
 | `#time_offset` | Offset in seconds added to all timestamps | `0.0` | Any number |
 | `#datetime_format` | Format of date/time strings | `%Y-%m-%d %H:%M:%S.%f` | [strftime format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) |
 | `#datetime_timezone` | Time system of date/time strings | `UTC` | `UTC` or `GPS` |

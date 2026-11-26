@@ -1,4 +1,4 @@
-"""Exceptions defined by trajectopy. All of them derive from :class:`TrajectopyError`."""
+"""Exceptions defined by trajectopy. All of them derive from [`TrajectopyError`][trajectopy.TrajectopyError]."""
 
 
 class TrajectopyError(Exception):
@@ -13,8 +13,12 @@ class TrajectoryError(TrajectopyError):
     pass
 
 
-class AlignmentError(TrajectopyError):
-    """Alignment-specific errors."""
+class AlignmentError(TrajectopyError, ValueError):
+    """The alignment cannot be estimated with the given data and settings.
+
+    For example, no poses are left after the preprocessing, or the lever arm or time shift is estimated
+    without the orientations or speeds it needs. It is also a ``ValueError``.
+    """
 
     pass
 
@@ -25,8 +29,13 @@ class AlignmentParametersError(TrajectopyError):
     pass
 
 
-class TrajectopyIOError(TrajectopyError):
-    """I/O errors."""
+class TrajectopyIOError(TrajectopyError, ValueError):
+    """The content of a file cannot be read.
+
+    For example, the number of columns does not match the header or the format, required fields are missing,
+    or values are invalid. Errors of the file system (e.g. ``FileNotFoundError``) are passed on unchanged. It is
+    also a ``ValueError``.
+    """
 
     pass
 

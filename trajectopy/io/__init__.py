@@ -1,7 +1,7 @@
 """Reading and writing of trajectories, evaluation results and alignment parameters.
 
 This package is the only place that knows about file formats. Domain classes such as
-:class:`trajectopy.Trajectory` expose ``from_file``/``to_file`` as thin convenience wrappers around the
+[`trajectopy.Trajectory`][trajectopy.Trajectory] expose ``from_file``/``to_file`` as thin convenience wrappers around the
 functions defined here.
 """
 

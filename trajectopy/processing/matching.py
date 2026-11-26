@@ -73,8 +73,8 @@ def match_trajectories(
       the nearest pose in the target trajectory for each pose in the source trajectory using
       Euclidean distance.
     - **NEAREST_SPATIAL_INTERPOLATED**: Finds the nearest k spatial matches and spatially
-      interpolates using a 3d line. Both trajectories will have the length of the test trajectory.
-      This method does not support rotation matching.
+      interpolates using a 3d line; the orientations are the mean of those of the k nearest poses. Both
+      trajectories will have the length of the test trajectory.
 
     Args:
         trajectory (Trajectory): Trajectory to match.

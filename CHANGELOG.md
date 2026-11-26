@@ -22,8 +22,7 @@ table of removed names and the migration guide below list the replacements.
 - **`ate_result.alignment`** holds the alignment that was applied before the deviations were computed.
 - **Options accept strings**, e.g. `tpy.MatchingSettings(method="nearest_temporal")` or
   `tpy.interpolate(trajectory, index, method="linear")`, also when assigned to a setting
-  (`settings.matching.method = "nearest_temporal"`). All option enumerations share the base
-  `OptionEnum`, whose lookup ignores the case.
+  (`settings.matching.method = "nearest_temporal"`). The lookup ignores the case.
 - **`Trajectory`**
   - accepts arrays in the constructor: `tpy.Trajectory(xyz, quat, timestamps, name="...")`;
   - supports numpy-like indexing: `trajectory[10]` returns a `tpy.Pose`, `trajectory[10:20]`,
@@ -83,8 +82,9 @@ Besides the API changes above, version 7 adds:
   `RPEResult.compute_metric(..., factor=)`, `io.trajectories_from_rosbag(..., topics=)`,
   `AlignmentEstimationSettings.from_components(...)` and `.all(sensor_rotation=)`, the `enabled_only` and
   `lower_case` arguments of the parameter sets (`to_dict`, `to_name_list`, `to_string_list`,
-  `get_covariance_matrix`, `AlignmentParameters.params_labels`) and the `name` (and `alignment`) of the
-  `ATEResult` and `RPEResult` constructors.
+  `get_covariance_matrix`, `AlignmentParameters.params_labels`), the `name` (and `alignment`) of the
+  `ATEResult` and `RPEResult` constructors, all fields of `AlignmentResult` and
+  `trajectopy.visualization.set_theme(dark=)`.
 - `ate(..., align=False)` sets `ate_result.alignment` to None instead of empty alignment parameters.
 - `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
   functions) overwrite existing files; pass `mode="a"` to append.
@@ -100,7 +100,6 @@ Besides the API changes above, version 7 adds:
 - Removed the modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`),
   `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`
   (use `trajectopy.AlignmentParameters`).
-
 - The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
   private.
 
@@ -120,8 +119,12 @@ Besides the API changes above, version 7 adds:
 - `AlignmentParameters.to_file` (and `trajectopy.io.write_alignment_parameters`) wrote files that
   `AlignmentParameters.from_file` could not read; the parameters are now written with their enabled flags and
   17 significant digits.
-- An unknown `#time_format` in a file header raises a `ValueError` that lists the valid formats instead of a
-  `KeyError`.
+- An unknown `#time_format` in a file header raises a `TrajectopyIOError` that lists the valid formats instead
+  of a `KeyError`.
+- `TrajectopyIOError` and `AlignmentError` are raised now: for file contents that cannot be read (e.g. a wrong
+  number of columns) and for alignments that cannot be estimated (e.g. no poses left after the preprocessing),
+  where a plain `ValueError` was raised before. Both are also `ValueError`s, so existing error handling keeps
+  working.
 - `Trajectory(..., sorting=)`, `Trajectory.set_sorting` and `ATEResult.set_sorting` accept the sorting as a
   string (`"time"`, `"path_length"`, case-insensitive), like all other options; before, a string broke the
   `repr` and the file export of the trajectory.

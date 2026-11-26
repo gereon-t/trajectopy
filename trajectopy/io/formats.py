@@ -1,7 +1,7 @@
 """Reading and writing of common third-party trajectory formats (TUM, KITTI, EuRoC).
 
 Files in these formats have no trajectopy header, so they are either read with an explicit ``format`` or
-recognized by :func:`detect_format`:
+recognized by [`detect_format`][trajectopy.io.detect_format]:
 
 - ``tum``: ``timestamp tx ty tz qx qy qz qw`` separated by spaces (TUM RGB-D benchmark).
 - ``kitti``: one row-major 3x4 pose matrix (12 values) per line, without timestamps (KITTI odometry benchmark).
@@ -20,13 +20,14 @@ from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
 from trajectopy.core.trajectory import Trajectory
+from trajectopy.exceptions import TrajectopyIOError
 from trajectopy.utils.definitions import OptionEnum
 
 logger = logging.getLogger(__name__)
 
 
 class TrajectoryFormat(OptionEnum):
-    """File formats of trajectories (see :func:`trajectopy.io.read_trajectory`).
+    """File formats of trajectories (see [`trajectopy.io.read_trajectory`][trajectopy.io.read_trajectory]).
 
     Each option can also be given as its value, e.g. ``format="tum"`` (case-insensitive).
 
@@ -84,7 +85,7 @@ def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
 
 
 def _scan_format(filename: str) -> tuple[TrajectoryFormat, bool]:
-    """The format of a file (see :func:`detect_format`) and whether it has a ``#fields`` header line."""
+    """The format of a file (see [`detect_format`][trajectopy.io.detect_format]) and whether it has a ``#fields`` header line."""
     first_data_line = ""
     with open(filename, encoding="utf-8", errors="replace") as file:
         for number, line in enumerate(file):
@@ -145,7 +146,7 @@ def read_tum(filename: str | os.PathLike, *, name: str = "") -> Trajectory:
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
     if data.ndim != 2 or data.shape[1] < 8:
-        raise ValueError(
+        raise TrajectopyIOError(
             f"A TUM file has 8 columns (timestamp tx ty tz qx qy qz qw), {filename} has {data.shape[-1]}."
         )
     return Trajectory(
@@ -183,7 +184,9 @@ def read_kitti(
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=None)
     if data.ndim != 2 or data.shape[1] != _KITTI_COLUMNS:
-        raise ValueError(f"A KITTI file has 12 values per line (3x4 pose matrix), {filename} has {data.shape[-1]}.")
+        raise TrajectopyIOError(
+            f"A KITTI file has 12 values per line (3x4 pose matrix), {filename} has {data.shape[-1]}."
+        )
 
     matrices = data.reshape(-1, 3, 4)
     if isinstance(timestamps, str | Path):
@@ -224,7 +227,7 @@ def read_euroc(filename: str | os.PathLike, *, name: str = "") -> Trajectory:
     filename = os.fspath(filename)
     data = _numeric_table(filename, delimiter=",")
     if data.ndim != 2 or data.shape[1] < 8:
-        raise ValueError(
+        raise TrajectopyIOError(
             f"A EuRoC file has at least 8 columns (timestamp, position, quaternion), {filename} has {data.shape[-1]}."
         )
     return Trajectory(
@@ -246,7 +249,7 @@ def read_trajectory(
     Args:
         filename (str | os.PathLike): Path to the file.
         format (str | TrajectoryFormat, optional): One of ``auto``, ``trajectopy``, ``tum``, ``kitti`` and
-            ``euroc``. With ``auto`` (default), the format is recognized by :func:`detect_format`.
+            ``euroc``. With ``auto`` (default), the format is recognized by [`detect_format`][trajectopy.io.detect_format].
 
     Returns:
         Trajectory: The loaded trajectory.

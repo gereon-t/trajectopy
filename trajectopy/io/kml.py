@@ -8,7 +8,7 @@ legend and the classes can be switched on and off), and each run appears at its 
 grows during playback.
 
 Vertically, the trajectory is either clamped to the terrain of Google Earth or drawn at its own heights (see
-:data:`HEIGHT_MODES`). Google Earth expects heights above sea level (EGM96 geoid); ellipsoidal heights are
+`HEIGHT_MODES`). Google Earth expects heights above sea level (EGM96 geoid); ellipsoidal heights are
 converted with the geoid model, which pyproj downloads from the PROJ CDN (cdn.proj.org) where needed.
 """
 
@@ -118,7 +118,7 @@ def ate_kml_fields(ate_result: ATEResult) -> list[KmlField]:
 
 @dataclass(frozen=True)
 class _ColorScale:
-    """How a field is mapped to colors (see :func:`write_kml`)."""
+    """How a field is mapped to colors (see [`write_kml`][trajectopy.io.write_kml])."""
 
     colormap: str
     max_std: float
@@ -170,16 +170,16 @@ def write_kml(
         filename (str): The output filename (e.g., "track.kml").
         color (str, optional): Color of the track and its points as "#RRGGBB" or "#RRGGBBAA", if it is not
             colored by a field. Defaults to red.
-        field (str, optional): Key of the field that colors the line, see :func:`trajectory_kml_fields`:
+        field (str, optional): Key of the field that colors the line:
             "speed", "height" or "time". Defaults to none (one color).
-        colormap (str, optional): Color scale of the field, see :data:`trajectopy.utils.colors.COLORMAPS`:
+        colormap (str, optional): Color scale of the field:
             "rdylbu" (blue = low, red = high, like the plots) or "viridis" (colorblind-safe). Defaults to "rdylbu".
         max_std (float, optional): The color scale is clipped to mean ± ``max_std`` standard deviations
             (0 = minimum to maximum). Ignored if ``value_range`` is given. Defaults to 3.0, like the plots.
         value_range (tuple[float, float], optional): Fixed (lower, upper) limits of the color scale, e.g. to
             compare several exports; values beyond them get the color of the nearest limit. Defaults to none.
         color_classes (int, optional): Number of colors of the scale. Defaults to 11.
-        heights (str, optional): Vertical placement, see :data:`HEIGHT_MODES`: "ground" (clamped to the
+        heights (str, optional): Vertical placement: "ground" (clamped to the
             terrain), "ellipsoidal" (the trajectory's heights are ellipsoidal heights, e.g. GNSS; converted with
             the EGM96 geoid, which needs an internet connection the first time) or "sea_level" (the heights are
             above sea level). Defaults to "ground".
@@ -244,16 +244,17 @@ def write_ate_kml(
     Args:
         ate_result (ATEResult): Result to export. Its trajectory needs a known EPSG code.
         filename (str): The output filename (e.g., "ate.kml").
-        field (str, optional): Key of the deviation field that colors the line, see :func:`ate_kml_fields`,
-            e.g. "position", "along_track" or "yaw". Defaults to "position".
-        colormap (str, optional): Color scale, see :func:`write_kml`. Defaults to "rdylbu".
+        field (str, optional): Deviation field that colors the line: "position", "x", "y", "z", "along_track",
+            "horizontal_cross_track", "vertical_cross_track" and, with orientations, "rotation", "roll", "pitch"
+            or "yaw". Defaults to "position".
+        colormap (str, optional): Color scale, see [`write_kml`][trajectopy.io.write_kml]. Defaults to "rdylbu".
         max_std (float, optional): The color scale is clipped to mean ± ``max_std`` standard deviations
             (0 = minimum to maximum). Ignored if ``value_range`` is given. Defaults to 3.0, like the plots.
         value_range (tuple[float, float], optional): Fixed (lower, upper) limits of the color scale.
             Defaults to none.
         color_classes (int, optional): Number of colors of the scale. Defaults to 11.
-        heights (str, optional): Vertical placement, see :func:`write_kml`. Defaults to "ground".
-        height_offset (float, optional): Meters added to the heights, see :func:`write_kml`. Defaults to 0.
+        heights (str, optional): Vertical placement, see [`write_kml`][trajectopy.io.write_kml]. Defaults to "ground".
+        height_offset (float, optional): Meters added to the heights, see [`write_kml`][trajectopy.io.write_kml]. Defaults to 0.
         extrude (bool, optional): Connect the line to the ground with a vertical curtain. Defaults to False.
         line_width (float, optional): Line width in pixels. Defaults to 4.
         precision (float, optional): Coordinate precision in degrees. Defaults to 1e-6 (about 0.1 m).

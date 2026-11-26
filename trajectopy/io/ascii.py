@@ -10,6 +10,7 @@ import pandas as pd
 from scipy.spatial.transform import Rotation
 
 from trajectopy.core.positions import Positions
+from trajectopy.exceptions import TrajectopyIOError
 from trajectopy.io.header import HeaderData, HeaderScan, scan_header
 from trajectopy.io.utils import get_rot_matrix
 from trajectopy.utils.definitions import GPS_LEAP_SECONDS, GPS_WEEK_ZERO, TimeFormat
@@ -77,9 +78,9 @@ def read_trajectory_data(filename: str) -> tuple[HeaderData, np.ndarray]:
 
     Columns named ``-`` in the ``#fields`` header are skipped and the others are read directly as floats
     (with pyarrow's multithreaded CSV reader if installed), which is several times faster than
-    :func:`read_data` for large files. The returned header lists only the fields that were read, in the
+    `read_data` for large files. The returned header lists only the fields that were read, in the
     order of the returned columns. Files the fast path cannot read (e.g. date/time strings) are read with
-    :func:`read_data`.
+    `read_data`.
 
     Args:
         filename (str): File to read
@@ -421,7 +422,7 @@ def extract_trajectory_positions(header_data: HeaderData, trajectory_data: np.nd
     required_fields = ["px", "py", "pz"]
     missing_fields = [f for f in required_fields if f not in header_data.fields]
     if missing_fields:
-        raise ValueError(
+        raise TrajectopyIOError(
             f"Required position fields {missing_fields} not found in header. Available fields: {header_data.fields}"
         )
 

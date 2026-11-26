@@ -71,6 +71,24 @@ class TestPoses(unittest.TestCase):
         self.assertEqual(poses[3], trajectory[3])
 
 
+class TestExceptions(unittest.TestCase):
+    def test_unreadable_files_raise_io_errors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            filename = Path(directory) / "broken.traj"
+            filename.write_text("#fields t,px,py,pz\n0,1,2\n", encoding="utf-8")
+            with self.assertRaises(tpy.TrajectopyIOError):
+                tpy.Trajectory.from_file(filename)
+        self.assertTrue(issubclass(tpy.TrajectopyIOError, ValueError))
+
+    def test_impossible_alignments_raise_alignment_errors(self):
+        trajectory = _trajectory()  # without orientations, so that the lever arm cannot be estimated
+        settings = tpy.AlignmentSettings()
+        settings.estimation_settings.leverarm_x = True
+        with self.assertRaises(tpy.AlignmentError):
+            tpy.estimate_alignment(trajectory, trajectory, settings)
+        self.assertTrue(issubclass(tpy.AlignmentError, ValueError))
+
+
 class TestAlignmentResults(unittest.TestCase):
     def test_ate_without_alignment_has_none(self):
         trajectory = _trajectory()
