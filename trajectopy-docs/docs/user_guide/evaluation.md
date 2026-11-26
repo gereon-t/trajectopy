@@ -179,9 +179,6 @@ and the processing settings, e.g. to archive the evaluation of a paper:
 tpy.write_report("report.html", ate_results, rpe_results, settings=tpy.ProcessingSettings())
 ```
 
-The notebook [`example_scripts/evaluation_walkthrough.ipynb`](https://github.com/gereon-t/trajectopy/blob/main/example_scripts/evaluation_walkthrough.ipynb)
-walks through such a comparison with its output.
-
 ## Saving Results
 
 Results are saved as text files, which the GUI can open, too:

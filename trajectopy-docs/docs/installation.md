@@ -51,13 +51,4 @@ As the installer is not signed, Windows SmartScreen may warn about an unknown pu
 
 ## Development Installation
 
-To work on trajectopy itself, clone the repository and install it with [uv](https://docs.astral.sh/uv/):
-
-```console
-git clone https://github.com/gereon-t/trajectopy.git
-cd trajectopy
-uv sync --all-extras
-uv run pytest
-```
-
-The documentation is built with `uv run mkdocs serve` in the `trajectopy-docs` folder.
+See [Contributing](contributing.md) for setting up a development environment.

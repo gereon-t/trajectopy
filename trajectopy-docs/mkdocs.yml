@@ -87,6 +87,7 @@ nav:
     - Utilities: api/utilities.md
   - API Policy: api_policy.md
   - Release Notes: release_notes.md
+  - Contributing: contributing.md
 
 # Plugins
 plugins:

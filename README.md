@@ -57,7 +57,7 @@ Or evaluate from the command line, without the GUI:
 trajectopy evaluate example_data/KITTI_ORB.traj example_data/KITTI_SPTAM.traj --ref example_data/KITTI_gt.traj --report report.html
 ```
 
-A walkthrough with output is in [`example_scripts/evaluation_walkthrough.ipynb`](example_scripts/evaluation_walkthrough.ipynb).
+More examples are in [`example_scripts`](example_scripts) and in the [user guide](https://gereon-t.github.io/trajectopy/user_guide/).
 
 ## Documentation
 

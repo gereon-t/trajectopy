@@ -77,6 +77,10 @@ choose *Set as Reference*, then right-click the estimate and choose *Compare wit
 
     What changed in each version, and how to migrate.
 
+- **[Contributing](contributing.md)**
+
+    Development environment, tests and documentation.
+
 </div>
 
 ## Citation
