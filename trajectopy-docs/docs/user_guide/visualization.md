@@ -35,7 +35,8 @@ alignment_figures = vis.alignment_figures(ate_results[0].alignment.position_para
 ate_figure = vis.ate_figure(ate_results, settings)
 ```
 
-Several results are drawn into the same figure, so that they can be compared directly.
+Most figures draw several results into the same plots, so that they can be compared directly. Figures that
+show one result at a time (the components, histograms, correlation and maps) offer the results as variants.
 
 | Function | Content |
 | --- | --- |
@@ -79,7 +80,9 @@ Inside a running Qt application, pass `block=False`; the window is returned and 
 
 ## Exporting Figures
 
-Figures are exported to PNG, JPG or SVG files, also without a display (e.g. on a server):
+Figures are exported to PNG, JPG or SVG files, also without a display (on a Linux server, set the environment
+variable `QT_QPA_PLATFORM=offscreen`). The format follows from the file extension; `width` (pixels) applies to
+PNG and JPG:
 
 ```python
 paths = vis.export_figures(deviation_figures, "plots", export_format="svg")  # all figures and variants
@@ -92,5 +95,8 @@ The variant names of a figure are listed in `figure.variants`.
 
 ## Appearance
 
-The [plot settings](settings.md#plot-settings) control units, line widths, fonts, the color scale and the export
-format. `set_theme(dark=True)` switches figures created afterwards to a dark background.
+The [plot settings](settings.md#plot-settings) control units, line widths, fonts and the color scale of the
+figures. Their `export_format` and `export_width` are used by the GUI and the command line; in Python, the
+format follows from the file name and the width is an argument of `export` and `export_figures`.
+`set_theme(dark=True)` switches to a dark background; the theme applies to all figures shown or exported
+afterwards.

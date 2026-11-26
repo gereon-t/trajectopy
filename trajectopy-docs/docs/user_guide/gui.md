@@ -24,12 +24,14 @@ their deviations. The drop-down next to the *Preview* checkbox in the top right 
 view (*2D*) and an orbitable *3D* view (drag to rotate, wheel to zoom, middle-drag to pan). On slow systems, the
 preview can be turned off with the checkbox; the tables and the properties then use the whole width.
 
-Trajectory files (`.traj` and other ASCII files, ROS1 `.bag` files) are loaded into the trajectory table,
-`.result` files into the results table. Long operations run in the background; a progress window shows that
+Files dropped onto the trajectory table or added with its *Add* button are read as trajectories (`.traj` and
+other ASCII files, ROS1 `.bag` and ROS2 `.mcap`/`.db3` bags, of which all supported topics are loaded); files
+dropped onto the results table are read as results (`.result`). Project files (`.tpy`) are opened from both. Long operations run in the background; a progress window shows that
 Trajectopy is busy.
 
 **Groups**: trajectories computed from another one (aligned, smoothed, sorted, … copies) are grouped with it
-automatically, so that the results of one measurement run stay together. Groups can be collapsed; selecting a group
+automatically, so that the trajectories of one measurement run stay together (results are not grouped
+automatically). Groups can be collapsed; selecting a group
 selects all of its entries. *Group → New Group…* (`Ctrl+G`) in the context menu groups any trajectories or results,
 *Rename Group…* (`Ctrl+Shift+F2`) names a group, *Ungroup* (`Ctrl+Shift+G`) takes entries out of their groups and *Move to Group* moves
 them into another group. Entries can also be dragged onto a group (or an entry) to move them there, or between the
@@ -50,7 +52,7 @@ rows to take them out of their group. Groups are saved in the project.
 | Plot Settings | | Opens the [plot settings](settings.md#plot-settings), which apply to all plots opened afterwards. |
 | Help | Check for Updates… | Checks GitHub for a newer version. |
 | | Check for Updates at Startup | Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default). |
-| | About | Version and license information. |
+| | About | Version, author and a link to the repository. |
 | Theme | Dark / Light | Color theme. It starts with the system setting and follows when the system setting changes. |
 
 ## Projects
@@ -63,13 +65,15 @@ double-click on Windows (if chosen during installation) or on the command line. 
 that large projects are saved and opened quickly; use *Export…* for files that other programs can read. Projects
 saved by Trajectopy 5.1 can still be opened.
 
-Closing Trajectopy offers to save unsaved changes and asks for confirmation while an operation is running.
+Closing Trajectopy offers to save unsaved changes. Without unsaved changes, it asks for confirmation while an
+operation is running.
 
 ## Log
 
 Trajectopy writes what it does, warnings and errors to a log. *View → Log* (`Ctrl+L`) opens it at the
 bottom of the main window; warnings are shown in orange, errors in red, and the context menu copies or clears the
-messages. The log shows everything since Trajectopy was started, also if it is opened later, and it reopens at the
+messages. The log shows the last 5000 messages (information, warnings and errors) since Trajectopy was
+started, also if it is opened later, and it reopens at the
 next start if it was open. The Windows app has no console window, so the log is the place to look when something
 does not work as expected (Python installations also print the messages to the terminal they were started from).
 If the window stops responding for more than half a second, the log names the code that blocked it, which helps
@@ -84,9 +88,9 @@ header); it can be turned off in the Help menu. Python installations are updated
 ## File Dialogs
 
 The file dialogs open in the folder that was used last for the same kind of file (trajectories, results,
-projects, settings, …), remember their size and list the usual and the recently used folders in their sidebar.
-On Windows, Trajectopy uses its own file dialog instead of the one of the operating system: on some systems,
-the Windows dialog takes several seconds to close after a file was chosen.
+projects, settings, …). On Windows, Trajectopy uses its own file dialog instead of the one of the operating
+system, because on some systems the Windows dialog takes several seconds to close after a file was chosen.
+This dialog also remembers its size and lists the usual and the recently used folders in its sidebar.
 
 ## Processing Settings of a Trajectory
 
@@ -115,8 +119,11 @@ The trajectory context menu is grouped by task:
 | Process | *Approximate*, *Resample to Time Grid…*, *Rearrange Axes / Angles…*, *Sort Spatially*, *Switch Order: Time ↔ Path*, *Divide into Laps*, *Merge*, *Average* |
 | Entry | *Settings…*, *Rename*, *Duplicate*, *Export…*, *Export to Google Earth (KML)…*, *Group*, *Remove*, *Remove Group* |
 
-Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy) and comparisons add results; only the
-coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path* change the trajectory itself.
+Processing adds new trajectories (e.g. *Approximate* adds a smoothed copy), comparisons add results (except
+*Extract Matching Poses*, which adds the matched trajectories), and *Estimate Alignment* adds an aligned copy and
+the alignment. Only the coordinate system entries, *Rearrange Axes / Angles…* and *Switch Order: Time ↔ Path*
+change the trajectory itself. Comparisons and alignments use the processing settings of the trajectory that is
+evaluated, not those of the reference.
 
 The results context menu offers *Plot*, *Rename*, *Duplicate*, *Export…*, *Group*, *Remove* and, for ATE results,
 *Export to Google Earth (KML)…*. *Export Report or Summary Table…* saves the selected ATE and RPE results as an
@@ -159,7 +166,9 @@ leverarm or a time offset. It works in three steps; every step can be undone (`C
   Keyboard: arrows move, `Q`/`E` rotate (`Shift`: 10× larger, `Ctrl`: 10× finer).
 - **Pick point pairs**: click a point on the trajectory and the reference position it belongs to. One pair fixes
   the position, two add the heading (and the scale with *fit scale*), three or more the full rotation.
-- **Match first pose** puts the first pose onto the reference's first pose.
+- **Match first pose** moves the first position onto the first position of the reference and turns the
+  trajectory so that its initial direction of travel matches that of the reference (unlike *Match First Pose*
+  in the context menu, it uses neither the orientations nor the timestamps).
 - **Sync time** finds the time offset by comparing the speed profiles, which do not depend on the coordinate
   frame. You can also drag left/right in the speed plot (*Over time*).
 
@@ -179,8 +188,9 @@ signature in it:
 
 The **diagnosis** lists the parameters that explain the deviation, most important first. It considers only the
 parameters checked with *estimate* (under *Values and estimated parameters*, preselected from the trajectory
-settings): *Explains* is the part of the deviation (RMS) that only this parameter accounts for compared to the
-other estimated ones, *Correction* its error. If a parameter that is not estimated would reduce the deviation
+settings): *Effect* is the part of the deviation (RMS) that only this parameter accounts for compared to the
+other estimated ones, *Correction* its error. Parameters that are only weakly determined by the data are shown
+in italics. If a parameter that is not estimated would reduce the deviation
 considerably, the diagnosis points it out. A parameter is listed only if it explains clearly more than noise
 would (taking into account that the deviation of trajectories is correlated from pose to pose) and if it
 matters compared to the deviation that remains after correcting everything; so correcting removes rows but
@@ -204,11 +214,12 @@ appear in the status bar at the bottom.
 Corrections are made with *Correct* in the diagnosis, with *Correct all* (all estimated parameters together),
 or with the buttons of the views,
 e.g. *Correct shift and leverarm*, which uses only the standstills, where a time shift has no effect. Every
-correction is estimated together with all other parameters, so the order in which they are applied does not
-matter.
+correction is estimated together with the other estimated parameters, so the order in which they are applied
+does not matter. The sensor rotation is not estimated in this window, and the leverarm needs orientations.
 
 **3 · Least squares.** *Refine by least squares* runs the rigorous spatio-temporal least squares alignment of the
 parameters checked with *estimate* (preselected from the trajectory settings), starting from the placement shown;
 it runs in the background and can be cancelled. The values of all parameters can also be typed in.
-**Apply** aligns the trajectory as shown and saves the alignment; if the placement comes unchanged from the least
+**Apply** adds the trajectory, aligned as shown, and the alignment to the tables (the original trajectory is
+kept); if the placement comes unchanged from the least
 squares alignment, its statistics (e.g. the covariance) are saved, too.

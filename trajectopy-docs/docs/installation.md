@@ -1,7 +1,8 @@
 # Installation
 
-Trajectopy is available as a Python package and, for Windows, as a standalone app with the graphical user
-interface. Both contain the same functionality.
+Trajectopy is available as a Python package and as a standalone app with the graphical user interface for
+Windows, macOS and Linux. The app contains the GUI only: it needs no Python installation, but offers neither
+the Python API nor console output of the command line.
 
 ## Python Package
 
@@ -38,7 +39,17 @@ pip install --upgrade "trajectopy[gui]"
 Read the [release notes](release_notes.md) before updating to a new major version: they list the changes that
 may require changes to your code.
 
-## Windows App
+## Apps
+
+Every [release](https://github.com/gereon-t/trajectopy/releases/latest) provides
+
+- `Trajectopy-<version>-setup.exe`: installer for Windows,
+- `Trajectopy-<version>-macos-arm64.dmg`: app for macOS on Apple silicon,
+- `Trajectopy-<version>-linux-x86_64.tar.gz`: app for Linux (x86-64).
+
+The apps are not signed. On macOS, open the app the first time with right-click → *Open*.
+
+### Windows
 
 Download `Trajectopy-<version>-setup.exe` from the
 [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or

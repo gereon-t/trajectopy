@@ -7,7 +7,7 @@ Trajectopy reads trajectories from:
 - **ROS bags**: ROS1 (`.bag`) and ROS2 (`.mcap`, `.db3`), with poses, odometry, transforms, paths and GNSS fixes.
 
 In Python, `Trajectory.from_file` and [`trajectopy.io.read_trajectory`](../api/io.md#trajectopy.io.read_trajectory)
-read all file formats; [`trajectopy.io.trajectories_from_rosbag`](../api/io.md#trajectopy.io.trajectories_from_rosbag)
+read all these file formats except ROS bags; [`trajectopy.io.trajectories_from_rosbag`](../api/io.md#trajectopy.io.trajectories_from_rosbag)
 reads ROS bags.
 
 ## ASCII Files
@@ -37,18 +37,18 @@ With a header:
 
 | Header | Description | Default | Options |
 |--------|-------------|---------|---------|
-| `#name` | Display name | `Trajectory` | Any string |
+| `#name` | Display name | the file name without extension (`Trajectory` for text read with `from_string`) | Any string |
 | `#epsg` | EPSG code of the positions | `0` | Any EPSG code; `0` = local coordinates without a known datum |
 | `#fields` | Meaning of the columns | `t,px,py,pz,qx,qy,qz,qw` | Comma-separated [field names](#field-names) |
 | `#delimiter` | Column separator, in quotes | `','` | Any single character, e.g. `#delimiter ';'` |
-| `#nframe` | Navigation frame of the data | `enu` | Order of east, north and up/down, e.g. `enu`, `ned`, `neu` |
+| `#nframe` | Navigation frame of the data | `enu` | Order of east, north and up/down of a right-handed frame, e.g. `enu` or `ned` (left-handed orders such as `neu` fail for files with orientations) |
 | `#rot_unit` | Unit of Euler angles | `rad` | `rad`, `deg` |
-| `#euler_rot_seq` | Axis sequence of Euler angles | `xyz` | Up to 3 of `x`, `y`, `z` for extrinsic or `X`, `Y`, `Z` for intrinsic rotations (not mixed) |
+| `#euler_rot_seq` | Axis sequence of the three Euler angles | `xyz` | Three of `x`, `y`, `z` for extrinsic or `X`, `Y`, `Z` for intrinsic rotations (not mixed) |
 | `#time_format` | Format of the time column(s) | `unix` | `unix`, `datetime`, `gps_sow` |
 | `#time_offset` | Offset in seconds added to all timestamps | `0.0` | Any number |
 | `#datetime_format` | Format of date/time strings | `%Y-%m-%d %H:%M:%S.%f` | [strftime format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) |
 | `#datetime_timezone` | Time system of date/time strings | `UTC` | `UTC` or `GPS` |
-| `#gps_week` | GPS week of `gps_sow` timestamps | `0` | Integer |
+| `#gps_week` | GPS week of `gps_sow` timestamps | the current GPS week | Integer |
 | `#sorting` | Order of the poses | `time` | `time`, `path_length` (or `arc_length`) |
 
 Notes:
@@ -58,7 +58,8 @@ Notes:
 - **Navigation frame**: positions, velocities and orientations are converted to ENU. Positions are only
   converted if `#epsg` is `0`; with an EPSG code, their axes are defined by the coordinate system.
 - **GPS time**: `gps_sow` timestamps are seconds of the GPS week given by `#gps_week`; they are converted to UTC
-  (including leap seconds). `#datetime_timezone GPS` does the same for date/time strings.
+  by subtracting the 18 leap seconds that separate GPS time from UTC since 2017 (earlier data is off by up to a
+  few seconds). `#datetime_timezone GPS` does the same for date/time strings.
 - **Time systems**: date/time strings must be UTC or GPS time; local time zones are not supported (other values
   are read as UTC, with a warning). A constant offset can be corrected with `#time_offset`.
 - Header lines may also appear after the data (e.g. comments), but files with all header lines at the top load
@@ -72,12 +73,13 @@ Notes:
 | `l` | Path length (arc length) in meters | No |
 | `px`, `py`, `pz` | Position (in the order of the coordinate system, e.g. latitude, longitude, height for EPSG 4326) | No |
 | `qx`, `qy`, `qz`, `qw` | Orientation as quaternion | No |
-| `ex`, `ey`, `ez` | Orientation as Euler angles (roll, pitch, yaw; see `#rot_unit` and `#euler_rot_seq`) | No |
+| `ex`, `ey`, `ez` | Orientation as Euler angles, in the order of the axes of `#euler_rot_seq` (roll, pitch and yaw for the default `xyz`; see `#rot_unit`) | No |
 | `vx`, `vy`, `vz` | Velocity in meters per second | No |
 | `sx`, `sy`, `sz` | Standard deviations of the positions in meters, used to weight the alignment (see `use_position_std`) | No |
 | `-` | Column that is not used | Yes |
 
-Only `px`, `py` and `pz` are required. Without time column, the line number is used as timestamp; without
+Only `px`, `py` and `pz` are required. Without time column, the number of the pose (0, 1, 2, …) is used as
+timestamp, with a warning; without
 orientation, the trajectory has positions only (no rotation deviations, no leverarm estimation). If both
 quaternions and Euler angles are given, the quaternions are used.
 

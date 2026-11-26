@@ -11,7 +11,7 @@ trajectopy [-h] [--version] [--single-thread] [--plot-settings PLOT_SETTINGS] [f
 
 | Argument | Description |
 | --- | --- |
-| `files` | Project (`.tpy`), trajectory (`.traj`, `.bag`, …) or result (`.result`) files to open at start. Trajectories and results are added to the project. |
+| `files` | Project (`.tpy`), trajectory (`.traj`, `.bag`, `.mcap`, …) or result (`.result`) files to open at start. Trajectories and results are added to the project; of several projects, only the first is opened. Bag directories cannot be opened this way. |
 | `--version`, `-v` | Show the version and exit. |
 | `--single-thread` | Process in the GUI thread instead of a background thread, e.g. for debugging. The GUI does not respond while processing. |
 | `--plot-settings PLOT_SETTINGS` | JSON file with [plot settings](settings.md#plot-settings); settings missing in the file keep their default values. |
@@ -24,8 +24,9 @@ trajectopy --plot-settings plot_settings.json
 ```
 
 A project contains its own plot settings, which replace those given with `--plot-settings` when it is opened.
-The Windows app has no console window, so `--version` and `--help` print nothing there; the version is shown in
-*Help → About*.
+The apps for Windows, macOS and Linux have no console, so they print nothing: neither `--version` and `--help`
+nor the output of the commands below. The version is shown in *Help → About*. Use the Python package for the
+commands.
 
 ## Commands
 
@@ -39,7 +40,7 @@ The Windows app has no console window, so `--version` and `--help` print nothing
 | `info` | Show a summary of trajectory files and the topics of ROS bags |
 
 All commands read trajectopy, TUM, KITTI and EuRoC files and ROS bags (`.bag`, `.mcap`, `.db3` or a bag
-directory). Errors are reported with exit code 1 (2 for invalid arguments or input), so the commands can be used in
+directory). A reference bag with several supported topics needs `--ref-topic`. Errors are reported with exit code 1 (2 for invalid arguments or input), so the commands can be used in
 pipelines.
 
 ```console
@@ -92,6 +93,10 @@ trajectopy info recording.bag
 | `--report FILE` | Write a self-contained HTML report to this file |
 | `--no-report-figures` | Leave the figures out of the report |
 
+Output directories must exist. `--output-dir` receives `<name>_ate.result`, `<name>_rpe.result` and
+`<name>_alignment.result` for each trajectory. `--quiet` also suppresses the summary table, which is not printed
+either when it is written with `--table`.
+
 ### `align`
 
 | Option | Description |
@@ -102,6 +107,8 @@ trajectopy info recording.bag
 | `--output`, `-o PATH` | Write the aligned trajectory to this file (or directory for several trajectories) |
 | `--to FORMAT` | Format of the aligned trajectory: `trajectopy` (default), `tum`, `kitti` or `euroc` |
 | `--parameters FILE` | Write the alignment parameters to this `.result` file |
+
+With a directory as `--output`, the aligned trajectories are written as `<name>_aligned.traj`.
 
 ### `convert`
 

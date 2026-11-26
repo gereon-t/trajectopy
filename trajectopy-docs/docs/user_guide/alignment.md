@@ -22,7 +22,11 @@ orientations after the least squares adjustment.
 
 Which parameters are estimated is set in the [alignment settings](settings.md#alignment-settings); the
 settings also contain the standard deviations that weight the observations and a preprocessing step that
-selects the poses to use.
+selects the poses to use. The leverarm needs the orientations of the trajectory to align; estimating it
+without them raises `ValueError`.
+
+The time shift is the offset of the clock of the aligned trajectory: `apply_alignment` subtracts it from its
+timestamps.
 
 ## Estimating and Applying an Alignment
 
@@ -47,6 +51,9 @@ the same sensor setup. `align` does both in one step:
 ```python
 aligned = tpy.align(estimate, reference)
 ```
+
+Both functions take `AlignmentSettings` or the complete `ProcessingSettings`; only the latter also sets the
+matching (with `AlignmentSettings`, the default matching settings are used).
 
 An [ATE evaluation](evaluation.md#absolute-trajectory-error-ate) aligns the trajectories itself and keeps the
 alignment in its result (`ate_result.alignment`).
@@ -83,6 +90,8 @@ print(parameters.sim3_matrix)  # 4x4 similarity transformation
 print(alignment.converged)  # False if the least squares adjustment did not converge
 ```
 
+If the adjustment does not converge, the parameters keep their initial values.
+
 `trajectopy.visualization.alignment_figures` plots the covariance and correlation matrices, which show whether
 parameters could be told apart with the data at hand (see [Visualization](visualization.md)).
 
@@ -102,8 +111,10 @@ alignment = tpy.estimate_alignment(estimate, reference, initial_parameters=prior
 
 ## Simpler Alignments
 
-`adopt_first_pose` moves and rotates a trajectory so that its first pose coincides with the corresponding pose of
-the reference. This is how odometry is often evaluated: errors then grow with the distance from the start.
+`adopt_first_pose` shifts a trajectory so that its first position coincides with the first position of the
+reference, and rotates its orientations so that its first orientation coincides with the first orientation of
+the reference. The positions are only shifted, not rotated. Both trajectories should be matched first, so that
+their first poses correspond.
 
 ```python
 matched, matched_reference = tpy.match_trajectories(estimate, reference)
@@ -130,5 +141,6 @@ matched, matched_reference = tpy.match_trajectories(
 print(len(matched) == len(matched_reference))
 ```
 
-Trajectories without a common time reference (e.g. without overlapping time spans) are first matched roughly by
-their positions.
+If the time spans of both trajectories do not overlap at all, the `interpolation` and `nearest_temporal`
+methods first estimate the time offset roughly by matching the positions. Clocks that are offset but still
+overlap are not detected; estimate the time shift with the alignment, or give it as initial value.

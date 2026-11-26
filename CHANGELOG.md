@@ -38,33 +38,53 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `tpy.show_versions` and `trajectopy.exceptions.TrajectopyDeprecationWarning`.
 - trajectopy attaches a `NullHandler` to its logger and leaves the logging configuration to applications.
 
+### New Features
+
+Besides the API changes above, version 7 adds:
+
+- **GUI**: an interactive alignment window (drag, point pairs, time synchronization, diagnosis of the alignment
+  parameters and least squares refinement), which replaces the manual alignment window; export of HTML reports
+  and summary tables; a faster file dialog on Windows; and a log entry with the blocking code whenever the window
+  stops responding.
+- **Command line**: the commands `ate`, `rpe`, `evaluate`, `align`, `convert` and `info` evaluate, align and convert
+  trajectories without the GUI.
+- **Evaluation**: percentiles (`pos_dev_percentile`), confidence intervals that account for correlated
+  deviations (`confidence_interval`), statistics per segment (`segment_statistics`), summary tables of several
+  results (`summary_table`, `format_table`) and self-contained HTML reports (`write_report`).
+- **Plots**: `ate_boxplot_figure`.
+- **File formats**: TUM, KITTI and EuRoC files are read (recognized automatically) and written; ROS2 bags and
+  further ROS message types (odometry, transforms, paths, GNSS fixes) are read.
+- **Alignment**: positions are weighted by their standard deviations (`Trajectory.position_std`, read from ROS
+  covariances and the `sx`, `sy`, `sz` columns of trajectopy files).
+
 ### Breaking changes
 
 - `inplace` defaults to `False` everywhere and is keyword-only. This affects `Trajectory.crop`, `intersect`,
   `mask` and `transform`, `Positions.to_epsg` and `to_local`, `align`, `apply_alignment`,
   `adopt_first_pose`, `interpolate`, `match_trajectories`, `sort_spatially` and `approximate`.
-- Arguments after the data arguments are keyword-only, e.g. `estimate_alignment(..., initial_parameters=)`,
-  `ate(..., align=)`, `Trajectory(..., name=)`, `Positions(..., local_transformer=)`,
-  `divide_into_laps(..., return_lap_indices=)`, `Trajectory.crop(..., inverse=)` and
-  `Trajectory.intersect(..., max_gap_size=)`. In `trajectopy.visualization`, the same holds for
-  `ate_speed_figure(..., speed_window=)`,
-  `parameter_matrix_figure(..., correlation=)`, `smoothed_speed(..., window=)`,
-  `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=, width=)` and
-  `show(..., title=, block=, use_opengl=)`.
-- `write_report` has explicit parameters instead of `*args, **kwargs`; the arguments after `ate_results` and
-  `rpe_results` (`alignment`, `settings`, …) are keyword-only.
+- Only the data (trajectories, results, figures, file names, indices) and the settings are positional
+  arguments; all options are keyword-only. For example: `estimate_alignment(..., initial_parameters=)`,
+  `ate(..., align=)`, `interpolate(..., method=)`, `Trajectory(..., name=)`, `Positions(..., local_transformer=)`,
+  `Trajectory.crop(..., inverse=)`, `Trajectory.intersect(..., max_gap_size=)`, `Trajectory.to_file(..., mode=)`,
+  `Trajectory.to_kml(..., precision=, color=)`, the `mode` of all `to_file` methods and `write_*_result`
+  functions, `ATEResult.confidence_interval(quantity=, statistic=)`, `ATEResult.segment_statistics(
+  segment_length=, by=)`, `ATEResult.to_kml(..., field=)`, `format_table(..., table_format=)`,
+  `summary_table(..., confidence_intervals=)`, `divide_into_laps(..., return_lap_indices=)`, the options of
+  `io.write_kml`, `io.write_ate_kml`, `io.read_tum`, `io.read_kitti` and `io.read_euroc`, and in
+  `trajectopy.visualization` `ate_speed_figure(..., speed_window=)`, `parameter_matrix_figure(..., correlation=)`,
+  `smoothed_speed(..., window=)`, `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=,
+  width=)`, `show(..., title=, block=, use_opengl=)` and `PlotWindow(..., title=)`.
 - `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
   functions) overwrite existing files; pass `mode="a"` to append.
 - `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file
   extension (`.tum`, `.kitti`) and writes the trajectopy format otherwise.
 - Orientations are `scipy.spatial.transform.Rotation` objects: `trajectory.rotations`,
-  `ATEResult.abs_dev.rot_dev` and the `rotation_set` of the alignment parameters. The `Rotations` class, a
+  `ATEResult.abs_dev.rot_dev`, `AlignmentParameters.helmert.rotation_set` and
+  `SensorRotationParameters.rotation_set`. The `Rotations` class, a
   subclass of scipy's `Rotation`, is gone; `trajectopy.Rotations` is a deprecated alias of scipy's `Rotation`.
   Compose rotations with `*` and `inv()` instead of `+` and `-` (`a - b` is `a * b.inv()`), and use
   `magnitude()` instead of `rotangle`.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
-- Removed `trajectopy.visualization.ate_segments_figure`; the ATE plot shows the same information.
-  `ATEResult.segment_statistics` still computes the statistics per segment as a table.
 - Removed the modules deprecated since version 5: `trajectopy.readers` (use `trajectopy.io`),
   `trajectopy.utils.common` and `trajectopy.processing.lib.alignment.parameters`
   (use `trajectopy.AlignmentParameters`).
@@ -87,7 +107,7 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   a session.
 - `AlignmentParameters.to_file` (and `trajectopy.io.write_alignment_parameters`) wrote files that
   `AlignmentParameters.from_file` could not read; the parameters are now written with their enabled flags and
-  without loss of precision.
+  17 significant digits.
 
 ### Deprecations
 
@@ -105,7 +125,8 @@ These keep working in version 7 and will be removed in version 8:
 | `trajectopy.IOError`, `trajectopy.exceptions.IOError` | `trajectopy.TrajectopyIOError` |
 | `trajectopy.ComparisonMethod` | none (an internal detail of the file I/O) |
 | `trajectopy.io.HeaderData` | none (an internal detail of reading files) |
-| `MatchingMethod.UNKNOWN` | none (it was never a matching method; matching with it raises `ValueError`) |
+| `MatchingMethod.UNKNOWN` (warns when set in `MatchingSettings`) | none (it was never a matching method; matching with it raises `ValueError`) |
+| `trajectopy.Rotations` | `scipy.spatial.transform.Rotation` |
 
 ### Migrating from version 6
 

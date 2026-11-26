@@ -41,14 +41,19 @@ All functions follow the same conventions:
   align) first and the reference second; the parameters are called `trajectory` and `other`.
 - **Inputs are not modified**: functions and methods that change a trajectory return a new one. Pass
   `inplace=True` to change the given trajectory instead. Always use the return value:
-  `trajectory = tpy.align(trajectory, reference)`.
-- **One settings argument**: processing functions take a `settings` argument, either their own settings type
-  (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, of which they use the part they need. `None`
-  means the default settings.
+  `trajectory = tpy.align(trajectory, reference)`. Exceptions are the methods `Trajectory.set_sorting`, `ATEResult.set_sorting` and `ATEResult.remove_ate_above`,
+  which change the object itself.
+- **One settings argument**: processing functions with settings take a `settings` argument, either their own
+  settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, of which they use the part they
+  need (`ate`, which needs several parts, takes only `ProcessingSettings`). `None` means the default settings.
+- **Options are keyword arguments**: only the data (trajectories, results, file names, indices) and the
+  settings are positional arguments; all options are passed by name, e.g. `tpy.interpolate(trajectory, index,
+  method="linear")`.
 - **Options as strings**: options such as the matching method are enumerations, but strings are accepted as
   well, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
 - **Units**: positions, path lengths and position deviations are in meters, timestamps in seconds, angles in
   radians, unless stated otherwise.
 - **Deviations**: deviations are always *evaluated trajectory minus reference*.
-- **Files**: functions that read or write files accept strings and `pathlib.Path` objects and overwrite existing
-  files unless `mode="a"` is given.
+- **Files**: functions that read or write files accept strings and `pathlib.Path` objects. Writers overwrite
+  existing files; those with a `mode` argument append to them with `mode="a"`. Only
+  `write_sensor_rotation_parameters` always appends (to an alignment result file).

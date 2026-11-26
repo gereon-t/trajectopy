@@ -27,7 +27,10 @@ are ignored with a warning, so that files of other trajectopy versions can be re
 strings in Python, e.g. `tpy.MatchingSettings(method="nearest_temporal")`.
 
 Every processing function takes either its own part of the settings (e.g. `MatchingSettings` for
-`match_trajectories`) or the complete `ProcessingSettings`.
+`match_trajectories`) or the complete `ProcessingSettings`. Functions that need several parts use the defaults
+for the parts they are not given: `estimate_alignment` and `align` with `AlignmentSettings`, and `rpe` with
+`RelativeComparisonSettings`, use the default matching settings. `ate` needs both matching and alignment and
+takes only `ProcessingSettings`.
 
 ## Processing Settings
 
@@ -72,9 +75,9 @@ Standard deviations of the observations, which weight them in the least squares 
 | --- | --- | --- |
 | `std_xy_from`, `std_z_from` | Horizontal / vertical position of the trajectory to align (m) | `1.0` |
 | `std_xy_to`, `std_z_to` | Horizontal / vertical position of the reference (m) | `1.0` |
-| `std_roll_pitch` | Roll and pitch (rad) | `0.01745` (1°) |
-| `std_yaw` | Yaw (rad) | `0.01745` (1°) |
-| `std_speed` | Speed (m/s) | `1.0` |
+| `std_roll_pitch` | Roll and pitch (rad); used only when the leverarm is estimated | `0.01745` (1°) |
+| `std_yaw` | Yaw (rad); used only when the leverarm is estimated | `0.01745` (1°) |
+| `std_speed` | Speed (m/s); used only when the time shift is estimated | `1.0` |
 | `error_probability` | Error probability of the statistical tests | `0.05` |
 | `variance_estimation` | Estimate the variance factor a posteriori | `False` |
 | `robust_estimation` | Down-weight epochs with large residuals (iteratively reweighted least squares with Huber weights), so that outliers hardly affect the estimated parameters | `True` |
@@ -96,9 +99,9 @@ Matching finds the corresponding poses of two trajectories, for the alignment an
 | Setting | Description | Default |
 | --- | --- | --- |
 | `matching.method` | Matching method (`MatchingMethod`), see below | `interpolation` |
-| `matching.max_time_diff` | Maximum time difference of poses matched by their timestamps (s) | `0.01` |
+| `matching.max_time_diff` | Maximum time difference of poses matched by their timestamps (s; `0` = no limit) | `0.01` |
 | `matching.max_distance` | Maximum distance of poses matched spatially (m; `0` = no limit) | `0.0` |
-| `matching.max_gap_size` | Maximum gap within a trajectory that is bridged by interpolation (s; `interpolation` method) | `10.0` |
+| `matching.max_gap_size` | Maximum gap within a trajectory that is bridged by interpolation (s, or m for spatially sorted trajectories; `interpolation` method) | `10.0` |
 | `matching.k_nearest` | Number of nearest neighbors for `nearest_spatial_interpolated` | `2` |
 
 #### Matching Methods
@@ -111,8 +114,8 @@ Matching finds the corresponding poses of two trajectories, for the alignment an
   within `max_distance`). This needs no common time reference.
 - **`nearest_spatial_interpolated`**: for each pose of the trajectory to evaluate, the `k_nearest` positions of the
   reference are requested and a 3D line is fitted through them; the pose is matched with its projection onto that
-  line. The matched rotations are the chordal L2 mean of the neighbors' rotations. Afterwards, both trajectories
-  have the length of the trajectory to evaluate.
+  line. The matched rotations are the chordal L2 mean of the neighbors' rotations. Poses with fewer than two
+  reference positions within `max_distance` are left out.
 
 ### Relative Comparison Settings
 
@@ -129,7 +132,12 @@ pairs are formed for the distances 100 m, 200 m, …, 800 m.
 
 ### Approximation Settings
 
-Trajectopy currently supports piece-wise cubic approximation for position components and moving average for rotation components. Piece-wise cubic means that the trajectory is divided into intervals of a specified size, and within each interval, a cubic polynomial is fitted to the position data. The fitted polynomial is then used to approximate the position values within that interval.
+The positions are approximated by piecewise cubic polynomials, the rotations by a moving average. For the
+positions, the trajectory is divided into intervals; an interval is closed as soon as it is longer than
+`position_interval_size` and contains at least `position_min_observations` poses (remaining poses extend the
+last interval). The cubic polynomials of neighboring intervals share their values and first derivatives at the
+interval borders, so that the approximation is smooth. With the defaults and data at 1 Hz, for example, the
+intervals are about 25 s long, because of the minimum number of observations.
 
 The interval and window sizes refer to the index of the trajectory: seconds for trajectories sorted by time,
 meters for spatially sorted trajectories.
@@ -147,13 +155,15 @@ meters for spatially sorted trajectories.
 
 Sorting involves two steps:
 
-1. Smoothing the trajectory using Moving Least Squares (MLS). The k nearest neighbors of each point are used to fit a 3D line, and the point is projected onto this line. This step reduces noise and outliers in the trajectory.
+1. Smoothing the trajectory using Moving Least Squares (MLS). For each point, the `k_nearest` nearest voxel
+   centroids are searched, a 3D line is fitted through all points of these voxels, and the point is projected
+   onto this line. This step reduces noise and outliers in the trajectory.
 2. Reconstruction of the point order from a minimum spanning tree (MST) of the smoothed points. The tree is traversed depth-first from one end of its longest path, visiting short side branches (caused by noise) before continuing along the trajectory.
 
 | Setting | Description | Default |
 | --- | --- | --- |
 | `sorting.voxel_size` | Size of the voxel grid (m). Instead of the raw points, the centroids of the occupied voxels are used for the nearest neighbor searches of the MLS. | `0.05` |
-| `sorting.movement_threshold` | The MLS iterations stop when all points move less than this (m). | `0.005` |
+| `sorting.movement_threshold` | The MLS iterations stop when the points move less than this on average (m), after at most 10 iterations. | `0.005` |
 | `sorting.k_nearest` | Number of nearest voxels used by the MLS | `4` |
 
 ## Plot Settings
@@ -165,7 +175,7 @@ All plots, in the GUI and in `trajectopy.visualization`, use the same `PlotSetti
 | `ate_unit_is_mm` | Show position deviations in millimeters instead of meters | `False` |
 | `directed_ate` | Split position deviations into along-track, horizontal cross-track and vertical cross-track instead of x, y and z (see below) | `False` |
 | `ate_remove_above` | Exclude position deviations above this value (m) from the plots (`0` = keep all) | `0.0` |
-| `hist_percentile` | Show histogram data up to this percentile of the absolute values; useful for data with outliers | `1.0` |
+| `hist_percentile` | Show histogram data up to this quantile (between 0 and 1) of the absolute values, e.g. `0.99` to leave out the largest 1 %; useful for data with outliers | `1.0` |
 | `colorbar_max_std` | Clip color-coded values to the mean ± this many standard deviations, so that outliers don't dominate the color scale (`0` = no clipping) | `3.0` |
 | `smoothing_window` | Moving-average window applied to color-coded values (`1` = no smoothing) | `1` |
 | `use_relative_timestamps` | Show time axes in seconds relative to the first timestamp instead of absolute (UTC) time | `False` |
@@ -181,6 +191,6 @@ Plot settings are saved with a GUI project and can be loaded at startup with
 
 ### ATE Frame Definition
 
-The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. With orientations, the directions are those of the body frame, which is assumed to be x forward, y left and z up (like the ENU navigation frame). The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.
+The ATE can be split into along-, horizontal-cross- and vertical-cross-track directions by setting `directed_ate` to `True`. The along-track direction is defined as positive in the direction of travel. The horizontal cross-track direction is defined as positive to the right of the along-track direction. With orientations, the directions are those of the body frame, which is assumed to be x forward, y left and z up (like the ENU navigation frame); for trajectories whose body x axis does not point forward, along- and cross-track deviations are mixed up. The vertical cross-track direction is defined as positive upwards. Like all deviations (x, y, z and the orientation deviations, too), they describe how far the evaluated trajectory deviates from the reference (test minus reference): e.g. a positive along-track deviation means that the evaluated trajectory is ahead of the reference. The following image illustrates the frame definition.
 
 <img src="https://raw.githubusercontent.com/gereon-t/trajectopy/main/.images/along_cross_frames.png" alt="ate_frames" width="400"/>

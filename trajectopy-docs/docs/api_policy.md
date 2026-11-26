@@ -10,7 +10,7 @@ The public API consists of the names exported by these namespaces:
 | Namespace | Content |
 | --- | --- |
 | `trajectopy` | Trajectories, settings, processing functions (alignment, matching, evaluation, ...), results, exceptions |
-| `trajectopy.io` | Reading and writing of trajectories (trajectopy, TUM, KITTI, EuRoC, ROS bags), results and KML files |
+| `trajectopy.io` | Reading and writing of trajectories (trajectopy, TUM, KITTI and EuRoC files; reading of ROS bags), results, alignment parameters and KML files |
 | `trajectopy.visualization` | Figures of trajectories, results and alignment parameters (needs `trajectopy[plot]`) |
 | `trajectopy.exceptions` | The exceptions raised by trajectopy and its deprecation warning |
 
@@ -30,21 +30,26 @@ The whole public API follows the same conventions, so that it can grow without b
 
 - **Inputs are never modified.** Functions and methods that transform a trajectory return a new object. The
   keyword-only argument `inplace=True` modifies the input instead (and returns it, too). Always use the
-  return value: `trajectory = tpy.align(trajectory, reference)`.
-- **One settings argument.** Every processing function takes a single `settings` argument, either of its own
-  settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, from which it uses the part
-  it needs. So the same `ProcessingSettings` can be passed to all functions. `None` means the defaults.
+  return value: `trajectory = tpy.align(trajectory, reference)`. Exceptions are the methods `Trajectory.set_sorting`, `ATEResult.set_sorting` and `ATEResult.remove_ate_above`,
+  which change the object itself.
+- **One settings argument.** Every processing function with settings takes a single `settings` argument,
+  either of its own settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, from which it
+  uses the part it needs. So the same `ProcessingSettings` can be passed to all of them. `ate`, which needs
+  the matching and the alignment settings, takes only `ProcessingSettings`. `None` means the defaults.
 - **Options are enumerations that accept strings.** `MatchingSettings(method="nearest_temporal")` and
   `tpy.interpolate(trajectory, index, method="linear")` work as well as the enumeration members; the lookup
   ignores the case.
-- **Keyword-only options.** Arguments after the data (trajectories, indices, settings) are keyword-only, so
-  that new options can be added and options can be reordered without breaking calls.
+- **Keyword-only options.** Only the data (trajectories, results, figures, file names, indices) and the
+  settings are positional arguments; all options are keyword-only, so that new options can be added and
+  options can be reordered without breaking calls.
 - **Results carry everything.** Results are returned as objects instead of tuples whose shape depends on a
-  flag; for example, the alignment used by `tpy.ate` is available as `ate_result.alignment`.
+  flag; for example, the alignment used by `tpy.ate` is available as `ate_result.alignment`. The only
+  remaining exception is `divide_into_laps(..., return_lap_indices=True)`.
 - **Orientations** are [`scipy.spatial.transform.Rotation`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html)
   objects.
-- **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`)
-  and overwrite existing files unless `mode="a"` is passed.
+- **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`).
+  Writers overwrite existing files; those with a `mode` argument append with `mode="a"`. Only
+  `write_sensor_rotation_parameters` always appends (to an alignment result file).
 - **Errors.** Invalid arguments raise `TypeError` or `ValueError`; failures of the processing raise
   subclasses of `trajectopy.TrajectopyError`.
 

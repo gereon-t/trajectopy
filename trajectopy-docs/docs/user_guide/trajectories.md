@@ -8,7 +8,8 @@ and, optionally, orientations. Everything in trajectopy, from the alignment to t
 ### From Files
 
 `Trajectory.from_file` reads trajectopy, TUM, KITTI and EuRoC files and ASCII files whose columns are described
-by a header (see [File Formats](file_formats.md)). The format is recognized automatically.
+by a header (see [File Formats](file_formats.md)). The format is recognized automatically (TUM files are read
+as trajectopy files, whose default columns are those of TUM).
 
 ```python
 import numpy as np
@@ -63,9 +64,9 @@ Poses with the same timestamp are removed (the first one is kept), and the poses
 | `xyz` | Positions, shape (N, 3); the same as `positions.xyz` |
 | `positions` | [`Positions`](../api/trajectory.md#trajectopy.Positions): the positions and their EPSG code |
 | `rotations` | Orientations as `scipy.spatial.transform.Rotation`, or None |
-| `quat`, `rpy` | Orientations as quaternions (x, y, z, w) or Euler angles (roll, pitch, yaw in radians) |
-| `se3` | Poses as 4×4 homogeneous matrices |
-| `path_lengths` | Distance travelled since the first pose, in meters |
+| `quat`, `rpy` | Orientations as quaternions (x, y, z, w) or Euler angles (roll, pitch, yaw in radians); check `has_orientation` first: without orientations, `quat` is all zeros and `rpy` raises `ValueError` |
+| `se3` | Poses as a list of 4×4 homogeneous matrices |
+| `path_lengths` | Distance travelled since the first pose, in meters; after spatial sorting, the position along the track (see [Time and Path Length](#time-and-path-length)) |
 | `velocity_xyz`, `absolute_velocity` | Velocity vectors and speed in m/s (derived from the positions unless given) |
 | `position_std` | Standard deviations of the positions along x, y and z in meters, or None |
 | `name`, `sorting` | Name, and whether the poses are ordered by time or by path length |
@@ -97,7 +98,7 @@ Iterating over a trajectory yields its poses. `equals` compares the data of two 
 | --- | --- |
 | `crop(start, end)` | Poses between two timestamps (or path lengths, see [Sorting](#time-and-path-length)); `inverse=True` removes them instead |
 | `mask(mask)` | Poses selected by a boolean mask or index array (the same as indexing) |
-| `intersect(index)` | Poses within the time span of another index, without large gaps |
+| `intersect(index)` | Poses within the span of another index (timestamps or path lengths); poses inside gaps of that index larger than `max_gap_size` (default 10) are removed, except one pose at each edge of a gap |
 
 ```python
 first_minute = trajectory.crop(0.0, 60.0)
@@ -105,14 +106,15 @@ without_first_minute = trajectory.crop(0.0, 60.0, inverse=True)
 ```
 
 Like all methods that change a trajectory, they return a new trajectory and leave the original unchanged, unless
-`inplace=True` is passed.
+`inplace=True` is passed. The only exception is `set_sorting` (see below), which reorders the trajectory itself.
 
 ## Coordinate Systems
 
 The positions of a trajectory are given in a coordinate system with an [EPSG code](https://epsg.io)
 (`trajectory.positions.epsg`), e.g. 25832 for UTM zone 32N or 4326 for latitude and longitude. EPSG code 0 means
 a local system without known datum, e.g. of a SLAM system; such positions cannot be transformed into other
-systems.
+systems. Positions that were transformed into their local frame with `to_local()` are an exception: they have
+EPSG code 0, too, but keep the transformation and can be transformed back with `to_epsg`.
 
 `Positions.to_epsg` transforms the positions:
 
@@ -167,7 +169,11 @@ print(sorted_loop.sorting, len(laps))
 path_length 3
 ```
 
-`set_sorting` switches between both orders of a trajectory that has been sorted spatially before.
+`set_sorting` switches between both orders of a trajectory that has been sorted spatially before; it reorders
+the trajectory itself and returns None. Spatial sorting is meant for trajectories along a closed track without
+intersections. It replaces the path lengths by the position along the track, which starts again with every
+lap (at the point with the largest height), so that `total_length` is then the length of one lap.
+`divide_into_laps` needs a trajectory sorted by path length.
 
 ## Resampling, Smoothing and Combining
 
@@ -185,8 +191,8 @@ smoothed = tpy.approximate(trajectory, tpy.ApproximationSettings(position_interv
 
 ## Saving
 
-`to_file` writes the trajectopy format, or TUM, KITTI or EuRoC depending on the file extension or the `format`
-argument:
+`to_file` writes the trajectopy format, the TUM or KITTI format for the file extensions `.tum` and `.kitti`, or
+the format given with the `format` argument (`trajectopy`, `tum`, `kitti` or `euroc`):
 
 ```python
 trajectory.to_file("copy.traj")

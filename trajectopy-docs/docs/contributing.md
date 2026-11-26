@@ -14,7 +14,8 @@ uv sync --all-extras
 uv run pre-commit install
 ```
 
-The pre-commit hooks run before every commit: ruff (linting and formatting), mypy and the tests.
+The pre-commit hooks run before every commit: ruff (linting and formatting), the update of `uv.lock` and
+`requirements.txt`, mypy and the tests.
 
 ## Tests
 
@@ -27,12 +28,14 @@ and the documentation. Among others, they check that
 
 - the public API does not change unintentionally (`test/test_public_api.py`),
 - every public function, class, method and property has a complete docstring, every public name is in the API
-  reference, and the examples of the documentation, of the docstrings and in `example_scripts` run and show the
-  actual output (`test/test_docs.py`),
+  reference, every public function and class (except the exceptions) has examples, the examples of the
+  documentation and of the docstrings run and show the actual output, and the scripts in `example_scripts`
+  run (`test/test_docs.py`),
 - trajectopy itself does not use its deprecated API (deprecation warnings are errors in the tests).
 
-The CI runs the tests on Linux and Windows with all supported Python versions, once without the plotting and GUI
-extras, and builds the documentation.
+The CI checks formatting, linting and types, runs the tests on Linux and Windows with all supported Python
+versions (with a minimum test coverage of 85 %) and once without the plotting and GUI extras, and builds the
+documentation.
 
 ## Code Style
 

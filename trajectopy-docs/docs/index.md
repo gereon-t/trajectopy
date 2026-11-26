@@ -24,8 +24,8 @@ the deviations in plots, reports and Google Earth.
 - **Evaluation**: absolute trajectory error (ATE) with along-track and cross-track components, relative pose
   error (RPE), percentiles, confidence intervals that account for the temporal correlation of the deviations,
   and summary tables and HTML reports to compare several estimates.
-- **Data**: trajectopy, TUM, KITTI and EuRoC files, ASCII files with any column layout, time format and
-  coordinate system (any EPSG code), and ROS1 and ROS2 bags.
+- **Data**: trajectopy, TUM, KITTI and EuRoC files, ASCII files with any column layout, Unix, date/time or GPS
+  timestamps and any coordinate system (EPSG code), and ROS1 and ROS2 bags.
 - **Visualization**: fast, interactive plots (PNG, JPG or SVG export) and Google Earth export.
 - **GUI**: everything above without writing code, plus an interactive alignment for cases in which an automatic
   alignment fails.
@@ -55,7 +55,8 @@ print(rpe_result)
 ```
 
 Or start the GUI with `trajectopy`, drop both files onto the trajectory table, right-click the reference and
-choose *Set as Reference*, then right-click the estimate and choose *Compare with Reference*.
+choose *Set as Reference*, then right-click the estimate and choose *Compare with Reference → Absolute Error
+(ATE), with Alignment*.
 
 ## Documentation
 
@@ -63,7 +64,7 @@ choose *Set as Reference*, then right-click the estimate and choose *Compare wit
 
 - **[Installation](installation.md)**
 
-    Python package, extras and the Windows app.
+    Python package, extras and the apps for Windows, macOS and Linux.
 
 - **[Getting Started](getting_started.md)**
 

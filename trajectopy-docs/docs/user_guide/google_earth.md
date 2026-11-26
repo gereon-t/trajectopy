@@ -50,6 +50,8 @@ time slider.
 - `color_classes`: number of colors (default 11). The Places panel of Google Earth lists them with their value
   ranges (the legend); each class can be switched on and off.
 - `line_width`: line width in pixels (default 3 for trajectories, 4 for ATE results).
+- `precision`: precision of the coordinates in the file in degrees (default 1e-6, about 0.1 m).
+- Without `color` and `field`, trajectories are drawn in red.
 
 ## Heights
 
@@ -62,7 +64,8 @@ time slider.
   (e.g. orthometric or normal heights of a national height system). They are used as they are; the difference
   between national height systems and Google Earth's EGM96 is usually below a meter or two.
 
-With the wrong choice, the trajectory floats about 30 to 50 m above the ground or sinks into it. `height_offset`
+With the wrong choice, the trajectory floats above the ground or sinks into it by the geoid height, e.g. about
+30 to 50 m in Central Europe (between about −106 and +85 m worldwide). `height_offset`
 (meters) is added in all modes, e.g. to correct for the antenna height. `extrude=True` connects the trajectory to
 the ground with a semi-transparent vertical curtain, which makes heights easy to read (not for trajectories
 clamped to the ground):
