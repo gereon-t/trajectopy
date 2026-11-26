@@ -35,8 +35,12 @@ def ate_summary(ate_results: Sequence[ATEResult], confidence_intervals: bool = T
             "pos_max [m]": float(result.pos_dev_max),
         }
         if confidence_intervals:
-            row["pos_mean_ci_low [m]"], row["pos_mean_ci_high [m]"] = result.confidence_interval("position", "mean")
-            row["pos_rms_ci_low [m]"], row["pos_rms_ci_high [m]"] = result.confidence_interval("position", "rms")
+            row["pos_mean_ci_low [m]"], row["pos_mean_ci_high [m]"] = result.confidence_interval(
+                quantity="position", statistic="mean"
+            )
+            row["pos_rms_ci_low [m]"], row["pos_rms_ci_high [m]"] = result.confidence_interval(
+                quantity="position", statistic="rms"
+            )
         if result.has_orientation:
             row |= {
                 "rot_mean [deg]": float(np.rad2deg(result.rot_ate)),
@@ -74,6 +78,7 @@ def rpe_summary(rpe_results: Sequence[RPEResult]) -> pd.DataFrame:
 def summary_table(
     ate_results: Sequence[ATEResult] = (),
     rpe_results: Sequence[RPEResult] = (),
+    *,
     confidence_intervals: bool = True,
 ) -> pd.DataFrame:
     """ATE and RPE summaries side by side, joined by the result names (outer join, so that results with only an
@@ -97,7 +102,7 @@ def summary_table(
         >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
         >>> ate_result = tpy.ate(estimate, reference)
         >>> table = tpy.summary_table([ate_result])
-        >>> print(tpy.format_table(table[["poses", "pos_mean [m]"]], "markdown", precision=3))
+        >>> print(tpy.format_table(table[["poses", "pos_mean [m]"]], table_format="markdown", precision=3))
         | name | poses | pos_mean [m] |
         | --- | --- | --- |
         | KITTI ORB vs. KITTI Ground Truth | 4541 | 1.153 |
@@ -116,7 +121,7 @@ def summary_table(
     return table
 
 
-def format_table(table: pd.DataFrame, table_format: str = "csv", precision: int = 4) -> str:
+def format_table(table: pd.DataFrame, *, table_format: str = "csv", precision: int = 4) -> str:
     """Formats a summary table as CSV, Markdown or LaTeX (without additional dependencies).
 
     Args:
@@ -136,7 +141,7 @@ def format_table(table: pd.DataFrame, table_format: str = "csv", precision: int 
         >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
         >>> ate_result = tpy.ate(estimate, reference)
         >>> table = tpy.summary_table([ate_result])
-        >>> print(tpy.format_table(table[["poses"]], "csv"))
+        >>> print(tpy.format_table(table[["poses"]], table_format="csv"))
         name,poses
         KITTI ORB vs. KITTI Ground Truth,4541
         <BLANKLINE>

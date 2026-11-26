@@ -274,7 +274,7 @@ class ATEResult:
         return {}
 
     def confidence_interval(
-        self, quantity: str = "position", statistic: str = "mean", confidence: float = DEFAULT_CONFIDENCE
+        self, *, quantity: str = "position", statistic: str = "mean", confidence: float = DEFAULT_CONFIDENCE
     ) -> tuple[float, float]:
         """Confidence interval of the mean (ATE) or RMS of the position or rotation deviations.
 
@@ -309,7 +309,7 @@ class ATEResult:
     def _interval_summary(self, quantity: str, statistic: str) -> str:
         if quantity == "rotation" and not self.has_orientation:
             return "-"
-        lower, upper = self.confidence_interval(quantity, statistic)
+        lower, upper = self.confidence_interval(quantity=quantity, statistic=statistic)
         if not np.isfinite(lower):
             return "-"
         return f"{lower:.4f} - {upper:.4f}"
@@ -349,6 +349,7 @@ class ATEResult:
 
     def segment_statistics(
         self,
+        *,
         segment_length: float | None = None,
         by: str = "time",
         labels: np.ndarray | list | None = None,
@@ -807,7 +808,7 @@ class ATEResult:
         return pd.DataFrame(all_data, columns=self.columns)
 
     def to_kml(
-        self, filename: str | os.PathLike, field: str = "position", max_std: float = 3.0, **options: Any
+        self, filename: str | os.PathLike, *, field: str = "position", max_std: float = 3.0, **options: Any
     ) -> None:
         """Exports the result to a Google Earth KML file: the trajectory colored by a deviation field, with
         playback in Google Earth's time slider. Requires a trajectory with a known EPSG code.
@@ -827,7 +828,7 @@ class ATEResult:
         filename = os.fspath(filename)
         write_ate_kml(self, filename, field=field, max_std=max_std, **options)
 
-    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
+    def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
         """Writes the result to a file that :meth:`from_file` and the GUI can read.
 
         Args:

@@ -118,7 +118,7 @@ def _name(filename: str) -> str:
     return Path(filename).stem
 
 
-def read_tum(filename: str | os.PathLike, name: str = "") -> Trajectory:
+def read_tum(filename: str | os.PathLike, *, name: str = "") -> Trajectory:
     """Reads a trajectory in the TUM format (``timestamp tx ty tz qx qy qz qw``).
 
     Args:
@@ -151,7 +151,9 @@ def read_tum(filename: str | os.PathLike, name: str = "") -> Trajectory:
     )
 
 
-def read_kitti(filename: str | os.PathLike, timestamps: np.ndarray | str | None = None, name: str = "") -> Trajectory:
+def read_kitti(
+    filename: str | os.PathLike, *, timestamps: np.ndarray | str | None = None, name: str = ""
+) -> Trajectory:
     """Reads a trajectory in the KITTI odometry format (one row-major 3x4 pose matrix per line).
 
     Args:
@@ -192,7 +194,7 @@ def read_kitti(filename: str | os.PathLike, timestamps: np.ndarray | str | None 
     )
 
 
-def read_euroc(filename: str | os.PathLike, name: str = "") -> Trajectory:
+def read_euroc(filename: str | os.PathLike, *, name: str = "") -> Trajectory:
     """Reads a trajectory in the EuRoC ground truth format.
 
     The columns are ``timestamp [ns], px, py, pz, qw, qx, qy, qz``, optionally followed by velocities

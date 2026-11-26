@@ -300,6 +300,7 @@ class PlotWindow(QtWidgets.QMainWindow):
     def __init__(
         self,
         figures: Sequence[Figure],
+        *,
         title: str = "Trajectopy",
         export_format: str = "png",
         export_width: int = 1600,

@@ -99,7 +99,7 @@ def run_evaluation(args: argparse.Namespace, with_ate: bool, with_rpe: bool) -> 
             rpe_results.append(tpy.rpe(trajectory, reference, settings=settings))
 
     table = summary_table(ate_results, rpe_results, confidence_intervals=not args.no_ci)
-    text = format_table(table, args.table_format)
+    text = format_table(table, table_format=args.table_format)
     if args.table:
         Path(args.table).write_text(text, encoding="utf-8")
         logger.info("Wrote the summary table %s", args.table)

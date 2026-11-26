@@ -30,6 +30,12 @@ class TestOptions(unittest.TestCase):
         with self.assertRaises(ValueError):
             settings.matching.method = "closest"
 
+    def test_deprecated_option_warns(self):
+        from trajectopy.exceptions import TrajectopyDeprecationWarning
+
+        with self.assertWarns(TrajectopyDeprecationWarning):
+            tpy.MatchingSettings(method="unknown")
+
     def test_settings_round_trip_options_as_strings(self):
         settings = tpy.ProcessingSettings()
         settings.matching.method = tpy.MatchingMethod.NEAREST_TEMPORAL

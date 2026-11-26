@@ -58,7 +58,7 @@ class AlignmentResult:
             and self.estimation_of == other.estimation_of
         )
 
-    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
+    def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
         """Writes the result to a file that :meth:`from_file` and the GUI can read.
 
         Args:

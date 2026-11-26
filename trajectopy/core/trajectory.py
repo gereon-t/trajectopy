@@ -59,7 +59,7 @@ class Trajectory:
         timestamps (np.ndarray): A 1D array of timestamps corresponding to each pose.
         name (str): An identifier string for the trajectory.
         path_lengths (np.ndarray): A 1D array of cumulative path lengths starting from zero.
-        sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH).
+        sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.PATH_LENGTH).
         position_std (np.ndarray | None): Standard deviations of the positions along x, y and z in meters,
             shape (N, 3), or None if unknown. The alignment weights the positions by them.
 
@@ -106,7 +106,7 @@ class Trajectory:
             name (str, optional): Name of the trajectory. Defaults to generic counter name.
             path_lengths (Union[np.ndarray, None], optional): Pre-calculated path lengths. If None, they are computed from xyz.
             velocity_xyz (Union[np.ndarray, None], optional): Pre-calculated 3D velocities. If None, they are computed via gradient.
-            sorting (Sorting, optional): Definition of the sorting logic (TIME or ARC_LENGTH). Defaults to Sorting.TIME.
+            sorting (Sorting, optional): Definition of the sorting logic (TIME or PATH_LENGTH). Defaults to Sorting.TIME.
             position_std (np.ndarray | None, optional): Standard deviations of the positions along x, y and z in
                 meters, shape (N, 3). Defaults to None (unknown).
 
@@ -493,7 +493,7 @@ class Trajectory:
         path_lengths, velocities) will be reordered according to the new sorting.
 
         Args:
-            sorting (Sorting): The new sorting strategy (TIME or ARC_LENGTH).
+            sorting (Sorting): The new sorting strategy (TIME or PATH_LENGTH).
 
         Examples:
             >>> import numpy as np
@@ -950,8 +950,8 @@ class Trajectory:
     def to_file(
         self,
         filename: str | os.PathLike,
-        mode: str = "w",
         *,
+        mode: str = "w",
         format: str = "auto",  # noqa: A002
     ) -> None:
         """Writes the trajectory to a file.
@@ -979,7 +979,7 @@ class Trajectory:
         write_trajectory(self, filename, format=format, mode=mode)
 
     def to_kml(
-        self, filename: str | os.PathLike, precision: float = 1e-6, color: str = "#ff0000", **options: Any
+        self, filename: str | os.PathLike, *, precision: float = 1e-6, color: str = "#ff0000", **options: Any
     ) -> None:
         """Exports the trajectory to a Google Earth KML file, as a time-stamped track that the time slider of
         Google Earth plays back.

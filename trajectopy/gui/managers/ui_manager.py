@@ -336,7 +336,7 @@ class UIManager(QObject):
         try:
             if suffix in (".md", ".csv", ".tex"):
                 table_format = {".md": "markdown", ".csv": "csv", ".tex": "latex"}[suffix]
-                text = format_table(summary_table(ate_results, rpe_results), table_format)
+                text = format_table(summary_table(ate_results, rpe_results), table_format=table_format)
                 Path(selected_file).write_text(text, encoding="utf-8")
             else:
                 write_report(selected_file, ate_results=ate_results, rpe_results=rpe_results)
@@ -399,7 +399,7 @@ class UIManager(QObject):
         epsg, ok = QtWidgets.QInputDialog.getInt(
             self._dialog_parent(),
             "EPSG Dialog",
-            "Please enter the new EPSG code. The trajectory WILL NOT be transformed (use Action -> Transform to EPSG instead):",
+            "Please enter the new EPSG code. The trajectory WILL NOT be transformed (use Coordinate System → Transform to EPSG… for that):",
         )
 
         if not ok or epsg is None:

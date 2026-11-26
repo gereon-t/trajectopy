@@ -71,8 +71,16 @@ class Settings(ABC):
         # options may be given as strings, e.g. MatchingSettings(method="nearest_temporal") or
         # settings.method = "nearest_temporal"
         option = _option_types(type(self)).get(name)
-        if option is not None and not isinstance(value, option):
-            value = option(value)
+        if option is not None:
+            if not isinstance(value, option):
+                value = option(value)
+            deprecated: frozenset[str] = getattr(
+                option, "deprecated", frozenset
+            )()  # options of other enumerations have none
+            if value.value in deprecated:
+                from trajectopy.utils.deprecation import warn_deprecated
+
+                warn_deprecated(f"{option.__name__}.{value.name} is deprecated and will be removed in version 8.")
         super().__setattr__(name, value)
 
     @staticmethod
@@ -936,6 +944,10 @@ class MatchingMethod(OptionEnum):
         <MatchingMethod.NEAREST_TEMPORAL: 'nearest_temporal'>
     """
 
+    @classmethod
+    def deprecated(cls) -> frozenset[str]:
+        return frozenset({"unknown"})
+
     NEAREST_SPATIAL = "nearest_spatial"
     NEAREST_TEMPORAL = "nearest_temporal"
     INTERPOLATION = "interpolation"
@@ -1003,14 +1015,15 @@ class PlotSettings(Settings):
         directed_ate: Show position deviations split into along-track, horizontal cross-track and
             vertical cross-track instead of x, y and z. Defaults to False.
         ate_remove_above: Exclude position deviations above this value in meters (0.0 = keep all). Defaults to 0.0.
-        hist_percentile: Show histogram data up to this percentile of the absolute values. Defaults to 1.0.
+        hist_percentile: Show histogram data up to this quantile (between 0 and 1) of the absolute values, e.g.
+            0.99 to leave out the largest 1 %. Defaults to 1.0 (all data).
         colorbar_max_std: Clip color-coded values to mean ± this many standard deviations, so that outliers
             don't dominate the color scale (0.0 = no clipping). Defaults to 3.0.
         smoothing_window: Moving-average window applied to color-coded values (1 = no smoothing). Defaults to 1.
         use_relative_timestamps: Show time axes in seconds relative to the first timestamp instead of
             absolute (UTC) time. Defaults to False.
-        line_width: Line width in pixels. Defaults to 1.5.
-        marker_size: Marker size in pixels of color-coded trajectory maps. Defaults to 4.
+        line_width: Line width in pixels. Defaults to 5.
+        marker_size: Marker size in pixels of color-coded trajectory maps. Defaults to 5.0.
         font_size: Font size in points of axis labels and titles. Defaults to 10.
         export_format: File format for exported plots ("png", "jpg" or "svg"). Defaults to "png".
         export_width: Width in pixels of exported raster images. Defaults to 1600.

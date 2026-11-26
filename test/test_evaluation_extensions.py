@@ -110,19 +110,19 @@ def test_block_bootstrap_widens_for_correlated_values():
 
 def test_ate_percentiles_and_confidence_interval(ate_result):
     assert ate_result.pos_dev_p95 == pytest.approx(np.percentile(ate_result.pos_dev_comb, 95))
-    lower, upper = ate_result.confidence_interval("position", "mean")
+    lower, upper = ate_result.confidence_interval(quantity="position", statistic="mean")
     assert lower <= ate_result.pos_ate <= upper
-    lower, upper = ate_result.confidence_interval("position", "rms")
+    lower, upper = ate_result.confidence_interval(quantity="position", statistic="rms")
     assert lower <= ate_result.pos_dev_rms <= upper
     assert "95th Percentile Position [m]" in ate_result.property_dict
     assert "Mean Position 95% Confidence Interval [m]" in ate_result.property_dict
     with pytest.raises(ValueError):
-        ate_result.confidence_interval("velocity")
+        ate_result.confidence_interval(quantity="velocity")
 
 
 def test_segment_statistics(ate_result):
     duration = np.ptp(ate_result.trajectory.timestamps)
-    table = ate_result.segment_statistics(duration / 4)
+    table = ate_result.segment_statistics(segment_length=duration / 4)
     assert table["count"].sum() == len(ate_result.pos_dev_comb)
     assert len(table) in (4, 5)  # the last pose may start a window of its own
     assert np.all(table["pos_max"] >= table["pos_p95"])
@@ -142,10 +142,10 @@ def test_summary_table_and_formats(ate_result, estimate, reference):
     assert table["poses"].dtype.name == "Int64"
     assert "pos_mean_ci_low [m]" in table.columns
 
-    markdown = format_table(table, "markdown")
+    markdown = format_table(table, table_format="markdown")
     assert markdown.splitlines()[1].startswith("| ---")
-    latex = format_table(table, "latex")
+    latex = format_table(table, table_format="latex")
     assert latex.startswith("\\begin{tabular}") and "pos\\_mean" in latex
-    assert format_table(table, "csv").startswith("name,")
+    assert format_table(table, table_format="csv").startswith("name,")
     with pytest.raises(ValueError):
-        format_table(table, "xlsx")
+        format_table(table, table_format="xlsx")

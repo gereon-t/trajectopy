@@ -397,7 +397,7 @@ class RPEResult:
         else:
             return pd.DataFrame(np.c_[self.all_pair_distances, self.pos_dev_all], columns=self.columns)
 
-    def to_file(self, filename: str | os.PathLike, mode: str = "w") -> None:
+    def to_file(self, filename: str | os.PathLike, *, mode: str = "w") -> None:
         """Writes the result to a file that :meth:`from_file` and the GUI can read.
 
         Args:

@@ -145,6 +145,7 @@ class _ColorScale:
 def write_kml(
     trajectory: Trajectory,
     filename: str | os.PathLike,
+    *,
     color: str = DEFAULT_KML_COLOR,
     field: str | None = None,
     colormap: str = "rdylbu",
@@ -223,6 +224,7 @@ def write_kml(
 def write_ate_kml(
     ate_result: ATEResult,
     filename: str | os.PathLike,
+    *,
     field: str = "position",
     colormap: str = "rdylbu",
     max_std: float = 3.0,

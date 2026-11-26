@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 def interpolate(
     trajectory: Trajectory,
     index: ArrayLike,
-    method: InterpolationMethod | str = InterpolationMethod.LINEAR,
     *,
+    method: InterpolationMethod | str = InterpolationMethod.LINEAR,
     max_gap_size: float = float("inf"),
     inplace: bool = False,
 ) -> "Trajectory":

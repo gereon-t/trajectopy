@@ -104,7 +104,7 @@ class DeviationCorrelation:
 
     @classmethod
     def from_ate_result(
-        cls, ate_result: "ATEResult", max_lag: float = DEFAULT_MAX_LAG, window: float = DEFAULT_WINDOW
+        cls, ate_result: "ATEResult", *, max_lag: float = DEFAULT_MAX_LAG, window: float = DEFAULT_WINDOW
     ) -> "DeviationCorrelation":
         """Analyzes the deviations of an ATE result in chronological order.
 

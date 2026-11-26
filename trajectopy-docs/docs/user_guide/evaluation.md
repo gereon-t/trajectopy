@@ -28,9 +28,11 @@ print(ate_result)
 
 `ate` matches the poses of both trajectories, [aligns](alignment.md) the estimate to the reference and computes
 the deviations of each pose. The alignment is kept in the result (`ate_result.alignment`); pass `align=False` to
-evaluate the trajectory as it is, e.g. if it is already given in the frame of the reference.
+evaluate the trajectory as it is, e.g. if it is already given in the frame of the reference (then
+`ate_result.alignment` holds identity parameters).
 
-The settings of matching and alignment are part of the [processing settings](settings.md#processing-settings):
+The settings of matching and alignment are part of the [processing settings](settings.md#processing-settings);
+`ate` takes the complete `ProcessingSettings`:
 
 ```python
 settings = tpy.ProcessingSettings()
@@ -55,9 +57,19 @@ axes of the coordinate system and along the trajectory:
 | `rot_dev_x`, `rot_dev_y`, `rot_dev_z` | Roll, pitch and yaw of the deviation rotation [rad] |
 | `rot_dev_comb` | Rotation angle of the deviation rotation [rad] |
 
-The along- and cross-track directions follow the orientations of the reference or, without them, the direction
-of travel (see the [frame definition](settings.md#ate-frame-definition)). `to_dataframe()` returns all
-deviations together with the timestamps and positions of the evaluated trajectory.
+The along- and cross-track directions are taken from the orientations of the reference, or, if it has none,
+from those of the evaluated trajectory, or, if neither has orientations, from the direction of travel (see the
+[frame definition](settings.md#ate-frame-definition)).
+
+!!! warning "Body frame"
+    With orientations, the along-track direction is the x axis of the body frame. If the x axis of the
+    trajectories does not point forward, the along- and cross-track deviations are mixed up. This is the case
+    for the KITTI example data used on this page, whose body y axis points forward: there, `pos_dev_along` is
+    actually a cross-track deviation.
+
+`to_dataframe()` returns the deviations together with the timestamps, path lengths (`arc_lengths`) and
+positions of the evaluated trajectory. In it, the rotation deviations are quaternions (`rot_dev_x/y/z/w`),
+unlike the attributes `rot_dev_x/y/z`, which are roll, pitch and yaw.
 
 ### Statistics
 
@@ -65,9 +77,10 @@ deviations together with the timestamps and positions of the evaluated trajector
 print(ate_result.describe())
 ```
 
-`describe()` returns the main statistics as a pandas Series, in meters and radians: the number of poses, mean
-(`pos_mean`, the position ATE), median, RMS, standard deviation, 95th percentile, minimum, maximum and the bias of
-every component. Each statistic is also available as an attribute, e.g. `pos_ate`, `pos_dev_rms`,
+`describe()` returns the main statistics as a pandas Series, in meters and radians: the number of poses; for the
+positions the mean (`pos_mean`, the position ATE), median, RMS, standard deviation, 95th percentile, minimum,
+maximum and the bias of every component; for the rotations the mean, RMS, standard deviation, 95th percentile
+and maximum. `summary_table` and `segment_statistics` give rotations in degrees. Each statistic is also available as an attribute, e.g. `pos_ate`, `pos_dev_rms`,
 `pos_dev_max`, `pos_bias_along` or `rot_ate`; `pos_dev_percentile(q)` returns any percentile.
 
 ### Confidence Intervals
@@ -78,7 +91,7 @@ block bootstrap whose blocks are twice as long as the correlation time of the de
 two estimates differ significantly:
 
 ```python
-low, high = ate_result.confidence_interval("position", "mean")  # or "rms"; "rotation" in radians
+low, high = ate_result.confidence_interval(quantity="position", statistic="mean")  # or "rms"; "rotation" in radians
 print(f"Position ATE: {ate_result.pos_ate:.3f} m (95 % confidence interval {low:.3f} to {high:.3f} m)")
 ```
 
@@ -120,10 +133,9 @@ a total station's lock) are respected, and irregular sampling is allowed. It is 
 number of deviations, at most up to 600 s, since larger lags rely on too few pairs; longer correlation times are
 reported as infinite.
 
-A correlation time can only be determined reliably from data that is much longer than it: from one hour of data,
-a correlation time of 30 s is uncertain by about 10 to 20 %. With a reference such as a synchronized total
-station, the cross-track deviations are the most reliable measure, because timing errors affect only the
-along-track direction.
+A correlation time can only be determined reliably from data that is much longer than it. With a reference such
+as a synchronized total station, the cross-track deviations are the most reliable measure, because timing
+errors affect only the along-track direction.
 
 ## Relative Pose Error (RPE)
 
@@ -142,16 +154,20 @@ The RPE compares the relative motion between pairs of poses that are a given dis
 3. Compute the difference of both relative poses, and its translation and rotation.
 4. Divide them by the distance (or time) between the poses of the pair.
 
+If one of the trajectories has no orientations, only the position drift is computed, as the difference of the
+lengths of the pairs (distances between their poses) instead of the relative poses.
+
 By default, pairs are formed for distances of 100 m to 800 m in steps of 100 m. The position drift is given in
-percent (pairs by distance) or m/s (pairs by time), the rotation drift in radians per 100 m or per second; the
-display units are `pos_drift_unit` and `rot_drift_unit`. The pair distances are set in the
+percent (pairs by distance) or m/s (pairs by time) (`pos_drift_unit`). The rotation values of the result are in
+radians per 100 m or per second; `rot_drift_unit` is the display unit after conversion to degrees, e.g.
+`np.rad2deg(rpe_result.rot_rpe)`. The pair distances are set in the
 [relative comparison settings](settings.md#relative-comparison-settings):
 
 ```python
 settings = tpy.RelativeComparisonSettings(
     pair_min_distance=10.0, pair_max_distance=60.0, pair_distance_step=10.0, pair_distance_unit="second"
 )
-rpe_result = tpy.rpe(estimate, reference, settings)
+rpe_result = tpy.rpe(estimate, reference, settings)  # with the default matching settings
 print(f"{rpe_result.pos_rpe:.3f} {rpe_result.pos_drift_unit}")
 ```
 
@@ -169,7 +185,7 @@ ate_results = [tpy.ate(estimate, reference) for estimate in estimates]
 rpe_results = [tpy.rpe(estimate, reference) for estimate in estimates]
 
 table = tpy.summary_table(ate_results, rpe_results)  # pandas DataFrame
-print(tpy.format_table(table, "markdown"))  # or "csv", "latex"
+print(tpy.format_table(table, table_format="markdown"))  # or "csv", "latex"
 ```
 
 `write_report` creates a self-contained HTML file with the summary, the statistics of each result, all figures

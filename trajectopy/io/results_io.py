@@ -181,7 +181,7 @@ def read_sensor_rotation_parameters(filename: str | os.PathLike) -> SensorRotati
 # ---------------------------------------------------------------------------
 
 
-def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike, mode: str = "w") -> None:
+def write_alignment_result(result: AlignmentResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
     """Writes an alignment result to a file that :func:`read_alignment_result` and the GUI can read.
 
     Args:
@@ -257,7 +257,7 @@ def read_alignment_result(filename: str | os.PathLike) -> AlignmentResult:
 # ---------------------------------------------------------------------------
 
 
-def write_ate_result(result: ATEResult, filename: str | os.PathLike, mode: str = "w") -> None:
+def write_ate_result(result: ATEResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
     """Writes an ATE result as CSV file with a metadata header, which :func:`read_ate_result` and the GUI
     can read.
 
@@ -376,7 +376,7 @@ def read_ate_result(filename: str | os.PathLike) -> ATEResult:
 # ---------------------------------------------------------------------------
 
 
-def write_rpe_result(result: RPEResult, filename: str | os.PathLike, mode: str = "w") -> None:
+def write_rpe_result(result: RPEResult, filename: str | os.PathLike, *, mode: str = "w") -> None:
     """Writes an RPE result as CSV file with a metadata header, which :func:`read_rpe_result` and the GUI
     can read.
 

@@ -104,7 +104,7 @@ ORB-SLAM drifts by about 0.7 % of the distance travelled.
 ```python
 ate_results = [ate_result, tpy.ate(sptam, reference)]
 table = tpy.summary_table(ate_results)
-print(tpy.format_table(table[["pos_mean [m]", "pos_rms [m]"]], "markdown", precision=3))
+print(tpy.format_table(table[["pos_mean [m]", "pos_rms [m]"]], table_format="markdown", precision=3))
 ```
 
 ```text
