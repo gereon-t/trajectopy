@@ -1,8 +1,7 @@
-"""A hidden jingle: clicking the logo in the About window often enough plays the first four bars of the Trajectopy song.
+"""A hidden jingle: clicking the logo in the About window often enough plays the first two bars of the Trajectopy song.
 
-The clip is stored as 4-bit IMA ADPCM (mono, 16000 Hz, about 74 KB) in ``resources/jingle.adpcm`` and played with
-a reverb that is computed when it is played, so that the reverb tail takes no space. It is played with what the
-operating system offers (``winsound`` on Windows, ``afplay`` on macOS, ``pw-play``, ``paplay`` or ``aplay`` on
+The clip (with a fade-out of half a second) is stored as 4-bit IMA ADPCM (mono, 16000 Hz, about 46 KB) in
+``resources/jingle.adpcm``. It is played with what the operating system offers (``winsound`` on Windows, ``afplay`` on macOS, ``pw-play``, ``paplay`` or ``aplay`` on
 Linux) instead of Qt Multimedia, which would add many megabytes to the app.
 """
 
@@ -91,35 +90,9 @@ def read_jingle(path: str = JINGLE_FILE_PATH) -> tuple[np.ndarray, int]:
     return decode_adpcm(content[_HEADER.size :], num_samples) / 32768.0, sample_rate
 
 
-def add_reverb(signal: np.ndarray, sample_rate: int, decay: float = 2.0, wet: float = 0.45) -> np.ndarray:
-    """Adds a hall-like reverb; returns stereo samples (n x 2) with the reverb tail, normalized to a peak of 0.9.
-
-    The impulse response of each channel is decaying noise (60 dB in ``decay`` seconds) that becomes darker
-    over time, after a pre-delay of 25 ms; different noise in both channels makes the reverb wide.
-    """
-    from scipy.signal import fftconvolve, lfilter
-
-    rng = np.random.default_rng(7)
-    length = int(decay * sample_rate)
-    t = np.arange(length) / sample_rate
-    pre_delay = int(0.025 * sample_rate)
-    channels = []
-    for _ in range(2):
-        noise = rng.standard_normal(length) * np.exp(-6.9 * t / decay)
-        darker = lfilter([0.35], [1.0, -0.65], noise)  # high frequencies decay faster in a real hall
-        tail = np.where(t < 0.04, noise, darker)  # bright early reflections, then a darker tail
-        response = np.concatenate([np.zeros(pre_delay), tail])
-        response /= np.sqrt(np.sum(response**2))
-        channels.append(fftconvolve(signal, response))
-    reverb = np.column_stack(channels)
-    dry = np.zeros_like(reverb)
-    dry[: len(signal)] = signal[:, None]
-    mixed = (1.0 - wet) * dry + wet * reverb
-    return 0.9 * mixed / max(float(np.max(np.abs(mixed))), 1e-9)
-
-
 def write_wav(path: str, samples: np.ndarray, sample_rate: int) -> None:
-    """Writes stereo float samples (n x 2) as 16-bit WAV file."""
+    """Writes float samples in [-1, 1] (mono, or n x channels) as 16-bit WAV file."""
+    samples = samples.reshape(len(samples), -1)
     with wave.open(path, "wb") as file:
         file.setnchannels(samples.shape[1])
         file.setsampwidth(2)
@@ -145,12 +118,12 @@ def _play() -> None:
     try:
         signal, sample_rate = read_jingle()
         path = os.path.join(tempfile.gettempdir(), "trajectopy-jingle.wav")
-        write_wav(path, add_reverb(signal, sample_rate), sample_rate)
+        write_wav(path, signal, sample_rate)
         _play_file(path)
     except Exception as error:  # an easter egg must never disturb the application
         logger.debug("Could not play the jingle: %s", error)
 
 
 def play_jingle() -> None:
-    """Plays the jingle without blocking (decoding and the reverb run on a background thread)."""
+    """Plays the jingle without blocking (it is decoded on a background thread)."""
     threading.Thread(target=_play, name="TrajectopyJingle", daemon=True).start()

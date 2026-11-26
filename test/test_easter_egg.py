@@ -1,4 +1,4 @@
-"""The jingle of the About window: click counting, decoding, reverb and playback."""
+"""The jingle of the About window: click counting, decoding and playback."""
 
 import os
 import tempfile
@@ -26,10 +26,10 @@ class TestClickCounter(unittest.TestCase):
 
 class TestJingle(unittest.TestCase):
     def test_asset_is_small_and_decodes(self):
-        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 80_000)
+        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 50_000)
         signal, sample_rate = easter_egg.read_jingle()
         self.assertEqual(sample_rate, 16000)
-        self.assertAlmostEqual(len(signal) / sample_rate, 9.2, places=1)
+        self.assertAlmostEqual(len(signal) / sample_rate, 5.8, places=1)
         self.assertLessEqual(np.max(np.abs(signal)), 1.0)
         self.assertGreater(np.max(np.abs(signal)), 0.5)
 
@@ -38,25 +38,22 @@ class TestJingle(unittest.TestCase):
         # size 7, then raises the step index by 8 to the step size 16: 2 + 4 + 8 + 16 = 30
         np.testing.assert_array_equal(easter_egg.decode_adpcm(bytes([0x77]), 2), [11, 41])
 
-    def test_reverb_adds_a_stereo_tail(self):
-        signal = np.zeros(1000)
-        signal[0] = 1.0
-        result = easter_egg.add_reverb(signal, 1000, decay=0.5)
-        self.assertEqual(result.shape, (1000 + 500 + 25 - 1, 2))
-        self.assertAlmostEqual(float(np.max(np.abs(result))), 0.9)
-        self.assertFalse(np.allclose(result[:, 0], result[:, 1]))  # wide, not mono
-
     def test_playback_writes_a_wav_file(self):
         with mock.patch.object(easter_egg, "_play_file") as play_file:
             easter_egg._play()
         (path,), _ = play_file.call_args
         with wave.open(path) as file:
-            self.assertEqual((file.getnchannels(), file.getframerate()), (2, 16000))
-            self.assertGreater(file.getnframes() / file.getframerate(), 11.0)  # clip and reverb tail
+            self.assertEqual((file.getnchannels(), file.getframerate()), (1, 16000))
+            self.assertAlmostEqual(file.getnframes() / file.getframerate(), 5.8, places=1)
 
     def test_errors_do_not_escape(self):
         with mock.patch.object(easter_egg, "read_jingle", side_effect=OSError("missing")):
             easter_egg._play()  # logged, not raised
+
+    def test_clip_fades_out(self):
+        signal, sample_rate = easter_egg.read_jingle()
+        last_tenth = signal[-sample_rate // 10 :]
+        self.assertLess(np.max(np.abs(last_tenth)), 0.05)
 
     def test_write_wav_clips(self):
         with tempfile.TemporaryDirectory() as directory:
