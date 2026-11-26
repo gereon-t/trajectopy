@@ -1,7 +1,3 @@
-trajectopy/core/report/templates/*.html linguist-generated
-trajectopy/core/report/assets/*.css linguist-generated
-example_data/*.html linguist-generated
-
 # Never convert line endings in binary files
 *.png binary
 *.ico binary
@@ -10,3 +6,5 @@ example_data/*.html linguist-generated
 *.jpeg binary
 *.pdf binary
 *.bag binary
+*.mcap binary
+*.adpcm binary

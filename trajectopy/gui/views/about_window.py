@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
+from trajectopy.gui.easter_egg import ClickCounter, play_jingle
 from trajectopy.gui.utils import center_window
 from trajectopy.utils.resources import FULL_ICON_FILE_PATH
 
@@ -16,6 +17,20 @@ class AboutGUI(QtWidgets.QMainWindow):
 
         self.link_label.linkActivated.connect(self.link)
         self.link_label.setText('<a href="https://github.com/gereon-t/trajectopy">GitHub</a>')
+
+        self._logo_clicks = ClickCounter()
+        self.icon.installEventFilter(self)
+
+    def eventFilter(self, watched: QtCore.QObject, event: QtCore.QEvent) -> bool:  # noqa: N802 - Qt API
+        if (
+            watched is self.icon
+            and event.type() == QtCore.QEvent.Type.MouseButtonPress
+            and isinstance(event, QtGui.QMouseEvent)
+            and event.button() == QtCore.Qt.MouseButton.LeftButton
+            and self._logo_clicks.click()
+        ):
+            play_jingle()
+        return super().eventFilter(watched, event)
 
     def link(self, linkStr):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl(linkStr))
