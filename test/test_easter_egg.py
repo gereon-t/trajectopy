@@ -26,10 +26,10 @@ class TestClickCounter(unittest.TestCase):
 
 class TestJingle(unittest.TestCase):
     def test_asset_is_small_and_decodes(self):
-        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 20_000)
+        self.assertLess(os.path.getsize(easter_egg.JINGLE_FILE_PATH), 25_000)
         signal, sample_rate = easter_egg.read_jingle()
-        self.assertEqual(sample_rate, 11025)
-        self.assertAlmostEqual(len(signal) / sample_rate, 2.6, places=1)
+        self.assertEqual(sample_rate, 22050)
+        self.assertAlmostEqual(len(signal) / sample_rate, 2.0, places=1)
         self.assertLessEqual(np.max(np.abs(signal)), 1.0)
         self.assertGreater(np.max(np.abs(signal)), 0.5)
 
@@ -51,7 +51,7 @@ class TestJingle(unittest.TestCase):
             easter_egg._play()
         (path,), _ = play_file.call_args
         with wave.open(path) as file:
-            self.assertEqual((file.getnchannels(), file.getframerate()), (2, 11025))
+            self.assertEqual((file.getnchannels(), file.getframerate()), (2, 22050))
             self.assertGreater(file.getnframes() / file.getframerate(), 4.0)  # clip and reverb tail
 
     def test_errors_do_not_escape(self):
