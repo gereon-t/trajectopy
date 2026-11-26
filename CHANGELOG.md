@@ -49,7 +49,8 @@ Besides the API changes above, version 7 adds:
 
 - **GUI**: an interactive alignment window (drag, point pairs, time synchronization, diagnosis of the alignment
   parameters and least squares refinement), which replaces the manual alignment window; export of HTML reports
-  and summary tables; and a faster file dialog on Windows.
+  and summary tables; a faster file dialog on Windows; and a *System* entry in the *Theme* menu, which follows the
+  color scheme of the operating system. The chosen theme is kept for the next start.
 - **Command line**: the commands `ate`, `rpe`, `evaluate`, `align`, `convert` and `info` evaluate, align and convert
   trajectories without the GUI.
 - **Evaluation**: percentiles (`pos_dev_percentile`), confidence intervals that account for correlated
@@ -121,6 +122,11 @@ The following arguments must now be passed by keyword:
   module `trajectopy.core.rotations` are gone. Compose rotations with `*` and `inv()` instead of `+` and `-`
   (`a - b` is `a * b.inv()`), and use `magnitude()` instead of `rotangle`.
 - `repr(trajectory)` is a one-line summary; `str(trajectory)` still prints the summary table.
+- Trajectories read from files without a `#name` line are named after the file (e.g. `estimate` for
+  `estimate.traj`) instead of `Trajectory`; the names of results (`<trajectory> vs. <reference>`) change
+  accordingly.
+- Invalid values in settings files (e.g. an unknown matching method) raise `TypeError` instead of
+  `ValueError`.
 - Options are converted with `str()` to their value, e.g. `str(tpy.Sorting.TIME) == "time"`.
 - File contents that do not match their header or format raise `TrajectopyIOError` and alignments that cannot be
   estimated raise `AlignmentError` (both are also `ValueError`s, see *Fixes*).

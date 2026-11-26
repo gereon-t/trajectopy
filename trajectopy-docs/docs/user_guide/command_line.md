@@ -24,9 +24,10 @@ trajectopy --plot-settings plot_settings.json
 ```
 
 A project contains its own plot settings, which replace those given with `--plot-settings` when it is opened.
-The apps for Windows, macOS and Linux have no console, so they print nothing: neither `--version` and `--help`
-nor the output of the commands below. The version is shown in *Help → About*. Use the Python package for the
-commands.
+The Windows app has no console, so it prints nothing: neither `--version` and `--help` nor the output of the
+commands below; the version is shown in *Help → About*. The apps for macOS and Linux print to the terminal they
+are started from (on macOS, start the program `Trajectopy.app/Contents/MacOS/Trajectopy`). For scripts and
+pipelines, the Python package is the better choice.
 
 ## Commands
 

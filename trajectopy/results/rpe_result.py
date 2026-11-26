@@ -20,11 +20,10 @@ class RelativeTrajectoryDeviations:
 
     Attributes:
         pos_dev (Dict[float, np.ndarray]): Mapping from pair distance to the
-            position drift magnitudes. Units depend on
-            `pair_distance_unit`; values are normalized per 100 m (expressed
-            as percentage) when distance-based.
+            position drift of each pair, relative to the pair distance: m/m for pairs by distance, m/s for
+            pairs by time (`RPEResult` multiplies by `drift_factor` to show % and m/s).
         rot_dev (Dict[float, np.ndarray]): Mapping from pair distance to the
-            orientation drift samples in radians.
+            orientation drift of each pair, relative to the pair distance: rad/m or rad/s.
         pair_distance (Dict[float, np.ndarray]): Raw separation measurements
             (meters or seconds) for each bucket, used for computing mean
             bucket spacing and step size.

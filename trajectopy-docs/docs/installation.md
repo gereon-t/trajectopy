@@ -1,8 +1,8 @@
 # Installation
 
 Trajectopy is available as a Python package and as a standalone app with the graphical user interface for
-Windows, macOS and Linux. The app contains the GUI only: it needs no Python installation, but offers neither
-the Python API nor console output of the command line.
+Windows, macOS and Linux. The app is made for the GUI: it needs no Python installation, but offers no Python
+API, and the Windows app has no console output for the command line.
 
 ## Python Package
 
