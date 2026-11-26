@@ -112,18 +112,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: CHANGELOG.md
+          sparse-checkout: |
+            CHANGELOG.md
+            .github/release_notes.py
           sparse-checkout-cone-mode: false
 
+      # the section of the version, with the wrapped lines of each paragraph joined (GitHub shows line breaks)
       - name: Take the release notes from the changelog
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          awk -v heading="## $version" '$0 == heading {found = 1; next} found && /^## / {exit} found' \
-            CHANGELOG.md > release_notes.md
-          if [[ ! -s release_notes.md ]]; then
-            echo "::error::CHANGELOG.md has no section '## $version' for the release notes"
-            exit 1
-          fi
+        run: python3 .github/release_notes.py "${GITHUB_REF_NAME#v}" > release_notes.md
 
       - uses: actions/download-artifact@v4
         with:
