@@ -1,43 +1,33 @@
 """A hidden jingle: clicking the logo in the About window often enough plays the first two bars of the Trajectopy song.
 
-The clip (with a fade-out of 1.5 seconds) is stored as 4-bit IMA ADPCM (mono, 16000 Hz, about 54 KB) in
-``resources/jingle.adpcm``. It is played with what the operating system offers (``winsound`` on Windows, ``afplay`` on macOS, ``pw-play``, ``paplay`` or ``aplay`` on
-Linux) instead of Qt Multimedia, which would add many megabytes to the app.
+The clip (with a fade-out of 1.5 seconds) is stored as MP3 (mono, 64 kbit/s, about 54 KB) in
+``resources/jingle.mp3``. It is played with what the operating system offers instead of Qt Multimedia, which would
+add many megabytes to the app: the Media Control Interface on Windows, ``afplay`` on macOS and ``mpg123``,
+``ffplay``, ``pw-play`` or ``paplay`` on Linux (the last two need libsndfile 1.1 or newer for MP3). Without a
+player, the jingle stays silent.
 """
 
 import logging
-import os
 import shutil
-import struct
 import subprocess
 import sys
-import tempfile
-import threading
 import time
-import wave
-
-import numpy as np
 
 from trajectopy.utils.resources import resource_path
 
 logger = logging.getLogger(__name__)
 
-JINGLE_FILE_PATH = resource_path("gui/resources/jingle.adpcm")
+JINGLE_FILE_PATH = resource_path("gui/resources/jingle.mp3")
 CLICKS_TO_PLAY = 7
 MAX_CLICK_INTERVAL_S = 1.0
 
-_MAGIC = b"TPYJ"
-_HEADER = struct.Struct("<4sII")  # magic, sample rate, number of samples
-
-# IMA ADPCM step sizes and index changes
-STEP_SIZES = (
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50, 55, 60, 66, 73, 80, 88, 97,
-    107, 118, 130, 143, 157, 173, 190, 209, 230, 253, 279, 307, 337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-    876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066, 2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871,
-    5358, 5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899, 15289, 16818, 18500, 20350, 22385, 24623,
-    27086, 29794, 32767,
-)  # fmt: skip
-INDEX_CHANGES = (-1, -1, -1, -1, 2, 4, 6, 8)
+_MCI_ALIAS = "trajectopy_jingle"
+_LINUX_PLAYERS = (
+    ("mpg123", "-q"),
+    ("ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet"),
+    ("pw-play",),
+    ("paplay",),
+)
 
 
 class ClickCounter:
@@ -60,70 +50,41 @@ class ClickCounter:
         return True
 
 
-def decode_adpcm(data: bytes, num_samples: int) -> np.ndarray:
-    """Decodes 4-bit IMA ADPCM (low nibble first, starting at predictor 0 and step index 0) to 16-bit samples."""
-    samples = np.empty(num_samples, dtype=np.int16)
-    predictor, index = 0, 0
-    for n in range(num_samples):
-        code = (data[n >> 1] >> ((n & 1) << 2)) & 0xF
-        step = STEP_SIZES[index]
-        difference = step >> 3
-        if code & 1:
-            difference += step >> 2
-        if code & 2:
-            difference += step >> 1
-        if code & 4:
-            difference += step
-        predictor = max(-32768, min(32767, predictor - difference if code & 8 else predictor + difference))
-        index = max(0, min(88, index + INDEX_CHANGES[code & 7]))
-        samples[n] = predictor
-    return samples
+def mci(command: str) -> str:
+    """Sends a command to the Windows Media Control Interface and returns its answer."""
+    import ctypes
+
+    answer = ctypes.create_unicode_buffer(256)
+    error = ctypes.windll.winmm.mciSendStringW(command, answer, len(answer), None)  # type: ignore[attr-defined,unused-ignore]  # Windows only
+    if error:
+        raise OSError(f"MCI error {error} for '{command}'")
+    return answer.value
 
 
-def read_jingle(path: str = JINGLE_FILE_PATH) -> tuple[np.ndarray, int]:
-    """The clip as floats in [-1, 1] and its sample rate."""
-    with open(path, "rb") as file:
-        content = file.read()
-    magic, sample_rate, num_samples = _HEADER.unpack_from(content)
-    if magic != _MAGIC:
-        raise ValueError(f"{path} is not a jingle file")
-    return decode_adpcm(content[_HEADER.size :], num_samples) / 32768.0, sample_rate
+def _play_windows(path: str) -> None:
+    try:
+        mci(f"close {_MCI_ALIAS}")  # a jingle that is still playing starts over
+    except OSError:
+        pass  # none was open
+    mci(f'open "{path}" type mpegvideo alias {_MCI_ALIAS}')
+    mci(f"play {_MCI_ALIAS}")  # returns at once, the jingle plays in the background
 
 
-def write_wav(path: str, samples: np.ndarray, sample_rate: int) -> None:
-    """Writes float samples in [-1, 1] (mono, or n x channels) as 16-bit WAV file."""
-    samples = samples.reshape(len(samples), -1)
-    with wave.open(path, "wb") as file:
-        file.setnchannels(samples.shape[1])
-        file.setsampwidth(2)
-        file.setframerate(sample_rate)
-        file.writeframes((np.clip(samples, -1.0, 1.0) * 32767).astype("<i2").tobytes())
-
-
-def _play_file(path: str) -> None:
-    if sys.platform == "win32":
-        import winsound
-
-        winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT)
-        return
-    players = ["afplay"] if sys.platform == "darwin" else ["pw-play", "paplay", "aplay"]
-    for player in players:
-        if executable := shutil.which(player):
-            subprocess.Popen([executable, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S603
+def _play_with_player(path: str) -> None:
+    players = [("afplay",)] if sys.platform == "darwin" else list(_LINUX_PLAYERS)
+    for executable, *options in players:
+        if found := shutil.which(executable):
+            subprocess.Popen([found, *options, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S603
             return
     logger.debug("No audio player found for the jingle.")
 
 
-def _play() -> None:
+def play_jingle(path: str = JINGLE_FILE_PATH) -> None:
+    """Plays the jingle without blocking; an error is only logged, an easter egg must never disturb."""
     try:
-        signal, sample_rate = read_jingle()
-        path = os.path.join(tempfile.gettempdir(), "trajectopy-jingle.wav")
-        write_wav(path, signal, sample_rate)
-        _play_file(path)
-    except Exception as error:  # an easter egg must never disturb the application
+        if sys.platform == "win32":
+            _play_windows(path)
+        else:
+            _play_with_player(path)
+    except Exception as error:
         logger.debug("Could not play the jingle: %s", error)
-
-
-def play_jingle() -> None:
-    """Plays the jingle without blocking (it is decoded on a background thread)."""
-    threading.Thread(target=_play, name="TrajectopyJingle", daemon=True).start()
