@@ -50,6 +50,8 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
   `parameter_matrix_figure(..., correlation=)`, `smoothed_speed(..., window=)`,
   `Figure.export(..., variant=, width=)`, `export_figures(..., export_format=, width=)` and
   `show(..., title=, block=, use_opengl=)`.
+- `write_report` has explicit parameters instead of `*args, **kwargs`; the arguments after `ate_results` and
+  `rpe_results` (`alignment`, `settings`, …) are keyword-only.
 - `ATEResult.to_file`, `RPEResult.to_file` and `AlignmentResult.to_file` (and the corresponding `write_*`
   functions) overwrite existing files; pass `mode="a"` to append.
 - `trajectopy.io.read_trajectory` recognizes the file format; `write_trajectory` picks it from the file
@@ -68,6 +70,14 @@ uses keyword arguments keeps working and shows deprecation warnings that name th
 
 - The internal package `trajectopy.processing.lib` was renamed to `trajectopy.processing._lib` to mark it as
   private.
+
+### Documentation
+
+- The documentation is restructured like that of numpy and pandas: installation, a user guide with one page per
+  topic (trajectories, alignment, evaluation, visualization, Google Earth, file formats, settings, GUI, command
+  line), an API reference organized by the public namespaces, the API policy and the release notes.
+- Every public function, class, method and property is documented with its arguments and return value, and the
+  examples of the documentation are run by the tests.
 
 ### Fixes
 

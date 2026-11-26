@@ -12,7 +12,7 @@ The public API consists of the names exported by these namespaces:
 | `trajectopy` | Trajectories, settings, processing functions (alignment, matching, evaluation, ...), results, exceptions |
 | `trajectopy.io` | Reading and writing of trajectories (trajectopy, TUM, KITTI, EuRoC, ROS bags), results and KML files |
 | `trajectopy.visualization` | Figures of trajectories, results and alignment parameters (needs `trajectopy[plot]`) |
-| `trajectopy.exceptions` | The exceptions raised by trajectopy |
+| `trajectopy.exceptions` | The exceptions raised by trajectopy and its deprecation warning |
 
 Each of these namespaces lists its names in `__all__`. Everything else, for example
 `trajectopy.core.trajectory`, `trajectopy.processing._lib`, `trajectopy.gui` and `trajectopy.cli`, is an
@@ -41,6 +41,8 @@ The whole public API follows the same conventions, so that it can grow without b
   that new options can be added and options can be reordered without breaking calls.
 - **Results carry everything.** Results are returned as objects instead of tuples whose shape depends on a
   flag; for example, the alignment used by `tpy.ate` is available as `ate_result.alignment`.
+- **Orientations** are [`scipy.spatial.transform.Rotation`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html)
+  objects.
 - **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`)
   and overwrite existing files unless `mode="a"` is passed.
 - **Errors.** Invalid arguments raise `TypeError` or `ValueError`; failures of the processing raise
