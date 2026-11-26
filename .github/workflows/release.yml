@@ -1,8 +1,8 @@
 name: Release
 
-# Pushing a version tag (e.g. v5.1.0, matching trajectopy/__version__.py) builds the app for Windows (installer),
+# Pushing a version tag (e.g. v7.0.0, matching trajectopy/__version__.py) builds the app for Windows (installer),
 # macOS (.dmg, Apple Silicon) and Linux (.tar.gz, x86-64) and attaches them to the GitHub release of that tag.
-# The text of the release is the section of that version in CHANGELOG.md (e.g. "## 5.1.0"); a tag without such a
+# The text of the release is the section of that version in CHANGELOG.md (e.g. "## 7.0.0"); a tag without such a
 # section fails. The update check of installed apps then finds the new version.
 # Running the workflow manually only builds the packages and keeps them as workflow artifacts.
 #

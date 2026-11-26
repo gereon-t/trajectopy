@@ -80,7 +80,7 @@ choose *Set as Reference*, then right-click the estimate and choose *Compare wit
 
 - **[Release Notes](release_notes.md)**
 
-    What changed in each version, and how to migrate.
+    What changed in each version from 7.0.0 on, and how to migrate.
 
 - **[Contributing](contributing.md)**
 

@@ -25,7 +25,7 @@
 
 ## Installation
 
-**Windows app**: download `Trajectopy-<version>-setup.exe` from the [latest release](https://github.com/gereon-t/trajectopy/releases/latest) and run it. No Python installation or administrator rights are needed; `.traj` files and projects (`.tpy`) can then be opened by double-click, and the app reports new versions (Help → Check for Updates).
+**Apps**: the [latest release](https://github.com/gereon-t/trajectopy/releases/latest) provides an installer for Windows (`Trajectopy-<version>-setup.exe`), an app for macOS on Apple silicon (`.dmg`) and one for Linux (`.tar.gz`). They contain the GUI and need no Python installation; on Windows, `.traj` files and projects (`.tpy`) can then be opened by double-click. The apps report new versions (Help → Check for Updates).
 
 **Python package** (Python 3.10 or newer):
 

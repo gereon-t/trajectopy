@@ -44,10 +44,11 @@ Conventions
     - Functions and methods that transform a trajectory return a new object and never modify their
       inputs. Pass the keyword-only argument ``inplace=True`` to modify the input instead; the modified
       input is returned then, too. Always use the return value, e.g. ``traj = tpy.align(traj, ref)``.
-    - Every processing function takes one ``settings`` argument: its own settings type or the complete
-      ``ProcessingSettings``. ``None`` means the default settings.
+    - Every processing function with settings takes one ``settings`` argument: its own settings type or the
+      complete ``ProcessingSettings``. ``None`` means the default settings.
     - Options (e.g. ``MatchingMethod``) can be given as strings, e.g. ``method="nearest_temporal"``.
-    - File functions accept ``str`` and ``os.PathLike`` and overwrite existing files by default.
+    - File functions accept ``str`` and ``os.PathLike`` and overwrite existing files by default (except
+      ``write_sensor_rotation_parameters``, which appends to an alignment result file).
     - The public API consists of the names exported here and by ``trajectopy.io``,
       ``trajectopy.visualization`` and ``trajectopy.exceptions``; see the API policy in the documentation.
 

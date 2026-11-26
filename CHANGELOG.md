@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to trajectopy are documented here. trajectopy follows
+All notable changes to trajectopy from version 7 on are documented here. trajectopy follows
 [semantic versioning](https://semver.org); see the
 [API policy](https://gereon-t.github.io/trajectopy/api_policy/) for what is covered by it.
 
@@ -16,8 +16,8 @@ table of removed names and the migration guide below list the replacements.
 
 - **Inputs are never modified by default.** Every function and method with an `inplace` argument returns a
   new object unless `inplace=True` is passed. `inplace` is keyword-only.
-- **One settings argument.** All processing functions take a single `settings` argument: their own settings
-  type or the complete `ProcessingSettings`. The same settings object can be passed everywhere:
+- **One settings argument.** All processing functions with settings take a single `settings` argument: their
+  own settings type or the complete `ProcessingSettings` (`ate` takes only `ProcessingSettings`). The same settings object can be passed everywhere:
   `tpy.ate(est, ref, settings)`, `tpy.align(est, ref, settings)`, `tpy.match_trajectories(est, ref, settings)`.
 - **`ate_result.alignment`** holds the alignment that was applied before the deviations were computed.
 - **Options accept strings**, e.g. `tpy.MatchingSettings(method="nearest_temporal")` or
@@ -123,6 +123,10 @@ The following arguments must now be passed by keyword:
   module `trajectopy.core.rotations` are gone. Compose rotations with `*` and `inv()` instead of `+` and `-`
   (`a - b` is `a * b.inv()`), and use `magnitude()` instead of `rotangle`.
 - `repr(trajectory)` is a one-line summary; `str(trajectory)` still prints the summary table.
+- The alignment weights the positions by their standard deviations (`AlignmentStochastics.use_position_std`,
+  `True` by default). Alignments of trajectories with standard deviations (the `sx`, `sy`, `sz` columns of
+  trajectopy files or the covariances of ROS messages) therefore differ from version 6, which ignored them; set
+  `use_position_std=False` for the results of version 6.
 - Trajectories read from files without a `#name` line are named after the file (e.g. `estimate` for
   `estimate.traj`) instead of `Trajectory`; the names of results (`<trajectory> vs. <reference>`) change
   accordingly.
@@ -146,7 +150,8 @@ The following arguments must now be passed by keyword:
   alignment, evaluation, visualization, Google Earth, file formats, settings, GUI, command line), an API
   reference organized by the public namespaces, the API policy and the release notes.
 - Every public function, class, method and property is documented with its arguments and return value. Every
-  public function and class has examples, which run as doctests, and links to related functions (See Also).
+  public function and class (except the exceptions) has examples, which run as doctests; many link to related
+  functions (See Also).
 - The examples of the user guide and the scripts in `example_scripts` are run by the tests.
 
 ### Fixes
