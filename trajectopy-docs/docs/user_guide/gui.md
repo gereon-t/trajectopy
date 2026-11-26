@@ -76,8 +76,6 @@ messages. The log shows the last 5000 messages (information, warnings and errors
 started, also if it is opened later, and it reopens at the
 next start if it was open. The Windows app has no console window, so the log is the place to look when something
 does not work as expected (Python installations also print the messages to the terminal they were started from).
-If the window stops responding for more than half a second, the log names the code that blocked it, which helps
-with bug reports.
 
 ## Updates
 

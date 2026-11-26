@@ -48,8 +48,7 @@ Besides the API changes above, version 7 adds:
 
 - **GUI**: an interactive alignment window (drag, point pairs, time synchronization, diagnosis of the alignment
   parameters and least squares refinement), which replaces the manual alignment window; export of HTML reports
-  and summary tables; a faster file dialog on Windows; and a log entry with the blocking code whenever the window
-  stops responding.
+  and summary tables; and a faster file dialog on Windows.
 - **Command line**: the commands `ate`, `rpe`, `evaluate`, `align`, `convert` and `info` evaluate, align and convert
   trajectories without the GUI.
 - **Evaluation**: percentiles (`pos_dev_percentile`), confidence intervals that account for correlated

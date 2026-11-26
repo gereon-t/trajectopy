@@ -14,8 +14,6 @@ from enum import Enum
 
 from PySide6 import QtCore, QtWidgets
 
-from trajectopy.gui import stall_logger
-
 SETTINGS_GROUP = "fileDialog"
 GEOMETRY_KEY = f"{SETTINGS_GROUP}/geometry"
 FOLDER_KEY = f"{SETTINGS_GROUP}/folders"
@@ -89,8 +87,7 @@ def run_file_dialog(
     if dialog.testOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog):
         _customize(dialog, mode, settings, folders.values())
 
-    with stall_logger.paused():  # a native dialog stops the Qt timers, see stall_logger.paused
-        accepted = dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted
+    accepted = dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted
     if dialog.testOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog):
         settings.setValue(GEOMETRY_KEY, dialog.saveGeometry())
 

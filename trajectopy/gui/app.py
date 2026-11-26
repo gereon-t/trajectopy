@@ -14,7 +14,6 @@ from PySide6.QtWidgets import QApplication
 
 from trajectopy.__version__ import __version__ as VERSION
 from trajectopy.gui.log import setup_logging
-from trajectopy.gui.stall_logger import StallLogger
 from trajectopy.gui.themes import DARK_STYLESHEET, LIGHT_STYLESHEET
 from trajectopy.gui.views.splash_screen import SplashScreen
 from trajectopy.utils.resources import ICON_BG_FILE_PATH
@@ -70,11 +69,6 @@ def main(
     setup_logging()
     app = QApplication([])
     app.setWindowIcon(QtGui.QIcon(ICON_BG_FILE_PATH))
-
-    # logs where the main thread is whenever the window stops responding, from the start-up on
-    stall_logger = StallLogger(parent=app)
-    stall_logger.start()
-    app.aboutToQuit.connect(stall_logger.stop)
 
     if sys.platform == "darwin":
         font = QFont(".AppleSystemUIFont", 13)
