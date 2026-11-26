@@ -507,7 +507,7 @@ class TestGuiSmoke(unittest.TestCase):
         return directory.name
 
     def _save_as(self, window, path: str) -> None:
-        with mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")):
+        with mock.patch("trajectopy.gui.views.main_window.save_file_dialog", return_value=path):
             window.save_project_as()
 
     def _check_project_roundtrip(self, single_thread: bool) -> None:
@@ -568,7 +568,7 @@ class TestGuiSmoke(unittest.TestCase):
 
         with (
             mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Save),
-            mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")),
+            mock.patch("trajectopy.gui.views.main_window.save_file_dialog", return_value=path),
         ):
             window.new_project()  # saved first, then cleared
         self.assertTrue(os.path.isfile(path))
@@ -591,7 +591,7 @@ class TestGuiSmoke(unittest.TestCase):
         self.confirm_quit.side_effect = lambda: self.real_confirm_quit(window)
         with (
             mock.patch.object(window, "_ask_save_changes", return_value=QMessageBox.StandardButton.Save),
-            mock.patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(path, "")),
+            mock.patch("trajectopy.gui.views.main_window.save_file_dialog", return_value=path),
         ):
             window.close()
         self._wait_until(lambda: not window.isVisible(), timeout=10)

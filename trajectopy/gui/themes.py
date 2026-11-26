@@ -224,6 +224,41 @@ _BASE = """
         QTreeView::branch {
             border-bottom: 1px solid %(grid)s;
         }
+        QPushButton#secondaryButton {
+            background-color: transparent;
+            color: %(text)s;
+            border: 1px solid %(border)s;
+        }
+        QPushButton#secondaryButton:hover {
+            background-color: %(hover)s;
+        }
+        QPushButton#secondaryButton:pressed {
+            background-color: %(header_hover)s;
+        }
+        QFileDialog QToolButton {
+            padding: 4px;
+        }
+        QFileDialog QToolButton:pressed {
+            /* the button of the active view stays pressed */
+            background-color: %(hover)s;
+            color: %(text)s;
+        }
+        QFileDialog #sidebar {
+            background-color: %(chrome)s;
+            border: 1px solid %(border)s;
+        }
+        QFileDialog #sidebar::item {
+            min-height: 26px;
+            padding: 0 4px;
+        }
+        QFileDialog #sidebar::item:hover {
+            background-color: %(hover)s;
+        }
+        QFileDialog #treeView::item, QFileDialog #listView::item {
+            min-height: 24px;
+            border-right: none;
+            border-bottom: none;
+        }
 """
 
 DARK_STYLESHEET = (

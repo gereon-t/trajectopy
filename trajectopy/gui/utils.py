@@ -4,7 +4,7 @@ from functools import wraps
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from trajectopy.gui import stall_logger
+from trajectopy.gui.file_dialog import Mode, file_dialog_options, run_file_dialog  # noqa: F401
 
 
 class SingleWindows:
@@ -139,60 +139,30 @@ def show_msg_box(message: str, parent: QtWidgets.QWidget | None = None, error: b
     message_box.exec()
 
 
-def file_dialog_options() -> QtWidgets.QFileDialog.Option:
-    """Options of all file dialogs of the GUI.
-
-    On Windows, Qt's own dialog is used: the native Windows dialog takes about five seconds to return after a
-    file was chosen (measured with Qt 6.11), during which the window does not respond. Qt's dialog returns at
-    once.
-    """
-    if sys.platform == "win32":
-        return QtWidgets.QFileDialog.Option.DontUseNativeDialog
-    return QtWidgets.QFileDialog.Option(0)
-
-
 def read_file_dialog(
     parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)", caption: str = "Open File", directory: str = ""
 ) -> list[str]:
     """Asks for one or several existing files; an empty list if the dialog was cancelled."""
-    with stall_logger.paused():
-        file_names, _ = QtWidgets.QFileDialog.getOpenFileNames(
-            parent, caption, directory, file_filter, options=file_dialog_options()
-        )
-    return file_names
+    return run_file_dialog(parent, Mode.OPEN_MANY, caption, file_filter, directory)
 
 
 def open_file_dialog(
     parent: QtWidgets.QWidget | None, file_filter: str = "All (*.*)", caption: str = "Open File", directory: str = ""
 ) -> str:
     """Asks for one existing file; an empty string if the dialog was cancelled."""
-    with stall_logger.paused():
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(
-            parent, caption, directory, file_filter, options=file_dialog_options()
-        )
-    return file_name
+    return next(iter(run_file_dialog(parent, Mode.OPEN, caption, file_filter, directory)), "")
 
 
 def save_file_dialog(
     parent: QtWidgets.QWidget | None,
     file_filter: str = "All (*.*)",
-    caption: str = "Select Output File",
+    caption: str = "Save File",
     directory: str = "",
 ) -> str:
     """Asks for a file to write; an empty string if the dialog was cancelled."""
-    with stall_logger.paused():
-        file_name, _ = QtWidgets.QFileDialog.getSaveFileName(
-            parent, caption, directory, file_filter, options=file_dialog_options()
-        )
-    return file_name
+    return next(iter(run_file_dialog(parent, Mode.SAVE, caption, file_filter, directory)), "")
 
 
-def browse_dir_dialog(parent: QtWidgets.QWidget | None) -> str:
+def browse_dir_dialog(parent: QtWidgets.QWidget | None, caption: str = "Select Folder") -> str:
     """Asks for a directory; an empty string if the dialog was cancelled."""
-    with stall_logger.paused():
-        return QtWidgets.QFileDialog.getExistingDirectory(
-            parent,
-            "Select Directory",
-            "",
-            QtWidgets.QFileDialog.Option.ShowDirsOnly | file_dialog_options(),
-        )
+    return next(iter(run_file_dialog(parent, Mode.DIRECTORY, caption)), "")
