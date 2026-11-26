@@ -26,7 +26,17 @@ logger = logging.getLogger(__name__)
 
 
 class TrajectoryFormat(OptionEnum):
-    """File formats of trajectories."""
+    """File formats of trajectories (see :func:`trajectopy.io.read_trajectory`).
+
+    Each option can also be given as its value, e.g. ``format="tum"`` (case-insensitive).
+
+    Attributes:
+        AUTO: ``"auto"``: recognized from the content when reading, from the extension when writing.
+        TRAJECTOPY: ``"trajectopy"``: ASCII file with a header that describes the columns.
+        TUM: ``"tum"``: ``timestamp tx ty tz qx qy qz qw`` per line.
+        KITTI: ``"kitti"``: one row-major 3×4 pose matrix per line, without timestamps.
+        EUROC: ``"euroc"``: CSV with timestamps in nanoseconds and quaternions in the order w, x, y, z.
+    """
 
     AUTO = "auto"
     TRAJECTOPY = "trajectopy"

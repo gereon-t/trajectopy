@@ -40,7 +40,15 @@ class OptionEnum(str, Enum):
 
 
 class Sorting(OptionEnum):
-    """Order of the poses of a trajectory: chronological or along the path (spatially sorted)."""
+    """Order of the poses of a trajectory, which also defines its index (``Trajectory.index``).
+
+    Each option can also be given as its value, e.g. ``"time"`` (case-insensitive). The alias ``"arc_length"`` is accepted, too.
+
+    Attributes:
+        TIME: ``"time"``: chronological order; the index is the timestamps.
+        PATH_LENGTH: ``"path_length"``: order along the path after spatial sorting (see
+            :func:`trajectopy.sort_spatially`); the index is the path length.
+    """
 
     TIME = "time"
     PATH_LENGTH = "path_length"

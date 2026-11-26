@@ -101,6 +101,7 @@ These keep working in version 7 and will be removed in version 8:
 | `trajectopy.IOError`, `trajectopy.exceptions.IOError` | `trajectopy.TrajectopyIOError` |
 | `trajectopy.ComparisonMethod` | none (an internal detail of the file I/O) |
 | `trajectopy.io.HeaderData` | none (an internal detail of reading files) |
+| `MatchingMethod.UNKNOWN` | none (it was never a matching method; matching with it raises `ValueError`) |
 
 ### Migrating from version 6
 

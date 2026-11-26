@@ -662,14 +662,30 @@ class AlignmentSettings(Settings):
 
 
 class RotationApproximationMethod(OptionEnum):
-    """Method for rotation approximation."""
+    """Method for approximating (smoothing) the orientations of a trajectory (see
+    :func:`trajectopy.approximate`).
+
+    Each option can also be given as its value, e.g. ``rotation_approximation_method="average_in_window"`` (case-insensitive).
+
+    Attributes:
+        AVERAGE_IN_WINDOW: ``"average_in_window"``: moving average over ``rotation_window_size``. The
+            default.
+        AVERAGE_PER_PATH_LENGTH: ``"average_per_path_length"``: for trajectories that pass the same track
+            several times, the mean of all laps at the same path length.
+    """
 
     AVERAGE_PER_PATH_LENGTH = "average_per_path_length"
     AVERAGE_IN_WINDOW = "average_in_window"
 
 
 class PositionApproximationMethod(OptionEnum):
-    """Method for position approximation."""
+    """Method for approximating (smoothing) the positions of a trajectory (see :func:`trajectopy.approximate`).
+
+    Each option can also be given as its value, e.g. ``position_approximation_method="cubic"`` (case-insensitive).
+
+    Attributes:
+        CUBIC: ``"cubic"``: piecewise cubic polynomials, fitted in intervals of ``position_interval_size``.
+    """
 
     CUBIC = "cubic"
 
@@ -704,7 +720,16 @@ class ApproximationSettings(Settings):
 
 
 class PairDistanceUnit(OptionEnum):
-    """Unit of measurement for pose pair distances in relative comparison."""
+    """Unit of the distances between the poses of the pairs of the relative pose error.
+
+    Each option can also be given as its value, e.g. ``pair_distance_unit="second"`` (case-insensitive). The aliases ``"m"``, ``"s"`` and ``"sec"`` are accepted, too.
+
+    Attributes:
+        METER: ``"meter"``: pairs of poses that are a given path length apart. The drift is given in %
+            and rad/100 m.
+        SECOND: ``"second"``: pairs of poses that are a given time apart. The drift is given in m/s and
+            rad/s.
+    """
 
     METER = "meter"
     SECOND = "second"
@@ -775,14 +800,21 @@ class RelativeComparisonSettings(Settings):
 
 
 class MatchingMethod(OptionEnum):
-    """Method for matching poses between two trajectories.
+    """Method for matching corresponding poses of two trajectories (see :func:`trajectopy.match_trajectories`).
+
+    Each option can also be given as its value, e.g. ``method="nearest_temporal"`` (case-insensitive).
 
     Attributes:
-        NEAREST_SPATIAL: Match by nearest Euclidean distance
-        NEAREST_TEMPORAL: Match by nearest timestamp
-        INTERPOLATION: Match using linear interpolation (SLERP for rotations)
-        NEAREST_SPATIAL_INTERPOLATED: Match spatially using k-nearest and 3D line fit
-        UNKNOWN: Unknown matching method
+        INTERPOLATION: ``"interpolation"``: the trajectory is interpolated at the timestamps of the
+            reference; linearly for the positions, by SLERP for the orientations. The default.
+        NEAREST_TEMPORAL: ``"nearest_temporal"``: the pose with the nearest timestamp, within
+            ``max_time_diff``.
+        NEAREST_SPATIAL: ``"nearest_spatial"``: the nearest position, within ``max_distance``; needs no
+            common time reference.
+        NEAREST_SPATIAL_INTERPOLATED: ``"nearest_spatial_interpolated"``: the projection onto a line
+            fitted through the ``k_nearest`` nearest positions of the reference.
+        UNKNOWN: ``"unknown"``: placeholder of earlier versions, not a matching method; matching with it
+            raises ValueError. Deprecated, it will be removed in version 8.
     """
 
     NEAREST_SPATIAL = "nearest_spatial"
@@ -793,7 +825,13 @@ class MatchingMethod(OptionEnum):
 
 
 class InterpolationMethod(OptionEnum):
-    """Method for interpolation."""
+    """Method for interpolating trajectories (see :func:`trajectopy.interpolate`).
+
+    Each option can also be given as its value, e.g. ``method="linear"`` (case-insensitive).
+
+    Attributes:
+        LINEAR: ``"linear"``: linear interpolation of the positions, SLERP of the orientations.
+    """
 
     LINEAR = "linear"
 
