@@ -45,7 +45,8 @@ print(orb.timestamps[:3], orb.xyz.shape)
 
 A SLAM system starts in a coordinate frame of its own. Before its poses can be compared with the reference, the
 transformation between both frames is estimated: the *alignment*. By default, it is a rigid body transformation
-(translation and rotation), estimated by least squares from all corresponding poses.
+(translation and rotation), estimated by least squares from the corresponding poses (up to 5000 of them,
+see [`max_samples`](user_guide/settings.md#preprocessing-alignmentpreprocessing)).
 
 ```python
 alignment = tpy.estimate_alignment(orb, reference)

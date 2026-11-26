@@ -120,9 +120,9 @@ class DeviationCorrelation:
         Args:
             ate_result (ATEResult): Result to analyze.
             max_lag (float, optional): Largest lag of the autocorrelation [s], at most n / 10 sampling
-                intervals. Defaults to DEFAULT_MAX_LAG (600 s).
+                intervals. Defaults to 600 s.
             window (float, optional): Length of the windows of the windowed standard deviations [s], at most a
-                tenth of the duration (at least MIN_WINDOWS windows). Defaults to DEFAULT_WINDOW.
+                tenth of the duration (so that there are at least 10 windows). Defaults to 60 s.
 
         Returns:
             DeviationCorrelation: Correlation of every deviation component and the cross-correlations.

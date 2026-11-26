@@ -293,8 +293,9 @@ class ATEResult:
         reproducible (fixed seed) and cached.
 
         Args:
-            quantity (str, optional): ``position`` (meters) or ``rotation`` (radians). Defaults to ``position``.
-            statistic (str, optional): ``mean`` or ``rms``. Defaults to ``mean``.
+            quantity (str, optional): ``position`` (meters) or ``rotation`` (radians), case-insensitive.
+                Defaults to ``position``.
+            statistic (str, optional): ``mean`` or ``rms``, case-insensitive. Defaults to ``mean``.
             confidence (float, optional): Confidence level. Defaults to 0.95.
 
         Returns:
@@ -303,8 +304,11 @@ class ATEResult:
         References:
             1. H. R. Künsch (1989): The jackknife and the bootstrap for general stationary observations. The Annals of Statistics 17(3), 1217-1241.
         """
+        quantity, statistic = quantity.lower(), statistic.lower()
         if quantity not in ("position", "rotation"):
             raise ValueError(f"Unknown quantity '{quantity}', use 'position' or 'rotation'.")
+        if statistic not in ("mean", "rms"):
+            raise ValueError(f"Unknown statistic '{statistic}', use 'mean' or 'rms'.")
         key = (quantity, statistic, confidence)
         if key not in self._confidence_intervals:
             values = self.pos_dev_comb if quantity == "position" else self.rot_dev_comb
@@ -380,6 +384,7 @@ class ATEResult:
             largest time or path length), ``count``, ``pos_mean``, ``pos_median``, ``pos_rms``, ``pos_p95``,
             ``pos_max`` (meters) and, with orientations, ``rot_mean``, ``rot_rms`` and ``rot_max`` (degrees).
         """
+        by = by.lower()
         if by not in ("time", "path_length"):
             raise ValueError(f"Unknown segment index '{by}', use 'time' or 'path_length'.")
         index = self.trajectory.timestamps if by == "time" else self.trajectory.path_lengths

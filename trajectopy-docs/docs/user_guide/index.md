@@ -56,4 +56,5 @@ All functions follow the same conventions:
 - **Deviations**: deviations are always *evaluated trajectory minus reference*.
 - **Files**: functions that read or write files accept strings and `pathlib.Path` objects. Writers overwrite
   existing files; those with a `mode` argument append to them with `mode="a"`. Only
-  `write_sensor_rotation_parameters` always appends (to an alignment result file).
+  `write_sensor_rotation_parameters` and `SensorRotationParameters.to_file` always append (to an alignment
+  result file).

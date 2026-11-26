@@ -36,7 +36,7 @@ The whole public API follows the same conventions, so that it can grow without b
   either of its own settings type (e.g. `MatchingSettings`) or the complete `ProcessingSettings`, from which it
   uses the part it needs. So the same `ProcessingSettings` can be passed to all of them. `ate`, which needs
   the matching and the alignment settings, takes only `ProcessingSettings`. `None` means the defaults.
-- **Options are enumerations that accept strings.** `MatchingSettings(method="nearest_temporal")` and
+- **Options with a fixed set of values are enumerations that accept strings.** `MatchingSettings(method="nearest_temporal")` and
   `tpy.interpolate(trajectory, index, method="linear")` work as well as the enumeration members; the lookup
   ignores the case.
 - **Keyword-only options.** Only the data (trajectories, results, figures, file names, indices) and the
@@ -49,7 +49,8 @@ The whole public API follows the same conventions, so that it can grow without b
   objects.
 - **Files.** All functions that read or write files accept `str` and `os.PathLike` (e.g. `pathlib.Path`).
   Writers overwrite existing files; those with a `mode` argument append with `mode="a"`. Only
-  `write_sensor_rotation_parameters` always appends (to an alignment result file).
+  `write_sensor_rotation_parameters` and `SensorRotationParameters.to_file` always append (to an alignment
+  result file).
 - **Errors.** Invalid arguments raise `TypeError` or `ValueError`. Errors specific to trajectopy raise the
   subclasses of `trajectopy.TrajectopyError`: `TrajectoryError` and `PointSetError` for trajectory and position
   data that do not fit together or cannot be transformed (e.g. a different number of positions and timestamps,

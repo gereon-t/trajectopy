@@ -418,7 +418,10 @@ class AlignmentEstimationSettings(Settings):
         """Creates settings from a list of boolean values.
 
         Args:
-            bool_list: List of 14 booleans corresponding to parameter enable flags
+            bool_list: 14 enable flags in the order translation x, y, z, rotation x, y, z, scale, time shift,
+                lever arm x, y, z and sensor rotation x, y, z (the order of
+                ``AlignmentParameters.enabled_bool_list`` followed by ``SensorRotationParameters.enabled_bool_list``).
+                The sensor rotation is estimated if any of the last three is True.
 
         Returns:
             AlignmentEstimationSettings: New settings instance
