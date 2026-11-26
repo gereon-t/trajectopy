@@ -58,6 +58,7 @@ class TrajectoryFormat(OptionEnum):
 
 
 _KITTI_COLUMNS = 12
+_DISPLAY_NAMES = {TrajectoryFormat.TUM: "TUM", TrajectoryFormat.KITTI: "KITTI", TrajectoryFormat.EUROC: "EuRoC"}
 _DETECTION_LINES = 50
 
 
@@ -79,15 +80,19 @@ def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
         >>> io.detect_format("./example_data/KITTI_gt.traj")
         <TrajectoryFormat.TRAJECTOPY: 'trajectopy'>
     """
-    filename = os.fspath(filename)
+    return _scan_format(os.fspath(filename))[0]
+
+
+def _scan_format(filename: str) -> tuple[TrajectoryFormat, bool]:
+    """The format of a file (see :func:`detect_format`) and whether it has a ``#fields`` header line."""
     first_data_line = ""
     with open(filename, encoding="utf-8", errors="replace") as file:
         for number, line in enumerate(file):
             stripped = line.strip()
             if stripped.startswith("#fields"):
-                return TrajectoryFormat.TRAJECTOPY
+                return TrajectoryFormat.TRAJECTOPY, True
             if number == 0 and stripped.lower().startswith("#timestamp") and "," in stripped:
-                return TrajectoryFormat.EUROC
+                return TrajectoryFormat.EUROC, False
             if stripped and not stripped.startswith("#"):
                 first_data_line = stripped
                 break
@@ -96,8 +101,8 @@ def detect_format(filename: str | os.PathLike) -> TrajectoryFormat:
 
     values = first_data_line.replace(",", " ").split()
     if len(values) == _KITTI_COLUMNS and _all_numeric(values):
-        return TrajectoryFormat.KITTI
-    return TrajectoryFormat.TRAJECTOPY
+        return TrajectoryFormat.KITTI, False
+    return TrajectoryFormat.TRAJECTOPY, False
 
 
 def _all_numeric(values: list[str]) -> bool:
@@ -264,9 +269,13 @@ def read_trajectory(
     filename = os.fspath(filename)
     file_format = TrajectoryFormat(format)
     if file_format == TrajectoryFormat.AUTO:
-        file_format = detect_format(filename)
+        file_format, has_fields = _scan_format(filename)
         if file_format != TrajectoryFormat.TRAJECTOPY:
-            logger.info("Recognized %s as a %s file.", filename, file_format.value.upper())
+            logger.info("Recognized %s as a %s file.", filename, _DISPLAY_NAMES[file_format])
+        elif not has_fields:
+            logger.info(
+                "%s has no #fields header: its columns are read as t,px,py,pz,qx,qy,qz,qw (TUM format).", filename
+            )
 
     if file_format == TrajectoryFormat.TRAJECTOPY:
         return trajectory_io.read_trajectory(filename, default_name=_name(filename))

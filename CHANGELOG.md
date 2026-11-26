@@ -55,8 +55,8 @@ Besides the API changes above, version 7 adds:
   deviations (`confidence_interval`), statistics per segment (`segment_statistics`), summary tables of several
   results (`summary_table`, `format_table`) and self-contained HTML reports (`write_report`).
 - **Plots**: `ate_boxplot_figure`.
-- **File formats**: TUM, KITTI and EuRoC files are read (recognized automatically) and written; ROS2 bags and
-  further ROS message types (odometry, transforms, paths, GNSS fixes) are read.
+- **File formats**: TUM, KITTI and EuRoC files are read (recognized automatically, with a log message) and
+  written; ROS2 bags and further ROS message types (odometry, transforms, paths, GNSS fixes) are read.
 - **Alignment**: positions are weighted by their standard deviations (`Trajectory.position_std`, read from ROS
   covariances and the `sx`, `sy`, `sz` columns of trajectopy files).
 

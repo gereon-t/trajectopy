@@ -169,7 +169,9 @@ so they need no header:
 
 Only the header lines at the beginning of the file and the first data line are inspected; a file whose first 50
 lines contain no data is read as a trajectopy file. The positions of TUM, KITTI and EuRoC files are read as local
-coordinates (EPSG 0), since these formats store no coordinate system.
+coordinates (EPSG 0), since these formats store no coordinate system. The recognized format is logged (in the
+GUI in the log panel), e.g. `Recognized poses.txt as a KITTI file.`, also for files without a `#fields` header,
+whose columns are read as those of the TUM format.
 
 The format can also be given explicitly, and trajectories can be written in these formats:
 

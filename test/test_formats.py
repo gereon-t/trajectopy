@@ -82,3 +82,29 @@ def test_trajectopy_files_are_not_misdetected(tmp_path, trajectory):
 def test_unknown_format():
     with pytest.raises(ValueError, match="Unknown trajectory format"):
         TrajectoryFormat("bogus")
+
+
+@pytest.mark.parametrize(
+    ("file_format", "message"),
+    [
+        ("tum", "has no #fields header: its columns are read as t,px,py,pz,qx,qy,qz,qw (TUM format)"),
+        ("kitti", "as a KITTI file"),
+        ("euroc", "as a EuRoC file"),
+    ],
+)
+def test_recognized_formats_are_logged(tmp_path, trajectory, caplog, file_format, message):
+    path = tmp_path / f"trajectory.{file_format}"
+    write_trajectory(trajectory, str(path), format=file_format)
+
+    with caplog.at_level("INFO", logger="trajectopy.io.formats"):
+        read_trajectory(str(path))
+    assert message in caplog.text
+
+
+def test_trajectopy_files_are_read_silently(tmp_path, trajectory, caplog):
+    path = tmp_path / "trajectory.traj"
+    write_trajectory(trajectory, str(path))
+
+    with caplog.at_level("INFO", logger="trajectopy.io.formats"):
+        read_trajectory(str(path))
+    assert caplog.text == ""
