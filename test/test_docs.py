@@ -20,7 +20,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from test.test_public_api import PUBLIC_API
+from test.test_public_api import PUBLIC_API, importable_namespaces, plotting_available
 
 REPOSITORY = Path(__file__).resolve().parent.parent
 DOCS = REPOSITORY / "trajectopy-docs" / "docs"
@@ -47,13 +47,23 @@ def _examples(page: Path) -> list[tuple[str, str | None, bool]]:
     return examples
 
 
+@contextlib.contextmanager
+def _without_windows():
+    """Replaces ``trajectopy.visualization.show``, which would open a window and block."""
+    if not plotting_available():
+        yield
+        return
+    with mock.patch("trajectopy.visualization.show"):
+        yield
+
+
 class TestDocumentationExamples(unittest.TestCase):
     def test_examples_run(self):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
         for page in GUIDE_PAGES:
             examples = _examples(page)
-            if not examples:
-                continue
+            if not examples or (not plotting_available() and any("visualization" in e[0] for e in examples)):
+                continue  # pages with plots need the plotting extras
             with self.subTest(page=str(page.relative_to(DOCS))), tempfile.TemporaryDirectory() as directory:
                 shutil.copytree(REPOSITORY / "example_data", Path(directory) / "example_data")
                 namespace: dict = {"__name__": "__docs__"}
@@ -64,7 +74,7 @@ class TestDocumentationExamples(unittest.TestCase):
                         if skipped:
                             continue
                         output = io.StringIO()
-                        with contextlib.redirect_stdout(output), mock.patch("trajectopy.visualization.show"):
+                        with contextlib.redirect_stdout(output), _without_windows():
                             try:
                                 exec(compile(code, f"{page.name} example {number}", "exec"), namespace)  # noqa: S102
                             except Exception as error:
@@ -84,14 +94,16 @@ class TestApiReference(unittest.TestCase):
         """Every public object is documented, under one of its public names (e.g. exceptions are available from
         ``trajectopy`` and ``trajectopy.exceptions``)."""
         reference = "\n".join(path.read_text(encoding="utf-8") for path in (DOCS / "api").glob("*.md"))
+        namespaces = importable_namespaces()
         documented = set()
         for qualname in re.findall(r"^::: ([\w.]+)", reference, re.M):
             namespace, _, name = qualname.rpartition(".")
-            documented.add(id(getattr(importlib.import_module(namespace), name)))
+            if namespace in namespaces:
+                documented.add(id(getattr(importlib.import_module(namespace), name)))
         missing = [
             f"{namespace}.{name}"
-            for namespace, names in PUBLIC_API.items()
-            for name in names
+            for namespace in namespaces
+            for name in PUBLIC_API[namespace]
             if name != "__version__" and id(getattr(importlib.import_module(namespace), name)) not in documented
         ]
         self.assertEqual(missing, [], "Public names missing in the API reference")
@@ -160,9 +172,9 @@ class TestDocstrings(unittest.TestCase):
     def test_public_docstrings_are_complete(self):
         problems: list[str] = []
         seen: set[int] = set()
-        for namespace, names in PUBLIC_API.items():
+        for namespace in importable_namespaces():
             module = importlib.import_module(namespace)
-            for name in names:
+            for name in PUBLIC_API[namespace]:
                 obj = getattr(module, name)
                 if name.startswith("__") or id(obj) in seen:
                     continue

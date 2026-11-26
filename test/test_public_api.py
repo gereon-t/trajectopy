@@ -12,6 +12,22 @@ import unittest
 
 from trajectopy.utils.deprecation import TrajectopyDeprecationWarning
 
+
+def plotting_available() -> bool:
+    """Whether the plotting extras, which trajectopy.visualization needs, are installed."""
+    try:
+        import pyqtgraph  # noqa: F401
+        import PySide6  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def importable_namespaces() -> list[str]:
+    """The public namespaces that can be imported with the installed dependencies."""
+    return [name for name in PUBLIC_API if name != "trajectopy.visualization" or plotting_available()]
+
+
 PUBLIC_API = {
     "trajectopy": [
         "ATEResult",
@@ -146,9 +162,9 @@ class TestPublicApi(unittest.TestCase):
                 self.assertEqual(sorted(module.__all__), sorted(expected))
 
     def test_exported_names_resolve_and_are_documented(self):
-        for module_name, names in PUBLIC_API.items():
+        for module_name in importable_namespaces():
             module = importlib.import_module(module_name)
-            for name in names:
+            for name in PUBLIC_API[module_name]:
                 with self.subTest(name=f"{module_name}.{name}"):
                     value = getattr(module, name)
                     if inspect.isclass(value) or inspect.isfunction(value):

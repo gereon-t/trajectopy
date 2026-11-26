@@ -1,10 +1,13 @@
 import time
 import unittest
 
-from PySide6 import QtCore
+try:
+    from PySide6 import QtCore
 
-from trajectopy.gui.stall_logger import StallLogger, paused
-from trajectopy.visualization.figure import ensure_app
+    from trajectopy.gui.stall_logger import StallLogger, paused
+    from trajectopy.visualization.figure import ensure_app
+except ImportError:  # GUI dependencies not installed
+    raise unittest.SkipTest("GUI dependencies not installed") from None
 
 
 def _blocking_function_for_the_test() -> None:

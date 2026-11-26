@@ -4,11 +4,14 @@ import tempfile
 import unittest
 from unittest import mock
 
-from PySide6 import QtCore, QtWidgets
+try:
+    from PySide6 import QtCore, QtWidgets
 
-from trajectopy.gui import file_dialog, utils
-from trajectopy.gui.file_dialog import Mode
-from trajectopy.visualization.figure import ensure_app
+    from trajectopy.gui import file_dialog, utils
+    from trajectopy.gui.file_dialog import Mode
+    from trajectopy.visualization.figure import ensure_app
+except ImportError:  # GUI dependencies not installed
+    raise unittest.SkipTest("GUI dependencies not installed") from None
 
 QT_DIALOG = QtWidgets.QFileDialog.Option.DontUseNativeDialog
 ACCEPTED = QtWidgets.QDialog.DialogCode.Accepted
