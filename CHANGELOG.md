@@ -33,7 +33,7 @@ table of removed names and the migration guide below list the replacements.
   `pandas.Series`, `RPEResult.describe()` the drift statistics per pair distance as a `pandas.DataFrame`.
 - **File I/O**: all reading and writing functions accept `pathlib.Path`. `trajectopy.io.read_trajectory`
   and `write_trajectory` handle all formats (trajectopy, TUM, KITTI, EuRoC); `trajectopy.io` also exports
-  `detect_format`, `read_tum`, `read_kitti`, `read_euroc`, `list_topics` and `trajectories_from_rosbag`.
+  `TrajectoryFormat`, `detect_format`, `read_tum`, `read_kitti`, `read_euroc`, `list_topics` and `trajectories_from_rosbag`.
 - **Public API**: the names exported by `trajectopy`, `trajectopy.io`, `trajectopy.visualization` and
   `trajectopy.exceptions` form the public API, guarded by a test. New: `tpy.Pose`, `tpy.adopt_first_pose`,
   `tpy.show_versions` and `trajectopy.exceptions.TrajectopyDeprecationWarning`. The types that results consist
@@ -58,7 +58,8 @@ Besides the API changes above, version 7 adds:
   results (`summary_table`, `format_table`) and self-contained HTML reports (`write_report`).
 - **Plots**: `ate_boxplot_figure`.
 - **File formats**: TUM, KITTI and EuRoC files are read (recognized automatically, with a log message) and
-  written; ROS2 bags and further ROS message types (odometry, transforms, paths, GNSS fixes) are read.
+  written; ROS2 bags are also read from single `.mcap` and `.db3` files, and besides `PoseStamped` and
+  `PointStamped`, poses with covariance, odometry, transforms, paths and GNSS fixes are read.
 - **Alignment**: positions are weighted by their standard deviations (`Trajectory.position_std`, read from ROS
   covariances and the `sx`, `sy`, `sz` columns of trajectopy files).
 

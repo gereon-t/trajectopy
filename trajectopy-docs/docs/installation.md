@@ -47,7 +47,7 @@ Every [release](https://github.com/gereon-t/trajectopy/releases/latest) provides
 - `Trajectopy-<version>-macos-arm64.dmg`: app for macOS on Apple silicon,
 - `Trajectopy-<version>-linux-x86_64.tar.gz`: app for Linux (x86-64).
 
-The apps are not signed. On macOS, open the app the first time with right-click → *Open*.
+The apps are not signed; see below for what this means on each system.
 
 ### Windows
 
@@ -60,6 +60,22 @@ a newer version over an existing one updates it.
 
 As the installer is not signed, Windows SmartScreen may warn about an unknown publisher: choose
 *More info → Run anyway*.
+
+### macOS
+
+Open the `.dmg` and drag Trajectopy onto the *Applications* folder next to it. As the app is not signed, open it
+the first time with right-click → *Open*.
+
+### Linux
+
+Extract the archive and start the program `Trajectopy` in the extracted folder:
+
+```console
+tar -xzf Trajectopy-<version>-linux-x86_64.tar.gz
+./Trajectopy/Trajectopy
+```
+
+The app is built on Ubuntu 22.04 and runs on distributions with the same or a newer C library (glibc).
 
 ## Development Installation
 

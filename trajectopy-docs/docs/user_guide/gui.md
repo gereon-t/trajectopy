@@ -1,7 +1,7 @@
 # GUI
 
-Start the GUI from the Start menu (Windows app) or with `trajectopy` (Python package, see
-[Command Line](command_line.md)).
+Start the GUI from the Start menu (Windows), the Applications folder (macOS) or the `Trajectopy` program of
+the extracted archive (Linux), or with `trajectopy` (Python package, see [Command Line](command_line.md)).
 
 ## A Typical Workflow
 

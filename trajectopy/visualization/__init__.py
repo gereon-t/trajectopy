@@ -6,7 +6,9 @@ dependencies with ``pip install "trajectopy[plot]"``.
 Example:
     >>> import trajectopy as tpy
     >>> from trajectopy import visualization as vis
-    >>> ate_result = tpy.ate(traj_est, traj_ref)
+    >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+    >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> ate_result = tpy.ate(estimate, reference)
     >>> figures = vis.deviation_figures([ate_result], settings=tpy.PlotSettings(ate_unit_is_mm=True))
     >>> vis.export_figures(figures, "plots")   # PNG files, works headless
     >>> vis.show(figures)                     # interactive window

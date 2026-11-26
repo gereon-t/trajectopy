@@ -44,7 +44,8 @@ The whole public API follows the same conventions, so that it can grow without b
   case.
 - **Keyword-only options.** Only the data (trajectories, results, figures, file names, indices) and the
   settings are positional arguments; all options are keyword-only, so that new options can be added and
-  options can be reordered without breaking calls.
+  options can be reordered without breaking calls. The constructors of data classes (the settings, the
+  parameter sets, the deviations and `Pose`) take their fields as arguments, too.
 - **Results carry everything.** Results are returned as objects instead of tuples whose shape depends on a
   flag; for example, the alignment used by `tpy.ate` is available as `ate_result.alignment`. The only
   remaining exception is `divide_into_laps(..., return_lap_indices=True)`.

@@ -229,8 +229,9 @@ horizontal variance is the mean of the x and y variances.
 
 - **Trajectories** (`Trajectory.to_file`, *Export…* in the GUI) are ASCII files as described above, with the
   fields `t,l,px,py,pz,qx,qy,qz,qw,vx,vy,vz` (without `qx`…`qw` for trajectories without orientation, and
-  followed by `sx,sy,sz` for trajectories with position standard deviations). The command
-  `trajectopy convert` writes the TUM, KITTI and EuRoC formats, too.
+  followed by `sx,sy,sz` for trajectories with position standard deviations). With the extension `.tum` or
+  `.kitti`, or with `format=`, `Trajectory.to_file` and `trajectopy.io.write_trajectory` write the TUM, KITTI
+  and EuRoC formats instead (see above), as does the command `trajectopy convert`.
 - **Reports** (`.html`): self-contained evaluation reports (`trajectopy.write_report`, `--report` of the command
   line, *Export Report or Summary Table…* in the GUI), and summary tables (`.md`, `.csv`, `.tex`).
 - **Results** (`.result`): ATE, RPE and alignment results (`ATEResult.to_file`, `RPEResult.to_file`,

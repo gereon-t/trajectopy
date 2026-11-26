@@ -33,7 +33,7 @@ Key Components
 
 **Visualization** (``pip install "trajectopy[plot]"``):
     - trajectopy.visualization: Figures of trajectories, ATE/RPE results and alignment parameters,
-      shown in an interactive window (``show``) or exported to PNG/SVG (``export_figures``).
+      shown in an interactive window (``show``) or exported to PNG, JPG or SVG (``export_figures``).
 
 **File I/O:**
     - trajectopy.io: Reading and writing of trajectories, results and alignment parameters.
@@ -56,8 +56,8 @@ Quick Start
     >>> import trajectopy as tpy
     >>>
     >>> # Load trajectories
-    >>> traj_test = tpy.Trajectory.from_file("test.traj")
-    >>> traj_ref = tpy.Trajectory.from_file("reference.traj")
+    >>> traj_test = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+    >>> traj_ref = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
     >>>
     >>> # Evaluate (the ATE aligns the trajectories first)
     >>> settings = tpy.ProcessingSettings()
