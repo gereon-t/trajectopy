@@ -87,6 +87,17 @@ def estimate_alignment(
 
     Returns:
         AlignmentResult: Result of the alignment process.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> alignment = tpy.estimate_alignment(estimate, reference)
+        >>> alignment.converged
+        True
+        >>> print(f"{alignment.position_parameters.sim_trans_x.value:.3f} m")
+        -1.363 m
+        >>> aligned = tpy.apply_alignment(estimate, alignment)
     """
     alignment_settings, matching_settings = _alignment_and_matching_settings(settings)
 
@@ -328,6 +339,14 @@ def align(
 
     Returns:
         Trajectory: Aligned trajectory.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> aligned = tpy.align(estimate, reference)
+        >>> len(aligned) == len(estimate)
+        True
     """
     alignment = estimate_alignment(trajectory, other, settings)
     return apply_alignment(trajectory=trajectory, alignment_result=alignment, inplace=inplace)

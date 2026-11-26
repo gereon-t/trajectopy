@@ -103,6 +103,17 @@ class ATEResult:
 
         Returns:
             pd.Series: Statistics, named after the result.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+            >>> ate_result = tpy.ate(estimate, reference)
+            >>> ate_result.describe()[["poses", "pos_mean", "pos_rms"]].round(3)
+            poses       4541.000
+            pos_mean       1.153
+            pos_rms        1.304
+            Name: KITTI ORB vs. KITTI Ground Truth, dtype: float64
         """
         statistics: dict[str, float] = {
             "poses": float(len(self)),

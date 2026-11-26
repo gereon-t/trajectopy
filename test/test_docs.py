@@ -4,11 +4,14 @@
   shown in a ``text`` block right after an example matches the actual output. The examples find the example data
   of the repository in ``example_data`` and a ROS2 bag in ``recording.mcap``. Examples preceded by a
   ``<!-- skip-test: reason -->`` comment are not run (e.g. they need an internet connection).
+- The scripts in ``example_scripts`` run.
+- The ``Examples`` sections of the docstrings run and show the actual output (doctests).
 - Every public name is documented in the API reference.
 - Every public function, class, method and property has a complete docstring (arguments and return value).
 """
 
 import contextlib
+import doctest
 import enum
 import importlib
 import inspect
@@ -98,6 +101,63 @@ class TestDocumentationExamples(unittest.TestCase):
                             )
                 finally:
                     os.chdir(cwd)
+
+
+class TestExampleScripts(unittest.TestCase):
+    def test_example_scripts_run(self):
+        """The scripts in ``example_scripts`` run with the example data (they plot, so they need the extras)."""
+        if not plotting_available():
+            self.skipTest("plotting dependencies not installed")
+        import runpy
+
+        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+        scripts = sorted((REPOSITORY / "example_scripts").glob("*.py"))
+        self.assertTrue(scripts)
+        with tempfile.TemporaryDirectory() as directory:
+            shutil.copytree(REPOSITORY / "example_data", Path(directory) / "example_data")
+            cwd = os.getcwd()
+            os.chdir(directory)
+            try:
+                for script in scripts:
+                    with (
+                        self.subTest(script=script.name),
+                        _without_windows(),
+                        contextlib.redirect_stdout(io.StringIO()),
+                    ):
+                        runpy.run_path(str(script), run_name="__main__")
+            finally:
+                os.chdir(cwd)
+
+
+class TestDocstringExamples(unittest.TestCase):
+    """The ``Examples`` sections of the docstrings of the public API run and show the actual output."""
+
+    def test_docstring_examples(self):
+        finder = doctest.DocTestFinder()
+        runner = doctest.DocTestRunner(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+        tests: dict[str, doctest.DocTest] = {}
+        for namespace in importable_namespaces():
+            module = importlib.import_module(namespace)
+            for name in PUBLIC_API[namespace]:
+                obj = getattr(module, name)
+                if inspect.isclass(obj) or inspect.isfunction(obj):
+                    for test in finder.find(obj, f"{namespace}.{name}", globs={}):
+                        if test.examples:
+                            tests.setdefault(test.name, test)
+        self.assertGreater(len(tests), 10)
+
+        with tempfile.TemporaryDirectory() as directory:
+            shutil.copytree(REPOSITORY / "example_data", Path(directory) / "example_data")
+            cwd = os.getcwd()
+            os.chdir(directory)
+            try:
+                output = io.StringIO()
+                for test in tests.values():
+                    runner.run(test, out=output.write)
+            finally:
+                os.chdir(cwd)
+        results = runner.summarize(verbose=False)
+        self.assertEqual(results.failed, 0, output.getvalue())
 
 
 class TestApiReference(unittest.TestCase):

@@ -49,6 +49,16 @@ def ate(
 
     Returns:
         ATEResult: Result of the ATE computation. Its attribute ``alignment`` holds the estimated alignment.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> print(f"{ate_result.pos_ate:.3f} m")
+        1.153 m
+        >>> ate_result.alignment.converged
+        True
     """
     processing = resolve_settings(settings, ProcessingSettings)
 
@@ -93,6 +103,14 @@ def rpe(
 
     Returns:
         RPEResult: Result of the RPE computation.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> rpe_result = tpy.rpe(estimate, reference)
+        >>> round(rpe_result.pos_rpe, 3), rpe_result.pos_drift_unit
+        (0.694, '%')
     """
     if isinstance(settings, RelativeComparisonSettings):
         matching, relative_comparison = MatchingSettings(), settings

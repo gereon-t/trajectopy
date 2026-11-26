@@ -30,6 +30,12 @@ def interpolate(
 
     Returns:
         Trajectory: Interpolated trajectory
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> tpy.interpolate(reference, [0.5, 1.5]).timestamps
+        array([0.5, 1.5])
     """
     if InterpolationMethod(method) == InterpolationMethod.LINEAR:
         return _interpolate_linear(trajectory, np.asarray(index, dtype=float), inplace, max_gap_size)

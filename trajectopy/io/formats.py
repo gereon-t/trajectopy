@@ -205,6 +205,15 @@ def read_trajectory(
 
     Returns:
         Trajectory: The loaded trajectory.
+
+    Examples:
+        >>> from trajectopy import io
+        >>> trajectory = io.read_trajectory("./example_data/KITTI_gt.traj")
+        >>> io.write_trajectory(trajectory, "poses.txt", format="kitti")
+        >>> io.detect_format("poses.txt")
+        <TrajectoryFormat.KITTI: 'kitti'>
+        >>> len(io.read_trajectory("poses.txt"))
+        4541
     """
     from trajectopy.io import trajectory_io
 

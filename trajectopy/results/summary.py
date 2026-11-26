@@ -86,6 +86,18 @@ def summary_table(
 
     Returns:
         pd.DataFrame: One row per name.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> ate_result = tpy.ate(estimate, reference)
+        >>> table = tpy.summary_table([ate_result])
+        >>> print(tpy.format_table(table[["poses", "pos_mean [m]"]], "markdown", precision=3))
+        | name | poses | pos_mean [m] |
+        | --- | --- | --- |
+        | KITTI ORB vs. KITTI Ground Truth | 4541 | 1.153 |
+        <BLANKLINE>
     """
     ate = ate_summary(ate_results, confidence_intervals) if ate_results else pd.DataFrame()
     rpe = rpe_summary(rpe_results) if rpe_results else pd.DataFrame()

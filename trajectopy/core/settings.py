@@ -951,6 +951,17 @@ class ProcessingSettings(Settings):
         relative_comparison: Relative comparison (RPE) configuration
         approximation: Approximation and smoothing configuration
         sorting: Sorting and downsampling configuration
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> settings = tpy.ProcessingSettings()
+        >>> settings.alignment.estimation_settings.time_shift = True
+        >>> settings.matching.method = "nearest_temporal"
+        >>> settings.matching.method
+        <MatchingMethod.NEAREST_TEMPORAL: 'nearest_temporal'>
+        >>> settings.to_file("settings.json")
+        >>> tpy.ProcessingSettings.from_file("settings.json") == settings
+        True
     """
 
     alignment: AlignmentSettings = field(default_factory=AlignmentSettings)

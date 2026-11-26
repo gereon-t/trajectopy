@@ -87,6 +87,16 @@ def match_trajectories(
 
     Returns:
         Tuple[Trajectory, Trajectory]: Matched trajectories.
+
+    Examples:
+        >>> import trajectopy as tpy
+        >>> reference = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+        >>> estimate = tpy.Trajectory.from_file("./example_data/KITTI_ORB.traj")
+        >>> matched, matched_reference = tpy.match_trajectories(
+        ...     estimate, reference, tpy.MatchingSettings(method="nearest_temporal")
+        ... )
+        >>> len(matched) == len(matched_reference)
+        True
     """
     matching_settings = resolve_settings(settings, MatchingSettings)
 

@@ -55,6 +55,19 @@ class Trajectory:
         sorting (Sorting): The current sorting strategy (Sorting.TIME or Sorting.ARC_LENGTH).
         position_std (np.ndarray | None): Standard deviations of the positions along x, y and z in meters,
             shape (N, 3), or None if unknown. The alignment weights the positions by them.
+
+    Examples:
+        >>> import numpy as np
+        >>> import trajectopy as tpy
+        >>> timestamps = np.arange(0.0, 10.0, 0.1)
+        >>> xyz = np.column_stack([timestamps, np.sin(timestamps), np.zeros_like(timestamps)])
+        >>> trajectory = tpy.Trajectory(xyz, timestamps=timestamps, name="Curve")
+        >>> trajectory
+        <Trajectory 'Curve': 100 poses without orientations, ... m, EPSG 0, sorted by time>
+        >>> trajectory[10].timestamp
+        1.0
+        >>> len(trajectory[trajectory.timestamps >= 5.0])
+        50
     """
 
     _counter = 1
@@ -181,8 +194,7 @@ class Trajectory:
         *,
         format: str = "auto",  # noqa: A002
     ) -> "Trajectory":
-        """
-        Create a trajectory instance from a file.
+        """Create a trajectory instance from a file.
 
         The file is expected to be a CSV-like format. It handles extraction of
         timestamps, xyz positions, rotations, path lengths, and velocities via `ascii` trajectory reader.
@@ -197,6 +209,12 @@ class Trajectory:
 
         Returns:
             Trajectory: The loaded trajectory object.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> trajectory = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> trajectory.name, len(trajectory)
+            ('KITTI Ground Truth', 4541)
         """
         from trajectopy.io.formats import read_trajectory
 
@@ -616,8 +634,7 @@ class Trajectory:
     def crop(
         self, index_start: float, index_end: float, *, inverse: bool = False, inplace: bool = False
     ) -> "Trajectory":
-        """
-        Crops (or cuts) the trajectory based on a time window.
+        """Crops (or cuts) the trajectory based on a time window.
 
         Args:
             index_start (float): Start index of the window.
@@ -628,6 +645,14 @@ class Trajectory:
 
         Returns:
             Trajectory: The modified or new trajectory instance.
+
+        Examples:
+            >>> import trajectopy as tpy
+            >>> trajectory = tpy.Trajectory.from_file("./example_data/KITTI_gt.traj")
+            >>> len(trajectory.crop(0.0, 99.0))
+            100
+            >>> len(trajectory.crop(0.0, 99.0, inverse=True))
+            4441
         """
         # filter to index_start and index_end
         if inverse:
