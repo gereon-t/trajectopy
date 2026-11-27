@@ -30,3 +30,7 @@ h2 {
 .md-annotation {
     font-size: 0.85em;
 }
+/* names in the first column of tables (e.g. the API overview) are not broken */
+.md-typeset table:not([class]) td:first-child code {
+  white-space: nowrap;
+}

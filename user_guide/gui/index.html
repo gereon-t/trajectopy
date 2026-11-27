@@ -1,0 +1,2181 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Trajectory Evaluation in Python">
+      
+      
+        <meta name="author" content="Gereon Tombrink">
+      
+      
+        <link rel="canonical" href="https://gereon-t.github.io/trajectopy/user_guide/gui/">
+      
+      
+        <link rel="prev" href="../settings/">
+      
+      
+        <link rel="next" href="../command_line/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/icon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>GUI - Trajectopy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gui" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trajectopy" class="md-header__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trajectopy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GUI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting_started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api_policy/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Policy
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../release_notes/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Release Notes
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trajectopy" class="md-nav__button md-logo" aria-label="Trajectopy" data-md-component="logo">
+      
+  <img src="../../assets/icon.png" alt="logo">
+
+    </a>
+    Trajectopy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/gereon-t/trajectopy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    gereon-t/trajectopy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trajectories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../alignment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alignment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../google_earth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Google Earth
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file_formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-typical-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Typical Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main Window
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#menu-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Menu Bar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-dialogs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Dialogs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processing-settings-of-a-trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Processing Settings of a Trajectory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-menus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Menus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyboard Shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interactive-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Alignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../command_line/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/trajectory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Input and Output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utilities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../release_notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-typical-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Typical Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main Window
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#menu-bar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Menu Bar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projects
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Log
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-dialogs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Dialogs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processing-settings-of-a-trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Processing Settings of a Trajectory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context-menus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Menus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keyboard-shortcuts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyboard Shortcuts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interactive-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Alignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gui">GUI<a class="headerlink" href="#gui" title="Permanent link">&para;</a></h1>
+<p>Start the GUI from the Start menu (Windows), the Applications folder (macOS) or the <code>Trajectopy</code> program of
+the extracted archive (Linux), or with <code>trajectopy</code> (Python package, see <a href="../command_line/">Command Line</a>).</p>
+<h2 id="a-typical-workflow">A Typical Workflow<a class="headerlink" href="#a-typical-workflow" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Load trajectories</strong>: drop files onto the trajectory table or press <em>Add</em>. On Windows, <code>.traj</code> files can also be
+   opened by double-click (if chosen during installation), and files can be passed on the command line.</li>
+<li><strong>Set the reference</strong>: right-click the ground truth and choose <em>Set as Reference</em> (<code>R</code>).</li>
+<li><strong>Compare</strong>: select one or more other trajectories, right-click and choose
+   <em>Compare with Reference → Absolute Error (ATE), with Alignment</em>. The result appears in the results table.</li>
+<li><strong>Inspect</strong>: select the result to see its statistics in the properties table and its deviations in the
+   preview; press <code>V</code> (or <em>Plot</em>) for all plots.</li>
+<li><strong>Save</strong>: <em>File → Save</em> (<code>Ctrl+S</code>) keeps everything for later in a project file; <em>Export…</em> (<code>E</code>) saves single
+   trajectories or results.</li>
+</ol>
+<h2 id="main-window">Main Window<a class="headerlink" href="#main-window" title="Permanent link">&para;</a></h2>
+<p>The left side lists the trajectories (name, EPSG code, reference) and the results (name, type). Below them,
+the properties table shows all properties of the selected trajectories or results side by side; <em>Export…</em> saves
+them as CSV. The preview on the right plots the selected trajectories, or the selected ATE results colored by
+their deviations. The drop-down next to the <em>Preview</em> checkbox in the top right corner switches between the top
+view (<em>2D</em>) and an orbitable <em>3D</em> view (drag to rotate, wheel to zoom, middle-drag to pan). On slow systems, the
+preview can be turned off with the checkbox; the tables and the properties then use the whole width.</p>
+<p>Files dropped onto the trajectory table or added with its <em>Add</em> button are read as trajectories (<code>.traj</code> and
+other ASCII files, ROS1 <code>.bag</code> and ROS2 <code>.mcap</code>/<code>.db3</code> bags, of which all supported topics are loaded); files
+dropped onto the results table are read as results (<code>.result</code>). Project files (<code>.tpy</code>) are opened from both. Long operations run in the background; a progress window shows that
+Trajectopy is busy.</p>
+<p><strong>Groups</strong>: trajectories computed from another one (aligned, smoothed, sorted, … copies) are grouped with it
+automatically, so that the trajectories of one measurement run stay together (results are not grouped
+automatically). Groups can be collapsed; selecting a group
+selects all of its entries. <em>Group → New Group…</em> (<code>Ctrl+G</code>) in the context menu groups any trajectories or results,
+<em>Rename Group…</em> (<code>Ctrl+Shift+F2</code>) names a group, <em>Ungroup</em> (<code>Ctrl+Shift+G</code>) takes entries out of their groups and <em>Move to Group</em> moves
+them into another group. Entries can also be dragged onto a group (or an entry) to move them there, or between the
+rows to take them out of their group. Groups are saved in the project.</p>
+<h2 id="menu-bar">Menu Bar<a class="headerlink" href="#menu-bar" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Menu</th>
+<th>Entry</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File</td>
+<td>New (<code>Ctrl+N</code>)</td>
+<td>Starts a new, empty project with default plot settings.</td>
+</tr>
+<tr>
+<td></td>
+<td>Open… (<code>Ctrl+O</code>)</td>
+<td>Opens a project file (<code>.tpy</code>); replaces the current project.</td>
+</tr>
+<tr>
+<td></td>
+<td>Open Recent</td>
+<td>The last ten projects; <em>Clear Recent Projects</em> empties the list.</td>
+</tr>
+<tr>
+<td></td>
+<td>Save (<code>Ctrl+S</code>)</td>
+<td>Saves the project to its file (asks for a file the first time).</td>
+</tr>
+<tr>
+<td></td>
+<td>Save As… (<code>Ctrl+Shift+S</code>)</td>
+<td>Saves the project to a new file.</td>
+</tr>
+<tr>
+<td></td>
+<td>Import Session Folder…</td>
+<td>Opens a session folder saved by earlier versions of Trajectopy as a new project.</td>
+</tr>
+<tr>
+<td></td>
+<td>Exit (<code>Ctrl+Q</code>)</td>
+<td>Closes Trajectopy.</td>
+</tr>
+<tr>
+<td>View</td>
+<td>Log (<code>Ctrl+L</code>)</td>
+<td>Shows or hides the log panel at the bottom of the main window.</td>
+</tr>
+<tr>
+<td>Plot Settings</td>
+<td></td>
+<td>Opens the <a href="../settings/#plot-settings">plot settings</a>, which apply to all plots opened afterwards.</td>
+</tr>
+<tr>
+<td>Help</td>
+<td>Check for Updates…</td>
+<td>Checks GitHub for a newer version.</td>
+</tr>
+<tr>
+<td></td>
+<td>Check for Updates at Startup</td>
+<td>Checks quietly at every start and shows a link in the status bar if a newer version is available (on by default).</td>
+</tr>
+<tr>
+<td></td>
+<td>About</td>
+<td>Version, author and a link to the repository.</td>
+</tr>
+<tr>
+<td>Theme</td>
+<td>System / Dark / Light</td>
+<td>Color theme. <em>System</em> (the default) follows the color scheme of the operating system, also when it changes; <em>Dark</em> and <em>Light</em> keep their theme. The choice is kept for the next start.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="projects">Projects<a class="headerlink" href="#projects" title="Permanent link">&para;</a></h2>
+<p>Projects keep everything in one file (<code>.tpy</code>): all trajectories with their processing settings, the
+reference, all results, the order of the tables and the plot settings. The title bar shows the name of the
+project and a <code>*</code> while it has unsaved changes. Before these are lost (<em>New</em>, <em>Open</em>, closing Trajectopy),
+Trajectopy offers to save them. A project file can also be opened by dropping it onto one of the tables, by
+double-click on Windows (if chosen during installation) or on the command line. Project files are binary, so
+that large projects are saved and opened quickly; use <em>Export…</em> for files that other programs can read. Projects
+saved by Trajectopy 5.1 can still be opened.</p>
+<p>Closing Trajectopy offers to save unsaved changes. Without unsaved changes, it asks for confirmation while an
+operation is running.</p>
+<h2 id="log">Log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h2>
+<p>Trajectopy writes what it does, warnings and errors to a log. <em>View → Log</em> (<code>Ctrl+L</code>) opens it at the
+bottom of the main window; warnings are shown in orange, errors in red, and the context menu copies or clears the
+messages. The log shows the last 5000 lines of messages (information, warnings and errors) since Trajectopy
+was started, also if it is opened later, and it reopens at the
+next start if it was open. The Windows app has no console window, so the log is the place to look when something
+does not work as expected (Python installations also print the messages to the terminal they were started from).</p>
+<h2 id="updates">Updates<a class="headerlink" href="#updates" title="Permanent link">&para;</a></h2>
+<p>The update check only contacts GitHub (it sends no data except the installed version in the request
+header); it can be turned off in the Help menu. Only final releases count: pre-releases are not offered, and
+versions with a suffix (e.g. <code>7.1.0.dev1</code>) are never reported as outdated. Python installations are updated with
+<code>pip install --upgrade "trajectopy[gui]"</code>, the Windows app with the installer of the new version.</p>
+<h2 id="file-dialogs">File Dialogs<a class="headerlink" href="#file-dialogs" title="Permanent link">&para;</a></h2>
+<p>The file dialogs open in the folder that was used last for the same kind of file (trajectories, results,
+settings, …); the dialogs to open and save projects open in the folder of the current or the most recent
+project. On Windows, Trajectopy uses its own file dialog instead of the one of the operating
+system, because on some systems the Windows dialog takes several seconds to close after a file was chosen.
+This dialog also remembers its size and lists the usual and the recently used folders in its sidebar.</p>
+<h2 id="processing-settings-of-a-trajectory">Processing Settings of a Trajectory<a class="headerlink" href="#processing-settings-of-a-trajectory" title="Permanent link">&para;</a></h2>
+<p>Every trajectory has its own <a href="../settings/#processing-settings">processing settings</a> (alignment, matching,
+relative comparison, approximation, sorting), which are used when it is processed. Edit them with <em>Settings…</em>
+(<code>S</code>) in its context menu; the editor can also import and export them as JSON. When a trajectory file is
+loaded, a JSON file with the same name in the same folder (e.g. <code>run1.json</code> next to <code>run1.traj</code>) is used as its
+settings (for ASCII files, not for ROS bags).</p>
+<h2 id="context-menus">Context Menus<a class="headerlink" href="#context-menus" title="Permanent link">&para;</a></h2>
+<p>All actions are in the context menus of the selected trajectories or results (right-click). Hover over an entry
+to see what it does. Entries that are not available for the current selection are greyed out and their hint
+explains why, e.g. <em>Compare with Reference</em> needs a reference: right-click the reference trajectory and choose
+<em>Set as Reference</em>.</p>
+<p>The trajectory context menu is grouped by task:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Entries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>View</td>
+<td><em>Plot</em>, <em>Playback in 3D</em> (body frame axes at the current pose), <em>Timeline</em> (time spans of the trajectories, e.g. to check their overlap)</td>
+</tr>
+<tr>
+<td>Reference</td>
+<td><em>Set as Reference</em> / <em>Unset Reference</em></td>
+</tr>
+<tr>
+<td>Compare with Reference</td>
+<td><em>Absolute Error (ATE), without Alignment</em>, <em>Absolute Error (ATE), with Alignment</em>, <em>Relative Pose Error (RPE)</em>, <em>Extract Matching Poses</em></td>
+</tr>
+<tr>
+<td>Align with Reference</td>
+<td><em>Estimate Alignment</em>, <em>Interactive Alignment…</em> (see below), <em>Match First Pose</em>, <em>Apply Existing Alignment…</em></td>
+</tr>
+<tr>
+<td>Coordinate System</td>
+<td><em>Transform to EPSG…</em>, <em>Adapt EPSG from Reference</em>, <em>Set EPSG Code (No Transformation)…</em></td>
+</tr>
+<tr>
+<td>Process</td>
+<td><em>Approximate</em>, <em>Resample to Time Grid…</em>, <em>Rearrange Axes / Angles…</em>, <em>Sort Spatially</em>, <em>Switch Order: Time ↔ Path</em>, <em>Divide into Laps</em>, <em>Merge</em>, <em>Average</em></td>
+</tr>
+<tr>
+<td>Entry</td>
+<td><em>Settings…</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Export to Google Earth (KML)…</em>, <em>Group</em>, <em>Remove</em>, <em>Remove Group</em> (removes the trajectories together with all trajectories of their groups, e.g. their aligned or smoothed copies)</td>
+</tr>
+</tbody>
+</table>
+<p>Processing adds new trajectories (e.g. <em>Approximate</em> adds a smoothed copy), comparisons add results (except
+<em>Extract Matching Poses</em>, which adds the matched trajectories), and <em>Estimate Alignment</em> adds an aligned copy and
+the alignment. <em>Match First Pose</em> adds the matched poses of the trajectory, moved and turned onto the first pose
+of the reference, and the matched poses of the reference. Only the coordinate system entries, <em>Rearrange Axes / Angles…</em> and <em>Switch Order: Time ↔ Path</em>
+change the trajectory itself. Comparisons and alignments use the processing settings of the trajectory that is
+evaluated, not those of the reference.</p>
+<p>The results context menu offers <em>Plot</em>, <em>Rename</em>, <em>Duplicate</em>, <em>Export…</em>, <em>Group</em>, <em>Remove</em> and, for ATE results,
+<em>Export to Google Earth (KML)…</em>. <em>Export Report or Summary Table…</em> saves the selected ATE and RPE results as an
+HTML report or as a summary table (Markdown, CSV or LaTeX) with one row per result; the window does not respond
+while a report with many figures is written. ATE results of spatially sorted trajectories can also be switched between
+chronological and spatial order with <em>Switch Order: Time ↔ Path</em>, e.g. to plot the deviations over time. For alignments, <em>Choose Parameters to Apply…</em> selects which of the estimated
+parameters are used when the alignment is applied to a trajectory (<em>Apply Existing Alignment…</em>).</p>
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts<a class="headerlink" href="#keyboard-shortcuts" title="Permanent link">&para;</a></h2>
+<p>Keyboard shortcuts are shown next to the entries of the context menus. They are active when the corresponding
+table has focus and do what the menu entry does for the selected rows.</p>
+<table>
+<thead>
+<tr>
+<th>Shortcut</th>
+<th>Trajectories table</th>
+<th>Results table</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V</code></td>
+<td>Plot</td>
+<td>Plot</td>
+</tr>
+<tr>
+<td><code>R</code> / <code>Shift+R</code></td>
+<td>Set as reference / unset reference</td>
+<td></td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>Transform to EPSG</td>
+<td></td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Merge (two or more trajectories)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Settings</td>
+<td></td>
+</tr>
+<tr>
+<td><code>F2</code> (or <code>U</code>)</td>
+<td>Rename</td>
+<td>Rename</td>
+</tr>
+<tr>
+<td><code>Ctrl+D</code> (or <code>Ctrl+C</code>)</td>
+<td>Duplicate</td>
+<td>Duplicate</td>
+</tr>
+<tr>
+<td><code>E</code></td>
+<td>Export</td>
+<td>Export</td>
+</tr>
+<tr>
+<td><code>Delete</code></td>
+<td>Remove</td>
+<td>Remove</td>
+</tr>
+<tr>
+<td><code>Ctrl+G</code> / <code>Ctrl+Shift+G</code></td>
+<td>New group / ungroup</td>
+<td>New group / ungroup</td>
+</tr>
+<tr>
+<td><code>Ctrl+Shift+F2</code></td>
+<td>Rename group</td>
+<td>Rename group</td>
+</tr>
+</tbody>
+</table>
+<h2 id="interactive-alignment">Interactive Alignment<a class="headerlink" href="#interactive-alignment" title="Permanent link">&para;</a></h2>
+<p>Set a reference, then choose <em>Align with Reference → Interactive Alignment…</em> in the context menu of a trajectory.
+The window helps in two situations: when the automatic alignment fails (unrelated frames, a different scale, a
+large time offset), and when you want to understand <em>what</em> is wrong with an alignment, e.g. to calibrate a
+leverarm or a time offset. It works in three steps; every step can be undone (<code>Ctrl+Z</code>, redo with <code>Ctrl+Y</code> or <code>Ctrl+Shift+Z</code>).</p>
+<p>The window shows both trajectories in a view above and plots of their deviation below. Its toolbar offers <em>Undo</em>,
+<em>Redo</em>, <em>Reset</em> (back to the unaligned trajectory), the viewing direction (<em>View</em>: top, side or front), <em>Fit view</em>,
+<em>Pivot to center</em> and the magnification of the <em>Deviation arrows</em>. The plots below are arranged in tabs: <em>Over
+time</em> (deviation components and speed over time), <em>Time shift</em>, <em>Shift and leverarm</em> and <em>Rotation and scale</em>
+(the views of the diagnosis, see below) and <em>Coordinates</em> (both trajectories over time). Click into the view before
+using the keyboard there.</p>
+<p><strong>1 · Place roughly.</strong> Bring the trajectory onto the reference, in space and in time.</p>
+<ul>
+<li><strong>Auto align</strong> tries several rough placements (the current one, the first pose, a fit on poses at equal time,
+  the centers, the time from the speed profiles), keeps the closest and refines it by least squares.</li>
+<li><strong>Drag</strong> the trajectory in the view to move it; <code>Ctrl</code>+drag rotates and <code>Shift</code>+drag scales it about the pivot
+  (+). Rotations turn about the viewing direction (top, side or front view). Double-click places the pivot.
+  Keyboard: arrows move, <code>Q</code>/<code>E</code> rotate (<code>Shift</code>: 10× larger, <code>Ctrl</code>: 10× finer).</li>
+<li><strong>Pick point pairs</strong>: click a point on the trajectory and the reference position it belongs to (<code>Esc</code> cancels a
+  started pair; <em>Remove last</em> and <em>Clear</em> remove pairs). One pair fixes
+  the position, two add the heading (and the scale with <em>fit scale</em>), three or more the full rotation.</li>
+<li><strong>Match first pose</strong> moves the first position onto the first position of the reference and turns the
+  trajectory so that its initial direction of travel matches that of the reference (unlike <em>Match First Pose</em>
+  in the context menu, it uses neither the orientations nor the timestamps).</li>
+<li><strong>Sync time</strong> finds the time offset by comparing the speed profiles, which do not depend on the coordinate
+  frame. You can also drag left/right in the speed plot (<em>Over time</em>).</li>
+</ul>
+<p><strong>2 · Diagnose and correct.</strong> Once the trajectories overlap, the <em>deviation at equal time</em> remains: the position of
+the trajectory minus that of the reference at the same timestamp. It is split into <em>along-track</em> (direction of
+travel of the reference), <em>cross-track</em> (to its left) and <em>vertical</em>. Note that the cross-track deviation of
+ATE results is positive to the right instead. Every alignment parameter leaves its own signature in it:</p>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Signature</th>
+<th>View</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time shift</td>
+<td>along-track deviation proportional to the speed, none at standstills</td>
+<td><em>Time shift</em></td>
+</tr>
+<tr>
+<td>Leverarm</td>
+<td>constant in the body frame, also at standstills</td>
+<td><em>Shift and leverarm</em></td>
+</tr>
+<tr>
+<td>Shift</td>
+<td>constant in the world frame: in the body frame it changes with the heading</td>
+<td><em>Shift and leverarm</em></td>
+</tr>
+<tr>
+<td>Heading</td>
+<td>tangential deviation (about the pivot) proportional to the distance from it</td>
+<td><em>Rotation and scale</em></td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>radial deviation proportional to the distance from the pivot</td>
+<td><em>Rotation and scale</em></td>
+</tr>
+<tr>
+<td>Roll, pitch</td>
+<td>vertical deviation growing along x or y</td>
+<td><em>Rotation and scale</em></td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>diagnosis</strong> lists the parameters that explain the deviation, most important first. It considers only the
+parameters checked with <em>estimate</em> (under <em>Values and estimated parameters</em>, preselected from the trajectory
+settings): <em>Effect</em> is the part of the deviation (RMS) that only this parameter accounts for compared to the
+other estimated ones, <em>Correction</em> its error. Parameters that are only weakly determined by the data are shown
+in italics. If a parameter that is not estimated would reduce the deviation
+considerably, the diagnosis points it out. A parameter is listed only if it explains clearly more than noise
+would (taking into account that the deviation of trajectories is correlated from pose to pose) and if it
+matters compared to the deviation that remains after correcting everything; so correcting removes rows but
+does not bring up new ones made of noise. The corrections are determined for the estimated parameters jointly, so that effects that look alike are attributed correctly; for a vehicle, for example, a
+leverarm along the direction of travel and a time shift both deviate along-track, but only the time shift grows
+with the speed. Parameters that cannot be told apart with the data at hand are named (e.g. the vertical leverarm
+and the vertical shift of a platform that is always level).</p>
+<p>Selecting a row opens the view with the signature of the parameter. By default, a view removes the effects of all
+other parameters (<em>Hide effects of other parameters</em>), so that its plot shows just this signature plus what no parameter
+explains; uncheck it to see the actual deviation. Hovering over the data marks the poses of that time in the main
+view, and the <em>deviation arrows</em> there show the pattern on the map (parallel: shift; along the path: time shift;
+swirl: heading; away from the pivot: scale).</p>
+<p>The plots keep their axes while you drag, so that nothing jumps; they adapt when the data leaves the visible range
+or fills only a small part of it. After zooming or panning a plot, double-click it to let its axes follow the data
+again. The ranking of the parameters is updated once you pause, so that the rows do not reorder under the mouse;
+the values of the placement (<em>Values and estimated parameters</em>) are folded away until you open them. Messages
+appear in the status bar at the bottom.</p>
+<p>Corrections are made with <em>Correct</em> in the diagnosis, with <em>Correct all</em> (all estimated parameters together),
+or with the buttons of the views,
+e.g. <em>Correct shift and leverarm</em>, which uses only the standstills, where a time shift has no effect. Every
+correction is estimated together with the other estimated parameters, so the order in which they are applied
+does not matter. The sensor rotation is not estimated in this window, and the leverarm needs orientations.</p>
+<p><strong>3 · Least squares.</strong> <em>Refine by least squares</em> runs the rigorous spatio-temporal least squares alignment of the
+parameters checked with <em>estimate</em> (preselected from the trajectory settings), starting from the placement shown;
+it runs in the background and can be cancelled. The values of all parameters can also be typed in.
+<strong>Apply</strong> adds the trajectory, aligned as shown, and the alignment to the tables (the original trajectory is
+kept); if the placement comes unchanged from the least
+squares alignment, its statistics (e.g. the covariance) are saved, too.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../settings/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Settings">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Settings
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../command_line/" class="md-footer__link md-footer__link--next" aria-label="Next: Command Line">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Command Line
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/gereon-t/trajectopy" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/trajectopy/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.expand", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
